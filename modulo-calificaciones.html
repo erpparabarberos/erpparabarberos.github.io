@@ -9,18 +9,15 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
 
   <style>
     body { font-family: "Inter", sans-serif; background-color: #f8fafc; color: #111827; margin: 0; }
-    ::-webkit-scrollbar { height: 8px; width: 8px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     .card { background-color: #ffffff; border: 1px solid #e5e7eb; box-shadow: 0 10px 25px rgba(15, 23, 42, 0.04); border-radius: 0.9rem; }
-    input, select { background-color: #f9fafb !important; color: #111827 !important; border-color: #d1d5db !important; }
-    .low-cases-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr) minmax(0, 1.5fr) 40px; align-items: center; column-gap: 0.5rem; }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
   </style>
 </head>
 
@@ -29,97 +26,83 @@
     <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-yellow-400"></div>
   </div>
 
-  <div id="dashboard-content" class="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 hidden">
+  <div id="dashboard-content" class="max-w-7xl mx-auto hidden">
     <header class="mb-8">
-      <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight leading-tight uppercase">Control Atención al Cliente</h1>
-      <p class="text-xs md:text-sm text-gray-500 mt-1 uppercase">Análisis de rendimiento de asesores</p>
+      <h1 class="text-3xl font-extrabold text-gray-900 uppercase">Control Atención al Cliente</h1>
+      <p class="text-xs text-gray-500 uppercase">Análisis de rendimiento en tiempo real</p>
     </header>
 
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-      <div class="card rounded-xl px-5 py-4 flex flex-col">
-        <p class="text-[12px] text-gray-500 mb-1 uppercase tracking-wide">Asesor</p>
-        <select id="advisor-filter" class="mt-1 p-2 rounded-lg border text-sm"><option value="">Todos</option></select>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div class="card p-4 text-center">
+        <p class="text-[10px] uppercase text-gray-400 font-bold">Promedio</p>
+        <p id="avg-rating" class="text-2xl font-black text-yellow-500">--</p>
       </div>
-      <div class="card rounded-xl px-5 py-4 flex flex-col">
-        <p class="text-[12px] text-gray-500 mb-1 uppercase tracking-wide">Por Mes</p>
-        <input id="month-filter" type="month" class="mt-1 p-2 rounded-lg border text-sm" />
+      <div class="card p-4 text-center">
+        <p class="text-[10px] uppercase text-gray-400 font-bold">Total</p>
+        <p id="total-ratings" class="text-2xl font-black text-slate-800">0</p>
       </div>
-      <div class="card rounded-xl px-5 py-4 flex flex-col">
-        <p class="text-[12px] text-gray-500 mb-1 uppercase tracking-wide">Por Día</p>
-        <input id="date-filter" type="date" class="mt-1 p-2 rounded-lg border text-sm" />
+      <div class="card p-4 text-center">
+        <p class="text-[10px] uppercase text-gray-400 font-bold">Asesores</p>
+        <p id="total-advisors" class="text-2xl font-black text-emerald-500">0</p>
       </div>
-      <div class="card rounded-xl px-5 py-4 flex flex-col justify-center bg-slate-50">
-        <p class="text-[10px] text-slate-400 uppercase font-bold">Estado</p>
-        <p class="text-xs text-slate-900 font-bold uppercase">Datos en tiempo real</p>
-      </div>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-      <div class="card rounded-xl px-5 py-4 text-center">
-        <p class="text-xs text-gray-500 uppercase">Promedio</p>
-        <p id="avg-rating" class="mt-2 text-4xl font-extrabold text-yellow-500">N/A</p>
-      </div>
-      <div class="card rounded-xl px-5 py-4 text-center">
-        <p class="text-xs text-gray-500 uppercase">Total Respuestas</p>
-        <p id="total-ratings" class="mt-2 text-4xl font-extrabold text-slate-900">0</p>
-      </div>
-      <div class="card rounded-xl px-5 py-4 text-center">
-        <p class="text-xs text-gray-500 uppercase">Asesores</p>
-        <p id="total-advisors" class="mt-2 text-4xl font-extrabold text-emerald-500">0</p>
-      </div>
-      <div class="card rounded-xl px-5 py-4 text-center">
-        <p class="text-xs text-gray-500 uppercase">Críticos</p>
-        <p id="low-ratings" class="mt-2 text-4xl font-extrabold text-red-500">0</p>
+      <div class="card p-4 text-center">
+        <p class="text-[10px] uppercase text-gray-400 font-bold">Críticos</p>
+        <p id="low-ratings" class="text-2xl font-black text-red-500">0</p>
       </div>
     </div>
 
-    <div class="card rounded-2xl px-6 py-6 mb-10">
-      <h2 class="text-sm font-bold text-gray-900 mb-4 uppercase">Distribución de Estrellas</h2>
-      <div class="h-64 md:h-72"><canvas id="rating-distribution-chart"></canvas></div>
-    </div>
-
-    <div class="mb-4 flex items-center justify-between">
-      <h2 class="text-lg font-bold text-gray-900 uppercase">Historial Reciente</h2>
+    <div class="card p-4 mb-8 flex flex-wrap gap-4 items-end">
+      <div class="flex-1 min-w-[150px]">
+        <label class="text-[10px] font-bold uppercase text-gray-400">Asesor</label>
+        <select id="advisor-filter" class="w-full mt-1 p-2 border rounded-lg text-sm bg-gray-50"></select>
+      </div>
+      <div class="flex-1 min-w-[150px]">
+        <label class="text-[10px] font-bold uppercase text-gray-400">Mes</label>
+        <input id="month-filter" type="month" class="w-full mt-1 p-2 border rounded-lg text-sm bg-gray-50" />
+      </div>
       <div class="flex gap-2">
-        <button id="export-excel-button" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700">CSV/EXCEL</button>
-        <button id="export-pdf-button" class="px-4 py-2 bg-red-600 text-white rounded-lg text-xs font-bold hover:bg-red-700">PDF</button>
+        <button id="export-excel-button" class="bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-emerald-700 transition">EXCEL</button>
+        <button id="export-pdf-button" class="bg-red-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-red-700 transition">PDF</button>
       </div>
     </div>
 
-    <div class="card rounded-2xl p-4 overflow-hidden mb-10">
-      <div class="max-h-[400px] overflow-y-auto">
-        <div id="ratings-list-container" class="space-y-3"></div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+      <div class="lg:col-span-2 card p-6">
+        <h2 class="text-sm font-bold uppercase mb-4">Historial de Calificaciones</h2>
+        <div class="max-h-[400px] overflow-y-auto space-y-3" id="ratings-list-container"></div>
+      </div>
+      <div class="card p-6">
+        <h2 class="text-sm font-bold uppercase mb-4">Distribución</h2>
+        <div class="h-64"><canvas id="rating-distribution-chart"></canvas></div>
       </div>
     </div>
 
-    <section class="mb-10">
-      <h2 class="text-2xl font-black text-red-600 mb-4 uppercase">Casos Pendientes (1-2★)</h2>
-      <div class="card rounded-2xl p-4">
-        <div id="critical-container" class="space-y-3"></div>
-      </div>
-    </section>
+    <div class="card border-red-100 p-6 mb-8">
+      <h2 class="text-lg font-black text-red-600 uppercase mb-4">Casos Críticos por Contactar</h2>
+      <div id="critical-container" class="space-y-3"></div>
+    </div>
 
-    <section>
-      <h2 class="text-lg font-bold text-slate-900 mb-4 uppercase">Casos Solucionados</h2>
-      <div id="resolved-container" class="card rounded-2xl p-4 space-y-3"></div>
-    </section>
-  </div>
-
-  <div id="view-rating-modal" class="fixed inset-0 bg-slate-900/60 z-50 hidden items-center justify-center p-4">
-    <div class="bg-white rounded-[24px] max-w-md w-full p-8 relative">
-      <button type="button" id="close-view-rating-modal" class="absolute top-4 right-4 text-gray-400 text-xl">✕</button>
-      <div id="detail-content" class="space-y-4"></div>
+    <div class="card border-emerald-100 p-6">
+      <h2 class="text-sm font-bold text-emerald-700 uppercase mb-4">Casos Solucionados</h2>
+      <div id="resolved-container" class="space-y-3"></div>
     </div>
   </div>
 
-  <div id="solution-modal" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-[24px] w-full max-w-md p-8">
-      <h2 class="text-xl font-bold mb-4">Solucionar Caso</h2>
-      <input id="solution-solver-name" type="text" placeholder="Tu nombre" class="w-full mb-3 p-3 border rounded-xl" />
-      <textarea id="solution-description" rows="3" placeholder="¿Qué solución se dio?" class="w-full mb-4 p-3 border rounded-xl resize-none"></textarea>
-      <div class="flex justify-end gap-2">
-        <button id="solution-cancel-button" class="px-4 py-2 border rounded-xl font-bold text-sm">Cancelar</button>
-        <button id="solution-save-button" class="px-4 py-2 bg-slate-900 text-white rounded-xl font-bold text-sm">Guardar</button>
+  <div id="view-modal" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl">
+      <div id="modal-body" class="space-y-4"></div>
+      <button onclick="document.getElementById('view-modal').classList.add('hidden')" class="w-full mt-6 bg-slate-100 py-2 rounded-xl font-bold text-sm">Cerrar</button>
+    </div>
+  </div>
+
+  <div id="sol-modal" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6">
+      <h3 class="font-bold mb-4">Registrar Solución</h3>
+      <input id="sol-name" type="text" placeholder="Tu nombre" class="w-full p-2 border rounded-lg mb-3">
+      <textarea id="sol-text" placeholder="¿Qué se hizo?" class="w-full p-2 border rounded-lg h-24 mb-4 resize-none"></textarea>
+      <div class="flex gap-2">
+        <button onclick="document.getElementById('sol-modal').classList.add('hidden')" class="flex-1 py-2 border rounded-lg">Cancelar</button>
+        <button id="btn-save-sol" class="flex-1 py-2 bg-slate-900 text-white rounded-lg font-bold">Guardar</button>
       </div>
     </div>
   </div>
@@ -141,16 +124,21 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-    const PUBLIC_RATINGS_COLLECTION = `artifacts/${firebaseConfig.projectId}/public/data/whatsapp_ratings`;
+    const COLL_PATH = `artifacts/${firebaseConfig.projectId}/public/data/whatsapp_ratings`;
 
-    let allRatings = [];
-    let chartInstance = null;
-    let currentFilteredRatings = [];
-    let resolveTargetId = null;
+    let rawData = [];
+    let filteredData = [];
+    let chartObj = null;
+    let targetId = null;
 
     onAuthStateChanged(auth, (user) => {
       if (user) {
-        startRealtimeDataListener();
+        onSnapshot(query(collection(db, COLL_PATH)), (snap) => {
+          rawData = [];
+          snap.forEach(d => rawData.push({id: d.id, ...d.data()}));
+          fillAdvisorFilter();
+          process();
+        });
         document.getElementById("dashboard-content").classList.remove("hidden");
         document.getElementById("loading-spinner").classList.add("hidden");
       } else {
@@ -158,187 +146,153 @@
       }
     });
 
-    function startRealtimeDataListener() {
-      const q = query(collection(db, PUBLIC_RATINGS_COLLECTION));
-      onSnapshot(q, (snapshot) => {
-        allRatings = [];
-        snapshot.forEach(docSnap => allRatings.push({ id: docSnap.id, ...docSnap.data() }));
-        updateFilterOptions();
-        filterAndDisplay();
-      });
-    }
-
-    function filterAndDisplay() {
-      let f = [...allRatings];
+    function process() {
       const adv = document.getElementById("advisor-filter").value;
       const mon = document.getElementById("month-filter").value;
-      const day = document.getElementById("date-filter").value;
-
-      if(adv) f = f.filter(r => r.advisorId === adv);
-      if(mon) f = f.filter(r => r.timestamp && r.timestamp.startsWith(mon));
-      if(day) f = f.filter(r => r.timestamp && r.timestamp.startsWith(day));
-
-      f.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
-      currentFilteredRatings = f;
       
-      updateStats(f);
-      renderList(f);
-      renderCritical(f);
-      renderResolved(f);
+      filteredData = rawData.filter(r => {
+        let ok = true;
+        if(adv) ok = ok && r.advisorId === adv;
+        if(mon) ok = ok && r.timestamp?.startsWith(mon);
+        return ok;
+      }).sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+      updateUI();
     }
 
-    function updateStats(ratings) {
-      const total = ratings.length;
-      const avg = total ? (ratings.reduce((s, r) => s + (r.rating || 0), 0) / total).toFixed(1) : "N/A";
-      const low = ratings.filter(r => r.rating <= 2).length;
-      const advisors = new Set(ratings.map(r => r.advisorId)).size;
-      const dist = [0,0,0,0,0];
-      ratings.forEach(r => { if(r.rating >=1 && r.rating <=5) dist[r.rating-1]++; });
-
-      document.getElementById("total-ratings").textContent = total;
+    function updateUI() {
+      // Stats
+      const total = filteredData.length;
+      const avg = total ? (filteredData.reduce((a,b) => a + (b.rating||0), 0) / total).toFixed(1) : "0";
       document.getElementById("avg-rating").textContent = avg;
-      document.getElementById("total-advisors").textContent = advisors;
-      document.getElementById("low-ratings").textContent = low;
-      
-      const ctx = document.getElementById("rating-distribution-chart").getContext("2d");
-      if(chartInstance) chartInstance.destroy();
-      chartInstance = new Chart(ctx, {
+      document.getElementById("total-ratings").textContent = total;
+      document.getElementById("total-advisors").textContent = new Set(filteredData.map(r=>r.advisorId)).size;
+      document.getElementById("low-ratings").textContent = filteredData.filter(r=>r.rating <= 2 && !r.resolved).length;
+
+      // Listado Principal
+      const list = document.getElementById("ratings-list-container");
+      list.innerHTML = "";
+      filteredData.forEach(r => {
+        const d = document.createElement("div");
+        d.className = "p-3 border rounded-xl flex justify-between items-center bg-gray-50";
+        d.innerHTML = `
+          <div><p class="text-xs font-bold uppercase">${r.advisorName}</p><p class="text-[10px] text-gray-400">${r.timestamp?.split('T')[0]}</p></div>
+          <div class="flex items-center gap-3">
+            <span class="font-black ${r.rating <= 2 ? 'text-red-500':'text-emerald-500'}">${r.rating}★</span>
+            <button class="text-[10px] font-bold text-slate-400 hover:text-black">DETALLE</button>
+          </div>
+        `;
+        d.querySelector("button").onclick = () => showDetail(r);
+        list.appendChild(d);
+      });
+
+      // Críticos
+      const crit = document.getElementById("critical-container");
+      crit.innerHTML = "";
+      filteredData.filter(r => r.rating <= 2 && !r.resolved).forEach(r => {
+        const d = document.createElement("div");
+        d.className = "p-4 border border-red-200 bg-red-50 rounded-xl flex justify-between items-center";
+        d.innerHTML = `
+          <div><p class="font-bold text-red-700 text-sm">${r.advisorName} - Tel: ${r.clientPhone||'N/A'}</p><p class="text-xs italic">"${r.comments||''}"</p></div>
+          <button class="bg-red-600 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold">SOLUCIONAR</button>
+        `;
+        d.querySelector("button").onclick = () => { targetId = r.id; document.getElementById("sol-modal").classList.replace("hidden","flex"); };
+        crit.appendChild(d);
+      });
+
+      // Solucionados
+      const res = document.getElementById("resolved-container");
+      res.innerHTML = filteredData.filter(r => r.resolved).map(r => `
+        <div class="p-3 bg-emerald-50 border border-emerald-100 rounded-xl text-[11px]">
+          <p class="font-bold uppercase">${r.advisorName} (${r.rating}★)</p>
+          <p class="text-emerald-700 mt-1">Solución: ${r.resolution}</p>
+        </div>
+      `).join('');
+
+      // Chart
+      const dist = [0,0,0,0,0];
+      filteredData.forEach(r => { if(r.rating>=1 && r.rating<=5) dist[r.rating-1]++ });
+      const ctx = document.getElementById("rating-distribution-chart");
+      if(chartObj) chartObj.destroy();
+      chartObj = new Chart(ctx, {
         type: 'bar',
-        data: { labels: ['1★','2★','3★','4★','5★'], datasets:[{ data: dist, backgroundColor: ['#ef4444','#f97316','#64748b','#3b82f6','#10b981'], borderRadius: 5 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+        data: { labels:['1★','2★','3★','4★','5★'], datasets:[{data:dist, backgroundColor:['#ef4444','#f97316','#64748b','#3b82f6','#10b981']}]},
+        options: { maintainAspectRatio:false, plugins:{legend:{display:false}}}
       });
     }
 
-    function renderList(ratings) {
-      const cont = document.getElementById("ratings-list-container");
-      cont.innerHTML = ratings.map(r => `
-        <div class="p-4 border rounded-xl flex justify-between items-center bg-white shadow-sm">
-          <div>
-            <p class="font-bold text-sm uppercase">${r.advisorName || 'Asesor'}</p>
-            <p class="text-xs text-slate-500">${r.timestamp?.replace("T"," ")}</p>
-          </div>
-          <div class="flex items-center gap-4">
-            <span class="font-black ${r.rating <= 2 ? 'text-red-500' : 'text-emerald-600'}">${r.rating}★</span>
-            <button onclick="openDetail('${r.id}')" class="text-slate-400 hover:text-black">VER</button>
-          </div>
+    function showDetail(r) {
+      document.getElementById("modal-body").innerHTML = `
+        <h3 class="font-black text-xl border-b pb-2 uppercase">${r.advisorName}</h3>
+        <p class="text-4xl font-black text-yellow-500 text-center py-2">${r.rating} ★</p>
+        <div class="bg-slate-50 p-4 rounded-xl text-sm italic text-gray-600">"${r.comments || 'Sin comentarios'}"</div>
+        <div class="text-[11px] text-gray-400 space-y-1">
+          <p>FECHA: ${r.timestamp?.replace('T',' ')}</p>
+          <p>TELÉFONO: ${r.clientPhone || 'No registrado'}</p>
         </div>
-      `).join('');
-    }
-
-    window.openDetail = (id) => {
-      const r = allRatings.find(x => x.id === id);
-      const cont = document.getElementById("detail-content");
-      cont.innerHTML = `
-        <h3 class="text-lg font-bold uppercase">${r.advisorName}</h3>
-        <p class="text-3xl font-black text-yellow-500">${r.rating} Estrellas</p>
-        <p class="bg-slate-50 p-4 rounded-xl italic">"${r.comments || 'Sin comentarios'}"</p>
-        <p class="text-xs text-slate-400">Fecha: ${r.timestamp}</p>
-        <p class="text-sm font-bold">Tel: ${r.clientPhone || 'N/A'}</p>
       `;
-      document.getElementById("view-rating-modal").classList.replace("hidden", "flex");
-    };
-
-    function renderCritical(ratings) {
-      const cont = document.getElementById("critical-container");
-      const crit = ratings.filter(r => r.rating <= 2 && !r.resolved);
-      cont.innerHTML = crit.map(r => `
-        <div class="p-4 border border-red-100 bg-red-50 rounded-xl flex justify-between items-center">
-          <div>
-            <p class="font-bold text-red-600">${r.advisorName} - Tel: ${r.clientPhone || 'N/A'}</p>
-            <p class="text-xs italic">"${r.comments}"</p>
-          </div>
-          <button onclick="openResolve('${r.id}')" class="bg-red-600 text-white px-3 py-2 rounded-lg text-xs font-bold">SOLUCIONAR</button>
-        </div>
-      `).join('');
+      document.getElementById("view-modal").classList.replace("hidden", "flex");
     }
 
-    window.openResolve = (id) => {
-      resolveTargetId = id;
-      document.getElementById("solution-modal").classList.replace("hidden", "flex");
-    };
-
-    function renderResolved(ratings) {
-      const cont = document.getElementById("resolved-container");
-      const res = ratings.filter(r => r.rating <= 2 && r.resolved);
-      cont.innerHTML = res.map(r => `
-        <div class="p-4 border bg-emerald-50/30 rounded-xl text-xs">
-          <p class="font-bold uppercase">${r.advisorName} (${r.rating}★)</p>
-          <p class="mt-1"><strong>Solución:</strong> ${r.resolution}</p>
-          <p class="text-slate-400 mt-1">Por: ${r.resolvedBy}</p>
-        </div>
-      `).join('');
-    }
-
-    // PDF EXPORT
-    document.getElementById("export-pdf-button").addEventListener("click", () => {
-      if (!currentFilteredRatings.length) return alert("No hay datos");
+    // BOTÓN PDF (Corregido)
+    document.getElementById("export-pdf-button").onclick = () => {
+      if(!filteredData.length) return;
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
-      doc.setFontSize(16);
-      doc.text("REPORTE DE CALIFICACIONES", 14, 15);
+      doc.setFontSize(18);
+      doc.text("REPORTE DE ATENCION AL CLIENTE", 14, 20);
       
-      const data = currentFilteredRatings.map(r => [
-        r.advisorName || "-",
+      const tableData = filteredData.map(r => [
+        r.advisorName,
         r.rating + "★",
         r.comments || "-",
-        r.timestamp?.substring(0,10) || "-",
+        r.timestamp?.split('T')[0],
         r.clientPhone || "-"
       ]);
 
       doc.autoTable({
-        startY: 25,
+        startY: 30,
         head: [['ASESOR', 'NOTA', 'COMENTARIO', 'FECHA', 'TEL']],
-        body: data,
-        theme: 'striped',
+        body: tableData,
+        theme: 'grid',
+        headStyles: { fillColor: [15, 23, 42] },
         styles: { fontSize: 8 }
       });
+      doc.save("Reporte_Calificaciones.pdf");
+    };
 
-      doc.save(`Reporte_Calificaciones.pdf`);
-    });
-
-    // EXCEL/CSV EXPORT
+    // BOTÓN EXCEL/CSV
     document.getElementById("export-excel-button").onclick = () => {
       let csv = "\uFEFFAsesor;Nota;Comentario;Fecha;Telefono\n";
-      currentFilteredRatings.forEach(r => {
-        csv += `${r.advisorName || ''};${r.rating};${(r.comments || '').replace(/;/g, ',')};${r.timestamp};${r.clientPhone || ''}\n`;
+      filteredData.forEach(r => {
+        csv += `${r.advisorName};${r.rating};${(r.comments||'').replace(/;/g,',')};${r.timestamp};${r.clientPhone||''}\n`;
       });
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
+      link.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8;'}));
       link.download = "Calificaciones.csv";
       link.click();
     };
 
-    // Cerrar Modales
-    document.getElementById("close-view-rating-modal").onclick = () => document.getElementById("view-rating-modal").classList.replace("flex", "hidden");
-    document.getElementById("solution-cancel-button").onclick = () => document.getElementById("solution-modal").classList.replace("flex", "hidden");
-
-    document.getElementById("solution-save-button").onclick = async () => {
-      const name = document.getElementById("solution-solver-name").value;
-      const desc = document.getElementById("solution-description").value;
-      if(!name || !desc) return alert("Llena los campos");
-      await setDoc(doc(db, PUBLIC_RATINGS_COLLECTION, resolveTargetId), { 
-        resolved: true, resolvedBy: name, resolution: desc, resolvedAt: new Date().toISOString() 
-      }, { merge: true });
-      document.getElementById("solution-modal").classList.replace("flex", "hidden");
+    document.getElementById("btn-save-sol").onclick = async () => {
+      const n = document.getElementById("sol-name").value;
+      const t = document.getElementById("sol-text").value;
+      if(!n || !t) return alert("Faltan campos");
+      await setDoc(doc(db, COLL_PATH, targetId), { resolved:true, resolvedBy:n, resolution:t, resolvedAt:new Date().toISOString() }, {merge:true});
+      document.getElementById("sol-modal").classList.add("hidden");
     };
 
-    function updateFilterOptions() {
+    function fillAdvisorFilter() {
       const sel = document.getElementById("advisor-filter");
-      const current = sel.value;
-      const names = [...new Set(allRatings.map(r => JSON.stringify({id: r.advisorId, name: r.advisorName})))].map(s => JSON.parse(s));
-      sel.innerHTML = '<option value="">Todos</option>';
-      names.forEach(n => {
-        if(!n.id) return;
-        const opt = document.createElement("option");
-        opt.value = n.id; opt.textContent = n.name; opt.selected = (n.id === current);
-        sel.appendChild(opt);
+      const val = sel.value;
+      const unique = [...new Set(rawData.map(r => JSON.stringify({id:r.advisorId, name:r.advisorName})))].map(s => JSON.parse(s));
+      sel.innerHTML = '<option value="">Todos los asesores</option>';
+      unique.forEach(u => {
+        if(u.id) sel.innerHTML += `<option value="${u.id}" ${u.id===val?'selected':''}>${u.name}</option>`;
       });
     }
 
-    document.getElementById("advisor-filter").onchange = filterAndDisplay;
-    document.getElementById("month-filter").onchange = filterAndDisplay;
-    document.getElementById("date-filter").onchange = filterAndDisplay;
+    document.getElementById("advisor-filter").onchange = process;
+    document.getElementById("month-filter").onchange = process;
 
   </script>
 </body>
