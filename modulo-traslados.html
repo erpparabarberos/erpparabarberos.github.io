@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Módulo Traslados</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; -webkit-font-smoothing: antialiased; }
+        ::-webkit-scrollbar { height: 8px; width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden text-slate-900 bg-[#f8fafc]">
+
+    <div class="bg-white border-b border-slate-200 px-8 py-3 flex gap-3 shrink-0 shadow-sm overflow-x-auto">
+        <button onclick="switchView('nueva')" id="btnNav_nueva" class="nav-btn bg-slate-900 text-white px-5 py-2 text-sm font-bold rounded-lg transition-colors whitespace-nowrap">Nueva Solicitud</button>
+        <button onclick="switchView('historial')" id="btnNav_historial" class="nav-btn text-slate-500 hover:bg-slate-100 px-5 py-2 text-sm font-bold rounded-lg transition-colors whitespace-nowrap">Mis Traslados</button>
+        <button onclick="switchView('aprobaciones')" id="btnNav_aprobaciones" class="nav-btn hidden text-slate-500 hover:bg-slate-100 px-5 py-2 text-sm font-bold rounded-lg transition-colors whitespace-nowrap">Gestión y Aprobaciones</button>
+        <button onclick="switchView('analytics')" id="btnNav_analytics" class="nav-btn hidden text-slate-500 hover:bg-slate-100 px-5 py-2 text-sm font-bold rounded-lg transition-colors whitespace-nowrap">Métricas de Traslados</button>
+    </div>
+
+    <div class="flex-1 relative overflow-y-auto p-10" id="app-container">
+
+        <div id="view_nueva" class="view-section max-w-4xl mx-auto">
+            <h2 class="text-[32px] font-black text-slate-900 tracking-tight mb-2">Solicitar Traslado de Inventario</h2>
+            <p class="text-sm font-medium text-slate-500 mb-8">Completa los datos para solicitar movimiento de mercancía entre sedes.</p>
+
+            <form id="formTraslado" class="bg-white p-8 rounded-[24px] border border-slate-200 shadow-sm space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-xs font-black text-slate-500 mb-2 uppercase tracking-wide">Sede Origen (De donde sale)</label>
+                        <select id="t_origen" required class="w-full border border-slate-300 rounded-xl p-3 text-sm font-semibold focus:border-slate-900 focus:outline-none cursor-pointer">
+                            <option value="" disabled selected>Selecciona sede...</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-black text-slate-500 mb-2 uppercase tracking-wide">Sede Destino (A donde va)</label>
+                        <select id="t_destino" required class="w-full border border-slate-300 rounded-xl p-3 text-sm font-semibold focus:border-slate-900 focus:outline-none cursor-pointer">
+                            <option value="" disabled selected>Selecciona sede...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-black text-slate-500 mb-2 uppercase tracking-wide">Producto a trasladar</label>
+                        <input type="text" id="t_producto" required class="w-full border border-slate-300 rounded-xl p-3 text-sm font-semibold focus:border-slate-900 focus:outline-none" placeholder="Referencia o ID del producto">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-black text-slate-500 mb-2 uppercase tracking-wide">Cantidad</label>
+                        <input type="number" id="t_cantidad" min="1" required class="w-full border border-slate-300 rounded-xl p-3 text-sm font-semibold focus:border-slate-900 focus:outline-none" placeholder="Ej: 5">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-black text-slate-500 mb-2 uppercase tracking-wide">Motivo / Justificación</label>
+                    <textarea id="t_motivo" required rows="2" class="w-full border border-slate-300 rounded-xl p-3 text-sm font-semibold focus:border-slate-900 focus:outline-none" placeholder="Ej: Reposición de stock por agotamiento..."></textarea>
+                </div>
+
+                <div class="flex justify-end pt-4">
+                    <button type="submit" id="btnSubmitTraslado" class="px-8 py-3 text-sm font-bold text-white bg-slate-950 hover:bg-black rounded-xl shadow-lg transition-all">Enviar Solicitud a Bodega</button>
+                </div>
+            </form>
+        </div>
+
+        <div id="view_historial" class="view-section hidden">
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-[32px] font-black text-slate-900 tracking-tight">Mis Traslados</h2>
+            </div>
+            <div class="bg-white rounded-[24px] border border-slate-200 shadow-sm overflow-hidden">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-slate-950 text-white text-[11px] font-black uppercase tracking-widest">
+                        <tr>
+                            <th class="p-4 pl-6">Fecha</th>
+                            <th class="p-4">Ruta (Origen ➔ Destino)</th>
+                            <th class="p-4">Producto</th>
+                            <th class="p-4">Cant.</th>
+                            <th class="p-4">Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaHistorial" class="text-sm font-medium text-slate-800 divide-y divide-slate-100">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="view_aprobaciones" class="view-section hidden">
+            <div class="flex items-center justify-between mb-8">
+                <div>
+                    <h2 class="text-[32px] font-black text-slate-900 tracking-tight">Gestión de Bodega</h2>
+                    <p class="text-sm font-medium text-slate-500">Aprueba, despacha o rechaza las solicitudes pendientes.</p>
+                </div>
+                <button onclick="exportarExcelTraslados()" class="bg-white border border-slate-300 text-slate-800 hover:bg-slate-50 transition-colors text-sm font-bold px-5 py-2.5 rounded-xl shadow-sm flex items-center gap-2">📄 Exportar Todo</button>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="contenedorTarjetasAprobacion">
+                </div>
+        </div>
+
+        <div id="view_analytics" class="view-section hidden">
+            <h2 class="text-[32px] font-black text-slate-900 tracking-tight mb-8">Métricas de Traslados</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white p-8 rounded-[24px] border border-slate-200 shadow-sm flex flex-col">
+                    <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest mb-6">Productos Más Solicitados</h3>
+                    <div class="h-64 w-full relative"><canvas id="chartProductosTraslado"></canvas></div>
+                </div>
+                <div class="bg-white p-8 rounded-[24px] border border-slate-200 shadow-sm flex flex-col">
+                    <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest mb-6">Estado de Traslados</h3>
+                    <div class="h-64 w-full relative flex justify-center"><canvas id="chartEstadosTraslado"></canvas></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // CONEXIÓN A LA BASE DE DATOS CENTRAL (ERP)
+            const firebaseConfig = {
+                apiKey: "AIzaSyDkH2_E7t07SWWH1SZr77BFlNp6RQTDDDY",
+                authDomain: "erpparabarberos-12de9.firebaseapp.com",
+                projectId: "erpparabarberos-12de9",
+                storageBucket: "erpparabarberos-12de9.firebasestorage.app",
+                messagingSenderId: "722745790519",
+                appId: "1:722745790519:web:7bf1dbe172433898a56fb2"
+            };
+
+            if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+            const db = firebase.firestore();
+            const trasladosRef = db.collection('traslados_bodega');
+            const sedesRef = db.collection('sedes'); // Compartimos las mismas sedes de garantías
+
+            // Leer datos del usuario logueado en el Cascarón Maestro
+            const currentUserEmail = localStorage.getItem('currentUserEmail') || 'Desconocido';
+            const userRole = localStorage.getItem('userRole') || 'vendedor'; 
+
+            let trasladosGlobal = [];
+            let chartProd, chartEst;
+
+            // Lógica para mostrar pestañas según el rol
+            if (userRole === 'admin' || userRole === 'bodega') {
+                document.getElementById('btnNav_aprobaciones').classList.remove('hidden');
+                document.getElementById('btnNav_analytics').classList.remove('hidden');
+            }
+
+            // Cambiar Pestañas
+            window.switchView = (viewName) => {
+                document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+                document.querySelectorAll('.nav-btn').forEach(el => {
+                    el.classList.remove('bg-slate-900', 'text-white');
+                    el.classList.add('text-slate-500');
+                });
+                document.getElementById('view_' + viewName).classList.remove('hidden');
+                const activeBtn = document.getElementById('btnNav_' + viewName);
+                if(activeBtn){
+                    activeBtn.classList.remove('text-slate-500');
+                    activeBtn.classList.add('bg-slate-900', 'text-white');
+                }
+                if(viewName === 'analytics') renderizarGraficos();
+            };
+
+            // Llenar Sedes dinámicamente
+            sedesRef.orderBy('nombre').get().then(snapshot => {
+                const sOrigen = document.getElementById('t_origen');
+                const sDestino = document.getElementById('t_destino');
+                snapshot.forEach(doc => { 
+                    const opt = `<option value="${doc.data().nombre}">${doc.data().nombre}</option>`; 
+                    if(sOrigen) sOrigen.innerHTML += opt; 
+                    if(sDestino) sDestino.innerHTML += opt; 
+                });
+            });
+
+            // Función Formato Fecha
+            function formatearFechaHora(timestamp) {
+                if(!timestamp) return 'Sin fecha';
+                return timestamp.toDate().toLocaleString('es-CO', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+            }
+
+            // Mapeo de Colores para Estados
+            const colorEstado = {
+                'PENDIENTE': 'bg-amber-100 text-amber-800 border-amber-200',
+                'APROBADO_EN_TRANSITO': 'bg-blue-100 text-blue-800 border-blue-200',
+                'RECIBIDO': 'bg-emerald-100 text-emerald-800 border-emerald-200',
+                'RECHAZADO': 'bg-red-100 text-red-800 border-red-200'
+            };
+
+            // 1. CREAR SOLICITUD
+            document.getElementById('formTraslado').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const btn = document.getElementById('btnSubmitTraslado'); btn.disabled = true; btn.textContent = "Enviando...";
+
+                const nuevoTraslado = {
+                    origen: document.getElementById('t_origen').value,
+                    destino: document.getElementById('t_destino').value,
+                    producto: document.getElementById('t_producto').value,
+                    cantidad: parseInt(document.getElementById('t_cantidad').value),
+                    motivo: document.getElementById('t_motivo').value,
+                    solicitante: currentUserEmail,
+                    estado: 'PENDIENTE',
+                    creadoEn: firebase.firestore.FieldValue.serverTimestamp()
+                };
+
+                try {
+                    await trasladosRef.add(nuevoTraslado);
+                    document.getElementById('formTraslado').reset();
+                    alert("¡Solicitud enviada a Bodega con éxito!");
+                    switchView('historial');
+                } catch (error) {
+                    alert("Error: " + error.message);
+                } finally {
+                    btn.disabled = false; btn.textContent = "Enviar Solicitud a Bodega";
+                }
+            });
+
+            // 2. ESCUCHAR CAMBIOS Y RENDERIZAR VISTAS
+            trasladosRef.orderBy('creadoEn', 'desc').onSnapshot(snapshot => {
+                trasladosGlobal = [];
+                snapshot.forEach(doc => trasladosGlobal.push({ id: doc.id, ...doc.data() }));
+                renderizarHistorial();
+                if(userRole === 'admin' || userRole === 'bodega') renderizarAprobaciones();
+            });
+
+            function renderizarHistorial() {
+                const tbody = document.getElementById('tablaHistorial');
+                if(!tbody) return;
+                tbody.innerHTML = '';
+                
+                // Si es vendedor, solo ve los suyos. Si es admin/bodega, ve todos.
+                let trasladosAMostrar = trasladosGlobal;
+                if (userRole !== 'admin' && userRole !== 'bodega') {
+                    trasladosAMostrar = trasladosGlobal.filter(t => t.solicitante === currentUserEmail);
+                }
+
+                trasladosAMostrar.forEach(t => {
+                    const badgeClass = colorEstado[t.estado] || 'bg-slate-100 text-slate-800';
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="p-4 text-slate-500">${formatearFechaHora(t.creadoEn)}</td>
+                            <td class="p-4 font-bold text-slate-800">${t.origen} <span class="text-slate-400 mx-1">➔</span> ${t.destino}</td>
+                            <td class="p-4 text-slate-700">${t.producto}</td>
+                            <td class="p-4 font-black text-slate-900">${t.cantidad}</td>
+                            <td class="p-4"><span class="${badgeClass} border text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">${t.estado}</span></td>
+                        </tr>
+                    `;
+                });
+            }
+
+            function renderizarAprobaciones() {
+                const cont = document.getElementById('contenedorTarjetasAprobacion');
+                if(!cont) return;
+                cont.innerHTML = '';
+
+                const pendientes = trasladosGlobal.filter(t => t.estado === 'PENDIENTE' || t.estado === 'APROBADO_EN_TRANSITO');
+                
+                if (pendientes.length === 0) {
+                    cont.innerHTML = '<p class="text-slate-500 font-medium italic col-span-3">No hay traslados pendientes de acción.</p>';
+                    return;
+                }
+
+                pendientes.forEach(t => {
+                    let botones = '';
+                    if (t.estado === 'PENDIENTE') {
+                        botones = `
+                            <button onclick="actualizarEstadoTraslado('${t.id}', 'RECHAZADO')" class="flex-1 py-2 bg-white border border-red-200 text-red-600 hover:bg-red-50 text-xs font-bold rounded-lg transition-colors">Rechazar</button>
+                            <button onclick="actualizarEstadoTraslado('${t.id}', 'APROBADO_EN_TRANSITO')" class="flex-1 py-2 bg-slate-950 text-white hover:bg-black text-xs font-bold rounded-lg transition-colors shadow-md">Aprobar y Despachar</button>
+                        `;
+                    } else if (t.estado === 'APROBADO_EN_TRANSITO') {
+                        botones = `<button onclick="actualizarEstadoTraslado('${t.id}', 'RECIBIDO')" class="w-full py-2 bg-emerald-600 text-white hover:bg-emerald-700 text-xs font-bold rounded-lg transition-colors shadow-md">Marcar como Recibido en Destino</button>`;
+                    }
+
+                    cont.innerHTML += `
+                        <div class="bg-white border border-slate-200 rounded-[20px] p-6 shadow-sm hover:shadow-md transition-shadow relative">
+                            <span class="${colorEstado[t.estado]} border absolute top-6 right-6 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest">${t.estado}</span>
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">ID: ${t.id.substring(0,6)}</p>
+                            <h4 class="font-black text-slate-900 text-lg leading-tight mb-4">${t.producto} <span class="text-blue-600">(x${t.cantidad})</span></h4>
+                            
+                            <div class="space-y-3 text-sm mb-6 border-l-2 border-slate-100 pl-4 py-1">
+                                <div><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sale de</p><p class="font-semibold text-slate-700">${t.origen}</p></div>
+                                <div><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Entra a</p><p class="font-semibold text-slate-700">${t.destino}</p></div>
+                                <div><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Motivo</p><p class="italic text-slate-600">${t.motivo}</p></div>
+                            </div>
+                            
+                            <div class="flex gap-3 pt-4 border-t border-slate-100">
+                                ${botones}
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            // Función Global para Admin/Bodega
+            window.actualizarEstadoTraslado = async (id, nuevoEstado) => {
+                if(confirm(`¿Estás seguro de marcar este traslado como ${nuevoEstado}?`)) {
+                    await trasladosRef.doc(id).update({ estado: nuevoEstado, actualizadoPor: currentUserEmail, actualizadoEn: new Date() });
+                }
+            };
+
+            // EXPORTAR EXCEL
+            window.exportarExcelTraslados = () => {
+                if(trasladosGlobal.length === 0) return alert("No hay datos para exportar.");
+                const dataLimpiada = trasladosGlobal.map(t => ({
+                    'Fecha Creación': t.creadoEn ? t.creadoEn.toDate().toLocaleString() : 'N/A',
+                    'Solicitante': t.solicitante,
+                    'Origen': t.origen,
+                    'Destino': t.destino,
+                    'Producto': t.producto,
+                    'Cantidad': t.cantidad,
+                    'Motivo': t.motivo,
+                    'Estado': t.estado
+                }));
+                const ws = XLSX.utils.json_to_sheet(dataLimpiada);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Traslados");
+                XLSX.writeFile(wb, "Traslados_Bodega.xlsx");
+            };
+
+            // GRÁFICOS
+            function renderizarGraficos() {
+                if(!trasladosGlobal.length) return;
+                
+                // Productos más trasladados
+                let cP={}; trasladosGlobal.forEach(t => { cP[t.producto]=(cP[t.producto]||0)+t.cantidad; }); 
+                let sP=Object.keys(cP).sort((a,b)=>cP[b]-cP[a]).slice(0,5);
+                if(chartProd) chartProd.destroy(); 
+                chartProd=new Chart(document.getElementById('chartProductosTraslado'),{type:'bar',data:{labels:sP,datasets:[{data:sP.map(k=>cP[k]),backgroundColor:'#0f172a',borderRadius:8}]},options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}}});
+                
+                // Estados
+                let cE={}; trasladosGlobal.forEach(t => cE[t.estado]=(cE[t.estado]||0)+1);
+                if(chartEst) chartEst.destroy(); 
+                chartEst=new Chart(document.getElementById('chartEstadosTraslado'),{type:'doughnut',data:{labels:Object.keys(cE),datasets:[{data:Object.values(cE),backgroundColor:['#0f172a','#3b82f6','#10b981','#ef4444'],borderWidth:0}]},options:{responsive:true, maintainAspectRatio:false, cutout:'70%',plugins:{legend:{position:'right'}}}});
+            }
+        });
+    </script>
+</body>
+</html>
