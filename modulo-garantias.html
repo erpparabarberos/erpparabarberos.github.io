@@ -8,6 +8,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -255,7 +256,6 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // TUS LLAVES REALES (Conectado al ERP Maestro)
             const firebaseConfig = {
                 apiKey: "AIzaSyDkH2_E7t07SWWH1SZr77BFlNp6RQTDDDY",
                 authDomain: "erpparabarberos-12de9.firebaseapp.com",
@@ -265,15 +265,13 @@
                 appId: "1:722745790519:web:7bf1dbe172433898a56fb2"
             };
 
-            // Solo inicializamos si no existe una app de firebase en memoria (evita conflictos en Iframe)
             if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
             
-            // OBTENEMOS EL CORREO DEL USUARIO LOGUEADO DESDE EL LOCALSTORAGE DEL MAESTRO
             const currentUserEmail = localStorage.getItem('currentUserEmail') || 'Usuario Desconocido';
             
             const db = firebase.firestore();
             const storage = firebase.storage();
-            const ticketsRef = db.collection('tickets_garantias'); // Colección específica en tu BD central
+            const ticketsRef = db.collection('tickets_garantias'); 
             const sedesRef = db.collection('sedes');
             const productosRef = db.collection('productos');
             const counterRef = db.collection('metadata').doc('ticketCounter');
@@ -311,7 +309,6 @@
                 return Math.floor(diffTime / (1000 * 60 * 60 * 24));
             }
 
-            // FUNCIÓN DE CAMBIO DE PESTAÑAS HORIZONTALES
             window.switchView = (viewName) => {
                 document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
                 document.querySelectorAll('.nav-btn').forEach(el => {
@@ -424,7 +421,7 @@
                 txtD.value = t.diagnostico||\"\"; bTop.innerHTML = '';
                 
                 const btnDevolverDiag = document.getElementById('btnDevolverDiag'), btnDevolverRep = document.getElementById('btnDevolverReparacion'), prevStateFallback = ESTADO_ANTERIOR[t.estado];
-                if (prevStateFallback && t.estado !== '4_reparado') bTop.innerHTML += `<button onclick=\"cambiarEstado('${t.id}', '${prevStateFallback}')\" class=\"px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition-all flex items-center gap-2\"><svg class=\"w-4 h-4\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2" d=\"M10 19l-7-7m0 0l7-7m-7 7h18\"></path></svg> Devolver</button>`;
+                if (prevStateFallback && t.estado !== '4_reparado') bTop.innerHTML += `<button onclick=\"cambiarEstado('${t.id}', '${prevStateFallback}')\" class=\"px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition-all flex items-center gap-2\"><svg class=\"w-4 h-4\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M10 19l-7-7m0 0l7-7m-7 7h18\"></path></svg> Devolver</button>`;
 
                 if(t.estado === '2_envio_st') { btnDevolverDiag.onclick = () => cambiarEstado(t.id, ESTADO_ANTERIOR[t.estado]); txtD.readOnly=false; txtD.className=\"w-full border border-slate-300 rounded-2xl p-6 text-sm font-medium text-slate-900 focus:outline-none focus:border-slate-950 shadow-sm transition-colors leading-relaxed bg-white\"; btnD.classList.remove('hidden'); } else { txtD.readOnly=true; txtD.className=\"w-full border border-slate-200 rounded-2xl p-6 text-sm font-medium text-slate-500 bg-slate-50 shadow-sm leading-relaxed\"; btnD.classList.add('hidden'); }
 
