@@ -410,7 +410,7 @@
                 window.parent.location.href = 'index.html';
             });
         };
-        function setupUIForUser() {
+function setupUIForUser() {
             if (!currentUserData) return;
             const { role } = currentUserData;
             
@@ -422,30 +422,24 @@
             if (dom.productManagementCard) dom.productManagementCard.style.display = 'none';
             if (dom.reportContainer) dom.reportContainer.style.display = 'none';
 
-            if (role === 'admin' || role === 'manager') {
-                // Este es el usuario de Bodega normal
+            if (role === 'manager') { 
+                // MODO DIOS: Enciende las 3 pantallas principales
+                dom.managerView.style.display = 'block'; 
+                dom.adminView.style.display = 'block';   
+                dom.requesterView.style.display = 'grid'; 
+                if (dom.productManagementCard) dom.productManagementCard.style.display = 'block';
+            } else if (role === 'admin') {
                 dom.adminView.style.display = 'block';
                 if (dom.productManagementCard) dom.productManagementCard.style.display = 'block';
             } else if (role === 'reviewer') {
                 dom.reviewerView.style.display = 'block';
-            } else if (role === 'manager') { 
-                // ESTE ERES TÚ (Modo Dios: Enciende todas las pantallas)
-                dom.managerView.style.display = 'block'; // Pantalla Gerencia
-                dom.adminView.style.display = 'block';   // Pantalla Bodega
-                dom.requesterView.style.display = 'grid'; // Pantalla Solicitante
-                
-                if (dom.productManagementCard) dom.productManagementCard.style.display = 'block';
-                if (dom.requesterName) {
-                    dom.requesterName.innerHTML = `<option value="${currentUserData.name}">${currentUserData.name}</option>`;
-                    dom.requesterName.value = currentUserData.name;
-                }
             } else { 
-                // Este es el Solicitante normal
                 dom.requesterView.style.display = 'grid';
-                if (dom.requesterName) {
-                    dom.requesterName.innerHTML = `<option value="${currentUserData.name}">${currentUserData.name}</option>`;
-                    dom.requesterName.value = currentUserData.name;
-                }
+            }
+
+            if (dom.requesterName && (role === 'requester' || role === 'manager')) {
+                dom.requesterName.innerHTML = `<option value="${currentUserData.name}">${currentUserData.name}</option>`;
+                dom.requesterName.value = currentUserData.name;
             }
         }
 
@@ -470,11 +464,12 @@
              return filtered;
         }
         
-        function renderAllSections() {
+function renderAllSections() {
             if (!currentUserData) return;
             const { name, role } = currentUserData;
             const sortedRequests = allTransferRequests.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
 
+            // 1. Dibuja las tablas personales (Solicitante y Manager)
             if (role === 'requester' || role === 'manager') {
                 const allMyRequests = sortedRequests.filter(r => r.requesterName === name);
                 const myShipped = allMyRequests.filter(r => r.status === 'shipped');
@@ -488,10 +483,16 @@
                 renderSection('myNoveltyRequests', dom.myNoveltyRequests, myNovelty, 'requester', "No tienes solicitudes con novedad.");
                 renderSection('myCompletedRequests', dom.myCompletedRequests, myCompleted, 'requester', "No tienes solicitudes completadas.");
                 renderSection('myCancelledRequests', dom.myCancelledRequests, myCancelled, 'requester', "No tienes solicitudes canceladas.");
-            } else if (role === 'reviewer') {
+            } 
+            
+            // 2. Dibuja las tablas de revisión
+            if (role === 'reviewer') {
                 const pendingForReview = applyFilters(sortedRequests.filter(r => ['pending', 'processing_partial_items'].includes(r.status)), dom.reviewerSearchId, dom.reviewerDateFrom, dom.reviewerDateTo);
                 renderSection('reviewerPendingRequests', dom.reviewerPendingRequests, pendingForReview, 'admin', "No hay solicitudes pendientes de revisión.");
-            } else if (role === 'admin') {
+            } 
+            
+            // 3. Dibuja las tablas de Bodega (Admin y Manager)
+            if (role === 'admin' || role === 'manager') {
                 const pendingForReview = applyFilters(sortedRequests.filter(r => ['pending', 'processing_partial_items'].includes(r.status)), dom.adminActiveSearchId, dom.adminActiveDateFrom, dom.adminActiveDateTo);
                 const pendingForNt = applyFilters(sortedRequests.filter(r => r.status.startsWith('pending_nt')), dom.adminActiveSearchId, dom.adminActiveDateFrom, dom.adminActiveDateTo);
                 const readyToShip = applyFilters(sortedRequests.filter(r => r.status === 'ready_to_ship'), dom.adminActiveSearchId, dom.adminActiveDateFrom, dom.adminActiveDateTo);
@@ -1616,6 +1617,7 @@
 </script>
 </body>
 </html>
+
 
 
 
