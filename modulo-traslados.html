@@ -243,39 +243,26 @@
 <script>
    
     document.addEventListener('DOMContentLoaded', () => {
-        // --- CONFIGURACIÓN DE FIREBASE (PRODUCCIÓN) ---
+        // --- 1. NUEVAS LLAVES DEL ERP (CON SEGURO PARA IFRAME) ---
         const firebaseConfig = {
-                apiKey: "AIzaSyDkH2_E7t07SWWH1SZr77BFlNp6RQTDDDY",
-                authDomain: "erpparabarberos-12de9.firebaseapp.com",
-                projectId: "erpparabarberos-12de9",
-                storageBucket: "erpparabarberos-12de9.firebasestorage.app",
-                messagingSenderId: "722745790519",
-                appId: "1:722745790519:web:7bf1dbe172433898a56fb2"
-            };
-            if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
-            const db = firebase.firestore();
-            const auth = firebase.auth();
+            apiKey: "AIzaSyDkH2_E7t07SWWH1SZr77BFlNp6RQTDDDY",
+            authDomain: "erpparabarberos-12de9.firebaseapp.com",
+            projectId: "erpparabarberos-12de9",
+            storageBucket: "erpparabarberos-12de9.firebasestorage.app",
+            messagingSenderId: "722745790519",
+            appId: "1:722745790519:web:7bf1dbe172433898a56fb2"
+        };
         
-        firebase.initializeApp(firebaseConfig);
+        if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+        
         const auth = firebase.auth();
         const db = firebase.firestore();
         const storage = firebase.storage();
+        
+        // Mantenemos las colecciones originales como las tenías
         const transfersCollection = db.collection("transferencias");
         const productsCollection = db.collection("products");
 
-        // --- ROLES DE USUARIO (PRODUCCIÓN) ---
-        const USER_ROLES = {
-            'inventarios.parabarberos@gmail.com': ['Administrador', 'admin'],
-            'parabarberossedecentro@gmail.com': ['Punto de venta Cali centro', 'requester'],
-            'parabarberossedesur@gmail.com': ['Punto de venta Cali sur', 'requester'],
-            'parabarberossedepasto@gmail.com': ['Punto de venta Pasto', 'requester'],
-            'parabarberossedetulua@gmail.com': ['Punto de venta Tulua', 'requester'],
-            'parabarberossedemedellin@gmail.com': ['Punto de venta Medellin', 'requester'],
-            'parabarberossedebogota@gmail.com': ['Punto de venta Bogota', 'requester'],
-            'separador.parabarberos@gmail.com': ['Revisor Bodega', 'reviewer'],
-            'yohnatanlopez.parabarberos@gmail.com': ['Gerencia', 'manager'],
-            'jhonnysalazar.parabarberos@gmail.com': ['Gerencia', 'manager'],
-        };
         // --- ESTADO GLOBAL DE LA APLICACIÓN ---
         let allProducts = [], currentTransferItems = [], allTransferRequests = [], currentUserData = null;
         let charts = {};
@@ -379,43 +366,50 @@
             return statusMap[s] || s;
         };
         
-        // --- AUTENTICACIÓN Y ARRANQUE ---
-       auth.onAuthStateChanged(user => {
+        // --- 2. AUTENTICACIÓN Y ARRANQUE (CONECTADO AL ERP) ---
+        auth.onAuthStateChanged(user => {
             if (user) {
                 // Buscamos el rol en la base de datos central del ERP
                 db.collection('usuarios').doc(user.email).get().then(doc => {
                     if (doc.exists) {
                         const erpRol = doc.data().rol;
-                        let appRole = 'store_manager'; // Solicitante por defecto (Tu foto 1)
+                        let appRole = 'requester'; // Solicitante por defecto (Foto 1)
                         
                         // Traductor de roles para no dañar tu diseño
                         if(erpRol === 'admin') {
-                            appRole = 'manager'; // Gerencia (Tu foto 3)
+                            appRole = 'manager'; // Gerencia (Foto 3)
                         } else if (erpRol === 'bodega') {
-                            appRole = 'admin'; // Inventarios (Tu foto 2)
+                            appRole = 'admin'; // Inventarios (Foto 2)
                         }
 
-                        // Creamos la variable que tu código de 1000 líneas necesita
-                        window.currentUserData = {
-                            role: appRole,
-                            email: user.email,
-                            name: doc.data().nombre || user.email.split('@')[0],
-                            headquarters: doc.data().sede || 'Sede Principal'
+                        // Creamos la variable EXACTAMENTE como la necesita tu código de 1000 líneas
+                        currentUserData = { 
+                            user: user, 
+                            name: doc.data().nombre || user.email.split('@')[0], 
+                            role: appRole 
                         };
                         
-                        initAppUI(); // Inicia tu interfaz intacta
+                        dom.userEmailDisplay.textContent = user.email;
+                        dom.userInfo.style.display = 'flex';
+                        
+                        // ESTA ES LA FUNCIÓN QUE FALTABA Y ENCENDÍA LA INTERFAZ
+                        initializeApp(); 
+                    } else {
+                        console.error("El usuario no tiene rol en el ERP");
+                        auth.signOut();
                     }
-                });
+                }).catch(error => console.error("Error obteniendo usuario:", error));
             } else {
                 window.parent.location.href = 'index.html'; 
             }
         });
 
+        // --- 3. BOTÓN DE CERRAR SESIÓN (SACA DE TODO EL ERP) ---
         dom.logoutBtn.onclick = () => {
-    auth.signOut().then(() => {
-        window.parent.location.href = 'index.html';
-    });
-};
+            auth.signOut().then(() => {
+                window.parent.location.href = 'index.html';
+            });
+        };
         
         function setupUIForUser() {
             if (!currentUserData) return;
@@ -602,11 +596,9 @@
                     actionButtonsHtml += `<button data-request-id="${req.id}" data-action="cancel" class="action-btn bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-3 rounded-md">Cancelar</button>`;
                 }
                 
-                // === INICIO DE MODIFICACIÓN ===
                 if (req.status === 'cancelled') {
                     actionButtonsHtml += `<button data-request-id="${req.id}" data-action="reactivate" class="action-btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3 rounded-md">Reactivar</button>`;
                 }
-                // === FIN DE MODIFICACIÓN ===
 
                 if (actionButtonsHtml) {
                     contentHtml += `<div class="mt-4 border-t pt-4 flex justify-end gap-2 flex-wrap">${actionButtonsHtml}</div>`;
@@ -615,21 +607,17 @@
                 if (role === 'admin') {
                     if (req.status === 'ready_to_ship') {
                         contentHtml += `<div class="mt-4 space-y-2"><label for="shippingNotes-${req.id}" class="text-sm font-medium">Obs. de Envío (Opcional):</label><textarea id="shippingNotes-${req.id}" rows="2" class="w-full mt-1 border rounded-md p-2">${req.shippingNotes || ''}</textarea><button data-request-id="${req.id}" data-action="save_shipping_note" class="action-btn mt-1 text-xs bg-gray-700 px-3 py-1.5 rounded-md text-white">Guardar Nota</button></div>`;
-                        // === INICIO DE MODIFICACIÓN ===
                         contentHtml += `<div class="mt-4 flex gap-2">
                                           <button data-request-id="${req.id}" data-action="return_to_pending" class="action-btn bg-yellow-600 hover:bg-yellow-700 text-white text-xs font-semibold py-2 px-3 rounded-md">Devolver</button>
                                           <button data-request-id="${req.id}" data-action="proceed_to_shipping" class="action-btn flex-grow bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-3 rounded-md">Proceder a Envío</button>
                                        </div>`;
-                        // === FIN DE MODIFICACIÓN ===
                     }
                     if (req.status === 'shipping_details') {
                         contentHtml += `<div class="mt-4 space-y-3 p-3 bg-gray-100 rounded-lg border"><p class="font-semibold">¿Tiene guía?</p><div class="flex items-center gap-x-4"><label><input type="radio" name="hasTracking-${req.id}" value="yes" class="tracking-option"> Sí</label><label><input type="radio" name="hasTracking-${req.id}" value="no" class="tracking-option" checked> No</label></div><div id="trackingNumberDiv-${req.id}" class="hidden mt-2"><label for="trackingNumber-${req.id}" class="block text-sm font-medium">Nº de Guía:</label><input type="text" id="trackingNumber-${req.id}" class="w-full mt-1 border rounded-md p-2"></div></div>`;
-                        // === INICIO DE MODIFICACIÓN ===
                         contentHtml += `<div class="mt-4 flex gap-2">
                                           <button data-request-id="${req.id}" data-action="return_to_pending" class="action-btn bg-yellow-600 hover:bg-yellow-700 text-white text-xs font-semibold py-2 px-3 rounded-md">Devolver</button>
                                           <button data-request-id="${req.id}" data-action="finalize_shipment" class="action-btn flex-grow bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-3 rounded-md">Marcar como Enviado</button>
                                        </div>`;
-                        // === FIN DE MODIFICACIÓN ===
                     }
                     if (req.status === 'completed_incomplete') {
                         contentHtml += `<div class="mt-4"><button data-request-id="${req.id}" data-action="start_novelty_review" class="action-btn w-full bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-3 rounded-md">Iniciar Revisión de Novedad</button></div>`;
@@ -839,13 +827,11 @@
                         updateData = { status: 'cancelled' };
                     }
                 },
-                // === INICIO DE MODIFICACIÓN ===
                 reactivate: () => {
                     if (confirm("¿Está seguro de que desea reactivar esta solicitud? Pasará a 'Pendiente de Revisión'.")) {
                         updateData = { status: 'pending' };
                     }
                 }
-                // === FIN DE MODIFICACIÓN ===
             };
             
             const result = await actions[action]?.();
@@ -1201,9 +1187,6 @@
             dom.productList.querySelectorAll('.add-to-transfer-btn').forEach(b => b.onclick = handleAddToTransfer);
         }
 
-        // ==================================================================
-        // INICIO DE LÓGICA PARA INFORMES GERENCIALES (TOTALMENTE ACTUALIZADA)
-        // ==================================================================
         function destroyCharts() {
             Object.values(charts).forEach(chart => chart.destroy());
             charts = {};
@@ -1257,7 +1240,7 @@
 
         function toggleTopProductsView() {
             isTopProductsChartExpanded = !isTopProductsChartExpanded;
-            handleReportGeneration(); // Vuelve a generar los informes con la nueva vista
+            handleReportGeneration(); 
         }
 
         function generateAllReports(data) {
@@ -1271,7 +1254,6 @@
 
             const chartOptions = { responsive: true, maintainAspectRatio: false, animation: { duration: 0 } };
 
-            // GRÁFICO 1: Estado de Solicitudes
             const statusCounts = data.reduce((acc, req) => {
                 const status = translateStatus(req.status, req);
                 acc[status] = (acc[status] || 0) + 1;
@@ -1282,7 +1264,6 @@
                 options: chartOptions
             });
 
-            // GRÁFICO 2: Top Productos (Interactivo)
             const productCounts = data.reduce((acc, req) => {
                 if (req.items && Array.isArray(req.items)) {
                     req.items.forEach(item => {
@@ -1318,7 +1299,6 @@
                 options: { ...chartOptions, indexAxis: 'y', plugins: { legend: { display: false } } }
             });
 
-            // GRÁFICO 3: Volumen por Bodega
             const warehouseCounts = data.reduce((acc, req) => {
                 if (req.toWarehouse) {
                     acc[req.toWarehouse] = (acc[req.toWarehouse] || 0) + 1;
@@ -1330,7 +1310,6 @@
                 options: chartOptions
             });
             
-            // GRÁFICO 4: Tasa de Cumplimiento
             const fulfillmentData = data.filter(r => r.status.startsWith('completed')).reduce((acc, req) => {
                 if(req.items && Array.isArray(req.items)) {
                     req.items.forEach(item => {
@@ -1350,7 +1329,6 @@
                 options: chartOptions
             });
 
-            // GRÁFICO 5: Solicitadas vs Enviadas
             const requestedVsSentData = data.reduce((acc, req) => {
                 if(req.items && Array.isArray(req.items)) {
                     req.items.forEach(item => {
@@ -1380,7 +1358,6 @@
             pdfContainer.style.color = '#374151';
 
             try {
-                // 1. Recopilar datos (Sin cambios)
                 const reportTitle = "Informe Gerencial de Traslados";
                 const reportSubtitle = document.getElementById('reportDateSubtitle').textContent;
                 const kpis = {
@@ -1438,7 +1415,6 @@
                             htmlContent += createPageWrapper(tablePageContent);
                         }
                     } else {
-                        // --- MANEJO ESTÁNDAR PARA LOS DEMÁS INFORMES (GRÁFICO + TABLA JUNTOS) ---
                         const tableHtml = `
                           <table style="width: 100%; max-width: 180mm; margin-top: 25px; border-collapse: collapse; font-size: 12px;">
                             <thead><tr>${item.headers.map(h => `<th style="border: 1px solid #DEE2E6; padding: 8px; text-align: left; background-color: #F8F9FA; font-weight: bold;">${h}</th>`).join('')}</tr></thead>
@@ -1456,7 +1432,6 @@
                 
                 pdfContainer.innerHTML = htmlContent;
 
-                // 3. Configurar y ejecutar html2pdf (Sin cambios)
                 const today = new Date().toISOString().slice(0, 10);
                 const opt = { margin: 0, filename: `Informe_Gerencial_Traslados_${today}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true, logging: false }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
                 await html2pdf().set(opt).from(pdfContainer).save();
@@ -1536,13 +1511,13 @@
             if (dom.uploadProductsBtn) dom.uploadProductsBtn.addEventListener('click', handleProductUpload);
             if (dom.transferForm) dom.transferForm.addEventListener('submit', handleSubmitTransferForm);
             if (dom.searchInput) dom.searchInput.addEventListener('input', () => {
-    const term = dom.searchInput.value.toLowerCase().trim();
-    const filtered = allProducts.filter(p => 
-        p.name.toLowerCase().includes(term) || 
-        p.id.toLowerCase().includes(term)
-    );
-    renderProducts(filtered);
-});
+                const term = dom.searchInput.value.toLowerCase().trim();
+                const filtered = allProducts.filter(p => 
+                    p.name.toLowerCase().includes(term) || 
+                    p.id.toLowerCase().includes(term)
+                );
+                renderProducts(filtered);
+            });
             if (dom.productFile) dom.productFile.addEventListener('change', () => { dom.fileNameDisplay.textContent = dom.productFile.files.length > 0 ? dom.productFile.files[0].name : 'Ningún archivo seleccionado.'; dom.uploadStatus.textContent = ''; });
             
             ['requesterSearchId', 'requesterDateFrom', 'requesterDateTo', 'adminActiveSearchId', 'adminActiveDateFrom', 'adminActiveDateTo', 'adminHistorySearchId', 'adminHistoryDateFrom', 'adminHistoryDateTo', 'reviewerSearchId', 'reviewerDateFrom', 'reviewerDateTo'].forEach(id => {
@@ -1569,6 +1544,62 @@
                 }
             }, error => console.error("Error al conectar: ", error));
         }
+
+        // =========================================================================
+        // NUEVA LÓGICA DE CONEXIÓN CON EL ERP MAESTRO
+        // =========================================================================
+        const configERP = {
+            apiKey: "AIzaSyDkH2_E7t07SWWH1SZr77BFlNp6RQTDDDY",
+            authDomain: "erpparabarberos-12de9.firebaseapp.com",
+            projectId: "erpparabarberos-12de9",
+            storageBucket: "erpparabarberos-12de9.firebasestorage.app",
+            messagingSenderId: "722745790519",
+            appId: "1:722745790519:web:7bf1dbe172433898a56fb2"
+        };
+        
+        if (!firebase.apps.length) { firebase.initializeApp(configERP); }
+        const authERP = firebase.auth();
+        const dbERP = firebase.firestore();
+
+        authERP.onAuthStateChanged(user => {
+            if (user) {
+                dbERP.collection('usuarios').doc(user.email).get().then(doc => {
+                    if (doc.exists) {
+                        const erpRol = doc.data().rol;
+                        let appRole = 'requester'; 
+                        
+                        if(erpRol === 'admin') {
+                            appRole = 'manager'; 
+                        } else if (erpRol === 'bodega') {
+                            appRole = 'admin'; 
+                        }
+
+                        currentUserData = { 
+                            user: user, 
+                            name: doc.data().nombre || user.email.split('@')[0], 
+                            role: appRole 
+                        };
+                        
+                        dom.userEmailDisplay.textContent = user.email;
+                        dom.userInfo.style.display = 'flex';
+                        
+                        // EL MOTOR DE TU APP
+                        initializeApp(); 
+                    } else {
+                        console.error("El usuario no tiene rol en el ERP");
+                        authERP.signOut();
+                    }
+                }).catch(error => console.error("Error obteniendo usuario:", error));
+            } else {
+                window.parent.location.href = 'index.html'; 
+            }
+        });
+
+        dom.logoutBtn.onclick = () => {
+            authERP.signOut().then(() => {
+                window.parent.location.href = 'index.html';
+            });
+        };
 
     });
 </script>
