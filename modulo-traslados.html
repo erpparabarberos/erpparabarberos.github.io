@@ -255,9 +255,9 @@
         
         if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
         
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-        const storage = firebase.storage();
+        var auth = firebase.auth();
+        var db = firebase.firestore();
+        var storage = firebase.storage();
         
         // Mantenemos las colecciones originales como las tenías
         const transfersCollection = db.collection("transferencias");
@@ -1605,3 +1605,4 @@
 </script>
 </body>
 </html>
+
