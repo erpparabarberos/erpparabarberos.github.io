@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ERP Principal - PARABARBEROS</title>
+    <link rel="icon" href="logo.jpg?v=3">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; -webkit-font-smoothing: antialiased; }
+        .nav-btn.active { background-color: #1e293b; color: white; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden text-slate-900 bg-[#f8fafc]">
+
+    <aside class="w-20 bg-[#0f172a] flex flex-col items-center py-6 border-r border-slate-800 shrink-0 z-20 shadow-2xl relative">
+        <div class="w-12 h-12 bg-black rounded-xl flex items-center justify-center mb-10 shadow-lg shadow-black/30 border border-slate-800 shrink-0 overflow-hidden">
+            <img src="logo.jpg" alt="Logo" class="w-10 h-10 object-contain" style="filter: invert(1); mix-blend-mode: screen;" title="Parabarberos">
+        </div>
+        
+        <nav class="flex flex-col gap-6 text-slate-400 w-full px-4" id="mainNav">
+            <button id="btn-garantias" onclick="loadModule('modulo-garantias.html', this)" class="hidden nav-btn p-3 hover:bg-slate-800 hover:text-white rounded-xl w-full flex justify-center transition-all" title="Garantías"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg></button>
+            <button id="btn-traslados" onclick="loadModule('modulo-traslados.html', this)" class="hidden nav-btn p-3 hover:bg-slate-800 hover:text-white rounded-xl w-full flex justify-center transition-all" title="Traslados de Bodega"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg></button>
+            <button id="btn-ti" onclick="loadModule('modulo-ti.html', this)" class="hidden nav-btn p-3 hover:bg-slate-800 hover:text-white rounded-xl w-full flex justify-center transition-all" title="Gestión de TI"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg></button>
+            <button id="btn-atencion" onclick="loadModule('modulo-atencion.html', this)" class="hidden nav-btn p-3 hover:bg-slate-800 hover:text-white rounded-xl w-full flex justify-center transition-all" title="Atención al Cliente"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"></path></svg></button>
+        </nav>
+    </aside>
+
+    <div class="flex-1 flex flex-col min-w-0 relative z-10 overflow-hidden">
+        <header class="h-[76px] bg-white px-8 flex items-center justify-between border-b border-slate-200 shrink-0 shadow-sm z-20">
+            <div class="flex items-center gap-6">
+                <img src="logo.jpg" alt="Logo Parabarberos" class="h-10 object-contain shrink-0 pointer-events-none" style="mix-blend-mode: multiply;">
+                <h1 class="text-[16px] font-black tracking-widest text-slate-900 uppercase shrink-0">ERP Parabarberos S.A.S.</h1>
+                <span id="roleBadge" class="ml-4 bg-slate-100 text-slate-500 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest border border-slate-200">Rol</span>
+            </div>
+            
+            <div class="flex items-center gap-5 text-slate-400 shrink-0">
+                <div class="relative inline-block text-left ml-2">
+                    <button id="userMenuBtn" class="w-10 h-10 bg-slate-100 hover:bg-slate-200 rounded-full flex items-center justify-center text-sm font-black text-slate-800 shadow-sm border border-slate-300 transition-colors focus:outline-none">
+                        <span id="userInitial">-</span>
+                    </button>
+                    <div id="userDropdown" class="hidden absolute right-0 z-[100] mt-2 w-64 rounded-[16px] bg-white shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none border border-slate-200 overflow-hidden transition-all">
+                        <div class="px-5 py-4 border-b border-slate-100 bg-slate-50/50">
+                            <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1">Sesión activa</p>
+                            <p class="text-sm font-bold text-slate-900 truncate" id="dropdownUserEmail">cargando...</p>
+                        </div>
+                        <div class="p-2">
+                            <button id="dropdownLogoutBtn" class="w-full text-left px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50 hover:text-red-700 rounded-xl transition-colors flex items-center gap-3"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>Cerrar Sesión</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-1 relative bg-[#f8fafc]">
+            <iframe id="mainFrame" class="w-full h-full border-none" src="about:blank"></iframe>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const firebaseConfig = {
+                apiKey: "AIzaSyDkH2_E7t07SWWH1SZr77BFlNp6RQTDDDY",
+                authDomain: "erpparabarberos-12de9.firebaseapp.com",
+                projectId: "erpparabarberos-12de9",
+                storageBucket: "erpparabarberos-12de9.firebasestorage.app",
+                messagingSenderId: "722745790519",
+                appId: "1:722745790519:web:7bf1dbe172433898a56fb2"
+            };
+            firebase.initializeApp(firebaseConfig);
+            const auth = firebase.auth();
+
+            // Interfaz de Usuario
+            const userMenuBtn = document.getElementById('userMenuBtn');
+            const userDropdown = document.getElementById('userDropdown');
+            userMenuBtn.addEventListener('click', (e) => { e.stopPropagation(); userDropdown.classList.toggle('hidden'); });
+            document.addEventListener('click', (e) => { if (!userMenuBtn.contains(e.target) && !userDropdown.contains(e.target)) userDropdown.classList.add('hidden'); });
+            document.getElementById('dropdownLogoutBtn').onclick = () => { localStorage.removeItem('userRole'); auth.signOut(); };
+
+            // Control de Roles
+            auth.onAuthStateChanged(user => {
+                if (!user) {
+                    window.location.href = 'index.html';
+                } else {
+                    document.getElementById('userInitial').textContent = user.email.charAt(0).toUpperCase();
+                    document.getElementById('dropdownUserEmail').textContent = user.email;
+                    
+                    const rol = localStorage.getItem('userRole');
+                    if(!rol) { auth.signOut(); return; }
+                    
+                    document.getElementById('roleBadge').textContent = "Rol: " + rol;
+                    configurarMenuPorRol(rol);
+                }
+            });
+
+            // Lógica de Permisos
+            function configurarMenuPorRol(rol) {
+                const btnGar = document.getElementById('btn-garantias');
+                const btnTra = document.getElementById('btn-traslados');
+                const btnTI = document.getElementById('btn-ti');
+                const btnAte = document.getElementById('btn-atencion');
+
+                // Mostrar botones según el rol
+                if (rol === 'admin') {
+                    btnGar.classList.remove('hidden'); btnTra.classList.remove('hidden'); 
+                    btnTI.classList.remove('hidden'); btnAte.classList.remove('hidden');
+                    loadModule('modulo-garantias.html', btnGar); // Carga por defecto
+                } 
+                else if (rol === 'bodega') {
+                    btnTra.classList.remove('hidden');
+                    loadModule('modulo-traslados.html', btnTra);
+                }
+                else if (rol === 'servicio_tecnico') {
+                    btnGar.classList.remove('hidden');
+                    loadModule('modulo-garantias.html', btnGar);
+                }
+                // Puedes agregar más roles aquí
+            }
+
+            // Función para cargar los submódulos en el IFRAME
+            window.loadModule = (url, btnElement) => {
+                document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+                btnElement.classList.add('active');
+                document.getElementById('mainFrame').src = url;
+            };
+        });
+    </script>
+</body>
+</html>
