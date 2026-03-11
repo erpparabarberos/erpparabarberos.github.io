@@ -422,7 +422,7 @@
             if (dom.productManagementCard) dom.productManagementCard.style.display = 'none';
             if (dom.reportContainer) dom.reportContainer.style.display = 'none';
 
-            if (role === 'admin') { 
+            if (role === 'admin' || role === 'manager') {
                 // Este es el usuario de Bodega normal
                 dom.adminView.style.display = 'block';
                 if (dom.productManagementCard) dom.productManagementCard.style.display = 'block';
@@ -475,7 +475,7 @@
             const { name, role } = currentUserData;
             const sortedRequests = allTransferRequests.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
 
-            if (role === 'requester') {
+            if (role === 'requester' || role === 'manager') {
                 const allMyRequests = sortedRequests.filter(r => r.requesterName === name);
                 const myShipped = allMyRequests.filter(r => r.status === 'shipped');
                 const myActive = applyFilters(allMyRequests.filter(r => !['completed', 'completed_incomplete', 'novelty_review', 'cancelled', 'shipped'].includes(r.status)), dom.requesterSearchId, dom.requesterDateFrom, dom.requesterDateTo);
@@ -1501,7 +1501,7 @@
             setupUIForUser();
             allProducts = await loadAndTransformProducts();
             
-            if(currentUserData.role === 'requester'){
+            if(currentUserData.role === 'requester' || currentUserData.role === 'manager'){
                 renderProducts(allProducts);
                 renderCurrentTransfer();
             }
@@ -1616,5 +1616,6 @@
 </script>
 </body>
 </html>
+
 
 
