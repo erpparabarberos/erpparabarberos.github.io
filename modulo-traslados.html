@@ -410,7 +410,6 @@
                 window.parent.location.href = 'index.html';
             });
         };
-        
         function setupUIForUser() {
             if (!currentUserData) return;
             const { role } = currentUserData;
@@ -423,14 +422,25 @@
             if (dom.productManagementCard) dom.productManagementCard.style.display = 'none';
             if (dom.reportContainer) dom.reportContainer.style.display = 'none';
 
-            if (role === 'admin') {
+            if (role === 'admin') { 
+                // Este es el usuario de Bodega normal
                 dom.adminView.style.display = 'block';
                 if (dom.productManagementCard) dom.productManagementCard.style.display = 'block';
             } else if (role === 'reviewer') {
                 dom.reviewerView.style.display = 'block';
-            } else if (role === 'manager') {
-                dom.managerView.style.display = 'block';
+            } else if (role === 'manager') { 
+                // ESTE ERES TÚ (Modo Dios: Enciende todas las pantallas)
+                dom.managerView.style.display = 'block'; // Pantalla Gerencia
+                dom.adminView.style.display = 'block';   // Pantalla Bodega
+                dom.requesterView.style.display = 'grid'; // Pantalla Solicitante
+                
+                if (dom.productManagementCard) dom.productManagementCard.style.display = 'block';
+                if (dom.requesterName) {
+                    dom.requesterName.innerHTML = `<option value="${currentUserData.name}">${currentUserData.name}</option>`;
+                    dom.requesterName.value = currentUserData.name;
+                }
             } else { 
+                // Este es el Solicitante normal
                 dom.requesterView.style.display = 'grid';
                 if (dom.requesterName) {
                     dom.requesterName.innerHTML = `<option value="${currentUserData.name}">${currentUserData.name}</option>`;
@@ -438,6 +448,7 @@
                 }
             }
         }
+
         
         function applyFilters(requests, searchInput, dateFromInput, dateToInput) {
              if (!requests || !searchInput || !dateFromInput || !dateToInput) return [];
@@ -1605,4 +1616,5 @@
 </script>
 </body>
 </html>
+
 
