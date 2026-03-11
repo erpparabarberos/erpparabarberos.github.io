@@ -45,11 +45,11 @@
                     </button>
                 </div>
                 <div class="flex flex-wrap gap-3 items-center bg-slate-50 p-3 rounded-[16px] border border-slate-100">
-                    <span class="text-[11px] font-black text-slate-400 uppercase tracking-widest pl-2">Filtros:</span>
+                    <span class="text-[11px] font-black text-slate-400 uppercase tracking-widest pl-2">Filtros rápidos:</span>
                     
                     <div class="relative w-64 shrink-0">
                         <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                        <input type="text" id="searchInput" placeholder="Buscar ticket o ref..." class="w-full bg-white border border-slate-200 text-slate-800 text-xs font-bold rounded-lg pl-9 pr-3 py-2 outline-none shadow-sm focus:border-slate-900 transition-colors">
+                        <input type="text" id="searchInput" placeholder="Buscar ticket, ref o cliente..." class="w-full bg-white border border-slate-200 text-slate-800 text-xs font-bold rounded-lg pl-9 pr-3 py-2 outline-none shadow-sm focus:border-slate-900 transition-colors">
                     </div>
 
                     <select id="filtroTaller" class="bg-white border border-slate-200 text-slate-800 text-xs font-bold rounded-lg px-4 py-2 outline-none cursor-pointer shadow-sm">
@@ -266,18 +266,19 @@
             };
 
             if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
-            
-            const currentUserEmail = localStorage.getItem('currentUserEmail') || 'Usuario Desconocido';
-            
+            const auth = firebase.auth();
             const db = firebase.firestore();
             const storage = firebase.storage();
-            const ticketsRef = db.collection('tickets_garantias'); 
+
+            // Mantenemos la colección original como me pediste
+            const ticketsRef = db.collection('tickets'); 
             const sedesRef = db.collection('sedes');
             const productosRef = db.collection('productos');
             const counterRef = db.collection('metadata').doc('ticketCounter');
 
             let ticketsGlobal = [];
             let currentTicketIdAbierto = null;
+            let chartProds, chartEst, chartSedes; 
 
             const ESTADOS = [
                 { id: '1_recibir', nombre: 'RECEPCIÓN', colorChart: '#94a3b8' },
@@ -291,6 +292,21 @@
 
             const ESTADO_ANTERIOR = { '2_envio_st': '1_recibir', '3_diagnosticado': '2_envio_st', '4_reparado': '3_diagnosticado', '5_sin_reparacion': '3_diagnosticado', '6_entregado_asesor': '4_reparado', '7_entregado_cliente': '6_entregado_asesor' };
 
+            // ===== 1. DIBUJAR INTERFAZ INMEDIATAMENTE (Para que no quede en blanco) =====
+            function dibujarColumnas() {
+                const board = document.getElementById('kanbanBoard');
+                if(board) {
+                    board.innerHTML = ESTADOS.map(col => `<div class="w-[380px] flex-shrink-0 flex flex-col bg-slate-100 border border-slate-200 rounded-[24px] p-5 h-full"><div class="flex justify-between items-center mb-5 shrink-0 px-1"><div class="flex items-center gap-3"><h3 class="text-[13px] font-black text-slate-950 uppercase tracking-widest">${col.nombre}</h3><span id="count-${col.id}" class="bg-slate-200 text-slate-700 text-[11px] font-black px-2.5 py-0.5 rounded-full">0</span></div></div><div class="space-y-4 overflow-y-auto flex-1 pr-1" id="col-${col.id}"></div></div>`).join('');
+                }
+            }
+            dibujarColumnas();
+
+            // UTILIDADES GLOBALES
+            function formatearFecha(timestamp) {
+                if(!timestamp) return 'Sin fecha';
+                return timestamp.toDate().toLocaleDateString('es-CO', { year: 'numeric', month: 'short', day: 'numeric' });
+            }
+            
             function formatearFechaHora(timestamp) {
                 if(!timestamp) return 'Sin fecha';
                 return timestamp.toDate().toLocaleString('es-CO', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -309,6 +325,8 @@
                 return Math.floor(diffTime / (1000 * 60 * 60 * 24));
             }
 
+            const crearMediaHTML = (url) => url.toLowerCase().match(/\.(mp4|mov|webm)$|video%2F/) ? `<a href="${url}" target="_blank" class="shrink-0 block w-32 h-32 rounded-2xl bg-slate-950 border border-slate-700 overflow-hidden relative hover:opacity-80 transition-opacity shadow-md flex items-center justify-center group"><span class="absolute text-4xl z-10 group-hover:scale-110 transition-transform">▶️</span><video src="${url}" class="w-full h-full object-cover opacity-60" muted autoplay loop></video></a>` : `<a href="${url}" target="_blank" class="shrink-0 block w-32 h-32 rounded-2xl bg-slate-100 border border-slate-200 bg-cover bg-center hover:opacity-80 transition-opacity shadow-sm flex items-center justify-center" style="background-image: url('${url}')"></a>`;
+
             window.switchView = (viewName) => {
                 document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
                 document.querySelectorAll('.nav-btn').forEach(el => {
@@ -317,8 +335,10 @@
                 });
                 document.getElementById('view_' + viewName).classList.remove('hidden');
                 const activeBtn = document.getElementById('btnNav_' + viewName);
-                activeBtn.classList.remove('text-slate-500');
-                activeBtn.classList.add('bg-slate-900', 'text-white');
+                if(activeBtn){
+                    activeBtn.classList.remove('text-slate-500');
+                    activeBtn.classList.add('bg-slate-900', 'text-white');
+                }
                 if(viewName === 'analytics') renderizarGraficos();
                 if(viewName === 'historial') renderizarTablaHistorial();
             };
@@ -329,67 +349,88 @@
                 document.getElementById('t_fecha_creacion').value = (new Date(Date.now() - offset)).toISOString().slice(0, 10);
             };
 
-            sedesRef.orderBy('nombre').onSnapshot(snapshot => {
-                const sKanban = document.getElementById('filtroSedeKanban'), sNuevo = document.getElementById('t_sede');
-                sNuevo.innerHTML = '<option value=\"\" disabled selected>Selecciona una opción...</option>'; sKanban.innerHTML = '<option value=\"\">Todas las Sedes</option>';
-                snapshot.forEach(doc => { const opt = `<option value=\"${doc.data().nombre}\">${doc.data().nombre}</option>`; sNuevo.innerHTML += opt; sKanban.innerHTML += opt; });
-            });
-
-            productosRef.onSnapshot(snapshot => {
-                let datalistHTML = '';
-                snapshot.forEach(doc => { datalistHTML += `<option value=\"${doc.data().idUnico} - ${doc.data().nombre}\">`; });
-                document.getElementById('listaProductosAuto').innerHTML = datalistHTML;
-            });
-
-            function dibujarColumnas() {
-                document.getElementById('kanbanBoard').innerHTML = ESTADOS.map(col => `<div class=\"w-[380px] flex-shrink-0 flex flex-col bg-slate-100 border border-slate-200 rounded-[24px] p-5 h-full\"><div class=\"flex justify-between items-center mb-5 shrink-0 px-1\"><div class=\"flex items-center gap-3\"><h3 class=\"text-[13px] font-black text-slate-950 uppercase tracking-widest\">${col.nombre}</h3><span id=\"count-${col.id}\" class=\"bg-slate-200 text-slate-700 text-[11px] font-black px-2.5 py-0.5 rounded-full\">0</span></div></div><div class=\"space-y-4 overflow-y-auto flex-1 pr-1\" id=\"col-${col.id}\"></div></div>`).join('');
-            }
-            dibujarColumnas();
-
             const handleFilePreview = (inputId, containerId) => {
                 document.getElementById(inputId).addEventListener('change', function() {
                     const c = document.getElementById(containerId); c.innerHTML = ''; 
-                    if (this.files && this.files.length > 0) Array.from(this.files).forEach(f => { c.innerHTML += `<div class=\"text-[12px] bg-slate-900 text-slate-100 px-4 py-2.5 rounded-xl font-semibold flex items-center gap-3 border border-slate-700 shadow-md\"><span class=\"text-lg\">${f.type.startsWith('video/') ? '🎥' : '📷'}</span><div class=\"flex flex-col truncate\"><span class=\"truncate font-bold\">${f.name}</span><span class=\"text-[10px] text-slate-400 tracking-wide uppercase\">${f.type.startsWith('video/')?'Video':'Imagen'}</span></div></div>`; });
+                    if (this.files && this.files.length > 0) Array.from(this.files).forEach(f => { c.innerHTML += `<div class="text-[12px] bg-slate-900 text-slate-100 px-4 py-2.5 rounded-xl font-semibold flex items-center gap-3 border border-slate-700 shadow-md"><span class="text-lg">${f.type.startsWith('video/') ? '🎥' : '📷'}</span><div class="flex flex-col truncate"><span class="truncate font-bold">${f.name}</span><span class="text-[10px] text-slate-400 tracking-wide uppercase">${f.type.startsWith('video/')?'Video':'Imagen'}</span></div></div>`; });
                 });
             };
             handleFilePreview('t_fotos', 'preview-archivos-nuevo'); handleFilePreview('f_fotos_reparacion', 'preview-archivos-reparacion');
 
-            const crearMediaHTML = (url) => url.toLowerCase().match(/\.(mp4|mov|webm)$|video%2F/) ? `<a href=\"${url}\" target=\"_blank\" class=\"shrink-0 block w-32 h-32 rounded-2xl bg-slate-950 border border-slate-700 overflow-hidden relative hover:opacity-80 transition-opacity shadow-md flex items-center justify-center group\"><span class=\"absolute text-4xl z-10 group-hover:scale-110 transition-transform\">▶️</span><video src=\"${url}\" class=\"w-full h-full object-cover opacity-60\" muted autoplay loop></video></a>` : `<a href=\"${url}\" target=\"_blank\" class=\"shrink-0 block w-32 h-32 rounded-2xl bg-slate-100 border border-slate-200 bg-cover bg-center hover:opacity-80 transition-opacity shadow-sm flex items-center justify-center\" style=\"background-image: url('${url}')\"></a>`;
-
-            document.getElementById('formGarantia').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const btn = document.getElementById('btnSubmit'); btn.disabled = true;
-                const fechaCustom = new Date(document.getElementById('t_fecha_creacion').value + 'T12:00:00'); 
-
-                try {
-                    let c = 0; const doc = await db.runTransaction(async t => { const ref = await t.get(counterRef); c = ref.exists ? (ref.data().count||0) : 0; t.set(counterRef, {count:c+1}, {merge:true}); return c; });
-                    const id = `TICKET ${c+1}`; let urls = [];
-                    for(let f of document.getElementById('t_fotos').files) { const r = storage.ref(`evidencias_garantias/${id}/${f.name}`); await r.put(f); urls.push(await r.getDownloadURL()); }
+            // ===== 2. ESPERAR A QUE FIREBASE VERIFIQUE LA SESIÓN ANTES DE LEER DATOS =====
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    const currentUserEmail = user.email; // Guardamos el correo para la auditoría
                     
-                    await ticketsRef.doc(id).set({ 
-                        id, estado: '1_recibir', taller: document.getElementById('t_taller').value, 
-                        cedula: document.getElementById('t_cedula').value, telefono: document.getElementById('t_telefono').value, 
-                        nombre: document.getElementById('t_nombre').value, sede: document.getElementById('t_sede').value, 
-                        factura: document.getElementById('t_factura').value, referencia: document.getElementById('t_referencia').value, falla: document.getElementById('t_falla').value, 
-                        diagnostico: \"\", fotos: urls, observacionesReparacion: \"\", fotosReparacion: [], 
-                        creadoEn: firebase.firestore.Timestamp.fromDate(fechaCustom),
-                        historialEventos: [{ estado: '1_recibir', fecha: firebase.firestore.Timestamp.fromDate(fechaCustom), usuario: currentUserEmail }]
+                    // AHORA SÍ: LEER LA BASE DE DATOS DE FORMA SEGURA
+                    sedesRef.orderBy('nombre').onSnapshot(snapshot => {
+                        const sKanban = document.getElementById('filtroSedeKanban'), sNuevo = document.getElementById('t_sede');
+                        if(sNuevo) sNuevo.innerHTML = '<option value="" disabled selected>Selecciona una opción...</option>'; 
+                        if(sKanban) sKanban.innerHTML = '<option value="">Todas las Sedes</option>';
+                        snapshot.forEach(doc => { 
+                            const opt = `<option value="${doc.data().nombre}">${doc.data().nombre}</option>`; 
+                            if(sNuevo) sNuevo.innerHTML += opt; 
+                            if(sKanban) sKanban.innerHTML += opt; 
+                        });
                     });
-                    document.getElementById('formGarantia').reset(); document.getElementById('preview-archivos-nuevo').innerHTML=''; document.getElementById('modalNuevoTicket').classList.add('hidden');
-                } catch(e) { alert(\"Error guardando ticket: \" + e.message); } finally { btn.disabled = false; }
+
+                    productosRef.onSnapshot(snapshot => {
+                        let datalistHTML = '';
+                        snapshot.forEach(doc => { datalistHTML += `<option value="${doc.data().idUnico} - ${doc.data().nombre}">`; });
+                        const lp = document.getElementById('listaProductosAuto');
+                        if(lp) lp.innerHTML = datalistHTML;
+                    });
+
+                    ticketsRef.orderBy('creadoEn', 'desc').onSnapshot(snapshot => {
+                        ticketsGlobal = []; 
+                        snapshot.forEach(doc => ticketsGlobal.push(doc.data())); 
+                        renderizarTarjetas();
+                    });
+
+                    // FUNCIONES DE GUARDADO (Ya tienen acceso seguro a currentUserEmail)
+                    document.getElementById('formGarantia').addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        const btn = document.getElementById('btnSubmit'); btn.disabled = true;
+                        const fechaCustom = new Date(document.getElementById('t_fecha_creacion').value + 'T12:00:00'); 
+
+                        try {
+                            let c = 0; const doc = await db.runTransaction(async t => { const ref = await t.get(counterRef); c = ref.exists ? (ref.data().count||0) : 0; t.set(counterRef, {count:c+1}, {merge:true}); return c; });
+                            const id = `TICKET ${c+1}`; let urls = [];
+                            for(let f of document.getElementById('t_fotos').files) { const r = storage.ref(`evidencias_garantias/${id}/${f.name}`); await r.put(f); urls.push(await r.getDownloadURL()); }
+                            
+                            await ticketsRef.doc(id).set({ 
+                                id, estado: '1_recibir', taller: document.getElementById('t_taller').value, 
+                                cedula: document.getElementById('t_cedula').value, telefono: document.getElementById('t_telefono').value, 
+                                nombre: document.getElementById('t_nombre').value, sede: document.getElementById('t_sede').value, 
+                                factura: document.getElementById('t_factura').value, referencia: document.getElementById('t_referencia').value, falla: document.getElementById('t_falla').value, 
+                                diagnostico: "", fotos: urls, observacionesReparacion: "", fotosReparacion: [], 
+                                creadoEn: firebase.firestore.Timestamp.fromDate(fechaCustom),
+                                historialEventos: [{ estado: '1_recibir', fecha: firebase.firestore.Timestamp.fromDate(fechaCustom), usuario: currentUserEmail }]
+                            });
+                            document.getElementById('formGarantia').reset(); document.getElementById('preview-archivos-nuevo').innerHTML=''; document.getElementById('modalNuevoTicket').classList.add('hidden');
+                        } catch(e) { alert("Error guardando ticket: " + e.message); } finally { btn.disabled = false; }
+                    });
+
+                    window.cambiarEstado = async (id, st) => { await ticketsRef.doc(id).update({ estado: st, historialEventos: firebase.firestore.FieldValue.arrayUnion({ estado: st, fecha: new Date(), usuario: currentUserEmail }) }); document.getElementById('modalDetalle').classList.add('hidden'); };
+                    window.guardarInformeTecnico = async () => { const txt = document.getElementById('txtDiagnostico').value; if(!txt) return alert("Escribe el informe."); await ticketsRef.doc(currentTicketIdAbierto).update({ diagnostico: txt, estado: '3_diagnosticado', historialEventos: firebase.firestore.FieldValue.arrayUnion({ estado: '3_diagnosticado', fecha: new Date(), usuario: currentUserEmail }) }); document.getElementById('modalDetalle').classList.add('hidden'); };
+                    window.guardarPostReparacion = async () => { const txt = document.getElementById('txtObservacionesReparacion').value; if(!txt) return alert("Ingresa las observaciones finales."); const btn = document.getElementById('btnGuardarPostReparacion'); btn.textContent = "Guardando..."; btn.disabled=true; let urls = []; try { for(let f of document.getElementById('f_fotos_reparacion').files){ const r = storage.ref(`ep/${currentTicketIdAbierto}/${f.name}`); await r.put(f); urls.push(await r.getDownloadURL()); } await ticketsRef.doc(currentTicketIdAbierto).update({ observacionesReparacion: txt, fotosReparacion: urls, estado: '6_entregado_asesor', historialEventos: firebase.firestore.FieldValue.arrayUnion({ estado: '6_entregado_asesor', fecha: new Date(), usuario: currentUserEmail }) }); document.getElementById('modalDetalle').classList.add('hidden'); } catch(e) { alert("Error al guardar evidencias."); } btn.textContent = "Guardar Evidencia Final"; btn.disabled=false; };
+
+                } else {
+                    console.warn("Iframe de Garantías: Esperando autenticación...");
+                }
             });
 
-            ['filtroTaller', 'filtroSedeKanban', 'filtroFechaKanban', 'searchInput'].forEach(id => document.getElementById(id).addEventListener('input', renderizarTarjetas));
+            // FILTROS KANBAN
+            ['filtroTaller', 'filtroSedeKanban', 'filtroFechaKanban', 'searchInput'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.addEventListener('input', renderizarTarjetas);
+            });
             window.limpiarFiltrosKanban = () => { document.getElementById('filtroSedeKanban').value = ''; document.getElementById('filtroFechaKanban').value = ''; document.getElementById('searchInput').value = ''; renderizarTarjetas(); };
-
-            ticketsRef.orderBy('creadoEn', 'desc').onSnapshot(snapshot => {
-                ticketsGlobal = []; snapshot.forEach(doc => ticketsGlobal.push(doc.data())); renderizarTarjetas();
-            });
 
             function renderizarTarjetas() {
                 const sTaller = document.getElementById('filtroTaller').value, sBusq = document.getElementById('searchInput').value.toLowerCase(), sSede = document.getElementById('filtroSedeKanban').value, sFec = document.getElementById('filtroFechaKanban').value;
                 let conteos = { '1_recibir': 0, '2_envio_st': 0, '3_diagnosticado': 0, '4_reparado': 0, '5_sin_reparacion': 0, '6_entregado_asesor': 0, '7_entregado_cliente': 0 };
-                ESTADOS.forEach(c => document.getElementById(`col-${c.id}`).innerHTML = '');
+                ESTADOS.forEach(c => { const col = document.getElementById(`col-${c.id}`); if(col) col.innerHTML = ''; });
 
                 ticketsGlobal.forEach(t => {
                     const passBusq = t.id.toLowerCase().includes(sBusq) || t.referencia.toLowerCase().includes(sBusq) || t.nombre.toLowerCase().includes(sBusq) || t.cedula.includes(sBusq);
@@ -400,17 +441,17 @@
                     if (t.taller === sTaller && passBusq && passSede && passFec && document.getElementById(`col-${t.estado}`)) {
                         conteos[t.estado]++; 
                         const mediaCountText = (t.fotos && t.fotos.some(u => u.toLowerCase().includes('.mp4')) ? '🎥 ' : '📸 ') + (t.fotos ? t.fotos.length : 0);
-                        let borderClass = \"border-slate-100\", slaBadge = \"\";
+                        let borderClass = "border-slate-100", slaBadge = "";
                         if (t.estado !== '7_entregado_cliente') {
                             const dias = calcularDiasEnEstado(t);
-                            if (dias >= 6) { borderClass = \"border-l-4 border-l-red-500 border-y-slate-100 border-r-slate-100\"; slaBadge = `<span class=\"flex items-center gap-1 text-[10px] font-black text-red-600 bg-red-50 px-2 py-0.5 rounded-md border border-red-100\"><span class=\"animate-pulse\">🔴</span> ${dias} DÍAS</span>`; }
-                            else if (dias >= 3) { borderClass = \"border-l-4 border-l-amber-400 border-y-slate-100 border-r-slate-100\"; slaBadge = `<span class=\"flex items-center gap-1 text-[10px] font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-100\">🟡 ${dias} DÍAS</span>`; }
-                            else { borderClass = \"border-slate-100\"; slaBadge = `<span class=\"flex items-center gap-1 text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100\">🟢 ${dias} días</span>`; }
+                            if (dias >= 6) { borderClass = "border-l-4 border-l-red-500 border-y-slate-100 border-r-slate-100"; slaBadge = `<span class="flex items-center gap-1 text-[10px] font-black text-red-600 bg-red-50 px-2 py-0.5 rounded-md border border-red-100"><span class="animate-pulse">🔴</span> ${dias} DÍAS</span>`; }
+                            else if (dias >= 3) { borderClass = "border-l-4 border-l-amber-400 border-y-slate-100 border-r-slate-100"; slaBadge = `<span class="flex items-center gap-1 text-[10px] font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-100">🟡 ${dias} DÍAS</span>`; }
+                            else { borderClass = "border-slate-100"; slaBadge = `<span class="flex items-center gap-1 text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100">🟢 ${dias} días</span>`; }
                         }
-                        document.getElementById(`col-${t.estado}`).innerHTML += `<div onclick=\"verDetalle('${t.id}')\" class=\"bg-white p-7 rounded-[22px] shadow-sm border ${borderClass} cursor-pointer hover:shadow-xl hover:border-slate-950 transition-all relative group\"><div class=\"flex justify-between items-start mb-4\"><h4 class=\"font-black text-slate-950 text-xl tracking-tight\">${t.id}</h4>${slaBadge}</div><div class=\"space-y-2.5 text-[13px] text-slate-600 mb-4 border-b border-slate-100 pb-5 relative\"><p class=\"flex justify-between items-start\"><span class=\"font-bold text-slate-400 uppercase text-[10px] tracking-widest mt-1\">Ref:</span> <span class=\"font-extrabold text-slate-900 text-right break-words w-4/5 leading-tight\">${t.referencia}</span></p><p class=\"flex justify-between items-start\"><span class=\"font-bold text-slate-400 uppercase text-[10px] tracking-widest mt-1\">Sede:</span> <span class=\"font-semibold text-slate-800 text-right break-words w-4/5\">${t.sede}</span></p>${t.fotos && t.fotos.length > 0 ? `<div class=\"absolute -bottom-3 right-0 text-[10px] font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200 shadow-inner\">${mediaCountText}</div>` : ''}</div><p class=\"text-[12px] text-slate-500 font-medium italic line-clamp-2 leading-relaxed\">${t.diagnostico || 'Esperando revisión técnica...'}</p></div>`;
+                        document.getElementById(`col-${t.estado}`).innerHTML += `<div onclick="verDetalle('${t.id}')" class="bg-white p-7 rounded-[22px] shadow-sm border ${borderClass} cursor-pointer hover:shadow-xl hover:border-slate-950 transition-all relative group"><div class="flex justify-between items-start mb-4"><h4 class="font-black text-slate-950 text-xl tracking-tight">${t.id}</h4>${slaBadge}</div><div class="space-y-2.5 text-[13px] text-slate-600 mb-4 border-b border-slate-100 pb-5 relative"><p class="flex justify-between items-start"><span class="font-bold text-slate-400 uppercase text-[10px] tracking-widest mt-1">Ref:</span> <span class="font-extrabold text-slate-900 text-right break-words w-4/5 leading-tight">${t.referencia}</span></p><p class="flex justify-between items-start"><span class="font-bold text-slate-400 uppercase text-[10px] tracking-widest mt-1">Sede:</span> <span class="font-semibold text-slate-800 text-right break-words w-4/5">${t.sede}</span></p>${t.fotos && t.fotos.length > 0 ? `<div class="absolute -bottom-3 right-0 text-[10px] font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200 shadow-inner">${mediaCountText}</div>` : ''}</div><p class="text-[12px] text-slate-500 font-medium italic line-clamp-2 leading-relaxed">${t.diagnostico || 'Esperando revisión técnica...'}</p></div>`;
                     }
                 });
-                ESTADOS.forEach(c => document.getElementById(`count-${c.id}`).textContent = conteos[c.id]);
+                ESTADOS.forEach(c => { const el = document.getElementById(`count-${c.id}`); if(el) el.textContent = conteos[c.id]; });
             }
 
             window.verDetalle = (id) => {
@@ -418,36 +459,93 @@
                 document.getElementById('det_id').textContent = t.id; document.getElementById('det_cedula').textContent = t.cedula; document.getElementById('det_telefono').textContent = t.telefono; document.getElementById('det_nombre').textContent = t.nombre; document.getElementById('det_sede').textContent = t.sede; document.getElementById('det_factura').textContent = t.factura || 'No registrada'; document.getElementById('det_referencia').textContent = t.referencia; document.getElementById('det_falla').textContent = t.falla;
                 
                 const txtD = document.getElementById('txtDiagnostico'), btnD = document.getElementById('btnSaveDiagDiv'), bTop = document.getElementById('det_actions_top'); 
-                txtD.value = t.diagnostico||\"\"; bTop.innerHTML = '';
+                txtD.value = t.diagnostico||""; bTop.innerHTML = '';
                 
                 const btnDevolverDiag = document.getElementById('btnDevolverDiag'), btnDevolverRep = document.getElementById('btnDevolverReparacion'), prevStateFallback = ESTADO_ANTERIOR[t.estado];
-                if (prevStateFallback && t.estado !== '4_reparado') bTop.innerHTML += `<button onclick=\"cambiarEstado('${t.id}', '${prevStateFallback}')\" class=\"px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition-all flex items-center gap-2\"><svg class=\"w-4 h-4\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M10 19l-7-7m0 0l7-7m-7 7h18\"></path></svg> Devolver</button>`;
+                if (prevStateFallback && t.estado !== '4_reparado') bTop.innerHTML += `<button onclick="cambiarEstado('${t.id}', '${prevStateFallback}')" class="px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition-all flex items-center gap-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg> Devolver</button>`;
 
-                if(t.estado === '2_envio_st') { btnDevolverDiag.onclick = () => cambiarEstado(t.id, ESTADO_ANTERIOR[t.estado]); txtD.readOnly=false; txtD.className=\"w-full border border-slate-300 rounded-2xl p-6 text-sm font-medium text-slate-900 focus:outline-none focus:border-slate-950 shadow-sm transition-colors leading-relaxed bg-white\"; btnD.classList.remove('hidden'); } else { txtD.readOnly=true; txtD.className=\"w-full border border-slate-200 rounded-2xl p-6 text-sm font-medium text-slate-500 bg-slate-50 shadow-sm leading-relaxed\"; btnD.classList.add('hidden'); }
+                if(t.estado === '2_envio_st') { btnDevolverDiag.onclick = () => cambiarEstado(t.id, ESTADO_ANTERIOR[t.estado]); txtD.readOnly=false; txtD.className="w-full border border-slate-300 rounded-2xl p-6 text-sm font-medium text-slate-900 focus:outline-none focus:border-slate-950 shadow-sm transition-colors leading-relaxed bg-white"; btnD.classList.remove('hidden'); } else { txtD.readOnly=true; txtD.className="w-full border border-slate-200 rounded-2xl p-6 text-sm font-medium text-slate-500 bg-slate-50 shadow-sm leading-relaxed"; btnD.classList.add('hidden'); }
 
-                const cB = (txt, cls, st) => `<button onclick=\"cambiarEstado('${t.id}', '${st}')\" class=\"px-6 py-2.5 rounded-xl text-sm font-bold shadow-sm transition-all ${cls}\">${txt}</button>`;
+                const cB = (txt, cls, st) => `<button onclick="cambiarEstado('${t.id}', '${st}')" class="px-6 py-2.5 rounded-xl text-sm font-bold shadow-sm transition-all ${cls}">${txt}</button>`;
                 if(t.estado==='1_recibir') bTop.innerHTML+=cB('Enviar a S.T.', 'bg-slate-950 text-white hover:bg-black', '2_envio_st');
                 if(t.estado==='3_diagnosticado') { bTop.innerHTML+=cB('Fue Reparado','bg-emerald-600 text-white hover:bg-emerald-700','4_reparado'); bTop.innerHTML+=cB('Cerrar Ticket (Pérdida)','bg-red-600 text-white hover:bg-red-700','7_entregado_cliente'); }
                 if(t.estado==='5_sin_reparacion') bTop.innerHTML+=cB('Entregar a Asesor', 'bg-slate-950 text-white hover:bg-black', '6_entregado_asesor');
                 if(t.estado==='6_entregado_asesor') bTop.innerHTML+=cB('Cerrar Ticket (Entregado)', 'bg-slate-950 text-white hover:bg-black', '7_entregado_cliente');
 
-                const divFotos = document.getElementById('det_fotos_div'); divFotos.innerHTML = \"\";
+                const divFotos = document.getElementById('det_fotos_div'); divFotos.innerHTML = "";
                 if(t.fotos && t.fotos.length > 0) { t.fotos.forEach(url => divFotos.innerHTML += crearMediaHTML(url)); document.getElementById('det_galeria').classList.remove('hidden'); } else document.getElementById('det_galeria').classList.add('hidden');
 
                 const formPostRep = document.getElementById('form_post_reparacion'), viewPostRep = document.getElementById('view_post_reparacion');
                 formPostRep.classList.add('hidden'); viewPostRep.classList.add('hidden'); document.getElementById('txtObservacionesReparacion').value=''; document.getElementById('preview-archivos-reparacion').innerHTML='';
                 if(t.estado==='4_reparado') { formPostRep.classList.remove('hidden'); btnDevolverRep.onclick = () => cambiarEstado(t.id, ESTADO_ANTERIOR[t.estado]); }
-                else if(t.observacionesReparacion) { document.getElementById('det_obs_reparacion').textContent = t.observacionesReparacion; const divFotosRep = document.getElementById('det_fotos_reparacion_div'); divFotosRep.innerHTML=\"\"; if(t.fotosReparacion && t.fotosReparacion.length > 0) { t.fotosReparacion.forEach(url => divFotosRep.innerHTML += crearMediaHTML(url)); document.getElementById('det_galeria_reparacion').classList.remove('hidden'); } else document.getElementById('det_galeria_reparacion').classList.add('hidden'); viewPostRep.classList.remove('hidden'); }
+                else if(t.observacionesReparacion) { document.getElementById('det_obs_reparacion').textContent = t.observacionesReparacion; const divFotosRep = document.getElementById('det_fotos_reparacion_div'); divFotosRep.innerHTML=""; if(t.fotosReparacion && t.fotosReparacion.length > 0) { t.fotosReparacion.forEach(url => divFotosRep.innerHTML += crearMediaHTML(url)); document.getElementById('det_galeria_reparacion').classList.remove('hidden'); } else document.getElementById('det_galeria_reparacion').classList.add('hidden'); viewPostRep.classList.remove('hidden'); }
 
                 const tL = document.getElementById('det_timeline'); tL.innerHTML = '';
-                if(t.historialEventos && t.historialEventos.length > 0) { t.historialEventos.forEach(ev => { const nomEst = ESTADOS.find(e => e.id === ev.estado)?.nombre || ev.estado; const fStr = ev.fecha ? formatearFechaHora(ev.fecha) : 'Fecha desconocida'; tL.innerHTML += `<div class=\"relative pl-6 border-l-2 border-slate-200 pb-6 last:pb-0\"><div class=\"absolute w-3 h-3 bg-slate-950 rounded-full -left-[7px] top-1 ring-4 ring-slate-50\"></div><p class=\"text-[12px] font-black text-slate-900 uppercase tracking-wide leading-none\">${nomEst}</p><p class=\"text-[11px] font-medium text-slate-500 mt-2\">${fStr} <span class=\"mx-1\">•</span> Por: <span class=\"font-bold text-slate-700\">${ev.usuario}</span></p></div>`; }); } 
-                else { tL.innerHTML = '<p class=\"text-sm font-medium text-slate-500 italic\">No hay registros de auditoría para este ticket.</p>'; }
+                if(t.historialEventos && t.historialEventos.length > 0) { t.historialEventos.forEach(ev => { const nomEst = ESTADOS.find(e => e.id === ev.estado)?.nombre || ev.estado; const fStr = ev.fecha ? formatearFechaHora(ev.fecha) : 'Fecha desconocida'; tL.innerHTML += `<div class="relative pl-6 border-l-2 border-slate-200 pb-6 last:pb-0"><div class="absolute w-3 h-3 bg-slate-950 rounded-full -left-[7px] top-1 ring-4 ring-slate-50"></div><p class="text-[12px] font-black text-slate-900 uppercase tracking-wide leading-none">${nomEst}</p><p class="text-[11px] font-medium text-slate-500 mt-2">${fStr} <span class="mx-1">•</span> Por: <span class="font-bold text-slate-700">${ev.usuario}</span></p></div>`; }); } 
+                else { tL.innerHTML = '<p class="text-sm font-medium text-slate-500 italic">No hay registros de auditoría para este ticket.</p>'; }
                 document.getElementById('modalDetalle').classList.remove('hidden');
             };
 
-            window.cambiarEstado = async (id, st) => { await ticketsRef.doc(id).update({ estado: st, historialEventos: firebase.firestore.FieldValue.arrayUnion({ estado: st, fecha: new Date(), usuario: currentUserEmail }) }); document.getElementById('modalDetalle').classList.add('hidden'); };
-            window.guardarInformeTecnico = async () => { const txt = document.getElementById('txtDiagnostico').value; if(!txt) return alert(\"Escribe el informe.\"); await ticketsRef.doc(currentTicketIdAbierto).update({ diagnostico: txt, estado: '3_diagnosticado', historialEventos: firebase.firestore.FieldValue.arrayUnion({ estado: '3_diagnosticado', fecha: new Date(), usuario: currentUserEmail }) }); document.getElementById('modalDetalle').classList.add('hidden'); };
-            window.guardarPostReparacion = async () => { const txt = document.getElementById('txtObservacionesReparacion').value; if(!txt) return alert(\"Ingresa las observaciones finales.\"); const btn = document.getElementById('btnGuardarPostReparacion'); btn.textContent = \"Guardando...\"; btn.disabled=true; let urls = []; try { for(let f of document.getElementById('f_fotos_reparacion').files){ const r = storage.ref(`ep/${currentTicketIdAbierto}/${f.name}`); await r.put(f); urls.push(await r.getDownloadURL()); } await ticketsRef.doc(currentTicketIdAbierto).update({ observacionesReparacion: txt, fotosReparacion: urls, estado: '6_entregado_asesor', historialEventos: firebase.firestore.FieldValue.arrayUnion({ estado: '6_entregado_asesor', fecha: new Date(), usuario: currentUserEmail }) }); document.getElementById('modalDetalle').classList.add('hidden'); } catch(e) { alert(\"Error al guardar evidencias.\"); } btn.textContent = \"Guardar Evidencia Final\"; btn.disabled=false; };
+            function renderizarTablaHistorial() {
+                const s = document.getElementById('h_search').value.toLowerCase(), sede = document.getElementById('h_sede').value, est = document.getElementById('h_estado').value, fIni = document.getElementById('h_fecha_ini').value, fFin = document.getElementById('h_fecha_fin').value;
+                let html = '';
+                ticketsGlobal.forEach(t => {
+                    let pS = s==='' || t.id.toLowerCase().includes(s) || t.referencia.toLowerCase().includes(s); let pSede = sede==='' || t.sede === sede; let pEst = est==='' || t.estado === est; let pF = true;
+                    if((fIni||fFin) && t.creadoEn) {
+                        const d = t.creadoEn.toDate(); d.setHours(0,0,0,0);
+                        if(fIni && d < new Date(fIni+'T00:00:00')) pF=false;
+                        if(fFin && d > new Date(fFin+'T00:00:00')) pF=false;
+                    }
+                    if(pS && pSede && pEst && pF) {
+                        const nEst = ESTADOS.find(e=>e.id===t.estado)?.nombre || t.estado;
+                        html += `<tr class="hover:bg-slate-50 cursor-pointer transition-colors" onclick="verDetalle('${t.id}')"><td class="p-4 pl-6 font-black text-slate-900">${t.id}</td><td class="p-4 text-slate-500">${formatearFecha(t.creadoEn)}</td><td class="p-4 font-bold text-slate-800">${t.referencia.split(' - ')[0]}</td><td class="p-4 text-slate-600">${t.sede}</td><td class="p-4"><span class="bg-slate-100 text-slate-800 text-[10px] font-black px-3 py-1 rounded-full uppercase">${nEst}</span></td></tr>`;
+                    }
+                });
+                const tb = document.getElementById('tbodyHistorial');
+                if(tb) tb.innerHTML = html;
+            }
+
+            window.exportarExcel = () => { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById('tablaHistorialExportar'), {sheet:"Tickets"}), "Historial_Garantias.xlsx"); };
+            window.exportarPDF = () => { const doc = new window.jspdf.jsPDF(); doc.setFontSize(16); doc.text("Historial de Tickets", 14, 15); doc.autoTable({ html: '#tablaHistorialExportar', startY: 20, theme: 'grid', headStyles: { fillColor: [15, 23, 42] } }); doc.save('Historial_Garantias.pdf'); };
+
+            window.procesarJSON = async () => {
+                const btn = document.getElementById('btnProcesarJson'); btn.textContent = "Procesando..."; btn.disabled = true;
+                const batches = []; let currentBatch = db.batch(); let count = 0;
+                // Asumiendo que jsonCargado es global, la declaramos aquí
+                if(typeof jsonCargado === 'undefined') window.jsonCargado = [];
+                for (let item of window.jsonCargado) {
+                    const idUnico = item.idUnico || item.id || item.referencia || item.codigo;
+                    const nombre = item.nombre || item.descripcion || item.producto;
+                    if(idUnico && nombre) {
+                        currentBatch.set(productosRef.doc(String(idUnico)), { idUnico: String(idUnico), nombre: String(nombre) });
+                        if (++count % 400 === 0) { batches.push(currentBatch.commit()); currentBatch = db.batch(); }
+                    }
+                }
+                batches.push(currentBatch.commit()); await Promise.all(batches); 
+                alert("Inventario subido!"); btn.textContent = "Subir Inventario"; btn.disabled = false; document.getElementById('f_json_inventario').value = "";
+            };
+
+            document.getElementById('f_json_inventario')?.addEventListener('change', function(e) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        window.jsonCargado = JSON.parse(e.target.result);
+                        document.getElementById('btnProcesarJson').classList.remove('hidden');
+                        document.getElementById('json_status').textContent = `JSON Válido. ${window.jsonCargado.length} productos.`;
+                    } catch(err) { alert("Error JSON"); }
+                }; reader.readAsText(e.target.files[0]);
+            });
+
+            function renderizarGraficos() {
+                if(!ticketsGlobal.length) return;
+                document.getElementById('kpiTotalTickets').textContent = ticketsGlobal.length;
+                let cP={}; ticketsGlobal.forEach(t => { let r=t.referencia.split(' - ')[0]; cP[r]=(cP[r]||0)+1; }); let sP=Object.keys(cP).sort((a,b)=>cP[b]-cP[a]).slice(0,5);
+                if(chartProds) chartProds.destroy(); chartProds=new Chart(document.getElementById('chartProductos'),{type:'bar',data:{labels:sP,datasets:[{data:sP.map(k=>cP[k]),backgroundColor:'#0f172a',borderRadius:8}]},options:{responsive: true, maintainAspectRatio: false, plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0}}}}});
+                let cS={}; ticketsGlobal.forEach(t => cS[t.sede]=(cS[t.sede]||0)+1); let sS=Object.keys(cS).sort((a,b)=>cS[b]-cS[a]).slice(0,5);
+                if(chartSedes) chartSedes.destroy(); chartSedes=new Chart(document.getElementById('chartSedes'),{type:'doughnut',data:{labels:sS,datasets:[{data:sS.map(k=>cS[k]),backgroundColor:['#0f172a','#334155','#475569','#94a3b8','#cbd5e1'],borderWidth:0}]},options:{responsive: true, maintainAspectRatio: false, cutout:'70%',plugins:{legend:{position:'right'}}}});
+                let cE={}; ticketsGlobal.forEach(t => cE[t.estado]=(cE[t.estado]||0)+1);
+                if(chartEst) chartEst.destroy(); chartEst=new Chart(document.getElementById('chartEstados'),{type:'polarArea',data:{labels:ESTADOS.map(e=>e.nombre),datasets:[{data:ESTADOS.map(e=>cE[e.id]||0),backgroundColor:ESTADOS.map(e=>e.colorChart),borderWidth:0}]},options:{responsive: true, maintainAspectRatio:false,plugins:{legend:{position:'right'}}}});
+            }
         });
     </script>
 </body>
