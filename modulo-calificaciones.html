@@ -9,15 +9,38 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
 
   <style>
-    body { font-family: "Inter", sans-serif; background-color: #f8fafc; color: #111827; margin: 0; }
-    .card { background-color: #ffffff; border: 1px solid #e5e7eb; box-shadow: 0 10px 25px rgba(15, 23, 42, 0.04); border-radius: 0.9rem; }
-    ::-webkit-scrollbar { width: 8px; }
+    body {
+      font-family: "Inter", sans-serif;
+      background-color: #f8fafc;
+      color: #111827;
+      margin: 0;
+    }
+    ::-webkit-scrollbar { height: 8px; width: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    
+    .card {
+      background-color: #ffffff;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.04);
+      border-radius: 0.9rem;
+    }
+    input, select {
+      background-color: #f9fafb !important;
+      color: #111827 !important;
+      border-color: #d1d5db !important;
+    }
+    .low-cases-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(0, 3fr) minmax(0, 1.5fr) 40px;
+      align-items: center;
+      column-gap: 0.5rem;
+    }
   </style>
 </head>
 
@@ -26,92 +49,158 @@
     <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-yellow-400"></div>
   </div>
 
-  <div id="dashboard-content" class="max-w-7xl mx-auto hidden">
-    <header class="mb-8">
-      <h1 class="text-3xl font-extrabold text-gray-900 uppercase">Control Atención al Cliente</h1>
-      <p class="text-xs text-gray-500 uppercase">Análisis de rendimiento en tiempo real</p>
+  <div id="dashboard-content" class="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 hidden">
+    <header class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+      <div class="flex items-center mb-4 md:mb-0 gap-4">
+        <div>
+          <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight leading-tight">
+            PANEL DE CONTROL ATENCIÓN AL CLIENTE
+          </h1>
+          <p class="text-xs md:text-sm text-gray-500 mt-1">
+            ANÁLISIS DE RENDIMIENTO DE ASESORES VIRTUALES
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-4">
+        <div class="text-right">
+          <p class="text-[11px] text-gray-500 uppercase tracking-wide">Administrador</p>
+          <p id="admin-name" class="text-sm font-semibold text-gray-900">Cargando...</p>
+        </div>
+        <button id="logout-button" class="text-xs font-semibold text-red-500 hover:text-red-600 transition">
+          Cerrar sesión
+        </button>
+      </div>
     </header>
 
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-      <div class="card p-4 text-center">
-        <p class="text-[10px] uppercase text-gray-400 font-bold">Promedio</p>
-        <p id="avg-rating" class="text-2xl font-black text-yellow-500">--</p>
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div class="card rounded-xl px-5 py-4 flex flex-col">
+        <p class="text-[12px] text-gray-500 mb-1 uppercase tracking-wide">Filtrar por asesor</p>
+        <select id="advisor-filter" class="mt-1 p-2 rounded-lg border text-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900">
+          <option value="">Todos los asesores</option>
+        </select>
       </div>
-      <div class="card p-4 text-center">
-        <p class="text-[10px] uppercase text-gray-400 font-bold">Total</p>
-        <p id="total-ratings" class="text-2xl font-black text-slate-800">0</p>
+      <div class="card rounded-xl px-5 py-4 flex flex-col">
+        <p class="text-[12px] text-gray-500 mb-1 uppercase tracking-wide">Filtrar por mes</p>
+        <input id="month-filter" type="month" class="mt-1 p-2 rounded-lg border text-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900" />
       </div>
-      <div class="card p-4 text-center">
-        <p class="text-[10px] uppercase text-gray-400 font-bold">Asesores</p>
-        <p id="total-advisors" class="text-2xl font-black text-emerald-500">0</p>
+      <div class="card rounded-xl px-5 py-4 flex flex-col">
+        <p class="text-[12px] text-gray-500 mb-1 uppercase tracking-wide">Filtrar por fecha (día)</p>
+        <input id="date-filter" type="date" class="mt-1 p-2 rounded-lg border text-sm focus:ring-2 focus:ring-slate-900 focus:border-slate-900" />
       </div>
-      <div class="card p-4 text-center">
-        <p class="text-[10px] uppercase text-gray-400 font-bold">Críticos</p>
-        <p id="low-ratings" class="text-2xl font-black text-red-500">0</p>
-      </div>
-    </div>
-
-    <div class="card p-4 mb-8 flex flex-wrap gap-4 items-end">
-      <div class="flex-1 min-w-[150px]">
-        <label class="text-[10px] font-bold uppercase text-gray-400">Asesor</label>
-        <select id="advisor-filter" class="w-full mt-1 p-2 border rounded-lg text-sm bg-gray-50"></select>
-      </div>
-      <div class="flex-1 min-w-[150px]">
-        <label class="text-[10px] font-bold uppercase text-gray-400">Mes</label>
-        <input id="month-filter" type="month" class="w-full mt-1 p-2 border rounded-lg text-sm bg-gray-50" />
-      </div>
-      <div class="flex gap-2">
-        <button id="export-excel-button" class="bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-emerald-700 transition">EXCEL</button>
-        <button id="export-pdf-button" class="bg-red-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-red-700 transition">PDF</button>
+      <div class="card rounded-xl px-5 py-4 flex flex-col justify-center">
+        <p class="text-[12px] text-gray-500 mb-1 uppercase tracking-wide">Vista actual</p>
+        <p class="text-sm text-gray-900 font-semibold">ANALISIS DE DESEMPEÑO DE ASESORES</p>
       </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-      <div class="lg:col-span-2 card p-6">
-        <h2 class="text-sm font-bold uppercase mb-4">Historial de Calificaciones</h2>
-        <div class="max-h-[400px] overflow-y-auto space-y-3" id="ratings-list-container"></div>
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+      <div class="card rounded-xl px-5 py-4 text-center">
+        <p class="text-xs text-gray-500 uppercase tracking-wide">Calificación promedio</p>
+        <p id="avg-rating" class="mt-2 text-4xl font-extrabold text-yellow-500">N/A</p>
       </div>
-      <div class="card p-6">
-        <h2 class="text-sm font-bold uppercase mb-4">Distribución</h2>
-        <div class="h-64"><canvas id="rating-distribution-chart"></canvas></div>
+      <div class="card rounded-xl px-5 py-4 text-center">
+        <p class="text-xs text-gray-500 uppercase tracking-wide">Total de respuestas</p>
+        <p id="total-ratings" class="mt-2 text-4xl font-extrabold text-slate-900">0</p>
+      </div>
+      <div class="card rounded-xl px-5 py-4 text-center">
+        <p class="text-xs text-gray-500 uppercase tracking-wide">Asesores activos</p>
+        <p id="total-advisors" class="mt-2 text-4xl font-extrabold text-emerald-500">0</p>
+      </div>
+      <div class="card rounded-xl px-5 py-4 text-center">
+        <p class="text-xs text-gray-500 uppercase tracking-wide">Comentarios negativos (1–2)</p>
+        <p id="low-ratings" class="mt-2 text-4xl font-extrabold text-red-500">0</p>
       </div>
     </div>
 
-    <div class="card border-red-100 p-6 mb-8">
-      <h2 class="text-lg font-black text-red-600 uppercase mb-4">Casos Críticos por Contactar</h2>
-      <div id="critical-container" class="space-y-3"></div>
+    <div class="card rounded-2xl px-6 py-6 mb-10">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-semibold text-gray-900">DISTRIBUCIÓN DE PUNTUACIONES</h2>
+        <p class="text-xs text-gray-500">Actualizado en tiempo real</p>
+      </div>
+      <div class="h-64 md:h-72"><canvas id="rating-distribution-chart"></canvas></div>
     </div>
 
-    <div class="card border-emerald-100 p-6">
-      <h2 class="text-sm font-bold text-emerald-700 uppercase mb-4">Casos Solucionados</h2>
-      <div id="resolved-container" class="space-y-3"></div>
+    <div class="mb-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+      <h2 class="text-lg font-semibold text-gray-900">CALIFICACIONES RECIENTES</h2>
+      <div class="flex items-center gap-2">
+        <button id="export-excel-button" class="px-3 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-xs font-semibold text-white transition">Descargar Excel</button>
+        <button id="export-pdf-button" class="px-3 py-2 rounded-lg border border-slate-300 hover:bg-slate-50 text-xs font-semibold text-slate-900 transition">Descargar PDF</button>
+      </div>
+    </div>
+
+    <div class="card rounded-2xl p-4 overflow-hidden mb-10">
+      <div class="max-h-[380px] overflow-y-auto">
+        <div class="hidden md:grid grid-cols-[2fr,1fr,3fr,1.5fr,70px,40px] text-[11px] font-semibold text-gray-400 px-4 pb-2 border-b border-slate-100 sticky top-0 bg-white z-10">
+          <span>ASESOR</span><span class="text-center">CALIFICACIÓN</span><span>COMENTARIO</span><span class="text-center">FECHA</span><span class="text-center">ESTADO</span><span class="text-center">ACCIÓN</span>
+        </div>
+        <div id="ratings-list-container" class="space-y-3 pr-1 pb-2 pt-2"></div>
+      </div>
+    </div>
+
+    <section class="mt-10 mb-10">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-2xl font-bold text-slate-900">CASOS PARA CONTACTAR</h2>
+        <p class="text-sm text-slate-500 max-w-md text-right">Muestra clientes con calificaciones bajas y su teléfono.</p>
+      </div>
+      <div class="card rounded-2xl p-4">
+        <div class="max-h-[380px] overflow-y-auto">
+          <div class="low-cases-grid text-[11px] font-semibold text-slate-500 px-4 pb-2 border-b border-slate-100 sticky top-0 bg-white z-10">
+            <span>ASESOR</span><span>TELÉFONO PROPORCIONADO</span><span>FECHA DEL REPORTE</span><span class="text-right pr-2">ACCIÓN</span>
+          </div>
+          <div class="pr-1 px-4"><div id="critical-container" class="py-3 space-y-3"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="mt-6 mb-10">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-lg font-semibold text-gray-900">CASOS SOLUCIONADOS</h2>
+        <p class="text-[11px] text-gray-500">Historial de casos críticos atendidos.</p>
+      </div>
+      <div id="resolved-container" class="card rounded-2xl p-4 space-y-3 max-h-[380px] overflow-y-auto pr-1"></div>
     </div>
   </div>
 
-  <div id="view-modal" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl">
-      <div id="modal-body" class="space-y-4"></div>
-      <button onclick="document.getElementById('view-modal').classList.add('hidden')" class="w-full mt-6 bg-slate-100 py-2 rounded-xl font-bold text-sm">Cerrar</button>
+  <div id="solution-modal" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white text-gray-900 rounded-[24px] shadow-2xl w-full max-w-md p-8">
+      <h2 class="text-2xl font-black mb-2">Marcar caso como solucionado</h2>
+      <p class="text-sm text-gray-500 mb-6">Registra quién dio solución y qué acciones se realizaron.</p>
+      <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Nombre de quien lo solucionó</label>
+      <input id="solution-solver-name" type="text" class="w-full mb-4 px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-1 focus:ring-slate-900 bg-white" />
+      <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Solución aplicada</label>
+      <textarea id="solution-description" rows="3" class="w-full mb-6 px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-1 focus:ring-slate-900 bg-white resize-none"></textarea>
+      <p id="solution-error" class="hidden text-sm text-red-500 mb-4"></p>
+      <div class="flex justify-end space-x-3">
+        <button id="solution-cancel-button" class="px-5 py-2.5 rounded-xl border border-gray-300 text-sm font-bold text-gray-700 hover:bg-gray-50 transition">Cancelar</button>
+        <button id="solution-save-button" class="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-black text-sm font-bold text-white transition shadow-lg">Guardar solución</button>
+      </div>
     </div>
   </div>
 
-  <div id="sol-modal" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-2xl max-w-sm w-full p-6">
-      <h3 class="font-bold mb-4">Registrar Solución</h3>
-      <input id="sol-name" type="text" placeholder="Tu nombre" class="w-full p-2 border rounded-lg mb-3">
-      <textarea id="sol-text" placeholder="¿Qué se hizo?" class="w-full p-2 border rounded-lg h-24 mb-4 resize-none"></textarea>
-      <div class="flex gap-2">
-        <button onclick="document.getElementById('sol-modal').classList.add('hidden')" class="flex-1 py-2 border rounded-lg">Cancelar</button>
-        <button id="btn-save-sol" class="flex-1 py-2 bg-slate-900 text-white rounded-lg font-bold">Guardar</button>
+  <div id="view-rating-modal" class="fixed inset-0 bg-slate-900/60 z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-[24px] shadow-2xl max-w-lg w-full p-8 relative border border-slate-100">
+      <button type="button" id="close-view-rating-modal" class="absolute top-6 right-6 text-gray-400 hover:text-red-500 transition">✕</button>
+      <h2 class="text-2xl font-black text-gray-900 mb-6">Detalle de calificación</h2>
+      <div class="space-y-4 text-sm bg-slate-50 p-6 rounded-2xl border border-slate-100">
+        <p class="flex flex-col"><span class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Asesor</span><span id="view-rating-advisor" class="text-base font-bold text-slate-900"></span></p>
+        <p class="flex flex-col"><span class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Calificación</span><span id="view-rating-score" class="text-xl font-black text-yellow-500"></span></p>
+        <p class="flex flex-col border-t border-slate-200 pt-4"><span class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Comentario</span><span id="view-rating-comment" class="text-slate-700 italic"></span></p>
+        <div class="grid grid-cols-2 gap-4 border-t border-slate-200 pt-4">
+            <p class="flex flex-col"><span class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Fecha</span><span id="view-rating-date" class="text-slate-900 font-semibold"></span></p>
+            <p class="flex flex-col"><span class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Teléfono</span><span id="view-rating-phone" class="text-slate-900 font-semibold"></span></p>
+        </div>
       </div>
     </div>
   </div>
 
   <script type="module">
+    // USAMOS EL MISMO SDK MODULAR PERO CON LAS LLAVES DEL ERP MAESTRO
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, doc, collection, query, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+    // LLAVES NUEVAS (ERP CENTRAL)
     const firebaseConfig = {
       apiKey: "AIzaSyDkH2_E7t07SWWH1SZr77BFlNp6RQTDDDY",
       authDomain: "erpparabarberos-12de9.firebaseapp.com",
@@ -124,175 +213,282 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-    const COLL_PATH = `artifacts/${firebaseConfig.projectId}/public/data/whatsapp_ratings`;
 
-    let rawData = [];
-    let filteredData = [];
-    let chartObj = null;
-    let targetId = null;
+    // Mantenemos tu misma estructura de carpeta en la nueva base de datos
+    const PUBLIC_RATINGS_COLLECTION = `artifacts/${firebaseConfig.projectId}/public/data/whatsapp_ratings`;
 
+    let currentUserId;
+    let allRatings = [];
+    let chartInstance = null;
+    let currentFilteredRatings = [];
+
+    const dashboardContent = document.getElementById("dashboard-content");
+    const loadingSpinner = document.getElementById("loading-spinner");
+    const advisorFilter = document.getElementById("advisor-filter");
+    const monthFilter = document.getElementById("month-filter");
+    const dateFilter = document.getElementById("date-filter");
+
+    let resolveTargetId = null;
+    const resolveModal = document.getElementById("solution-modal");
+    const resolverNameInput = document.getElementById("solution-solver-name");
+    const resolutionTextInput = document.getElementById("solution-description");
+    const resolveErrorEl = document.getElementById("solution-error");
+    const cancelResolveBtn = document.getElementById("solution-cancel-button");
+    const saveResolveBtn = document.getElementById("solution-save-button");
+
+    function showScreen(id) {
+      dashboardContent.classList.add("hidden");
+      if (id === "dashboard") dashboardContent.classList.remove("hidden");
+      loadingSpinner.classList.add("hidden");
+    }
+
+    // LISTENER DE SESIÓN DEL CASCARÓN MAESTRO
     onAuthStateChanged(auth, (user) => {
       if (user) {
-        onSnapshot(query(collection(db, COLL_PATH)), (snap) => {
-          rawData = [];
-          snap.forEach(d => rawData.push({id: d.id, ...d.data()}));
-          fillAdvisorFilter();
-          process();
-        });
-        document.getElementById("dashboard-content").classList.remove("hidden");
-        document.getElementById("loading-spinner").classList.add("hidden");
+        currentUserId = user.uid;
+        document.getElementById("admin-name").textContent = user.email.split("@")[0];
+        startRealtimeDataListener();
+        showScreen("dashboard");
       } else {
+        // Si no hay sesión, saca a todo el ERP al Login
         window.parent.location.href = 'index.html';
       }
     });
 
-    function process() {
-      const adv = document.getElementById("advisor-filter").value;
-      const mon = document.getElementById("month-filter").value;
-      
-      filteredData = rawData.filter(r => {
-        let ok = true;
-        if(adv) ok = ok && r.advisorId === adv;
-        if(mon) ok = ok && r.timestamp?.startsWith(mon);
-        return ok;
-      }).sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+    // CERRAR SESIÓN GLOBAL
+    document.getElementById("logout-button").addEventListener("click", async () => {
+      try {
+        await signOut(auth);
+        window.parent.location.href = 'index.html';
+      } catch (error) {
+        console.error("Error al cerrar sesión:", error);
+      }
+    });
 
-      updateUI();
+    function startRealtimeDataListener() {
+      const ratingsCollection = collection(db, PUBLIC_RATINGS_COLLECTION);
+      const q = query(ratingsCollection);
+
+      onSnapshot(q, (snapshot) => {
+          allRatings = [];
+          snapshot.forEach((docSnap) => { allRatings.push({ id: docSnap.id, ...docSnap.data() }); });
+          updateFilterOptions(allRatings);
+          filterAndDisplayRatings();
+        },
+        (error) => {
+          console.error("Error al escuchar calificaciones:", error);
+          document.getElementById("ratings-list-container").innerHTML = "<p class='text-center text-red-400 text-sm mt-4'>Error cargando datos.</p>";
+        }
+      );
     }
 
-    function updateUI() {
-      // Stats
-      const total = filteredData.length;
-      const avg = total ? (filteredData.reduce((a,b) => a + (b.rating||0), 0) / total).toFixed(1) : "0";
-      document.getElementById("avg-rating").textContent = avg;
-      document.getElementById("total-ratings").textContent = total;
-      document.getElementById("total-advisors").textContent = new Set(filteredData.map(r=>r.advisorId)).size;
-      document.getElementById("low-ratings").textContent = filteredData.filter(r=>r.rating <= 2 && !r.resolved).length;
+    // Filtros
+    advisorFilter.addEventListener("change", filterAndDisplayRatings);
+    monthFilter.addEventListener("change", () => { if (monthFilter.value) dateFilter.value = ""; filterAndDisplayRatings(); });
+    dateFilter.addEventListener("change", () => { if (dateFilter.value) monthFilter.value = ""; filterAndDisplayRatings(); });
 
-      // Listado Principal
-      const list = document.getElementById("ratings-list-container");
-      list.innerHTML = "";
-      filteredData.forEach(r => {
-        const d = document.createElement("div");
-        d.className = "p-3 border rounded-xl flex justify-between items-center bg-gray-50";
-        d.innerHTML = `
-          <div><p class="text-xs font-bold uppercase">${r.advisorName}</p><p class="text-[10px] text-gray-400">${r.timestamp?.split('T')[0]}</p></div>
-          <div class="flex items-center gap-3">
-            <span class="font-black ${r.rating <= 2 ? 'text-red-500':'text-emerald-500'}">${r.rating}★</span>
-            <button class="text-[10px] font-bold text-slate-400 hover:text-black">DETALLE</button>
+    function filterAndDisplayRatings() {
+      let filtered = [...allRatings];
+      const selectedAdvisor = advisorFilter.value;
+      const selectedMonth = monthFilter.value;
+      const selectedDay = dateFilter.value;
+
+      if (selectedAdvisor) filtered = filtered.filter((r) => r.advisorId === selectedAdvisor);
+
+      if (selectedMonth) {
+        filtered = filtered.filter((r) => {
+          if (!r.timestamp) return false;
+          const d = new Date(r.timestamp);
+          if (isNaN(d)) return false;
+          return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}` === selectedMonth;
+        });
+      } else if (selectedDay) {
+        filtered = filtered.filter((r) => {
+          if (!r.timestamp) return false;
+          const d = new Date(r.timestamp);
+          if (isNaN(d)) return false;
+          return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}` === selectedDay;
+        });
+      }
+
+      filtered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      renderRatingsList(filtered); updateStatsAndChart(filtered); renderCriticalList(filtered); renderResolvedList(filtered);
+      currentFilteredRatings = filtered;
+    }
+
+    function calculateStats(ratings) {
+      if (!ratings.length) return { totalRatings: 0, avgRating: 0, totalAdvisors: 0, lowRatings: 0, ratingDistribution: [0, 0, 0, 0, 0] };
+      const totalRatingSum = ratings.reduce((sum, r) => sum + (r.rating || 0), 0);
+      const uniqueAdvisors = new Set(ratings.map((r) => r.advisorId));
+      const lowRatingsCount = ratings.filter((r) => r.rating <= 2).length;
+      const distribution = [0, 0, 0, 0, 0];
+      ratings.forEach((r) => { if (r.rating >= 1 && r.rating <= 5) distribution[r.rating - 1]++; });
+      return { totalRatings: ratings.length, avgRating: totalRatingSum / ratings.length, totalAdvisors: uniqueAdvisors.size, lowRatings: lowRatingsCount, ratingDistribution: distribution };
+    }
+
+    function updateStatsAndChart(ratings) {
+      const stats = calculateStats(ratings);
+      document.getElementById("total-ratings").textContent = stats.totalRatings;
+      document.getElementById("avg-rating").textContent = stats.totalRatings ? stats.avgRating.toFixed(1) : "N/A";
+      document.getElementById("total-advisors").textContent = stats.totalAdvisors;
+      document.getElementById("low-ratings").textContent = stats.lowRatings;
+      renderChart(stats.ratingDistribution);
+    }
+
+    function updateFilterOptions(ratings) {
+      const advisors = [...new Set(ratings.map((r) => JSON.stringify({ id: r.advisorId, name: r.advisorName })))].map((str) => JSON.parse(str));
+      const currentFilter = advisorFilter.value;
+      advisorFilter.innerHTML = '<option value="">Todos los asesores</option>';
+      advisors.forEach((advisor) => {
+        if (!advisor.id) return;
+        const option = document.createElement("option");
+        option.value = advisor.id; option.textContent = advisor.name || advisor.id;
+        if (advisor.id === currentFilter) option.selected = true;
+        advisorFilter.appendChild(option);
+      });
+    }
+
+    function formatDate(timestamp) {
+      if (!timestamp) return "";
+      const d = new Date(timestamp);
+      return isNaN(d) ? "" : d.toLocaleString("es-ES", { dateStyle: "medium", timeStyle: "short" });
+    }
+
+    function renderChart(distributionData) {
+      const ctx = document.getElementById("rating-distribution-chart").getContext("2d");
+      if (chartInstance) chartInstance.destroy();
+      chartInstance = new Chart(ctx, {
+        type: "bar",
+        data: { labels: ["1 ★", "2 ★", "3 ★", "4 ★", "5 ★"], datasets: [{ data: distributionData, backgroundColor: ["#ef4444", "#f97316", "#64748b", "#3b82f6", "#10b981"], borderRadius: 6 }] },
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { precision: 0 } }, x: { grid: { display: false } } }, plugins: { legend: { display: false } } }
+      });
+    }
+
+    function renderRatingsList(ratings) {
+      const container = document.getElementById("ratings-list-container");
+      container.innerHTML = "";
+      if (!ratings || ratings.length === 0) {
+        container.innerHTML = '<p class="text-sm text-slate-500 p-4 text-center">No hay calificaciones con estos filtros.</p>'; return;
+      }
+      ratings.forEach((rating) => {
+        const row = document.createElement("div");
+        row.className = "rounded-xl bg-white border border-slate-200 px-4 py-3 shadow-sm hover:shadow-md transition";
+        row.innerHTML = `
+          <div class="grid grid-cols-1 md:grid-cols-[2fr,1fr,3fr,1.5fr,70px,40px] md:items-center">
+            <div class="font-bold text-slate-900">${rating.advisorName || "—"}</div>
+            <div class="text-sm font-black text-center ${rating.rating <= 2 ? "text-red-500" : rating.rating === 3 ? "text-orange-500" : "text-yellow-500"}">${rating.rating ?? "—"} / 5</div>
+            <div class="text-sm text-slate-600 italic line-clamp-1 pr-4">${rating.comments && rating.comments.trim() ? rating.comments : "Sin comentarios"}</div>
+            <div class="text-[11px] font-semibold text-slate-500 text-center">${formatDate(rating.timestamp)}</div>
+            <div class="hidden md:block text-[9px] uppercase tracking-widest font-black text-center ${(rating.rating || 0) <= 2 && !rating.resolved ? 'text-red-500 bg-red-50 px-2 py-1 rounded' : 'text-slate-500 bg-slate-50 px-2 py-1 rounded'}">
+              ${(rating.rating || 0) <= 2 ? (rating.resolved ? "LISTO" : "PENDIENTE") : "OK"}
+            </div>
+            <div class="flex justify-center"><button type="button" class="view-rating-button text-slate-400 hover:text-slate-900 transition"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg></button></div>
           </div>
         `;
-        d.querySelector("button").onclick = () => showDetail(r);
-        list.appendChild(d);
+        row.querySelector(".view-rating-button").addEventListener("click", () => openViewRatingModal(rating));
+        container.appendChild(row);
       });
+    }
 
-      // Críticos
-      const crit = document.getElementById("critical-container");
-      crit.innerHTML = "";
-      filteredData.filter(r => r.rating <= 2 && !r.resolved).forEach(r => {
-        const d = document.createElement("div");
-        d.className = "p-4 border border-red-200 bg-red-50 rounded-xl flex justify-between items-center";
-        d.innerHTML = `
-          <div><p class="font-bold text-red-700 text-sm">${r.advisorName} - Tel: ${r.clientPhone||'N/A'}</p><p class="text-xs italic">"${r.comments||''}"</p></div>
-          <button class="bg-red-600 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold">SOLUCIONAR</button>
+    const viewRatingModal = document.getElementById("view-rating-modal");
+    function openViewRatingModal(rating) {
+      if (!viewRatingModal) return;
+      document.getElementById("view-rating-advisor").textContent = rating.advisorName || "—";
+      document.getElementById("view-rating-score").textContent = `${rating.rating ?? "—"} ESTRELLAS`;
+      document.getElementById("view-rating-comment").textContent = rating.comments && rating.comments.trim() ? `"${rating.comments}"` : "Sin comentarios registrados.";
+      document.getElementById("view-rating-date").textContent = formatDate(rating.timestamp);
+      document.getElementById("view-rating-phone").textContent = rating.clientPhone && rating.clientPhone.trim() ? rating.clientPhone : "No proporcionado";
+      viewRatingModal.classList.remove("hidden"); viewRatingModal.classList.add("flex");
+    }
+
+    function closeViewRatingModal() { viewRatingModal.classList.add("hidden"); viewRatingModal.classList.remove("flex"); }
+    document.getElementById("close-view-rating-modal")?.addEventListener("click", closeViewRatingModal);
+    viewRatingModal?.addEventListener("click", (e) => { if (e.target === viewRatingModal) closeViewRatingModal(); });
+
+    function openResolveModal(ratingId) {
+      resolveTargetId = ratingId;
+      resolverNameInput.value = ""; resolutionTextInput.value = "";
+      resolveErrorEl.classList.add("hidden");
+      resolveModal.classList.remove("hidden"); resolveModal.classList.add("flex");
+    }
+
+    function closeResolveModal() { resolveTargetId = null; resolveModal.classList.add("hidden"); resolveModal.classList.remove("flex"); }
+
+    function renderCriticalList(ratings) {
+      const container = document.getElementById("critical-container");
+      container.innerHTML = "";
+      const critical = (ratings || []).filter((r) => (r.rating || 0) <= 2 && !r.resolved);
+      if (!critical.length) { container.innerHTML = '<p class="text-xs text-gray-500 italic">No hay casos pendientes con los filtros actuales.</p>'; return; }
+
+      critical.forEach((r) => {
+        const phone = r.phone || r.whatsappPhone || r.clientPhone || r.client_phone || r.telefono || r.phoneNumber || null;
+        const row = document.createElement("div");
+        row.className = "grid grid-cols-1 md:grid-cols-[2fr,3fr,1.5fr,140px] gap-4 items-center border border-red-200 rounded-xl px-5 py-4 bg-red-50/50";
+        row.innerHTML = `
+          <div><p class="text-sm font-bold text-gray-900">${r.advisorName || "Asesor"} <span class="text-xs font-black text-red-500 bg-red-100 px-2 py-0.5 rounded-full ml-1">${r.rating} ★</span></p><p class="text-xs text-gray-600 mt-1 italic">"${r.comments || "Sin comentarios"}"</p></div>
+          <div class="text-xs font-bold text-slate-800"><span class="text-red-500 uppercase tracking-widest mr-2">Tel:</span>${phone || "No proporcionado"}</div>
+          <div class="hidden md:block text-[11px] font-semibold text-gray-500">${formatDate(r.timestamp)}</div>
+          <div class="flex justify-end"><button class="resolve-button bg-slate-900 hover:bg-black text-white text-[11px] uppercase tracking-widest font-bold px-4 py-2.5 rounded-lg shadow-sm transition" data-id="${r.id}">Solucionar</button></div>
         `;
-        d.querySelector("button").onclick = () => { targetId = r.id; document.getElementById("sol-modal").classList.replace("hidden","flex"); };
-        crit.appendChild(d);
+        container.appendChild(row);
       });
+      container.querySelectorAll(".resolve-button").forEach((btn) => { btn.addEventListener("click", (e) => openResolveModal(e.currentTarget.dataset.id)); });
+    }
 
-      // Solucionados
-      const res = document.getElementById("resolved-container");
-      res.innerHTML = filteredData.filter(r => r.resolved).map(r => `
-        <div class="p-3 bg-emerald-50 border border-emerald-100 rounded-xl text-[11px]">
-          <p class="font-bold uppercase">${r.advisorName} (${r.rating}★)</p>
-          <p class="text-emerald-700 mt-1">Solución: ${r.resolution}</p>
-        </div>
-      `).join('');
+    function renderResolvedList(ratings) {
+      const container = document.getElementById("resolved-container");
+      container.innerHTML = "";
+      const resolved = ratings.filter((r) => (r.rating || 0) <= 2 && r.resolved);
+      if (!resolved.length) { container.innerHTML = "<p class='text-gray-500 text-sm italic'>Aún no hay casos solucionados con los filtros actuales.</p>"; return; }
 
-      // Chart
-      const dist = [0,0,0,0,0];
-      filteredData.forEach(r => { if(r.rating>=1 && r.rating<=5) dist[r.rating-1]++ });
-      const ctx = document.getElementById("rating-distribution-chart");
-      if(chartObj) chartObj.destroy();
-      chartObj = new Chart(ctx, {
-        type: 'bar',
-        data: { labels:['1★','2★','3★','4★','5★'], datasets:[{data:dist, backgroundColor:['#ef4444','#f97316','#64748b','#3b82f6','#10b981']}]},
-        options: { maintainAspectRatio:false, plugins:{legend:{display:false}}}
+      resolved.forEach((r) => {
+        const row = document.createElement("div");
+        row.className = "flex flex-col md:flex-row md:items-center md:justify-between gap-4 border border-emerald-200 rounded-xl px-5 py-4 bg-emerald-50/30";
+        row.innerHTML = `
+          <div><p class="text-sm font-bold text-slate-900">${r.advisorName || "Asesor"} <span class="text-xs font-black text-slate-500 bg-slate-200 px-2 py-0.5 rounded-full ml-1">${r.rating} ★</span></p><p class="text-xs text-slate-500 mt-1 italic">"${r.comments || "Sin comentarios"}"</p><p class="text-xs text-emerald-700 mt-3 font-medium bg-emerald-100/50 p-2 rounded-lg border border-emerald-200"><span class="font-bold uppercase tracking-wider block mb-1">Solución Aplicada:</span>${r.resolution || "— Sin detalle de solución —"}</p></div>
+          <div class="text-right text-xs text-slate-600 space-y-1"><p><span class="font-bold uppercase tracking-wider text-slate-400">Atendido por:</span> ${r.resolvedBy || "No registrado"}</p><p><span class="font-bold uppercase tracking-wider text-slate-400">Tel:</span> ${r.clientPhone || r.client_phone || "N/A"}</p><p class="text-[10px] text-slate-400 mt-2">Recibido: ${formatDate(r.timestamp)}</p><p class="text-[10px] text-emerald-600 font-semibold">Solucionado: ${r.resolvedAt ? formatDate(r.resolvedAt) : ""}</p></div>
+        `;
+        container.appendChild(row);
       });
     }
 
-    function showDetail(r) {
-      document.getElementById("modal-body").innerHTML = `
-        <h3 class="font-black text-xl border-b pb-2 uppercase">${r.advisorName}</h3>
-        <p class="text-4xl font-black text-yellow-500 text-center py-2">${r.rating} ★</p>
-        <div class="bg-slate-50 p-4 rounded-xl text-sm italic text-gray-600">"${r.comments || 'Sin comentarios'}"</div>
-        <div class="text-[11px] text-gray-400 space-y-1">
-          <p>FECHA: ${r.timestamp?.replace('T',' ')}</p>
-          <p>TELÉFONO: ${r.clientPhone || 'No registrado'}</p>
-        </div>
-      `;
-      document.getElementById("view-modal").classList.replace("hidden", "flex");
-    }
-
-    // BOTÓN PDF (Corregido)
-    document.getElementById("export-pdf-button").onclick = () => {
-      if(!filteredData.length) return;
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      doc.setFontSize(18);
-      doc.text("REPORTE DE ATENCION AL CLIENTE", 14, 20);
-      
-      const tableData = filteredData.map(r => [
-        r.advisorName,
-        r.rating + "★",
-        r.comments || "-",
-        r.timestamp?.split('T')[0],
-        r.clientPhone || "-"
-      ]);
-
-      doc.autoTable({
-        startY: 30,
-        head: [['ASESOR', 'NOTA', 'COMENTARIO', 'FECHA', 'TEL']],
-        body: tableData,
-        theme: 'grid',
-        headStyles: { fillColor: [15, 23, 42] },
-        styles: { fontSize: 8 }
+    // Exportaciones
+    document.getElementById("export-excel-button").addEventListener("click", () => {
+      if (!currentFilteredRatings.length) return alert("No hay calificaciones para exportar.");
+      const rows = [["Asesor", "Calificación", "Comentario", "Fecha", "Teléfono", "Estado", "Solucionado Por", "Detalle Solución"]];
+      currentFilteredRatings.forEach((r) => {
+        rows.push([ r.advisorName || "", String(r.rating || ""), (r.comments || "").replace(/\r?\n/g, " "), formatDate(r.timestamp), r.clientPhone || "", (r.rating || 0) <= 2 ? (r.resolved ? "SOLUCIONADO" : "PENDIENTE") : "SIN NOVEDAD", r.resolvedBy || "", (r.resolution || "").replace(/\r?\n/g, " ") ]);
       });
-      doc.save("Reporte_Calificaciones.pdf");
-    };
+      const csv = rows.map((row) => row.map((field) => `"${String(field).replace(/"/g, '""')}"`).join(";")).join("\r\n");
+      const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob(["\uFEFF"+csv], { type: "text/csv;charset=utf-8;" })); link.download = "Calificaciones.csv";
+      document.body.appendChild(link); link.click(); document.body.removeChild(link);
+    });
 
-    // BOTÓN EXCEL/CSV
-    document.getElementById("export-excel-button").onclick = () => {
-      let csv = "\uFEFFAsesor;Nota;Comentario;Fecha;Telefono\n";
-      filteredData.forEach(r => {
-        csv += `${r.advisorName};${r.rating};${(r.comments||'').replace(/;/g,',')};${r.timestamp};${r.clientPhone||''}\n`;
-      });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8;'}));
-      link.download = "Calificaciones.csv";
-      link.click();
-    };
+    document.getElementById("export-pdf-button").addEventListener("click", () => {
+      if (!currentFilteredRatings.length) return alert("No hay calificaciones para exportar.");
+      const docPdf = new window.jspdf.jsPDF();
+      docPdf.setFontSize(14); docPdf.text("Reporte de Calificaciones y Casos", 14, 18);
+      docPdf.setFontSize(10); docPdf.text(`Generado: ${new Date().toLocaleString("es-ES")}`, 14, 24);
+      const allRatingsBody = currentFilteredRatings.map((r) => [ r.advisorName || "", String(r.rating || ""), (r.comments || "").replace(/\r?\n/g, " "), formatDate(r.timestamp), r.clientPhone || "", (r.rating || 0) <= 2 ? (r.resolved ? "SOLUCIONADO" : "PENDIENTE") : "OK" ]);
+      docPdf.autoTable({ startY: 30, head: [["Asesor", "Calif.", "Comentario", "Fecha", "Teléfono", "Estado"]], body: allRatingsBody, styles: { fontSize: 8, cellPadding: 2 }, headStyles: { fillColor: [15, 23, 42] }});
+      docPdf.save("Calificaciones.pdf");
+    });
 
-    document.getElementById("btn-save-sol").onclick = async () => {
-      const n = document.getElementById("sol-name").value;
-      const t = document.getElementById("sol-text").value;
-      if(!n || !t) return alert("Faltan campos");
-      await setDoc(doc(db, COLL_PATH, targetId), { resolved:true, resolvedBy:n, resolution:t, resolvedAt:new Date().toISOString() }, {merge:true});
-      document.getElementById("sol-modal").classList.add("hidden");
-    };
-
-    function fillAdvisorFilter() {
-      const sel = document.getElementById("advisor-filter");
-      const val = sel.value;
-      const unique = [...new Set(rawData.map(r => JSON.stringify({id:r.advisorId, name:r.advisorName})))].map(s => JSON.parse(s));
-      sel.innerHTML = '<option value="">Todos los asesores</option>';
-      unique.forEach(u => {
-        if(u.id) sel.innerHTML += `<option value="${u.id}" ${u.id===val?'selected':''}>${u.name}</option>`;
-      });
-    }
-
-    document.getElementById("advisor-filter").onchange = process;
-    document.getElementById("month-filter").onchange = process;
+    cancelResolveBtn?.addEventListener("click", closeResolveModal);
+    saveResolveBtn?.addEventListener("click", async () => {
+      if (!resolveTargetId) return;
+      const name = (resolverNameInput?.value || "").trim(); const resolution = (resolutionTextInput?.value || "").trim();
+      if (name.length < 2 || resolution.length < 5) { resolveErrorEl.textContent = "Ingresa el nombre y una descripción de la solución."; resolveErrorEl.classList.remove("hidden"); return; }
+      resolveErrorEl.classList.add("hidden");
+      saveResolveBtn.textContent = "Guardando..."; saveResolveBtn.disabled = true;
+      try {
+        await setDoc(doc(db, PUBLIC_RATINGS_COLLECTION, resolveTargetId), { resolved: true, resolvedBy: name, resolution: resolution, resolvedAt: new Date().toISOString() }, { merge: true });
+        closeResolveModal();
+      } catch (e) {
+        console.error("Error al guardar solución:", e); resolveErrorEl.textContent = "No se pudo guardar la solución."; resolveErrorEl.classList.remove("hidden");
+      }
+      saveResolveBtn.textContent = "Guardar solución"; saveResolveBtn.disabled = false;
+    });
 
   </script>
 </body>
