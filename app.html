@@ -62,6 +62,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // TUS LLAVES REALES INTEGRADAS CORRECTAMENTE EN MODO "COMPAT"
             const firebaseConfig = {
                 apiKey: "AIzaSyDkH2_E7t07SWWH1SZr77BFlNp6RQTDDDY",
                 authDomain: "erpparabarberos-12de9.firebaseapp.com",
@@ -70,6 +71,7 @@
                 messagingSenderId: "722745790519",
                 appId: "1:722745790519:web:7bf1dbe172433898a56fb2"
             };
+            
             firebase.initializeApp(firebaseConfig);
             const auth = firebase.auth();
 
@@ -117,13 +119,12 @@
                     btnGar.classList.remove('hidden');
                     loadModule('modulo-garantias.html', btnGar);
                 }
-                // Puedes agregar más roles aquí
             }
 
             // Función para cargar los submódulos en el IFRAME
             window.loadModule = (url, btnElement) => {
                 document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
-                btnElement.classList.add('active');
+                if(btnElement) btnElement.classList.add('active');
                 document.getElementById('mainFrame').src = url;
             };
         });
