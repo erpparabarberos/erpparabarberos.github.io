@@ -1,0 +1,127 @@
+:root {
+    /* Paleta ERP / Garantías */
+    --primary-color: #D32F2F;        /* Rojo Principal */
+    --primary-hover: #B71C1C;
+    --sidebar-bg: #1e1e2d;           /* Fondo oscuro sidebar */
+    --sidebar-text: #ffffff;
+    --sidebar-hover: #2b2b40;
+    --bg-color: #f4f6f9;             /* Fondo de la app */
+    --card-bg: #ffffff;
+    --text-main: #333333;
+    --text-muted: #6c757d;
+    --border-color: #e0e0e0;
+    --success: #28a745;
+    --font-family: 'Inter', sans-serif;
+}
+
+body {
+    font-family: var(--font-family);
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    margin: 0;
+}
+
+/* SIDEBAR ESTILO ERP */
+.sidebar {
+    background-color: var(--sidebar-bg);
+    color: var(--sidebar-text);
+    width: 260px;
+    height: 100vh;
+    position: fixed;
+    transition: all 0.3s;
+}
+
+.sidebar-header {
+    padding: 20px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.nav-list {
+    list-style: none;
+    padding: 10px 0;
+}
+
+.nav-link {
+    color: rgba(255,255,255,0.7);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: 0.2s;
+}
+
+.nav-link:hover, .nav-item.active .nav-link {
+    background-color: var(--sidebar-hover);
+    color: #ffffff;
+    border-left: 4px solid var(--primary-color);
+}
+
+/* BOTONES ESTILO GARANTÍAS */
+button, .btn-primary {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 20px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+button:hover {
+    background-color: var(--primary-hover) !important;
+}
+
+/* CARDS DEL DASHBOARD */
+.card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.dashboard-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.stat-card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    border-top: 4px solid var(--primary-color);
+    text-align: center;
+}
+
+/* MODALES */
+.modal-content {
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+}
+
+.modal-header {
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 16px 16px 0 0;
+}
+
+/* TABLAS */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th {
+    background-color: #f8f9fa;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 1px;
+    padding: 12px;
+}
