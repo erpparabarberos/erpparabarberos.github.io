@@ -62,7 +62,6 @@ body { font-family: var(--font-family); background-color: var(--bg-color); color
     display: flex;
     align-items: center;
 }
-
 .horizontal-list a.nav-link, .horizontal-list > li > a {
     color: #cbd5e1;
     text-decoration: none;
@@ -188,3 +187,4 @@ tr:hover td { background-color: #f8fafc; }
 .kb-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
 .kb-card { border-left: 4px solid var(--primary-color) !important; cursor: pointer; padding: 20px; background: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 .kb-category { font-size: 0.7rem; font-weight: bold; background: #f1f5f9; padding: 4px 8px; border-radius: 4px; text-transform: uppercase; display: inline-block; margin-bottom: 10px;}
+
