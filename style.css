@@ -193,3 +193,32 @@ tr:hover td { background-color: #f8fafc; }
 .kb-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
 .kb-card { border-left: 4px solid var(--primary-color) !important; cursor: pointer; padding: 20px; background: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 .kb-category { font-size: 0.7rem; font-weight: bold; background: #f1f5f9; padding: 4px 8px; border-radius: 4px; text-transform: uppercase; display: inline-block; margin-bottom: 10px;}
+
+/* --- FIX PARA EL EDITOR DE TEXTO (QUILL) --- */
+
+/* Resetea los botones de la barra de herramientas para que no sean rojos */
+.ql-toolbar button, 
+.ql-toolbar .ql-picker-label {
+    background-color: transparent !important;
+    color: #444 !important; /* Color oscuro para que los iconos se vean */
+    border: none !important;
+    box-shadow: none !important;
+    width: 28px !important;
+    height: 24px !important;
+    padding: 3px 5px !important;
+    text-transform: none !important; /* Quita las mayúsculas forzadas */
+}
+
+/* Cambia el color de fondo solo cuando pasas el mouse por encima */
+.ql-toolbar button:hover, 
+.ql-toolbar .ql-picker-label:hover,
+.ql-toolbar .ql-active {
+    background-color: #f0f0f0 !important;
+    color: var(--primary-color) !important; /* Los iconos se ponen rojos solo al pasar el mouse */
+}
+
+/* Asegura que los iconos SVG internos se vean negros/grises */
+.ql-toolbar button stroke,
+.ql-toolbar button fill {
+    stroke: currentColor;
+}
