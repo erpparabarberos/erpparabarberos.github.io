@@ -96,26 +96,51 @@
 
             // Lógica de Permisos
             function configurarMenuPorRol(rol) {
-                const btnGar = document.getElementById('btn-garantias');
-                const btnTra = document.getElementById('btn-traslados');
-                const btnTI = document.getElementById('btn-ti');
-                const btnAte = document.getElementById('btn-atencion');
+    const btnGar = document.getElementById('btn-garantias');
+    const btnTra = document.getElementById('btn-traslados');
+    const btnTI = document.getElementById('btn-ti');
+    const btnAte = document.getElementById('btn-atencion');
 
-                // Mostrar botones según el rol
-                if (rol === 'admin') {
-                    btnGar.classList.remove('hidden'); btnTra.classList.remove('hidden'); 
-                    btnTI.classList.remove('hidden'); btnAte.classList.remove('hidden');
-                    loadModule('modulo-garantias.html', btnGar); // Carga por defecto
-                } 
-                else if (rol === 'bodega') {
-                    btnTra.classList.remove('hidden');
-                    loadModule('modulo-traslados.html', btnTra);
-                }
-                else if (rol === 'servicio_tecnico') {
-                    btnGar.classList.remove('hidden');
-                    loadModule('modulo-garantias.html', btnGar);
-                }
-            }
+    // 1. Por seguridad, primero ocultamos todos los botones
+    btnGar.classList.add('hidden');
+    btnTra.classList.add('hidden');
+    btnTI.classList.add('hidden');
+    btnAte.classList.add('hidden');
+
+    // 2. Mostramos botones según el rol exacto
+    if (rol === 'admin') {
+        // Super Administrador (Tú): Ve todo
+        btnGar.classList.remove('hidden'); 
+        btnTra.classList.remove('hidden'); 
+        btnTI.classList.remove('hidden'); 
+        btnAte.classList.remove('hidden');
+        loadModule('modulo-ti.html', btnTI); // Carga tu módulo por defecto
+    } 
+    else if (rol === 'inventarios') {
+        // Ve toda la plataforma de traslados
+        btnTra.classList.remove('hidden');
+        loadModule('modulo-traslados.html', btnTra);
+    }
+    else if (rol === 'ventas') {
+        // Ve toda la plataforma de atención al cliente
+        btnAte.classList.remove('hidden');
+        loadModule('modulo-calificaciones.html', btnAte);
+    }
+    else if (rol === 'solicitante') {
+        // Entra a traslados (el bloqueo de vistas se hace adentro del módulo)
+        btnTra.classList.remove('hidden');
+        loadModule('modulo-traslados.html', btnTra);
+    }
+    else if (rol === 'separador') {
+        // Entra a traslados (el bloqueo de vistas se hace adentro del módulo)
+        btnTra.classList.remove('hidden');
+        loadModule('modulo-traslados.html', btnTra);
+    }
+    else {
+        // Si entra un rol raro o no definido, lo mandamos a login por seguridad
+        auth.signOut();
+    }
+}
 
             // Función para cargar los submódulos en el IFRAME
             window.loadModule = (url, btnElement) => {
@@ -127,3 +152,4 @@
     </script>
 </body>
 </html>
+
