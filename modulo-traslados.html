@@ -1547,34 +1547,22 @@ function renderAllSections() {
                 }
             }, error => console.error("Error al conectar: ", error));
         }
-
-        // =========================================================================
-        // NUEVA LÓGICA DE CONEXIÓN CON EL ERP MAESTRO
-        // =========================================================================
-        const configERP = {
-            apiKey: "AIzaSyDkH2_E7t07SWWH1SZr77BFlNp6RQTDDDY",
-            authDomain: "erpparabarberos-12de9.firebaseapp.com",
-            projectId: "erpparabarberos-12de9",
-            storageBucket: "erpparabarberos-12de9.firebasestorage.app",
-            messagingSenderId: "722745790519",
-            appId: "1:722745790519:web:7bf1dbe172433898a56fb2"
-        };
-        
-        if (!firebase.apps.length) { firebase.initializeApp(configERP); }
-        const authERP = firebase.auth();
-        const dbERP = firebase.firestore();
-
-        authERP.onAuthStateChanged(user => {
+        auth.onAuthStateChanged(user => {
             if (user) {
-                dbERP.collection('usuarios').doc(user.email).get().then(doc => {
+                db.collection('usuarios').doc(user.email).get().then(doc => {
                     if (doc.exists) {
                         const erpRol = doc.data().rol;
-                        let appRole = 'requester'; 
+                        let appRole = 'requester'; // Por defecto, el rol más bajo (seguridad)
                         
+                        // --- TRADUCTOR DE ROLES EXACTO ---
                         if(erpRol === 'admin') {
-                            appRole = 'manager'; 
-                        } else if (erpRol === 'bodega') {
-                            appRole = 'admin'; 
+                            appRole = 'manager'; // Tú: Tienes acceso a TODO (Gerencia, Admin, Solicitante)
+                        } else if (erpRol === 'inventarios') {
+                            appRole = 'admin'; // Inventarios: Ve toda la gestión de bodega, menos gerencia
+                        } else if (erpRol === 'solicitante') {
+                            appRole = 'requester'; // Solicitante: Solo pide y ve lo suyo
+                        } else if (erpRol === 'separador') {
+                            appRole = 'reviewer'; // Separador: Solo revisa pendientes
                         }
 
                         currentUserData = { 
@@ -1584,13 +1572,12 @@ function renderAllSections() {
                         };
                         
                         dom.userEmailDisplay.textContent = user.email;
-                      
                         
                         // EL MOTOR DE TU APP
                         initializeApp(); 
                     } else {
                         console.error("El usuario no tiene rol en el ERP");
-                        authERP.signOut();
+                        auth.signOut();
                     }
                 }).catch(error => console.error("Error obteniendo usuario:", error));
             } else {
@@ -1598,8 +1585,51 @@ function renderAllSections() {
             }
         });
 
+        // REEMPLAZAMOS LA FUNCIÓN setupUIForUser PARA BLINDAR LAS VISTAS
+        function setupUIForUser() {
+            if (!currentUserData) return;
+            const { role } = currentUserData;
+            
+            // 1. APAGAMOS TODO POR DEFECTO
+            dom.requesterView.style.display = 'none';
+            dom.adminView.style.display = 'none';
+            dom.reviewerView.style.display = 'none';
+            dom.managerView.style.display = 'none';
+            
+            if (dom.productManagementCard) dom.productManagementCard.style.display = 'none';
+            if (dom.reportContainer) dom.reportContainer.style.display = 'none';
+
+            // 2. ENCENDEMOS SEGÚN EL ROL TRADUCIDO
+            if (role === 'manager') { 
+                // ROL: admin (Tú) -> Ve TODO
+                dom.managerView.style.display = 'block'; 
+                dom.adminView.style.display = 'block';   
+                dom.requesterView.style.display = 'grid'; 
+                if (dom.productManagementCard) dom.productManagementCard.style.display = 'block';
+                
+            } else if (role === 'admin') {
+                // ROL: inventarios -> Ve gestión de bodega e historial
+                dom.adminView.style.display = 'block';
+                if (dom.productManagementCard) dom.productManagementCard.style.display = 'block';
+                
+            } else if (role === 'reviewer') {
+                // ROL: separador -> Ve SOLO la tabla de revisión
+                dom.reviewerView.style.display = 'block';
+                
+            } else if (role === 'requester') { 
+                // ROL: solicitante -> Ve SOLO panel de pedido e historial propio
+                dom.requesterView.style.display = 'grid';
+            }
+
+            // AUTOCOMPLETAR NOMBRE SOLO PARA SOLICITANTES O ADMINS
+            if (dom.requesterName && (role === 'requester' || role === 'manager')) {
+                dom.requesterName.innerHTML = `<option value="${currentUserData.name}">${currentUserData.name}</option>`;
+                dom.requesterName.value = currentUserData.name;
+            }
+        }
+
         dom.logoutBtn.onclick = () => {
-            authERP.signOut().then(() => {
+            auth.signOut().then(() => {
                 window.parent.location.href = 'index.html';
             });
         };
@@ -1608,15 +1638,3 @@ function renderAllSections() {
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
