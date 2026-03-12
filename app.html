@@ -17,7 +17,7 @@
 <body class="flex h-screen overflow-hidden text-slate-900 bg-[#f8fafc]">
 
     <aside class="w-20 bg-[#0f172a] flex flex-col items-center py-6 border-r border-slate-800 shrink-0 z-20 shadow-2xl relative">
-        <nav class="flex flex-col gap-6 text-slate-400 w-full px-4 mt-4" id="mainNav">
+        <nav class="flex flex-col gap-6 text-slate-400 w-full px-4" id="mainNav">
             <button id="btn-garantias" onclick="loadModule('modulo-garantias.html', this)" class="hidden nav-btn p-3 hover:bg-slate-800 hover:text-white rounded-xl w-full flex justify-center transition-all" title="Garantías"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg></button>
             <button id="btn-traslados" onclick="loadModule('modulo-traslados.html', this)" class="hidden nav-btn p-3 hover:bg-slate-800 hover:text-white rounded-xl w-full flex justify-center transition-all" title="Traslados de Bodega"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg></button>
             <button id="btn-ti" onclick="loadModule('modulo-ti.html', this)" class="hidden nav-btn p-3 hover:bg-slate-800 hover:text-white rounded-xl w-full flex justify-center transition-all" title="Gestión de TI"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg></button>
@@ -27,10 +27,9 @@
 
     <div class="flex-1 flex flex-col min-w-0 relative z-10 overflow-hidden">
         <header class="h-[76px] bg-white px-8 flex items-center justify-between border-b border-slate-200 shrink-0 shadow-sm z-20">
-            
             <div class="flex items-center gap-6">
-                <img src="https://erpparabarberos.github.io/logo-nexus.jpg" alt="Logo Nexus" class="w-10 h-10 rounded-full">
-                <h1 class="text-[16px] font-black tracking-widest text-slate-900 uppercase shrink-0">ERP Parabarberos S.A.S.</h1>
+    <img src="https://erpparabarberos.github.io/logo-nexus.jpg" alt="Logo Nexus" class="w-10 h-10 rounded-full">
+    <h1 class="text-[16px] font-black tracking-widest text-slate-900 uppercase shrink-0">NEXUS PB</h1>
                 <span id="roleBadge" class="ml-4 bg-slate-100 text-slate-500 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest border border-slate-200">Rol</span>
             </div>
             
@@ -59,6 +58,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // TUS LLAVES REALES INTEGRADAS CORRECTAMENTE EN MODO "COMPAT"
             const firebaseConfig = {
                 apiKey: "AIzaSyDkH2_E7t07SWWH1SZr77BFlNp6RQTDDDY",
                 authDomain: "erpparabarberos-12de9.firebaseapp.com",
@@ -71,12 +71,14 @@
             firebase.initializeApp(firebaseConfig);
             const auth = firebase.auth();
 
+            // Interfaz de Usuario
             const userMenuBtn = document.getElementById('userMenuBtn');
             const userDropdown = document.getElementById('userDropdown');
             userMenuBtn.addEventListener('click', (e) => { e.stopPropagation(); userDropdown.classList.toggle('hidden'); });
             document.addEventListener('click', (e) => { if (!userMenuBtn.contains(e.target) && !userDropdown.contains(e.target)) userDropdown.classList.add('hidden'); });
             document.getElementById('dropdownLogoutBtn').onclick = () => { localStorage.removeItem('userRole'); auth.signOut(); };
 
+            // Control de Roles
             auth.onAuthStateChanged(user => {
                 if (!user) {
                     window.location.href = 'index.html';
@@ -92,16 +94,18 @@
                 }
             });
 
+            // Lógica de Permisos
             function configurarMenuPorRol(rol) {
                 const btnGar = document.getElementById('btn-garantias');
                 const btnTra = document.getElementById('btn-traslados');
                 const btnTI = document.getElementById('btn-ti');
                 const btnAte = document.getElementById('btn-atencion');
 
+                // Mostrar botones según el rol
                 if (rol === 'admin') {
                     btnGar.classList.remove('hidden'); btnTra.classList.remove('hidden'); 
                     btnTI.classList.remove('hidden'); btnAte.classList.remove('hidden');
-                    loadModule('modulo-garantias.html', btnGar);
+                    loadModule('modulo-garantias.html', btnGar); // Carga por defecto
                 } 
                 else if (rol === 'bodega') {
                     btnTra.classList.remove('hidden');
@@ -113,6 +117,7 @@
                 }
             }
 
+            // Función para cargar los submódulos en el IFRAME
             window.loadModule = (url, btnElement) => {
                 document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
                 if(btnElement) btnElement.classList.add('active');
