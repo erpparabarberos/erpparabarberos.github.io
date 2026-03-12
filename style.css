@@ -225,8 +225,9 @@ tr:hover td { background-color: #f8fafc; }
 
 /* Ajuste de tamaño para el logo de login */
 .login-logo {
-    width: 180px !important; /* Ajusta este número (ej. 150px o 200px) hasta que te guste */
+    width: 150px !important; 
     height: auto !important;
     margin: 0 auto 15px auto !important;
     display: block !important;
 }
+
