@@ -1,22 +1,16 @@
-body {
-    background-color: #f4f6f9; /* Fondo claro para contrastar con tu ERP */
-    font-family: Arial, sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
+:root {
+    --primary-color: #D32F2F; 
+    --primary-color-hover: #B71C1C; 
+    --blue-color: #334155; 
+    --secondary-color: #64748b; 
+    --bg-color: #f4f6f9; 
+    --sidebar-bg: #1e1e2d; 
+    --sidebar-text: #f1f5f9; 
+    --card-bg: #ffffff;
+    --border-color: #e2e8f0;
+    --success-color: #10b981;
+    --danger-color: #ef4444; 
+    --warning-color: #f59e0b;
+    --font-family: 'Inter', sans-serif;
 }
-
-#contenedor-prueba {
-    background-color: #ffffff;
-    padding: 50px;
-    border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-    border-top: 8px solid #D32F2F; /* Rojo de tu ERP */
-    text-align: center;
-}
-
-h1 {
-    color: #333;
-}
+/* Todo el resto de tu CSS original abajo de esto... */
