@@ -414,10 +414,9 @@
       comments,
       timestamp: new Date().toISOString(),
       platform: advisorType === "punto" ? "Punto de venta" : "WhatsApp",
-      client_id: userId,
+      client_id: userId || "Anonimo", 
       clientPhone: phoneFromHidden || null,
     };
-
     const collectionPath = `artifacts/${globalAppId}/public/data/whatsapp_ratings`;
     const docRef = doc(collection(db, collectionPath));
 
@@ -492,4 +491,5 @@
   initFirebase();
 </script>
 </body>
+
 </html>
