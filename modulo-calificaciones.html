@@ -219,7 +219,7 @@
           <div class="text-sm font-bold">${r.advisorName} <span class="text-red-500">${r.rating}★</span></div>
           <div class="text-xs font-mono font-bold">${r.clientPhone || 'N/A'}</div>
           <div class="text-[10px]">${r.timestamp?.substring(0,10)}</div>
-          <button onclick="window.solItem('${r.id}')" class="bg-slate-900 text-white text-[10px] px-3 py-2 rounded-lg font-bold">SOLUCIONAR</button>
+<button onclick="window.solItem('${r.id}')" class="bg-slate-900 text-white text-[10px] px-3 py-2 rounded-lg font-bold whitespace-nowrap">SOLUCIONAR</button>
         </div>
       `).join('');
 
