@@ -286,45 +286,152 @@
       });
     }
 
-    // EXPORTACIÓN PDF (CORREGIDA PARA MÓDULO)
+    // ==========================================
+    // EXPORTACIÓN AVANZADA PDF (Con 3 Secciones)
+    // ==========================================
     document.getElementById("export-pdf-button").onclick = () => {
       if(!currentFilteredRatings.length) return alert("No hay datos para exportar");
       
-      const { jsPDF } = window.jspdf; // Acceso correcto a la librería
+      const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
+      let finalY = 0;
+      const formatFecha = (d) => d ? d.replace("T", " ").substring(0, 16) : "-";
+      const cleanText = (str) => (str || "-").replace(/\r?\n/g, " ");
+
+      doc.setFontSize(14);
+      doc.text("Reporte de Calificaciones y Casos", 14, 18);
+      doc.setFontSize(10);
+      doc.text(`Generado: ${new Date().toLocaleString("es-CO")}`, 14, 24);
       
-      doc.setFontSize(16);
-      doc.text("REPORTE DE CALIFICACIONES - ATENCIÓN AL CLIENTE", 14, 15);
-      
-      const tableData = currentFilteredRatings.map(r => [
-        r.advisorName || "-",
-        r.rating + "★",
-        r.comments || "-",
-        r.timestamp?.substring(0,10) || "-",
-        r.clientPhone || "-"
-      ]);
+      // 1. TODAS LAS CALIFICACIONES
+      doc.text("1. CALIFICACIONES COMPLETAS (Filtros Aplicados)", 14, 32);
+      const allBody = currentFilteredRatings.map(r => {
+        const estado = (r.rating || 0) <= 2 ? (r.resolved ? "SOLUCIONADO" : "PENDIENTE") : "SIN NOVEDAD";
+        return [cleanText(r.advisorName), String(r.rating) + "★", cleanText(r.comments), formatFecha(r.timestamp), cleanText(r.clientPhone), estado];
+      });
 
       doc.autoTable({
-        startY: 25,
-        head: [['ASESOR', 'NOTA', 'COMENTARIO', 'FECHA', 'TELÉFONO']],
-        body: tableData,
-        theme: 'striped',
+        startY: 36,
+        head: [["Asesor", "Calif.", "Comentario", "Fecha", "Teléfono", "Estado"]],
+        body: allBody,
+        styles: { fontSize: 8, cellPadding: 2 },
         headStyles: { fillColor: [15, 23, 42] },
-        styles: { fontSize: 8 }
+        didParseCell: (data) => {
+          if (data.section === 'body' && data.column.index === 5) {
+            if (data.cell.raw === 'PENDIENTE') data.cell.styles.textColor = [220, 38, 38];
+            else if (data.cell.raw === 'SOLUCIONADO') data.cell.styles.textColor = [5, 150, 105];
+            else data.cell.styles.textColor = [107, 114, 128];
+          }
+        }
       });
+      finalY = doc.lastAutoTable.finalY;
 
-      doc.save(`Reporte_Calificaciones.pdf`);
+      // 2. CASOS CRÍTICOS PENDIENTES
+      const critical = currentFilteredRatings.filter(r => (r.rating || 0) <= 2 && !r.resolved);
+      if (critical.length > 0) {
+        doc.addPage();
+        finalY = 20;
+        doc.setFontSize(12);
+        doc.text("2. CASOS CRÍTICOS PENDIENTES DE CONTACTO", 14, finalY);
+        finalY += 6;
+        
+        const critBody = critical.map(r => [cleanText(r.advisorName), String(r.rating) + "★", cleanText(r.comments), cleanText(r.clientPhone), formatFecha(r.timestamp)]);
+        doc.autoTable({
+          startY: finalY,
+          head: [["Asesor", "Calif.", "Comentario", "Teléfono", "Fecha"]],
+          body: critBody,
+          styles: { fontSize: 8, cellPadding: 2 },
+          headStyles: { fillColor: [220, 38, 38] } // Rojo para pendientes
+        });
+        finalY = doc.lastAutoTable.finalY;
+      }
+
+      // 3. CASOS SOLUCIONADOS
+      const resolved = currentFilteredRatings.filter(r => (r.rating || 0) <= 2 && r.resolved);
+      if (resolved.length > 0) {
+        doc.addPage();
+        finalY = 20;
+        doc.setFontSize(12);
+        doc.text("3. CASOS CRÍTICOS SOLUCIONADOS (Detalle)", 14, finalY);
+        finalY += 6;
+        
+        const resBody = resolved.map(r => [
+          cleanText(r.advisorName), String(r.rating) + "★", cleanText(r.resolvedBy), 
+          cleanText(r.resolution), formatFecha(r.timestamp), cleanText(r.clientPhone)
+        ]);
+        doc.autoTable({
+          startY: finalY,
+          head: [["Asesor", "Calif.", "Solucionado Por", "Solución Aplicada", "Fecha Reporte", "Teléfono"]],
+          body: resBody,
+          styles: { fontSize: 8, cellPadding: 2, overflow: 'linebreak' },
+          headStyles: { fillColor: [5, 150, 105] } // Verde para solucionados
+        });
+      }
+      
+      doc.save(`Reporte_Completo_Calificaciones.pdf`);
     };
-
-    // EXCEL
+    
+    // EXPORTACIÓN EXCEL/CSV 
     document.getElementById("export-excel-button").onclick = () => {
-      let csv = "\uFEFFAsesor;Nota;Comentario;Fecha;Telefono\n";
+      if (!currentFilteredRatings.length) return alert("No hay datos para exportar");
+
+      let csv = "\uFEFF"; // BOM para caracteres especiales y tildes en Excel
+      const delimiter = ";";
+      
+      const formatString = (str) => `"${(str || "").replace(/"/g, '""').replace(/\r?\n/g, ' ')}"`;
+      const formatFecha = (d) => d ? d.replace("T", " ").substring(0, 16) : "";
+
+      // 1. TODAS LAS CALIFICACIONES
+      csv += "--- CALIFICACIONES COMPLETAS (Filtros Aplicados) ---\n";
+      csv += "Asesor;Calificación;Comentario;Fecha;Teléfono;Estado;Solucionado Por;Detalle Solución\n";
+      
       currentFilteredRatings.forEach(r => {
-        csv += `${r.advisorName};${r.rating};${(r.comments||'').replace(/;/g,',')};${r.timestamp};${r.clientPhone||''}\n`;
+        const estado = (r.rating || 0) <= 2 ? (r.resolved ? "SOLUCIONADO" : "PENDIENTE") : "SIN NOVEDAD";
+        csv += [
+          formatString(r.advisorName), formatString(r.rating), formatString(r.comments),
+          formatString(formatFecha(r.timestamp)), formatString(r.clientPhone),
+          formatString(estado), formatString(r.resolvedBy), formatString(r.resolution)
+        ].join(delimiter) + "\n";
       });
+
+      csv += "\n\n";
+
+      // 2. CASOS CRÍTICOS PENDIENTES
+      const critical = currentFilteredRatings.filter(r => (r.rating || 0) <= 2 && !r.resolved);
+      csv += "--- CASOS CRÍTICOS PENDIENTES DE CONTACTO ---\n";
+      if (critical.length > 0) {
+        csv += "Asesor;Calificación;Comentario;Fecha;Teléfono\n";
+        critical.forEach(r => {
+          csv += [
+            formatString(r.advisorName), formatString(r.rating), formatString(r.comments), 
+            formatString(formatFecha(r.timestamp)), formatString(r.clientPhone)
+          ].join(delimiter) + "\n";
+        });
+      } else {
+        csv += "No hay casos críticos pendientes.\n";
+      }
+
+      csv += "\n\n";
+
+      // 3. CASOS SOLUCIONADOS
+      const resolved = currentFilteredRatings.filter(r => (r.rating || 0) <= 2 && r.resolved);
+      csv += "--- CASOS CRÍTICOS SOLUCIONADOS (Detalle) ---\n";
+      if (resolved.length > 0) {
+        csv += "Asesor;Calificación;Comentario Cliente;Fecha Reporte;Teléfono Cliente;Solucionado Por;Detalle Solución;Fecha Solución\n";
+        resolved.forEach(r => {
+          csv += [
+            formatString(r.advisorName), formatString(r.rating), formatString(r.comments), 
+            formatString(formatFecha(r.timestamp)), formatString(r.clientPhone),
+            formatString(r.resolvedBy), formatString(r.resolution), formatString(formatFecha(r.resolvedAt))
+          ].join(delimiter) + "\n";
+        });
+      } else {
+        csv += "No hay casos críticos solucionados.\n";
+      }
+
       const link = document.createElement("a");
       link.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8;'}));
-      link.download = "Calificaciones.csv";
+      link.download = "Reporte_Completo_Calificaciones.csv";
       link.click();
     };
 
