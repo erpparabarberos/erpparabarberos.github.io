@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Migrador de Base de Datos - NEXUS PB</title>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; background: #f8fafc; display: flex; justify-content: center; }
+        .box { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); width: 100%; max-width: 500px; text-align: center; border: 1px solid #e2e8f0; }
+        h2 { color: #0f172a; margin-top: 0; }
+        p { color: #64748b; font-size: 14px; margin-bottom: 20px; }
+        button { background: #0f172a; color: white; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; transition: background 0.3s; }
+        button:hover { background: #1e293b; }
+        button:disabled { background: #94a3b8; cursor: not-allowed; }
+        #status { margin-top: 20px; font-weight: bold; color: #2563eb; padding: 10px; border-radius: 6px; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2>Migrador a NEXUS PB</h2>
+        <p>Pasando datos de "parabarberos-traslados-v2" a "erpparabarberos-12de9".</p>
+        <button id="btnMigrar">MIGRAR COLECCIÓN</button>
+        <p id="status">Listo para iniciar...</p>
+    </div>
+
+    <script>
+        // 1. LLAVES DE TU BASE DE DATOS VIEJA (Origen)
+        const firebaseConfigVIEJA = {
+            apiKey: "AIzaSyDzJjtmK0XNo94KarKVJ5juuBnSoKqbtbo",
+            authDomain: "parabarberos-traslados-v2.firebaseapp.com",
+            projectId: "parabarberos-traslados-v2"
+        };
+
+        // 2. LLAVES DE TU BASE DE DATOS NUEVA (NEXUS PB - Destino)
+        const firebaseConfigNUEVA = {
+            apiKey: "AIzaSyDkH2_E7t07SWWH1SZr77BFlNp6RQTDDDY",
+            authDomain: "erpparabarberos-12de9.firebaseapp.com",
+            projectId: "erpparabarberos-12de9"
+        };
+
+        // Inicializar ambas aplicaciones para que no choquen
+        const appVieja = firebase.initializeApp(firebaseConfigVIEJA, "appVieja");
+        const appNueva = firebase.initializeApp(firebaseConfigNUEVA, "appNueva");
+
+        const dbVieja = appVieja.firestore();
+        const dbNueva = appNueva.firestore();
+
+        // ========================================================
+        // 3. AQUÍ CAMBIAS EL NOMBRE DE LA COLECCIÓN QUE VAS A PASAR
+        // ========================================================
+        const coleccionViejaPath = "transferencias"; 
+        const coleccionNuevaPath = "transferencias"; 
+
+        document.getElementById('btnMigrar').addEventListener('click', async () => {
+            const statusLabel = document.getElementById('status');
+            const btn = document.getElementById('btnMigrar');
+            
+            btn.disabled = true;
+            statusLabel.style.backgroundColor = "#e0f2fe";
+            statusLabel.style.color = "#0284c7";
+            statusLabel.textContent = `Leyendo "${coleccionViejaPath}" de la base vieja...`;
+
+            try {
+                // Leer datos
+                const snapshot = await dbVieja.collection(coleccionViejaPath).get();
+                if (snapshot.empty) {
+                    statusLabel.textContent = `La colección "${coleccionViejaPath}" está vacía o no existe en la base vieja.`;
+                    statusLabel.style.backgroundColor = "#fee2e2";
+                    statusLabel.style.color = "#dc2626";
+                    btn.disabled = false;
+                    return;
+                }
+
+                statusLabel.textContent = `Encontrados ${snapshot.docs.length} documentos. Copiando...`;
+
+                // Escribir datos (Batch processing)
+                let batch = dbNueva.batch();
+                let count = 0;
+                let totalCopiados = 0;
+
+                for (const doc of snapshot.docs) {
+                    const docRefNueva = dbNueva.collection(coleccionNuevaPath).doc(doc.id);
+                    batch.set(docRefNueva, doc.data());
+                    count++;
+                    totalCopiados++;
+
+                    // Limite de Firestore es 500 por batch
+                    if (count === 400) {
+                        await batch.commit();
+                        batch = dbNueva.batch();
+                        count = 0;
+                        statusLabel.textContent = `Copiando... (${totalCopiados} de ${snapshot.docs.length})`;
+                    }
+                }
+
+                if (count > 0) {
+                    await batch.commit();
+                }
+
+                statusLabel.textContent = `¡Éxito! Se copiaron ${totalCopiados} documentos a la nueva base de datos.`;
+                statusLabel.style.backgroundColor = "#dcfce3";
+                statusLabel.style.color = "#166534";
+                btn.disabled = false;
+
+            } catch (error) {
+                console.error("Error en la migración:", error);
+                statusLabel.textContent = "Hubo un error. Revisa la consola (Presiona F12).";
+                statusLabel.style.backgroundColor = "#fee2e2";
+                statusLabel.style.color = "#dc2626";
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
