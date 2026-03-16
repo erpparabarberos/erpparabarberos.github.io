@@ -85,9 +85,10 @@
         const config = configObject[category]; 
         if (!config) { container.innerHTML = `<h1>Error: Categoría no encontrada.</h1>`; return; } 
 
-        const iconEdit = `<svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="currentColor" d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>`; 
-        const iconDelete = `<svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>`; 
-        const iconHistory = `<svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="currentColor" d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.25 2.52.77-1.28-3.52-2.09V8H12z"/></svg>`; 
+        // --- ICONOS LIMPIOS Y TRANSPARENTES ---
+        const iconEdit = `<svg style="width:20px; height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>`; 
+        const iconView = `<svg style="width:20px; height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>`;
+        const iconDelete = `<svg style="width:20px; height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>`; 
         
         document.getElementById('page-title').innerText = `${icon} ${config.title}`; 
         document.getElementById('item-list-title').innerText = `Lista de ${config.title}`; 
@@ -99,6 +100,7 @@
         const tableHeaders = Object.values(config.fields).map(field => field.label); 
         tableHeadContainer.innerHTML = `<tr>${tableHeaders.map(h => `<th>${h}</th>`).join('')}<th>Acciones</th></tr>`; 
         const tableBody = document.getElementById('item-table-body'); 
+        
         db.collection(collectionName).where('category', '==', category).orderBy("numericId", "asc").onSnapshot(snapshot => { 
             tableBody.innerHTML = ''; 
             if (snapshot.empty) { tableBody.innerHTML = `<tr><td colspan="${tableHeaders.length + 1}">No hay elementos.</td></tr>`; return; } 
@@ -114,11 +116,15 @@
                     else { cellsHTML += `<td data-field="${key}"><span class="cell-text">${cellContent}</span></td>`; } 
                 } 
                 
-                let actionsHTML = `<span class="edit-btn p-2 text-slate-400 hover:text-blue-600 cursor-pointer" style="display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:6px;" data-id="${item.id}" data-collection="${collectionName}" data-category="${category}">${iconEdit}</span>`; 
-                if (collectionName === 'inventory') { actionsHTML += `<span class="history-btn p-2 text-slate-400 hover:text-slate-800 cursor-pointer" style="display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:6px;" data-id="${item.id}">${iconHistory}</span>`; } 
-                actionsHTML += `<span class="delete-btn p-2 text-slate-400 hover:text-red-600 cursor-pointer" style="display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:6px;" data-id="${item.id}" data-collection="${collectionName}">${iconDelete}</span>`; 
+                // --- BOTONES CON ESTILOS INLINE (!important) PARA ANULAR EL ROJO ---
+                let actionsHTML = `<span class="edit-btn" style="cursor:pointer; color:#2563eb; display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; background:transparent !important; border:none; margin:0 4px;" title="Editar" data-id="${item.id}" data-collection="${collectionName}" data-category="${category}">${iconEdit}</span>`; 
                 
-                tr.innerHTML = `${cellsHTML}<td><div class="config-item-actions" style="display:flex; gap:8px; align-items:center; justify-content:center;">${actionsHTML}</div></td>`; 
+                // Ojo para Ver Detalles (ahora en todos los ítems)
+                actionsHTML += `<span class="history-btn" style="cursor:pointer; color:#475569; display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; background:transparent !important; border:none; margin:0 4px;" title="Ver Detalles" data-id="${item.id}">${iconView}</span>`; 
+                
+                actionsHTML += `<span class="delete-btn" style="cursor:pointer; color:#dc2626; display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; background:transparent !important; border:none; margin:0 4px;" title="Eliminar" data-id="${item.id}" data-collection="${collectionName}">${iconDelete}</span>`; 
+                
+                tr.innerHTML = `${cellsHTML}<td><div class="config-item-actions" style="display:flex; justify-content:center; align-items:center;">${actionsHTML}</div></td>`; 
                 tableBody.appendChild(tr); 
             }); 
         }, error => handleFirestoreError(error, tableBody)); 
@@ -132,11 +138,13 @@
         container.innerHTML = configHTML; 
         const setupConfigSection = (type, collectionName, prefix, counterName) => { 
             const form = document.getElementById(`add-${type}-form`); 
-            if(!form) return; // <-- SOLUCIÓN AL CHOQUE EN CONSOLA
+            if(!form) return; 
             const input = document.getElementById(`${type}-name`); 
             const list = document.getElementById(`${type}s-list`); 
-            const iconEdit = `<svg class="icon-edit" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>`; 
-            const iconDelete = `<svg class="icon-delete" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>`; 
+            
+            // Iconos limpios para configuración también
+            const iconEdit = `<svg style="width:20px; height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>`; 
+            const iconDelete = `<svg style="width:20px; height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>`; 
             
             form.addEventListener('submit', async (e) => { 
                 e.preventDefault(); 
@@ -165,7 +173,7 @@
                     const item = { id: doc.id, ...doc.data() }; 
                     const li = document.createElement('li'); 
                     li.className = 'config-list-item'; 
-                    li.innerHTML = `<div><strong style="margin-right: 10px;">${item.id}</strong><span class="config-item-name">${item.name}</span></div><div class="config-item-actions"><span class="edit-btn" data-collection="${collectionName}" data-id="${item.id}" data-type="config">${iconEdit}</span><span class="delete-btn" data-id="${item.id}" data-collection="${collectionName}">${iconDelete}</span></div>`; 
+                    li.innerHTML = `<div><strong style="margin-right: 10px;">${item.id}</strong><span class="config-item-name">${item.name}</span></div><div class="config-item-actions" style="display:flex;"><span class="edit-btn" style="cursor:pointer; color:#2563eb; background:transparent !important; margin:0 5px;" data-collection="${collectionName}" data-id="${item.id}" data-type="config">${iconEdit}</span><span class="delete-btn" style="cursor:pointer; color:#dc2626; background:transparent !important; margin:0 5px;" data-id="${item.id}" data-collection="${collectionName}">${iconDelete}</span></div>`; 
                     list.appendChild(li); 
                 }); 
             }, error => handleFirestoreError(error, list)); 
@@ -256,6 +264,8 @@
             if(e.target.matches('.view-ticket-btn')) { e.preventDefault(); showTicketModal(e.target.dataset.id); }
             if(e.target.matches('.open-form-modal-btn')) showItemFormModal(e.target.dataset.type, e.target.dataset.category, null);
             if(e.target.matches('.export-btn')) e.target.dataset.format === 'pdf' ? exportToPDF('data-table', 'reporte') : exportToCSV('data-table', 'reporte');
+            // NUEVO EVENTO PARA ABRIR EL HISTORIAL DESDE EL BOTÓN DEL OJO
+            if(e.target.matches('.history-btn')) showDeviceHistoryModal(e.target.dataset.id); 
         });
 
         // -------------------------------------------------------------
