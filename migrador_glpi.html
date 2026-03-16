@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Migrador GLPI - NEXUS PB</title>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; background: #f8fafc; display: flex; justify-content: center; }
+        .box { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); width: 100%; max-width: 500px; text-align: center; border: 1px solid #e2e8f0; }
+        h2 { color: #0f172a; margin-top: 0; }
+        p { color: #64748b; font-size: 14px; margin-bottom: 20px; }
+        button { background: #2563eb; color: white; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; transition: background 0.3s; }
+        button:hover { background: #1d4ed8; }
+        button:disabled { background: #94a3b8; cursor: not-allowed; }
+        .log { margin-top: 15px; font-size: 13px; text-align: left; background: #f1f5f9; padding: 10px; border-radius: 6px; max-height: 200px; overflow-y: auto; color: #334155; font-family: monospace; }
+        .success { color: #166534; font-weight: bold; }
+        .error { color: #dc2626; font-weight: bold; }
+        .info { color: #0284c7; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2>Migrador de Tecnología (GLPI)</h2>
+        <p>Este script pasará las 7 colecciones (tickets, equipos, etc.) desde <b>glpi-tecnologia</b> al nuevo ERP.</p>
+        <button id="btnMigrar">INICIAR MIGRACIÓN DE GLPI</button>
+        <div id="logArea" class="log">Esperando orden...<br></div>
+    </div>
+
+    <script>
+        // 1. LLAVES DE TU BASE DE DATOS VIEJA (GLPI)
+        const firebaseConfigVIEJA = {
+            apiKey: "AIzaSyA5rVhtkVDeJPY0bEnLjk-_LMVN3d5pkIo",
+            authDomain: "glpi-tecnologia.firebaseapp.com",
+            projectId: "glpi-tecnologia"
+        };
+
+        // 2. LLAVES DE TU BASE DE DATOS NUEVA (NEXUS PB - Destino)
+        const firebaseConfigNUEVA = {
+            apiKey: "AIzaSyDkH2_E7t07SWWH1SZr77BFlNp6RQTDDDY",
+            authDomain: "erpparabarberos-12de9.firebaseapp.com",
+            projectId: "erpparabarberos-12de9"
+        };
+
+        const appVieja = firebase.initializeApp(firebaseConfigVIEJA, "appVieja");
+        const appNueva = firebase.initializeApp(firebaseConfigNUEVA, "appNueva");
+        const dbVieja = appVieja.firestore();
+        const dbNueva = appNueva.firestore();
+
+        const logArea = document.getElementById('logArea');
+        function log(msg, type = 'normal') {
+            const span = document.createElement('span');
+            span.className = type;
+            span.innerHTML = msg + "<br>";
+            logArea.appendChild(span);
+            logArea.scrollTop = logArea.scrollHeight;
+        }
+
+        async function migrarColeccion(nombreColeccion) {
+            log(`▶ Copiando: <span class="info">${nombreColeccion}</span>...`);
+            try {
+                const snapshot = await dbVieja.collection(nombreColeccion).get();
+                if (snapshot.empty) {
+                    log(`La colección ${nombreColeccion} está vacía o no existe.`, 'error');
+                    return false;
+                }
+
+                let batch = dbNueva.batch();
+                let count = 0;
+                let totalCopiados = 0;
+
+                for (const doc of snapshot.docs) {
+                    const docRefNueva = dbNueva.collection(nombreColeccion).doc(doc.id);
+                    batch.set(docRefNueva, doc.data());
+                    count++;
+                    totalCopiados++;
+
+                    if (count === 400) {
+                        await batch.commit();
+                        batch = dbNueva.batch();
+                        count = 0;
+                        log(`... procesando ${totalCopiados} items...`);
+                    }
+                }
+
+                if (count > 0) { await batch.commit(); }
+                log(`✔ Éxito: ${totalCopiados} registros de ${nombreColeccion} pasados.`, 'success');
+                return true;
+
+            } catch (error) {
+                log(`✖ Error en ${nombreColeccion}: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        document.getElementById('btnMigrar').addEventListener('click', async () => {
+            const btn = document.getElementById('btnMigrar');
+            btn.disabled = true;
+            logArea.innerHTML = "Iniciando proceso maestro (GLPI)...<br>";
+
+            // Array con todas las colecciones que vimos en tu foto
+            const coleccionesGLPI = [
+                "bitacoras", 
+                "equipos", 
+                "garantias", 
+                "mantenimientos", 
+                "sedes", 
+                "tickets", 
+                "users"
+            ];
+
+            // Bucle para pasar una por una
+            for (const coleccion of coleccionesGLPI) {
+                await migrarColeccion(coleccion);
+            }
+
+            logArea.innerHTML += "<br><span class='success'>¡MIGRACIÓN DE GLPI FINALIZADA! 🎉</span><br>";
+        });
+    </script>
+</body>
+</html>
