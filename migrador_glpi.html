@@ -13,7 +13,7 @@
         button { background: #2563eb; color: white; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; transition: background 0.3s; }
         button:hover { background: #1d4ed8; }
         button:disabled { background: #94a3b8; cursor: not-allowed; }
-        .log { margin-top: 15px; font-size: 13px; text-align: left; background: #f1f5f9; padding: 10px; border-radius: 6px; max-height: 200px; overflow-y: auto; color: #334155; font-family: monospace; }
+        .log { margin-top: 15px; font-size: 13px; text-align: left; background: #f1f5f9; padding: 10px; border-radius: 6px; max-height: 250px; overflow-y: auto; color: #334155; font-family: monospace; }
         .success { color: #166534; font-weight: bold; }
         .error { color: #dc2626; font-weight: bold; }
         .info { color: #0284c7; font-weight: bold; }
@@ -22,20 +22,20 @@
 <body>
     <div class="box">
         <h2>Migrador de Tecnología (GLPI)</h2>
-        <p>Este script pasará las 7 colecciones (tickets, equipos, etc.) desde <b>glpi-tecnologia</b> al nuevo ERP.</p>
+        <p>Este script pasará tus colecciones exactas desde <b>glpi-tecnologia</b> al nuevo ERP.</p>
         <button id="btnMigrar">INICIAR MIGRACIÓN DE GLPI</button>
         <div id="logArea" class="log">Esperando orden...<br></div>
     </div>
 
     <script>
-        // 1. LLAVES DE TU BASE DE DATOS VIEJA (GLPI)
+        // 1. LLAVES VIEJAS (GLPI)
         const firebaseConfigVIEJA = {
             apiKey: "AIzaSyA5rVhtkVDeJPY0bEnLjk-_LMVN3d5pkIo",
             authDomain: "glpi-tecnologia.firebaseapp.com",
             projectId: "glpi-tecnologia"
         };
 
-        // 2. LLAVES DE TU BASE DE DATOS NUEVA (NEXUS PB - Destino)
+        // 2. LLAVES NUEVAS (NEXUS PB)
         const firebaseConfigNUEVA = {
             apiKey: "AIzaSyDkH2_E7t07SWWH1SZr77BFlNp6RQTDDDY",
             authDomain: "erpparabarberos-12de9.firebaseapp.com",
@@ -98,18 +98,18 @@
             btn.disabled = true;
             logArea.innerHTML = "Iniciando proceso maestro (GLPI)...<br>";
 
-            // Array con todas las colecciones que vimos en tu foto
+            // TUS COLECCIONES EXACTAS
             const coleccionesGLPI = [
-                "bitacoras", 
-                "equipos", 
-                "garantias", 
-                "mantenimientos", 
-                "sedes", 
-                "tickets", 
-                "users"
+                "counters", 
+                "credentials", 
+                "inventory", 
+                "knowledge_base", 
+                "locations", 
+                "requesters", 
+                "services", 
+                "tickets"
             ];
 
-            // Bucle para pasar una por una
             for (const coleccion of coleccionesGLPI) {
                 await migrarColeccion(coleccion);
             }
