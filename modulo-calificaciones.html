@@ -371,15 +371,18 @@
       doc.save(`Reporte_Completo_Calificaciones.pdf`);
     };
     
-    // EXPORTACIÓN EXCEL/CSV 
+    // ==========================================
+    // EXPORTACIÓN AVANZADA EXCEL/CSV 
+    // ==========================================
     document.getElementById("export-excel-button").onclick = () => {
       if (!currentFilteredRatings.length) return alert("No hay datos para exportar");
 
       let csv = "\uFEFF"; // BOM para caracteres especiales y tildes en Excel
       const delimiter = ";";
       
-      const formatString = (str) => `"${(str || "").replace(/"/g, '""').replace(/\r?\n/g, ' ')}"`;
-      const formatFecha = (d) => d ? d.replace("T", " ").substring(0, 16) : "";
+      // FIX: Agregamos String() para que no falle al procesar números como la calificación
+      const formatString = (str) => `"${String(str || "").replace(/"/g, '""').replace(/\r?\n/g, ' ')}"`;
+      const formatFecha = (d) => d ? String(d).replace("T", " ").substring(0, 16) : "";
 
       // 1. TODAS LAS CALIFICACIONES
       csv += "--- CALIFICACIONES COMPLETAS (Filtros Aplicados) ---\n";
@@ -434,7 +437,6 @@
       link.download = "Reporte_Completo_Calificaciones.csv";
       link.click();
     };
-
     // Funciones Globales para botones de la lista
     window.viewItem = (id) => {
       const r = allRatings.find(x => x.id === id);
