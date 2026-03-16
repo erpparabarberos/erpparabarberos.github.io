@@ -106,32 +106,43 @@
         <div id="ratings-list-container" class="space-y-3 pr-1 pb-2 pt-2"></div>
       </div>
     </div>
-
     <section class="mt-10 mb-10">
-      <h2 class="text-2xl font-bold text-slate-900 mb-3 uppercase">Casos para Contactar</h2>
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-2xl font-bold text-slate-900 uppercase">Casos para Contactar</h2>
+      </div>
       <div class="card rounded-2xl p-4">
         <div class="max-h-[380px] overflow-y-auto">
           <div class="low-cases-grid text-[11px] font-semibold text-slate-500 px-4 pb-2 border-b border-slate-100 sticky top-0 bg-white z-10">
             <span>ASESOR</span>
             <span>TELÉFONO</span>
             <span>FECHA REPORTE</span>
-            <span class="text-right">ACCIÓN</span>
+            <span class="text-right pr-2">ACCIÓN</span>
           </div>
-          <div id="critical-container" class="py-3 space-y-3"></div>
+          <div class="pr-1 px-4">
+            <div id="critical-container" class="py-3 space-y-3"></div>
+          </div>
         </div>
       </div>
     </section>
+
 
     <div class="mt-6 mb-10">
       <h2 class="text-lg font-semibold text-gray-900 mb-3 uppercase">Casos Solucionados</h2>
       <div id="resolved-container" class="card rounded-2xl p-4 space-y-3 max-h-[380px] overflow-y-auto"></div>
     </div>
   </div>
-
+  
   <div id="view-rating-modal" class="fixed inset-0 bg-slate-900/60 z-50 hidden items-center justify-center p-4">
     <div class="bg-white rounded-[24px] max-w-lg w-full p-8 relative">
-      <button type="button" id="close-view-rating-modal" class="absolute top-6 right-6 text-gray-400">✕</button>
+      <button type="button" id="close-view-rating-modal" class="absolute top-6 right-6 text-gray-400 hover:text-gray-900">✕</button>
       <div id="detail-content" class="space-y-4"></div>
+      
+      <div id="detail-resolution-block" class="hidden mt-6 pt-4 border-t border-slate-200">
+        <h4 class="text-xs font-bold text-emerald-600 uppercase mb-2">Detalle de la Solución</h4>
+        <p class="text-sm font-semibold text-slate-900">Por: <span id="detail-resolved-by" class="font-normal text-slate-600"></span></p>
+        <p class="text-sm text-slate-700 mt-2 p-3 bg-emerald-50 rounded-lg" id="detail-resolution-text"></p>
+        <p class="text-[10px] text-slate-400 mt-2" id="detail-resolved-at"></p>
+      </div>
     </div>
   </div>
 
@@ -320,13 +331,27 @@
     // Funciones Globales para botones de la lista
     window.viewItem = (id) => {
       const r = allRatings.find(x => x.id === id);
+      
+      // Llenar datos básicos
       document.getElementById("detail-content").innerHTML = `
         <h3 class="text-xl font-bold uppercase">${r.advisorName}</h3>
-        <p class="text-4xl font-black text-yellow-500">${r.rating}★</p>
+        <p class="text-4xl font-black ${r.rating <= 2 ? 'text-red-500' : 'text-yellow-500'}">${r.rating}★</p>
         <p class="p-4 bg-slate-50 rounded-xl italic">"${r.comments || 'Sin comentarios'}"</p>
         <p class="text-xs text-gray-400">Fecha: ${r.timestamp}</p>
         <p class="text-sm">Tel: ${r.clientPhone || 'No proporcionado'}</p>
       `;
+
+      // Mostrar o esconder el bloque de solución
+      const resolutionBlock = document.getElementById("detail-resolution-block");
+      if (r.resolved) {
+        document.getElementById("detail-resolved-by").textContent = r.resolvedBy || 'No registrado';
+        document.getElementById("detail-resolution-text").textContent = r.resolution || 'Sin detalle';
+        document.getElementById("detail-resolved-at").textContent = r.resolvedAt ? `Solucionado el: ${r.resolvedAt.substring(0, 10)}` : '';
+        resolutionBlock.classList.remove("hidden");
+      } else {
+        resolutionBlock.classList.add("hidden");
+      }
+
       document.getElementById("view-rating-modal").classList.replace("hidden", "flex");
     };
 
