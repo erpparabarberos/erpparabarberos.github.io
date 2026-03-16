@@ -21,7 +21,7 @@
     ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     .card { background-color: #ffffff; border: 1px solid #e5e7eb; box-shadow: 0 10px 25px rgba(15, 23, 42, 0.04); border-radius: 0.9rem; }
     input, select { background-color: #f9fafb !important; color: #111827 !important; border-color: #d1d5db !important; }
-    .low-cases-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr) minmax(0, 1.5fr) auto; align-items: center; column-gap: 0.5rem; }
+    .low-cases-grid { display: grid; grid-template-columns: minmax(0, 2.5fr) minmax(0, 1.5fr) minmax(0, 1fr) auto; align-items: center; column-gap: 1rem; }
   </style>
 </head>
 
@@ -211,15 +211,20 @@
           </button>
         </div>
       `).join('');
-
-      // Críticos
+      
+      // Críticos (Casos para Contactar)
       const critContainer = document.getElementById("critical-container");
       critContainer.innerHTML = ratings.filter(r => r.rating <= 2 && !r.resolved).map(r => `
         <div class="low-cases-grid border border-red-100 bg-red-50/30 p-4 rounded-xl">
           <div class="text-sm font-bold">${r.advisorName} <span class="text-red-500">${r.rating}★</span></div>
           <div class="text-xs font-mono font-bold">${r.clientPhone || 'N/A'}</div>
           <div class="text-[10px]">${r.timestamp?.substring(0,10)}</div>
-<button onclick="window.solItem('${r.id}')" class="bg-slate-900 text-white text-[10px] px-3 py-2 rounded-lg font-bold whitespace-nowrap">SOLUCIONAR</button>
+          <div class="flex items-center justify-end gap-3">
+            <button onclick="window.viewItem('${r.id}')" class="text-slate-400 hover:text-black transition" title="Ver detalles">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+            </button>
+            <button onclick="window.solItem('${r.id}')" class="bg-slate-900 text-white text-[10px] px-3 py-2 rounded-lg font-bold whitespace-nowrap">SOLUCIONAR</button>
+          </div>
         </div>
       `).join('');
 
@@ -227,11 +232,18 @@
       const resContainer = document.getElementById("resolved-container");
       resContainer.innerHTML = ratings.filter(r => r.resolved).map(r => `
         <div class="p-3 border bg-emerald-50/20 rounded-xl text-xs">
-          <div class="flex justify-between font-bold"><span>${r.advisorName} (${r.rating}★)</span><span class="text-emerald-600">SOLUCIONADO</span></div>
+          <div class="flex justify-between items-center font-bold">
+            <span>${r.advisorName} (${r.rating}★)</span>
+            <div class="flex items-center gap-3">
+              <span class="text-emerald-600">SOLUCIONADO</span>
+              <button onclick="window.viewItem('${r.id}')" class="text-slate-400 hover:text-black transition" title="Ver detalles">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+              </button>
+            </div>
+          </div>
           <p class="mt-1">Solución: ${r.resolution} - <span class="text-gray-400">Por: ${r.resolvedBy}</span></p>
         </div>
       `).join('');
-    }
 
     function updateStats(ratings) {
       const total = ratings.length;
