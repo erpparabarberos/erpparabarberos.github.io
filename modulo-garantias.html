@@ -46,12 +46,10 @@
                 </div>
                 <div class="flex flex-wrap gap-3 items-center bg-slate-50 p-3 rounded-[16px] border border-slate-100">
                     <span class="text-[11px] font-black text-slate-400 uppercase tracking-widest pl-2">Filtros rápidos:</span>
-                    
                     <div class="relative w-64 shrink-0">
                         <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                         <input type="text" id="searchInput" placeholder="Buscar ticket, ref o cliente..." class="w-full bg-white border border-slate-200 text-slate-800 text-xs font-bold rounded-lg pl-9 pr-3 py-2 outline-none shadow-sm focus:border-slate-900 transition-colors">
                     </div>
-
                     <select id="filtroTaller" class="bg-white border border-slate-200 text-slate-800 text-xs font-bold rounded-lg px-4 py-2 outline-none cursor-pointer shadow-sm">
                         <option value="interno">SERVICIO TÉCNICO PARABARBEROS</option>
                         <option value="proveedor">SERVICIO TÉCNICO PROVEEDOR</option>
@@ -95,16 +93,9 @@
                 <div class="bg-white rounded-[24px] border border-slate-200 shadow-sm overflow-hidden">
                     <table class="w-full text-left border-collapse" id="tablaHistorialExportar">
                         <thead class="bg-slate-950 text-white text-[11px] font-black uppercase tracking-widest">
-                            <tr>
-                                <th class="p-4 pl-6">ID Ticket</th>
-                                <th class="p-4">Fecha Creación</th>
-                                <th class="p-4">Producto (Referencia)</th>
-                                <th class="p-4">Origen / Sede</th>
-                                <th class="p-4">Estado Actual</th>
-                            </tr>
+                            <tr><th class="p-4 pl-6">ID Ticket</th><th class="p-4">Fecha Creación</th><th class="p-4">Producto (Referencia)</th><th class="p-4">Origen / Sede</th><th class="p-4">Estado Actual</th></tr>
                         </thead>
-                        <tbody id="tbodyHistorial" class="text-sm font-medium text-slate-800 divide-y divide-slate-100">
-                        </tbody>
+                        <tbody id="tbodyHistorial" class="text-sm font-medium text-slate-800 divide-y divide-slate-100"></tbody>
                     </table>
                 </div>
             </div>
@@ -155,40 +146,40 @@
     </div>
 
     <datalist id="listaProductosAuto"></datalist>
-    <div class="space-y-6 bg-white p-7 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden transition-all" id="containerDatosCliente">
-    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-        <h3 class="text-xs font-black text-slate-950 uppercase tracking-widest">Datos del Cliente</h3>
-        
-        <div class="flex items-center gap-2">
-            <span class="text-[11px] font-bold text-slate-500 uppercase">Garantía de Inventario</span>
-            <label class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" id="t_modo_garantia" class="sr-only peer">
-                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-slate-950"></div>
-            </label>
-        </div>
-    </div>
 
-    <div id="wrapperCamposCliente" class="space-y-5 transition-all duration-300">
-        <div><label class="block text-xs font-black text-slate-500 mb-1.5 uppercase tracking-wide">Cédula</label><input type="number" id="t_cedula" class="t-client-field w-full border border-slate-300 rounded-xl p-3 text-sm font-semibold focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 transition-colors"></div>
-        <div><label class="block text-xs font-black text-slate-500 mb-1.5 uppercase tracking-wide">Nombre Completo</label><input type="text" id="t_nombre" class="t-client-field w-full border border-slate-300 rounded-xl p-3 text-sm font-semibold focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 transition-colors"></div>
-        <div><label class="block text-xs font-black text-slate-500 mb-1.5 uppercase tracking-wide">Teléfono</label><input type="number" id="t_telefono" class="t-client-field w-full border border-slate-300 rounded-xl p-3 text-sm font-semibold focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 transition-colors"></div>
-        <div><label class="block text-xs font-black text-slate-500 mb-1.5 uppercase tracking-wide">Número de Factura</label><input type="text" id="t_factura" class="t-client-field w-full border border-slate-300 rounded-xl p-3 text-sm font-semibold focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 transition-colors" placeholder="Ej: FAC-1020"></div>
-    </div>
-
-    <div><label class="block text-xs font-black text-slate-500 mb-1.5 uppercase tracking-wide">Sede / Asesor</label><select id="t_sede" required class="w-full border border-slate-300 rounded-xl p-3 text-sm font-semibold bg-white focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 cursor-pointer"><option value="" disabled selected>Selecciona...</option></select></div>
-    <div><label class="block text-xs font-black text-slate-500 mb-1.5 uppercase tracking-wide">Fecha de Ingreso</label><input type="date" id="t_fecha_creacion" required class="w-full border border-slate-300 rounded-xl p-3 text-sm font-semibold focus:border-slate-900 focus:outline-none cursor-pointer"></div>
-</div>
+    <div id="modalNuevoTicket" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-md z-50 flex items-center justify-center p-4 transition-all">
+        <div class="bg-white rounded-[24px] shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden border border-slate-100">
+            <div class="px-10 pt-8 pb-4 relative border-b border-slate-100 shrink-0">
+                <button onclick="document.getElementById('modalNuevoTicket').classList.add('hidden')" class="absolute top-8 right-8 text-slate-400 hover:text-red-500 transition-colors"><svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                <h2 class="text-2xl font-black text-slate-900">Crear Ticket de Garantía</h2>
+            </div>
+            <div class="px-10 py-6 overflow-y-auto flex-1 bg-slate-50/50">
                 <form id="formGarantia" class="space-y-8 pb-4">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div class="space-y-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                            <h3 class="text-xs font-black text-slate-950 uppercase tracking-widest border-b border-slate-100 pb-2">Datos del Cliente</h3>
-                            <div><label class="block text-xs font-black text-slate-500 mb-1.5 uppercase tracking-wide">Cédula</label><input type="number" id="t_cedula" required class="w-full border border-slate-300 rounded-xl p-3 text-sm font-semibold focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 transition-colors"></div>
-                            <div><label class="block text-xs font-black text-slate-500 mb-1.5 uppercase tracking-wide">Nombre Completo</label><input type="text" id="t_nombre" required class="w-full border border-slate-300 rounded-xl p-3 text-sm font-semibold focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 transition-colors"></div>
-                            <div><label class="block text-xs font-black text-slate-500 mb-1.5 uppercase tracking-wide">Teléfono</label><input type="number" id="t_telefono" required class="w-full border border-slate-300 rounded-xl p-3 text-sm font-semibold focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 transition-colors"></div>
-                            <div><label class="block text-xs font-black text-slate-500 mb-1.5 uppercase tracking-wide">Número de Factura</label><input type="text" id="t_factura" required class="w-full border border-slate-300 rounded-xl p-3 text-sm font-semibold focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 transition-colors" placeholder="Ej: FAC-1020"></div>
+                        
+                        <div class="space-y-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm transition-all" id="containerDatosCliente">
+                            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                                <h3 class="text-xs font-black text-slate-950 uppercase tracking-widest">Datos del Cliente</h3>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-[10px] font-bold text-slate-500 uppercase">¿Inventario?</span>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="t_modo_garantia" class="sr-only peer">
+                                        <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-slate-950"></div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div id="wrapperCamposCliente" class="space-y-5 transition-all duration-300">
+                                <div><label class="block text-xs font-black text-slate-500 mb-1.5 uppercase tracking-wide">Cédula</label><input type="number" id="t_cedula" class="t-client-field w-full border border-slate-300 rounded-xl p-3 text-sm font-semibold focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 transition-colors" required></div>
+                                <div><label class="block text-xs font-black text-slate-500 mb-1.5 uppercase tracking-wide">Nombre Completo</label><input type="text" id="t_nombre" class="t-client-field w-full border border-slate-300 rounded-xl p-3 text-sm font-semibold focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 transition-colors" required></div>
+                                <div><label class="block text-xs font-black text-slate-500 mb-1.5 uppercase tracking-wide">Teléfono</label><input type="number" id="t_telefono" class="t-client-field w-full border border-slate-300 rounded-xl p-3 text-sm font-semibold focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 transition-colors" required></div>
+                                <div><label class="block text-xs font-black text-slate-500 mb-1.5 uppercase tracking-wide">Número de Factura</label><input type="text" id="t_factura" class="t-client-field w-full border border-slate-300 rounded-xl p-3 text-sm font-semibold focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 transition-colors" placeholder="Ej: FAC-1020" required></div>
+                            </div>
+
                             <div><label class="block text-xs font-black text-slate-500 mb-1.5 uppercase tracking-wide">Sede / Asesor</label><select id="t_sede" required class="w-full border border-slate-300 rounded-xl p-3 text-sm font-semibold bg-white focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 cursor-pointer"><option value="" disabled selected>Selecciona...</option></select></div>
                             <div><label class="block text-xs font-black text-slate-500 mb-1.5 uppercase tracking-wide">Fecha de Ingreso</label><input type="date" id="t_fecha_creacion" required class="w-full border border-slate-300 rounded-xl p-3 text-sm font-semibold focus:border-slate-900 focus:outline-none cursor-pointer"></div>
                         </div>
+
                         <div class="space-y-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
                             <h3 class="text-xs font-black text-slate-950 uppercase tracking-widest border-b border-slate-100 pb-2">Detalle del Producto</h3>
                             <div><label class="block text-xs font-black text-slate-500 mb-1.5 uppercase tracking-wide">Referencia (Busca por ID/Nombre)</label><input type="text" id="t_referencia" list="listaProductosAuto" autocomplete="off" required class="w-full border border-slate-300 rounded-xl p-3 text-sm font-semibold focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 transition-colors" placeholder="Busca producto..."></div>
@@ -197,7 +188,7 @@
                             <div><label class="block text-xs font-black text-slate-500 mb-1.5 uppercase tracking-wide">Fotos/Videos (Opcional)</label><div class="dashed-box bg-slate-50 relative h-16 flex items-center justify-center cursor-pointer"><span class="text-sm font-semibold text-slate-500 pointer-events-none">Arrastrar fotos/videos aquí</span><input type="file" id="t_fotos" multiple accept="image/*,video/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"></div><div id="preview-archivos-nuevo" class="mt-2 flex flex-col gap-2"></div></div>
                         </div>
                     </div>
-                    <div class="flex justify-end pt-4"><button type="submit" id="btnSubmit" class="px-8 py-3 text-sm font-bold text-white bg-slate-950 hover:bg-black rounded-xl shadow-lg">Generar Ticket</button></div>
+                    <div class="flex justify-end pt-4"><button type="submit" id="btnSubmit" class="px-8 py-3 text-sm font-bold text-white bg-slate-950 hover:bg-black rounded-xl shadow-lg transition-all">Generar Ticket</button></div>
                 </form>
             </div>
         </div>
@@ -285,7 +276,6 @@
             const db = firebase.firestore();
             const storage = firebase.storage();
 
-            // Mantenemos la colección original como me pediste
             const ticketsRef = db.collection('tickets'); 
             const sedesRef = db.collection('sedes');
             const productosRef = db.collection('productos');
@@ -307,7 +297,6 @@
 
             const ESTADO_ANTERIOR = { '2_envio_st': '1_recibir', '3_diagnosticado': '2_envio_st', '4_reparado': '3_diagnosticado', '5_sin_reparacion': '3_diagnosticado', '6_entregado_asesor': '4_reparado', '7_entregado_cliente': '6_entregado_asesor' };
 
-            // ===== 1. DIBUJAR INTERFAZ INMEDIATAMENTE =====
             function dibujarColumnas() {
                 const board = document.getElementById('kanbanBoard');
                 if(board) {
@@ -316,7 +305,6 @@
             }
             dibujarColumnas();
 
-            // UTILIDADES GLOBALES
             function formatearFecha(timestamp) {
                 if(!timestamp) return 'Sin fecha';
                 return timestamp.toDate().toLocaleDateString('es-CO', { year: 'numeric', month: 'short', day: 'numeric' });
@@ -375,9 +363,23 @@
             // ===== 2. ESPERAR A QUE FIREBASE VERIFIQUE LA SESIÓN ANTES DE LEER DATOS =====
             auth.onAuthStateChanged(user => {
                 if (user) {
-                    const currentUserEmail = user.email; // Guardamos el correo para la auditoría
+                    const currentUserEmail = user.email;
                     
-                    // AHORA SÍ: LEER LA BASE DE DATOS DE FORMA SEGURA
+                    // --- LÓGICA DEL TOGGLE DE MODO DE GARANTÍA ---
+                    const toggleModo = document.getElementById('t_modo_garantia');
+                    const wrapperCamposCliente = document.getElementById('wrapperCamposCliente');
+                    const clientFields = document.querySelectorAll('.t-client-field');
+
+                    toggleModo.addEventListener('change', function() {
+                        if (this.checked) {
+                            wrapperCamposCliente.classList.add('hidden');
+                            clientFields.forEach(field => { field.required = false; field.value = ''; });
+                        } else {
+                            wrapperCamposCliente.classList.remove('hidden');
+                            clientFields.forEach(field => field.required = true);
+                        }
+                    });
+
                     sedesRef.orderBy('nombre').onSnapshot(snapshot => {
                         const sKanban = document.getElementById('filtroSedeKanban'), sNuevo = document.getElementById('t_sede');
                         if(sNuevo) sNuevo.innerHTML = '<option value="" disabled selected>Selecciona una opción...</option>'; 
@@ -389,13 +391,10 @@
                         });
                     });
 
-                    // 🔥 AQUÍ ESTABA EL ERROR: AHORA SÍ ACTUALIZA LA TABLA Y EL CONTADOR 🔥
                     productosRef.onSnapshot(snapshot => {
                         let datalistHTML = '';
                         let tablaHTML = '';
                         let total = 0;
-                        
-                        // Convertir a Array para ordenar en Javascript sin pedir índice a Firebase
                         let prods = [];
                         snapshot.forEach(doc => prods.push(doc.data()));
                         prods.sort((a,b) => String(a.nombre).localeCompare(String(b.nombre)));
@@ -408,10 +407,8 @@
 
                         const lp = document.getElementById('listaProductosAuto');
                         if(lp) lp.innerHTML = datalistHTML;
-
                         const tp = document.getElementById('tablaProductos');
                         if(tp) tp.innerHTML = tablaHTML;
-
                         const cp = document.getElementById('countProductos');
                         if(cp) cp.textContent = total;
                     });
@@ -422,100 +419,61 @@
                         renderizarTarjetas();
                     });
 
-                    // FUNCIONES DE GUARDADO (Ya tienen acceso seguro a currentUserEmail)
-                    // ===== 2. ESPERAR A QUE FIREBASE VERIFIQUE LA SESIÓN ANTES DE LEER DATOS =====
-auth.onAuthStateChanged(user => {
-    if (user) {
-        const currentUserEmail = user.email;
+                    document.getElementById('formGarantia').addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        const btn = document.getElementById('btnSubmit'); btn.disabled = true; btn.textContent = "Generando...";
+                        const fechaCustom = new Date(document.getElementById('t_fecha_creacion').value + 'T12:00:00'); 
+                        const isInventario = document.getElementById('t_modo_garantia').checked;
 
-        // ... Lógica existente de sedes Ref y productos Ref (onSnapshot) ...
+                        try {
+                            let c = 0; const doc = await db.runTransaction(async t => { const ref = await t.get(counterRef); c = ref.exists ? (ref.data().count||0) : 0; t.set(counterRef, {count:c+1}, {merge:true}); return c; });
+                            const id = `TICKET ${c+1}`; let urls = [];
+                            for(let f of document.getElementById('t_fotos').files) { const r = storage.ref(`evidencias_garantias/${id}/${f.name}`); await r.put(f); urls.push(await r.getDownloadURL()); }
+                            
+                            let ticketData = { 
+                                id, 
+                                estado: '1_recibir', 
+                                taller: document.getElementById('t_taller').value, 
+                                tipoGarantia: isInventario ? 'inventario' : 'cliente', 
+                                sede: document.getElementById('t_sede').value, 
+                                referencia: document.getElementById('t_referencia').value, 
+                                falla: document.getElementById('t_falla').value, 
+                                diagnostico: "", 
+                                fotos: urls, 
+                                observacionesReparacion: "", 
+                                fotosReparacion: [], 
+                                creadoEn: firebase.firestore.Timestamp.fromDate(fechaCustom),
+                                historialEventos: [{ estado: '1_recibir', fecha: firebase.firestore.Timestamp.fromDate(fechaCustom), usuario: currentUserEmail }]
+                            };
 
-        // --- Lógica del Toggle de Modo de Garantía ---
-        const toggleModo = document.getElementById('t_modo_garantia');
-        const wrapperCamposCliente = document.getElementById('wrapperCamposCliente');
-        const clientFields = document.querySelectorAll('.t-client-field'); // Selecciona campos personales
+                            if (!isInventario) {
+                                ticketData.cedula = document.getElementById('t_cedula').value;
+                                ticketData.telefono = document.getElementById('t_telefono').value;
+                                ticketData.nombre = document.getElementById('t_nombre').value;
+                                ticketData.factura = document.getElementById('t_factura').value;
+                            } else {
+                                ticketData.cedula = "N/A";
+                                ticketData.telefono = "N/A";
+                                ticketData.nombre = "GARANTÍA DE INVENTARIO";
+                                ticketData.factura = "N/A";
+                            }
 
-        toggleModo.addEventListener('change', function() {
-            if (this.checked) {
-                // Modo Inventario: Ocultar campos de cliente
-                wrapperCamposCliente.classList.add('hidden');
-                // Quitar atributo 'required' para evitar errores de validación HTML5
-                clientFields.forEach(field => field.required = false);
-            } else {
-                // Modo Cliente: Mostrar campos
-                wrapperCamposCliente.classList.remove('hidden');
-                // Restaurar atributo 'required'
-                clientFields.forEach(field => field.required = true);
-            }
-        });
+                            await ticketsRef.doc(id).set(ticketData);
 
+                            document.getElementById('formGarantia').reset(); 
+                            document.getElementById('preview-archivos-nuevo').innerHTML=''; 
+                            document.getElementById('t_modo_garantia').checked = false;
+                            document.getElementById('wrapperCamposCliente').classList.remove('hidden');
+                            document.querySelectorAll('.t-client-field').forEach(field => field.required = true);
+                            document.getElementById('modalNuevoTicket').classList.add('hidden');
+                        } catch(e) { 
+                            console.error("Error guardando ticket: ", e);
+                            alert("Hubo un error al generar el ticket."); 
+                        } finally { 
+                            btn.disabled = false; btn.textContent = "Generar Ticket";
+                        }
+                    });
 
-        // --- Lógica de envío del formulario ---
-        document.getElementById('formGarantia').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('btnSubmit'); btn.disabled = true; btn.textContent = "Generando...";
-            const fechaCustom = new Date(document.getElementById('t_fecha_creacion').value + 'T12:00:00'); 
-            const isInventario = document.getElementById('t_modo_garantia').checked;
-
-            try {
-                let c = 0; const doc = await db.runTransaction(async t => { const ref = await t.get(counterRef); c = ref.exists ? (ref.data().count||0) : 0; t.set(counterRef, {count:c+1}, {merge:true}); return c; });
-                const id = `TICKET ${c+1}`; let urls = [];
-                for(let f of document.getElementById('t_fotos').files) { const r = storage.ref(`evidencias_garantias/${id}/${f.name}`); await r.put(f); urls.push(await r.getDownloadURL()); }
-                
-                // --- Datos del Ticket condicionales ---
-                let ticketData = { 
-                    id, 
-                    estado: '1_recibir', 
-                    taller: document.getElementById('t_taller').value, 
-                    // Metadato importante para distinguir tipo de garantía
-                    tipoGarantia: isInventario ? 'inventario' : 'cliente', 
-                    // Datos comunes
-                    sede: document.getElementById('t_sede').value, 
-                    referencia: document.getElementById('t_referencia').value, 
-                    falla: document.getElementById('t_falla').value, 
-                    diagnostico: "", 
-                    fotos: urls, 
-                    observacionesReparacion: "", 
-                    fotosReparacion: [], 
-                    creadoEn: firebase.firestore.Timestamp.fromDate(fechaCustom),
-                    historialEventos: [{ estado: '1_recibir', fecha: firebase.firestore.Timestamp.fromDate(fechaCustom), usuario: currentUserEmail }]
-                };
-
-                // Añadir datos de cliente SOLO si no es garantía de inventario
-                if (!isInventario) {
-                    ticketData.cedula = document.getElementById('t_cedula').value;
-                    ticketData.telefono = document.getElementById('t_telefono').value;
-                    ticketData.nombre = document.getElementById('t_nombre').value;
-                    ticketData.factura = document.getElementById('t_factura').value;
-                }
-
-                // Guardar en Firebase
-                await ticketsRef.doc(id).set(ticketData);
-
-                // Resetear y Cerrar
-                document.getElementById('formGarantia').reset(); 
-                document.getElementById('preview-archivos-nuevo').innerHTML=''; 
-                // Asegurar que el toggle vuelva a su estado por defecto
-                document.getElementById('t_modo_garantia').checked = false;
-                wrapperCamposCliente.classList.remove('hidden');
-                clientFields.forEach(field => field.required = true);
-
-                document.getElementById('modalNuevoTicket').classList.add('hidden');
-                alert(`¡Ticket ${id} generado con éxito!`);
-            } catch(e) { 
-                console.error("Error guardando ticket: ", e);
-                alert("Hubo un error al generar el ticket."); 
-            } finally { 
-                btn.disabled = false; btn.textContent = "Generar Ticket";
-            }
-        });
-
-        // ... Funciones de cambio de estado y guardar informe técnico ...
-
-    } else {
-        console.warn("Iframe de Garantías: Esperando autenticación...");
-    }
-});
                     window.cambiarEstado = async (id, st) => { await ticketsRef.doc(id).update({ estado: st, historialEventos: firebase.firestore.FieldValue.arrayUnion({ estado: st, fecha: new Date(), usuario: currentUserEmail }) }); document.getElementById('modalDetalle').classList.add('hidden'); };
                     window.guardarInformeTecnico = async () => { const txt = document.getElementById('txtDiagnostico').value; if(!txt) return alert("Escribe el informe."); await ticketsRef.doc(currentTicketIdAbierto).update({ diagnostico: txt, estado: '3_diagnosticado', historialEventos: firebase.firestore.FieldValue.arrayUnion({ estado: '3_diagnosticado', fecha: new Date(), usuario: currentUserEmail }) }); document.getElementById('modalDetalle').classList.add('hidden'); };
                     window.guardarPostReparacion = async () => { const txt = document.getElementById('txtObservacionesReparacion').value; if(!txt) return alert("Ingresa las observaciones finales."); const btn = document.getElementById('btnGuardarPostReparacion'); btn.textContent = "Guardando..."; btn.disabled=true; let urls = []; try { for(let f of document.getElementById('f_fotos_reparacion').files){ const r = storage.ref(`ep/${currentTicketIdAbierto}/${f.name}`); await r.put(f); urls.push(await r.getDownloadURL()); } await ticketsRef.doc(currentTicketIdAbierto).update({ observacionesReparacion: txt, fotosReparacion: urls, estado: '6_entregado_asesor', historialEventos: firebase.firestore.FieldValue.arrayUnion({ estado: '6_entregado_asesor', fecha: new Date(), usuario: currentUserEmail }) }); document.getElementById('modalDetalle').classList.add('hidden'); } catch(e) { alert("Error al guardar evidencias."); } btn.textContent = "Guardar Evidencia Final"; btn.disabled=false; };
@@ -546,6 +504,7 @@ auth.onAuthStateChanged(user => {
                     if (t.taller === sTaller && passBusq && passSede && passFec && document.getElementById(`col-${t.estado}`)) {
                         conteos[t.estado]++; 
                         const mediaCountText = (t.fotos && t.fotos.some(u => u.toLowerCase().includes('.mp4')) ? '🎥 ' : '📸 ') + (t.fotos ? t.fotos.length : 0);
+                        
                         let borderClass = "border-slate-100", slaBadge = "";
                         if (t.estado !== '7_entregado_cliente') {
                             const dias = calcularDiasEnEstado(t);
@@ -553,7 +512,10 @@ auth.onAuthStateChanged(user => {
                             else if (dias >= 3) { borderClass = "border-l-4 border-l-amber-400 border-y-slate-100 border-r-slate-100"; slaBadge = `<span class="flex items-center gap-1 text-[10px] font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-100">🟡 ${dias} DÍAS</span>`; }
                             else { borderClass = "border-slate-100"; slaBadge = `<span class="flex items-center gap-1 text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100">🟢 ${dias} días</span>`; }
                         }
-                        document.getElementById(`col-${t.estado}`).innerHTML += `<div onclick="verDetalle('${t.id}')" class="bg-white p-7 rounded-[22px] shadow-sm border ${borderClass} cursor-pointer hover:shadow-xl hover:border-slate-950 transition-all relative group"><div class="flex justify-between items-start mb-4"><h4 class="font-black text-slate-950 text-xl tracking-tight">${t.id}</h4>${slaBadge}</div><div class="space-y-2.5 text-[13px] text-slate-600 mb-4 border-b border-slate-100 pb-5 relative"><p class="flex justify-between items-start"><span class="font-bold text-slate-400 uppercase text-[10px] tracking-widest mt-1">Ref:</span> <span class="font-extrabold text-slate-900 text-right break-words w-4/5 leading-tight">${t.referencia}</span></p><p class="flex justify-between items-start"><span class="font-bold text-slate-400 uppercase text-[10px] tracking-widest mt-1">Sede:</span> <span class="font-semibold text-slate-800 text-right break-words w-4/5">${t.sede}</span></p>${t.fotos && t.fotos.length > 0 ? `<div class="absolute -bottom-3 right-0 text-[10px] font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200 shadow-inner">${mediaCountText}</div>` : ''}</div><p class="text-[12px] text-slate-500 font-medium italic line-clamp-2 leading-relaxed">${t.diagnostico || 'Esperando revisión técnica...'}</p></div>`;
+                        
+                        let inventarioBadge = t.tipoGarantia === 'inventario' ? `<span class="bg-indigo-100 text-indigo-700 text-[9px] font-black px-2 py-0.5 rounded-sm ml-2 border border-indigo-200">INVENTARIO</span>` : '';
+
+                        document.getElementById(`col-${t.estado}`).innerHTML += `<div onclick="verDetalle('${t.id}')" class="bg-white p-7 rounded-[22px] shadow-sm border ${borderClass} cursor-pointer hover:shadow-xl hover:border-slate-950 transition-all relative group"><div class="flex justify-between items-start mb-4"><h4 class="font-black text-slate-950 text-xl tracking-tight">${t.id}</h4>${slaBadge}</div><div class="space-y-2.5 text-[13px] text-slate-600 mb-4 border-b border-slate-100 pb-5 relative"><p class="flex justify-between items-start"><span class="font-bold text-slate-400 uppercase text-[10px] tracking-widest mt-1">Ref:</span> <span class="font-extrabold text-slate-900 text-right break-words w-4/5 leading-tight">${t.referencia}</span></p><p class="flex justify-between items-start"><span class="font-bold text-slate-400 uppercase text-[10px] tracking-widest mt-1">Sede:</span> <span class="font-semibold text-slate-800 text-right break-words w-4/5">${t.sede}</span></p><p class="flex justify-between items-start"><span class="font-bold text-slate-400 uppercase text-[10px] tracking-widest mt-1">Cliente:</span> <span class="font-semibold text-slate-800 text-right break-words w-4/5">${t.nombre}${inventarioBadge}</span></p>${t.fotos && t.fotos.length > 0 ? `<div class="absolute -bottom-3 right-0 text-[10px] font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200 shadow-inner">${mediaCountText}</div>` : ''}</div><p class="text-[12px] text-slate-500 font-medium italic line-clamp-2 leading-relaxed">${t.diagnostico || 'Esperando revisión técnica...'}</p></div>`;
                     }
                 });
                 ESTADOS.forEach(c => { const el = document.getElementById(`count-${c.id}`); if(el) el.textContent = conteos[c.id]; });
@@ -613,7 +575,6 @@ auth.onAuthStateChanged(user => {
             window.exportarExcel = () => { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById('tablaHistorialExportar'), {sheet:"Tickets"}), "Historial_Garantias.xlsx"); };
             window.exportarPDF = () => { const doc = new window.jspdf.jsPDF(); doc.setFontSize(16); doc.text("Historial de Tickets", 14, 15); doc.autoTable({ html: '#tablaHistorialExportar', startY: 20, theme: 'grid', headStyles: { fillColor: [15, 23, 42] } }); doc.save('Historial_Garantias.pdf'); };
 
-            // 🔥 CORRECCIÓN DEL CARGUE JSON 🔥
             window.procesarJSON = async () => {
                 const btn = document.getElementById('btnProcesarJson'); 
                 btn.textContent = "Procesando..."; 
@@ -639,7 +600,6 @@ auth.onAuthStateChanged(user => {
                     }
                 }
                 
-                // Asegurarnos de enviar el remanente si no es múltiplo exacto de 400
                 if (count > 0 && count % 400 !== 0) {
                     batches.push(currentBatch.commit());
                 }
@@ -656,7 +616,7 @@ auth.onAuthStateChanged(user => {
                 btn.disabled = false; 
                 document.getElementById('f_json_inventario').value = "";
                 document.getElementById('json_status').textContent = "";
-                window.jsonCargado = []; // Limpiar memoria
+                window.jsonCargado = [];
             };
 
             document.getElementById('f_json_inventario')?.addEventListener('change', function(e) {
