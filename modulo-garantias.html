@@ -155,14 +155,29 @@
     </div>
 
     <datalist id="listaProductosAuto"></datalist>
+    <div class="space-y-6 bg-white p-7 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden transition-all" id="containerDatosCliente">
+    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="text-xs font-black text-slate-950 uppercase tracking-widest">Datos del Cliente</h3>
+        
+        <div class="flex items-center gap-2">
+            <span class="text-[11px] font-bold text-slate-500 uppercase">Garantía de Inventario</span>
+            <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="t_modo_garantia" class="sr-only peer">
+                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-slate-950"></div>
+            </label>
+        </div>
+    </div>
 
-    <div id="modalNuevoTicket" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-md z-50 flex items-center justify-center p-4 transition-all">
-        <div class="bg-white rounded-[24px] shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden border border-slate-100">
-            <div class="px-10 pt-8 pb-4 relative border-b border-slate-100 shrink-0">
-                <button onclick="document.getElementById('modalNuevoTicket').classList.add('hidden')" class="absolute top-8 right-8 text-slate-400 hover:text-red-500 transition-colors"><svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
-                <h2 class="text-2xl font-black text-slate-900">Crear Ticket de Garantía</h2>
-            </div>
-            <div class="px-10 py-6 overflow-y-auto flex-1 bg-slate-50/50">
+    <div id="wrapperCamposCliente" class="space-y-5 transition-all duration-300">
+        <div><label class="block text-xs font-black text-slate-500 mb-1.5 uppercase tracking-wide">Cédula</label><input type="number" id="t_cedula" class="t-client-field w-full border border-slate-300 rounded-xl p-3 text-sm font-semibold focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 transition-colors"></div>
+        <div><label class="block text-xs font-black text-slate-500 mb-1.5 uppercase tracking-wide">Nombre Completo</label><input type="text" id="t_nombre" class="t-client-field w-full border border-slate-300 rounded-xl p-3 text-sm font-semibold focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 transition-colors"></div>
+        <div><label class="block text-xs font-black text-slate-500 mb-1.5 uppercase tracking-wide">Teléfono</label><input type="number" id="t_telefono" class="t-client-field w-full border border-slate-300 rounded-xl p-3 text-sm font-semibold focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 transition-colors"></div>
+        <div><label class="block text-xs font-black text-slate-500 mb-1.5 uppercase tracking-wide">Número de Factura</label><input type="text" id="t_factura" class="t-client-field w-full border border-slate-300 rounded-xl p-3 text-sm font-semibold focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 transition-colors" placeholder="Ej: FAC-1020"></div>
+    </div>
+
+    <div><label class="block text-xs font-black text-slate-500 mb-1.5 uppercase tracking-wide">Sede / Asesor</label><select id="t_sede" required class="w-full border border-slate-300 rounded-xl p-3 text-sm font-semibold bg-white focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 cursor-pointer"><option value="" disabled selected>Selecciona...</option></select></div>
+    <div><label class="block text-xs font-black text-slate-500 mb-1.5 uppercase tracking-wide">Fecha de Ingreso</label><input type="date" id="t_fecha_creacion" required class="w-full border border-slate-300 rounded-xl p-3 text-sm font-semibold focus:border-slate-900 focus:outline-none cursor-pointer"></div>
+</div>
                 <form id="formGarantia" class="space-y-8 pb-4">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div class="space-y-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
@@ -408,29 +423,99 @@
                     });
 
                     // FUNCIONES DE GUARDADO (Ya tienen acceso seguro a currentUserEmail)
-                    document.getElementById('formGarantia').addEventListener('submit', async (e) => {
-                        e.preventDefault();
-                        const btn = document.getElementById('btnSubmit'); btn.disabled = true;
-                        const fechaCustom = new Date(document.getElementById('t_fecha_creacion').value + 'T12:00:00'); 
+                    // ===== 2. ESPERAR A QUE FIREBASE VERIFIQUE LA SESIÓN ANTES DE LEER DATOS =====
+auth.onAuthStateChanged(user => {
+    if (user) {
+        const currentUserEmail = user.email;
 
-                        try {
-                            let c = 0; const doc = await db.runTransaction(async t => { const ref = await t.get(counterRef); c = ref.exists ? (ref.data().count||0) : 0; t.set(counterRef, {count:c+1}, {merge:true}); return c; });
-                            const id = `TICKET ${c+1}`; let urls = [];
-                            for(let f of document.getElementById('t_fotos').files) { const r = storage.ref(`evidencias_garantias/${id}/${f.name}`); await r.put(f); urls.push(await r.getDownloadURL()); }
-                            
-                            await ticketsRef.doc(id).set({ 
-                                id, estado: '1_recibir', taller: document.getElementById('t_taller').value, 
-                                cedula: document.getElementById('t_cedula').value, telefono: document.getElementById('t_telefono').value, 
-                                nombre: document.getElementById('t_nombre').value, sede: document.getElementById('t_sede').value, 
-                                factura: document.getElementById('t_factura').value, referencia: document.getElementById('t_referencia').value, falla: document.getElementById('t_falla').value, 
-                                diagnostico: "", fotos: urls, observacionesReparacion: "", fotosReparacion: [], 
-                                creadoEn: firebase.firestore.Timestamp.fromDate(fechaCustom),
-                                historialEventos: [{ estado: '1_recibir', fecha: firebase.firestore.Timestamp.fromDate(fechaCustom), usuario: currentUserEmail }]
-                            });
-                            document.getElementById('formGarantia').reset(); document.getElementById('preview-archivos-nuevo').innerHTML=''; document.getElementById('modalNuevoTicket').classList.add('hidden');
-                        } catch(e) { alert("Error guardando ticket: " + e.message); } finally { btn.disabled = false; }
-                    });
+        // ... Lógica existente de sedes Ref y productos Ref (onSnapshot) ...
 
+        // --- Lógica del Toggle de Modo de Garantía ---
+        const toggleModo = document.getElementById('t_modo_garantia');
+        const wrapperCamposCliente = document.getElementById('wrapperCamposCliente');
+        const clientFields = document.querySelectorAll('.t-client-field'); // Selecciona campos personales
+
+        toggleModo.addEventListener('change', function() {
+            if (this.checked) {
+                // Modo Inventario: Ocultar campos de cliente
+                wrapperCamposCliente.classList.add('hidden');
+                // Quitar atributo 'required' para evitar errores de validación HTML5
+                clientFields.forEach(field => field.required = false);
+            } else {
+                // Modo Cliente: Mostrar campos
+                wrapperCamposCliente.classList.remove('hidden');
+                // Restaurar atributo 'required'
+                clientFields.forEach(field => field.required = true);
+            }
+        });
+
+
+        // --- Lógica de envío del formulario ---
+        document.getElementById('formGarantia').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btnSubmit'); btn.disabled = true; btn.textContent = "Generando...";
+            const fechaCustom = new Date(document.getElementById('t_fecha_creacion').value + 'T12:00:00'); 
+            const isInventario = document.getElementById('t_modo_garantia').checked;
+
+            try {
+                let c = 0; const doc = await db.runTransaction(async t => { const ref = await t.get(counterRef); c = ref.exists ? (ref.data().count||0) : 0; t.set(counterRef, {count:c+1}, {merge:true}); return c; });
+                const id = `TICKET ${c+1}`; let urls = [];
+                for(let f of document.getElementById('t_fotos').files) { const r = storage.ref(`evidencias_garantias/${id}/${f.name}`); await r.put(f); urls.push(await r.getDownloadURL()); }
+                
+                // --- Datos del Ticket condicionales ---
+                let ticketData = { 
+                    id, 
+                    estado: '1_recibir', 
+                    taller: document.getElementById('t_taller').value, 
+                    // Metadato importante para distinguir tipo de garantía
+                    tipoGarantia: isInventario ? 'inventario' : 'cliente', 
+                    // Datos comunes
+                    sede: document.getElementById('t_sede').value, 
+                    referencia: document.getElementById('t_referencia').value, 
+                    falla: document.getElementById('t_falla').value, 
+                    diagnostico: "", 
+                    fotos: urls, 
+                    observacionesReparacion: "", 
+                    fotosReparacion: [], 
+                    creadoEn: firebase.firestore.Timestamp.fromDate(fechaCustom),
+                    historialEventos: [{ estado: '1_recibir', fecha: firebase.firestore.Timestamp.fromDate(fechaCustom), usuario: currentUserEmail }]
+                };
+
+                // Añadir datos de cliente SOLO si no es garantía de inventario
+                if (!isInventario) {
+                    ticketData.cedula = document.getElementById('t_cedula').value;
+                    ticketData.telefono = document.getElementById('t_telefono').value;
+                    ticketData.nombre = document.getElementById('t_nombre').value;
+                    ticketData.factura = document.getElementById('t_factura').value;
+                }
+
+                // Guardar en Firebase
+                await ticketsRef.doc(id).set(ticketData);
+
+                // Resetear y Cerrar
+                document.getElementById('formGarantia').reset(); 
+                document.getElementById('preview-archivos-nuevo').innerHTML=''; 
+                // Asegurar que el toggle vuelva a su estado por defecto
+                document.getElementById('t_modo_garantia').checked = false;
+                wrapperCamposCliente.classList.remove('hidden');
+                clientFields.forEach(field => field.required = true);
+
+                document.getElementById('modalNuevoTicket').classList.add('hidden');
+                alert(`¡Ticket ${id} generado con éxito!`);
+            } catch(e) { 
+                console.error("Error guardando ticket: ", e);
+                alert("Hubo un error al generar el ticket."); 
+            } finally { 
+                btn.disabled = false; btn.textContent = "Generar Ticket";
+            }
+        });
+
+        // ... Funciones de cambio de estado y guardar informe técnico ...
+
+    } else {
+        console.warn("Iframe de Garantías: Esperando autenticación...");
+    }
+});
                     window.cambiarEstado = async (id, st) => { await ticketsRef.doc(id).update({ estado: st, historialEventos: firebase.firestore.FieldValue.arrayUnion({ estado: st, fecha: new Date(), usuario: currentUserEmail }) }); document.getElementById('modalDetalle').classList.add('hidden'); };
                     window.guardarInformeTecnico = async () => { const txt = document.getElementById('txtDiagnostico').value; if(!txt) return alert("Escribe el informe."); await ticketsRef.doc(currentTicketIdAbierto).update({ diagnostico: txt, estado: '3_diagnosticado', historialEventos: firebase.firestore.FieldValue.arrayUnion({ estado: '3_diagnosticado', fecha: new Date(), usuario: currentUserEmail }) }); document.getElementById('modalDetalle').classList.add('hidden'); };
                     window.guardarPostReparacion = async () => { const txt = document.getElementById('txtObservacionesReparacion').value; if(!txt) return alert("Ingresa las observaciones finales."); const btn = document.getElementById('btnGuardarPostReparacion'); btn.textContent = "Guardando..."; btn.disabled=true; let urls = []; try { for(let f of document.getElementById('f_fotos_reparacion').files){ const r = storage.ref(`ep/${currentTicketIdAbierto}/${f.name}`); await r.put(f); urls.push(await r.getDownloadURL()); } await ticketsRef.doc(currentTicketIdAbierto).update({ observacionesReparacion: txt, fotosReparacion: urls, estado: '6_entregado_asesor', historialEventos: firebase.firestore.FieldValue.arrayUnion({ estado: '6_entregado_asesor', fecha: new Date(), usuario: currentUserEmail }) }); document.getElementById('modalDetalle').classList.add('hidden'); } catch(e) { alert("Error al guardar evidencias."); } btn.textContent = "Guardar Evidencia Final"; btn.disabled=false; };
