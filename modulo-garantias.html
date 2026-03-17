@@ -292,7 +292,7 @@
 
             const ESTADO_ANTERIOR = { '2_envio_st': '1_recibir', '3_diagnosticado': '2_envio_st', '4_reparado': '3_diagnosticado', '5_sin_reparacion': '3_diagnosticado', '6_entregado_asesor': '4_reparado', '7_entregado_cliente': '6_entregado_asesor' };
 
-            // ===== 1. DIBUJAR INTERFAZ INMEDIATAMENTE (Para que no quede en blanco) =====
+            // ===== 1. DIBUJAR INTERFAZ INMEDIATAMENTE =====
             function dibujarColumnas() {
                 const board = document.getElementById('kanbanBoard');
                 if(board) {
@@ -374,11 +374,31 @@
                         });
                     });
 
+                    // 🔥 AQUÍ ESTABA EL ERROR: AHORA SÍ ACTUALIZA LA TABLA Y EL CONTADOR 🔥
                     productosRef.onSnapshot(snapshot => {
                         let datalistHTML = '';
-                        snapshot.forEach(doc => { datalistHTML += `<option value="${doc.data().idUnico} - ${doc.data().nombre}">`; });
+                        let tablaHTML = '';
+                        let total = 0;
+                        
+                        // Convertir a Array para ordenar en Javascript sin pedir índice a Firebase
+                        let prods = [];
+                        snapshot.forEach(doc => prods.push(doc.data()));
+                        prods.sort((a,b) => String(a.nombre).localeCompare(String(b.nombre)));
+
+                        prods.forEach(data => { 
+                            datalistHTML += `<option value="${data.idUnico} - ${data.nombre}">`; 
+                            tablaHTML += `<tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors"><td class="py-3 pl-2 text-slate-500 font-black">${data.idUnico}</td><td class="py-3 text-slate-900 font-bold">${data.nombre}</td></tr>`;
+                            total++;
+                        });
+
                         const lp = document.getElementById('listaProductosAuto');
                         if(lp) lp.innerHTML = datalistHTML;
+
+                        const tp = document.getElementById('tablaProductos');
+                        if(tp) tp.innerHTML = tablaHTML;
+
+                        const cp = document.getElementById('countProductos');
+                        if(cp) cp.textContent = total;
                     });
 
                     ticketsRef.orderBy('creadoEn', 'desc').onSnapshot(snapshot => {
@@ -508,21 +528,50 @@
             window.exportarExcel = () => { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById('tablaHistorialExportar'), {sheet:"Tickets"}), "Historial_Garantias.xlsx"); };
             window.exportarPDF = () => { const doc = new window.jspdf.jsPDF(); doc.setFontSize(16); doc.text("Historial de Tickets", 14, 15); doc.autoTable({ html: '#tablaHistorialExportar', startY: 20, theme: 'grid', headStyles: { fillColor: [15, 23, 42] } }); doc.save('Historial_Garantias.pdf'); };
 
+            // 🔥 CORRECCIÓN DEL CARGUE JSON 🔥
             window.procesarJSON = async () => {
-                const btn = document.getElementById('btnProcesarJson'); btn.textContent = "Procesando..."; btn.disabled = true;
-                const batches = []; let currentBatch = db.batch(); let count = 0;
-                // Asumiendo que jsonCargado es global, la declaramos aquí
-                if(typeof jsonCargado === 'undefined') window.jsonCargado = [];
+                const btn = document.getElementById('btnProcesarJson'); 
+                btn.textContent = "Procesando..."; 
+                btn.disabled = true;
+                
+                const batches = []; 
+                let currentBatch = db.batch(); 
+                let count = 0;
+                
+                if(typeof window.jsonCargado === 'undefined') window.jsonCargado = [];
+                
                 for (let item of window.jsonCargado) {
                     const idUnico = item.idUnico || item.id || item.referencia || item.codigo;
                     const nombre = item.nombre || item.descripcion || item.producto;
+                    
                     if(idUnico && nombre) {
                         currentBatch.set(productosRef.doc(String(idUnico)), { idUnico: String(idUnico), nombre: String(nombre) });
-                        if (++count % 400 === 0) { batches.push(currentBatch.commit()); currentBatch = db.batch(); }
+                        count++;
+                        if (count % 400 === 0) { 
+                            batches.push(currentBatch.commit()); 
+                            currentBatch = db.batch(); 
+                        }
                     }
                 }
-                batches.push(currentBatch.commit()); await Promise.all(batches); 
-                alert("Inventario subido!"); btn.textContent = "Subir Inventario"; btn.disabled = false; document.getElementById('f_json_inventario').value = "";
+                
+                // Asegurarnos de enviar el remanente si no es múltiplo exacto de 400
+                if (count > 0 && count % 400 !== 0) {
+                    batches.push(currentBatch.commit());
+                }
+                
+                try {
+                    await Promise.all(batches); 
+                    alert(`¡Éxito! ${count} productos subidos correctamente.`); 
+                } catch (error) {
+                    console.error("Error al subir batch:", error);
+                    alert("Hubo un error al subir el inventario.");
+                }
+                
+                btn.textContent = "Subir Inventario"; 
+                btn.disabled = false; 
+                document.getElementById('f_json_inventario').value = "";
+                document.getElementById('json_status').textContent = "";
+                window.jsonCargado = []; // Limpiar memoria
             };
 
             document.getElementById('f_json_inventario')?.addEventListener('change', function(e) {
@@ -531,8 +580,8 @@
                     try {
                         window.jsonCargado = JSON.parse(e.target.result);
                         document.getElementById('btnProcesarJson').classList.remove('hidden');
-                        document.getElementById('json_status').textContent = `JSON Válido. ${window.jsonCargado.length} productos.`;
-                    } catch(err) { alert("Error JSON"); }
+                        document.getElementById('json_status').textContent = `JSON Válido. ${window.jsonCargado.length} productos listos para subir.`;
+                    } catch(err) { alert("Error JSON inválido"); }
                 }; reader.readAsText(e.target.files[0]);
             });
 
