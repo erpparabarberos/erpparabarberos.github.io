@@ -167,9 +167,9 @@
                             </div>
 
                             <div id="wrapperCamposCliente" class="space-y-5 transition-all duration-300">
-                                <div><label class="block text-xs font-black text-slate-500 mb-1.5 uppercase tracking-wide">Cédula</label><input type="number" id="t_cedula" class="t-client-field w-full border border-slate-300 rounded-xl p-3 text-sm font-semibold focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 transition-colors" required></div>
+                                <div><label class="block text-xs font-black text-slate-500 mb-1.5 uppercase tracking-wide">Cédula</label><input type="text" id="t_cedula" class="t-client-field w-full border border-slate-300 rounded-xl p-3 text-sm font-semibold focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 transition-colors" required></div>
                                 <div><label class="block text-xs font-black text-slate-500 mb-1.5 uppercase tracking-wide">Nombre Completo</label><input type="text" id="t_nombre" class="t-client-field w-full border border-slate-300 rounded-xl p-3 text-sm font-semibold focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 transition-colors" required></div>
-                                <div><label class="block text-xs font-black text-slate-500 mb-1.5 uppercase tracking-wide">Teléfono</label><input type="number" id="t_telefono" class="t-client-field w-full border border-slate-300 rounded-xl p-3 text-sm font-semibold focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 transition-colors" required></div>
+                                <div><label class="block text-xs font-black text-slate-500 mb-1.5 uppercase tracking-wide">Teléfono</label><input type="text" id="t_telefono" class="t-client-field w-full border border-slate-300 rounded-xl p-3 text-sm font-semibold focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 transition-colors" required></div>
                                 <div><label class="block text-xs font-black text-slate-500 mb-1.5 uppercase tracking-wide">Número de Factura</label><input type="text" id="t_factura" class="t-client-field w-full border border-slate-300 rounded-xl p-3 text-sm font-semibold focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 transition-colors" placeholder="Ej: FAC-1020" required></div>
                             </div>
 
@@ -273,7 +273,7 @@
             const db = firebase.firestore();
             const storage = firebase.storage();
 
-            // 🔥 SEPARACIÓN DE CARPETAS DE BASE DE DATOS 🔥
+            // 🔥 CARPETA EXCLUSIVA PARA GARANTÍAS 🔥
             const ticketsRef = db.collection('tickets_garantias'); 
             const counterRef = db.collection('metadata').doc('ticketGarantiasCounter');
             
@@ -304,30 +304,35 @@
             }
             dibujarColumnas();
 
+            function getSafeDate(field) {
+                if (!field) return new Date();
+                if (typeof field.toDate === 'function') return field.toDate();
+                if (typeof field.toMillis === 'function') return new Date(field.toMillis());
+                if (field instanceof Date) return field;
+                return new Date(field); 
+            }
+
             function formatearFecha(timestamp) {
-                if(!timestamp) return 'Sin fecha';
-                return timestamp.toDate().toLocaleDateString('es-CO', { year: 'numeric', month: 'short', day: 'numeric' });
+                return getSafeDate(timestamp).toLocaleDateString('es-CO', { year: 'numeric', month: 'short', day: 'numeric' });
             }
             
             function formatearFechaHora(timestamp) {
-                if(!timestamp) return 'Sin fecha';
-                return timestamp.toDate().toLocaleString('es-CO', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                return getSafeDate(timestamp).toLocaleString('es-CO', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
             }
             
             function calcularDiasEnEstado(t) {
-                if (!t.creadoEn) return 0;
-                let fechaBase = t.creadoEn.toDate();
-                if (t.historialEventos && t.historialEventos.length > 0) {
+                let fechaBase = getSafeDate(t.creadoEn);
+                if (t.historialEventos && Array.isArray(t.historialEventos) && t.historialEventos.length > 0) {
                     const eventos = [...t.historialEventos].reverse();
                     const eventoActual = eventos.find(e => e.estado === t.estado);
-                    if (eventoActual && eventoActual.fecha) fechaBase = eventoActual.fecha.toDate();
+                    if (eventoActual && eventoActual.fecha) fechaBase = getSafeDate(eventoActual.fecha);
                 }
                 const hoy = new Date();
                 const diffTime = Math.abs(hoy - fechaBase);
                 return Math.floor(diffTime / (1000 * 60 * 60 * 24));
             }
 
-            const crearMediaHTML = (url) => url.toLowerCase().match(/\.(mp4|mov|webm)$|video%2F/) ? `<a href="${url}" target="_blank" class="shrink-0 block w-32 h-32 rounded-2xl bg-slate-950 border border-slate-700 overflow-hidden relative hover:opacity-80 transition-opacity shadow-md flex items-center justify-center group"><span class="absolute text-4xl z-10 group-hover:scale-110 transition-transform">▶️</span><video src="${url}" class="w-full h-full object-cover opacity-60" muted autoplay loop></video></a>` : `<a href="${url}" target="_blank" class="shrink-0 block w-32 h-32 rounded-2xl bg-slate-100 border border-slate-200 bg-cover bg-center hover:opacity-80 transition-opacity shadow-sm flex items-center justify-center" style="background-image: url('${url}')"></a>`;
+            const crearMediaHTML = (url) => String(url).toLowerCase().match(/\.(mp4|mov|webm)$|video%2F/) ? `<a href="${url}" target="_blank" class="shrink-0 block w-32 h-32 rounded-2xl bg-slate-950 border border-slate-700 overflow-hidden relative hover:opacity-80 transition-opacity shadow-md flex items-center justify-center group"><span class="absolute text-4xl z-10 group-hover:scale-110 transition-transform">▶️</span><video src="${url}" class="w-full h-full object-cover opacity-60" muted autoplay loop></video></a>` : `<a href="${url}" target="_blank" class="shrink-0 block w-32 h-32 rounded-2xl bg-slate-100 border border-slate-200 bg-cover bg-center hover:opacity-80 transition-opacity shadow-sm flex items-center justify-center" style="background-image: url('${url}')"></a>`;
 
             window.switchView = (viewName) => {
                 document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
@@ -364,7 +369,6 @@
                 if (user) {
                     const currentUserEmail = user.email;
                     
-                    // --- LÓGICA DEL TOGGLE DE MODO DE GARANTÍA ---
                     const toggleModo = document.getElementById('t_modo_garantia');
                     const wrapperCamposCliente = document.getElementById('wrapperCamposCliente');
                     const clientFields = document.querySelectorAll('.t-client-field');
@@ -379,7 +383,6 @@
                         }
                     });
 
-                    // --- LÓGICA DEL DIRECTORIO DE SEDES Y FORMULARIO ---
                     sedesRef.orderBy('nombre').onSnapshot(snapshot => {
                         const sKanban = document.getElementById('filtroSedeKanban');
                         const sNuevo = document.getElementById('t_sede');
@@ -422,7 +425,6 @@
                         const nombreSede = inputName.value.trim();
 
                         if (!nombreSede) return;
-
                         btn.disabled = true; btn.textContent = "Guardando...";
 
                         try {
@@ -461,17 +463,17 @@
                         const cp = document.getElementById('countProductos'); if(cp) cp.textContent = total;
                     });
 
-                    // 🔥 EL ÚNICO LECTOR DE TICKETS PARA GARANTÍAS 🔥
+                    // 🔥 EL ÚNICO LECTOR DE TICKETS PARA GARANTÍAS (BLINDADO) 🔥
                     ticketsRef.onSnapshot(snapshot => {
                         ticketsGlobal = []; 
                         snapshot.forEach(doc => { 
                             ticketsGlobal.push({ id: doc.id, ...doc.data() });
                         }); 
                         
-                        // Ordenamiento en Javascript
+                        // Ordenamiento a prueba de errores
                         ticketsGlobal.sort((a,b) => {
-                            const timeA = a.creadoEn ? a.creadoEn.toMillis() : 0;
-                            const timeB = b.creadoEn ? b.creadoEn.toMillis() : 0;
+                            const timeA = (a.creadoEn && typeof a.creadoEn.toMillis === 'function') ? a.creadoEn.toMillis() : 0;
+                            const timeB = (b.creadoEn && typeof b.creadoEn.toMillis === 'function') ? b.creadoEn.toMillis() : 0;
                             return timeB - timeA;
                         });
 
@@ -539,11 +541,11 @@
                     window.guardarPostReparacion = async () => { const txt = document.getElementById('txtObservacionesReparacion').value; if(!txt) return alert("Ingresa las observaciones finales."); const btn = document.getElementById('btnGuardarPostReparacion'); btn.textContent = "Guardando..."; btn.disabled=true; let urls = []; try { for(let f of document.getElementById('f_fotos_reparacion').files){ const r = storage.ref(`ep/${currentTicketIdAbierto}/${f.name}`); await r.put(f); urls.push(await r.getDownloadURL()); } await ticketsRef.doc(currentTicketIdAbierto).update({ observacionesReparacion: txt, fotosReparacion: urls, estado: '6_entregado_asesor', historialEventos: firebase.firestore.FieldValue.arrayUnion({ estado: '6_entregado_asesor', fecha: new Date(), usuario: currentUserEmail }) }); document.getElementById('modalDetalle').classList.add('hidden'); } catch(e) { alert("Error al guardar evidencias."); } btn.textContent = "Guardar Evidencia Final"; btn.disabled=false; };
 
                 } else {
-                    console.warn("Iframe de Garantías: Esperando autenticación...");
+                    console.warn("Esperando autenticación de Firebase...");
                 }
             });
 
-            // FILTROS KANBAN
+            // FILTROS KANBAN BLINDADOS
             ['filtroTaller', 'filtroSedeKanban', 'filtroFechaKanban', 'searchInput'].forEach(id => {
                 const el = document.getElementById(id);
                 if(el) el.addEventListener('input', renderizarTarjetas);
@@ -551,24 +553,38 @@
             window.limpiarFiltrosKanban = () => { document.getElementById('filtroSedeKanban').value = ''; document.getElementById('filtroFechaKanban').value = ''; document.getElementById('searchInput').value = ''; renderizarTarjetas(); };
 
             function renderizarTarjetas() {
-                const sTaller = document.getElementById('filtroTaller').value, sBusq = document.getElementById('searchInput').value.toLowerCase(), sSede = document.getElementById('filtroSedeKanban').value, sFec = document.getElementById('filtroFechaKanban').value;
+                const sTaller = document.getElementById('filtroTaller').value;
+                const sBusq = document.getElementById('searchInput').value.toLowerCase();
+                const sSede = document.getElementById('filtroSedeKanban').value;
+                const sFec = document.getElementById('filtroFechaKanban').value;
+                
                 let conteos = { '1_recibir': 0, '2_envio_st': 0, '3_diagnosticado': 0, '4_reparado': 0, '5_sin_reparacion': 0, '6_entregado_asesor': 0, '7_entregado_cliente': 0 };
                 ESTADOS.forEach(c => { const col = document.getElementById(`col-${c.id}`); if(col) col.innerHTML = ''; });
 
                 ticketsGlobal.forEach(t => {
-                    const ref = t.referencia || '';
-                    const nom = t.nombre || '';
-                    const ced = String(t.cedula || '');
-                    const tId = t.id || '';
+                    const refStr = String(t.referencia || '');
+                    const nomStr = String(t.nombre || '');
+                    const cedStr = String(t.cedula || '');
+                    const tIdStr = String(t.id || '');
                     
-                    const passBusq = tId.toLowerCase().includes(sBusq) || ref.toLowerCase().includes(sBusq) || nom.toLowerCase().includes(sBusq) || ced.includes(sBusq);
+                    const passBusq = tIdStr.toLowerCase().includes(sBusq) || refStr.toLowerCase().includes(sBusq) || nomStr.toLowerCase().includes(sBusq) || cedStr.includes(sBusq);
                     const passSede = sSede === '' || t.sede === sSede;
+                    
                     let passFec = true;
-                    if(sFec && t.creadoEn) { const fd = new Date(sFec+'T12:00:00').toLocaleDateString(); const td = t.creadoEn.toDate().toLocaleDateString(); passFec = (fd===td); }
+                    if(sFec && t.creadoEn && typeof t.creadoEn.toDate === 'function') { 
+                        const fd = new Date(sFec+'T12:00:00').toLocaleDateString(); 
+                        const td = t.creadoEn.toDate().toLocaleDateString(); 
+                        passFec = (fd===td); 
+                    }
 
                     if (t.taller === sTaller && passBusq && passSede && passFec && document.getElementById(`col-${t.estado}`)) {
                         conteos[t.estado]++; 
-                        const mediaCountText = (t.fotos && t.fotos.some(u => u.toLowerCase().includes('.mp4')) ? '🎥 ' : '📸 ') + (t.fotos ? t.fotos.length : 0);
+                        
+                        let mediaCountText = '';
+                        if (Array.isArray(t.fotos) && t.fotos.length > 0) {
+                            const hasVideo = t.fotos.some(u => String(u).toLowerCase().includes('.mp4'));
+                            mediaCountText = (hasVideo ? '🎥 ' : '📸 ') + t.fotos.length;
+                        }
                         
                         let borderClass = "border-slate-100", slaBadge = "";
                         if (t.estado !== '7_entregado_cliente') {
@@ -580,7 +596,7 @@
                         
                         let inventarioBadge = t.tipoGarantia === 'inventario' ? `<span class="bg-indigo-100 text-indigo-700 text-[9px] font-black px-2 py-0.5 rounded-sm ml-2 border border-indigo-200">INVENTARIO</span>` : '';
 
-                        document.getElementById(`col-${t.estado}`).innerHTML += `<div onclick="verDetalle('${t.id}')" class="bg-white p-7 rounded-[22px] shadow-sm border ${borderClass} cursor-pointer hover:shadow-xl hover:border-slate-950 transition-all relative group"><div class="flex justify-between items-start mb-4"><h4 class="font-black text-slate-950 text-xl tracking-tight">${t.id}</h4>${slaBadge}</div><div class="space-y-2.5 text-[13px] text-slate-600 mb-4 border-b border-slate-100 pb-5 relative"><p class="flex justify-between items-start"><span class="font-bold text-slate-400 uppercase text-[10px] tracking-widest mt-1">Ref:</span> <span class="font-extrabold text-slate-900 text-right break-words w-4/5 leading-tight">${t.referencia}</span></p><p class="flex justify-between items-start"><span class="font-bold text-slate-400 uppercase text-[10px] tracking-widest mt-1">Sede:</span> <span class="font-semibold text-slate-800 text-right break-words w-4/5">${t.sede}</span></p><p class="flex justify-between items-start"><span class="font-bold text-slate-400 uppercase text-[10px] tracking-widest mt-1">Cliente:</span> <span class="font-semibold text-slate-800 text-right break-words w-4/5">${t.nombre}${inventarioBadge}</span></p>${t.fotos && t.fotos.length > 0 ? `<div class="absolute -bottom-3 right-0 text-[10px] font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200 shadow-inner">${mediaCountText}</div>` : ''}</div><p class="text-[12px] text-slate-500 font-medium italic line-clamp-2 leading-relaxed">${t.diagnostico || 'Esperando revisión técnica...'}</p></div>`;
+                        document.getElementById(`col-${t.estado}`).innerHTML += `<div onclick="verDetalle('${t.id}')" class="bg-white p-7 rounded-[22px] shadow-sm border ${borderClass} cursor-pointer hover:shadow-xl hover:border-slate-950 transition-all relative group"><div class="flex justify-between items-start mb-4"><h4 class="font-black text-slate-950 text-xl tracking-tight">${t.id}</h4>${slaBadge}</div><div class="space-y-2.5 text-[13px] text-slate-600 mb-4 border-b border-slate-100 pb-5 relative"><p class="flex justify-between items-start"><span class="font-bold text-slate-400 uppercase text-[10px] tracking-widest mt-1">Ref:</span> <span class="font-extrabold text-slate-900 text-right break-words w-4/5 leading-tight">${refStr}</span></p><p class="flex justify-between items-start"><span class="font-bold text-slate-400 uppercase text-[10px] tracking-widest mt-1">Sede:</span> <span class="font-semibold text-slate-800 text-right break-words w-4/5">${t.sede || 'N/A'}</span></p><p class="flex justify-between items-start"><span class="font-bold text-slate-400 uppercase text-[10px] tracking-widest mt-1">Cliente:</span> <span class="font-semibold text-slate-800 text-right break-words w-4/5">${nomStr}${inventarioBadge}</span></p>${mediaCountText !== '' ? `<div class="absolute -bottom-3 right-0 text-[10px] font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200 shadow-inner">${mediaCountText}</div>` : ''}</div><p class="text-[12px] text-slate-500 font-medium italic line-clamp-2 leading-relaxed">${t.diagnostico || 'Esperando revisión técnica...'}</p></div>`;
                     }
                 });
                 ESTADOS.forEach(c => { const el = document.getElementById(`count-${c.id}`); if(el) el.textContent = conteos[c.id]; });
@@ -588,7 +604,14 @@
 
             window.verDetalle = (id) => {
                 const t = ticketsGlobal.find(x => x.id === id); if(!t) return; currentTicketIdAbierto = id;
-                document.getElementById('det_id').textContent = t.id; document.getElementById('det_cedula').textContent = t.cedula; document.getElementById('det_telefono').textContent = t.telefono; document.getElementById('det_nombre').textContent = t.nombre; document.getElementById('det_sede').textContent = t.sede; document.getElementById('det_factura').textContent = t.factura || 'No registrada'; document.getElementById('det_referencia').textContent = t.referencia; document.getElementById('det_falla').textContent = t.falla;
+                document.getElementById('det_id').textContent = t.id || 'N/A'; 
+                document.getElementById('det_cedula').textContent = t.cedula || 'N/A'; 
+                document.getElementById('det_telefono').textContent = t.telefono || 'N/A'; 
+                document.getElementById('det_nombre').textContent = t.nombre || 'N/A'; 
+                document.getElementById('det_sede').textContent = t.sede || 'N/A'; 
+                document.getElementById('det_factura').textContent = t.factura || 'No registrada'; 
+                document.getElementById('det_referencia').textContent = t.referencia || 'N/A'; 
+                document.getElementById('det_falla').textContent = t.falla || 'N/A';
                 
                 const txtD = document.getElementById('txtDiagnostico'), btnD = document.getElementById('btnSaveDiagDiv'), bTop = document.getElementById('det_actions_top'); 
                 txtD.value = t.diagnostico||""; bTop.innerHTML = '';
@@ -605,15 +628,15 @@
                 if(t.estado==='6_entregado_asesor') bTop.innerHTML+=cB('Cerrar Ticket (Entregado)', 'bg-slate-950 text-white hover:bg-black', '7_entregado_cliente');
 
                 const divFotos = document.getElementById('det_fotos_div'); divFotos.innerHTML = "";
-                if(t.fotos && t.fotos.length > 0) { t.fotos.forEach(url => divFotos.innerHTML += crearMediaHTML(url)); document.getElementById('det_galeria').classList.remove('hidden'); } else document.getElementById('det_galeria').classList.add('hidden');
+                if(Array.isArray(t.fotos) && t.fotos.length > 0) { t.fotos.forEach(url => divFotos.innerHTML += crearMediaHTML(url)); document.getElementById('det_galeria').classList.remove('hidden'); } else document.getElementById('det_galeria').classList.add('hidden');
 
                 const formPostRep = document.getElementById('form_post_reparacion'), viewPostRep = document.getElementById('view_post_reparacion');
                 formPostRep.classList.add('hidden'); viewPostRep.classList.add('hidden'); document.getElementById('txtObservacionesReparacion').value=''; document.getElementById('preview-archivos-reparacion').innerHTML='';
                 if(t.estado==='4_reparado') { formPostRep.classList.remove('hidden'); btnDevolverRep.onclick = () => cambiarEstado(t.id, ESTADO_ANTERIOR[t.estado]); }
-                else if(t.observacionesReparacion) { document.getElementById('det_obs_reparacion').textContent = t.observacionesReparacion; const divFotosRep = document.getElementById('det_fotos_reparacion_div'); divFotosRep.innerHTML=""; if(t.fotosReparacion && t.fotosReparacion.length > 0) { t.fotosReparacion.forEach(url => divFotosRep.innerHTML += crearMediaHTML(url)); document.getElementById('det_galeria_reparacion').classList.remove('hidden'); } else document.getElementById('det_galeria_reparacion').classList.add('hidden'); viewPostRep.classList.remove('hidden'); }
+                else if(t.observacionesReparacion) { document.getElementById('det_obs_reparacion').textContent = t.observacionesReparacion; const divFotosRep = document.getElementById('det_fotos_reparacion_div'); divFotosRep.innerHTML=""; if(Array.isArray(t.fotosReparacion) && t.fotosReparacion.length > 0) { t.fotosReparacion.forEach(url => divFotosRep.innerHTML += crearMediaHTML(url)); document.getElementById('det_galeria_reparacion').classList.remove('hidden'); } else document.getElementById('det_galeria_reparacion').classList.add('hidden'); viewPostRep.classList.remove('hidden'); }
 
                 const tL = document.getElementById('det_timeline'); tL.innerHTML = '';
-                if(t.historialEventos && t.historialEventos.length > 0) { t.historialEventos.forEach(ev => { const nomEst = ESTADOS.find(e => e.id === ev.estado)?.nombre || ev.estado; const fStr = ev.fecha ? formatearFechaHora(ev.fecha) : 'Fecha desconocida'; tL.innerHTML += `<div class="relative pl-6 border-l-2 border-slate-200 pb-6 last:pb-0"><div class="absolute w-3 h-3 bg-slate-950 rounded-full -left-[7px] top-1 ring-4 ring-slate-50"></div><p class="text-[12px] font-black text-slate-900 uppercase tracking-wide leading-none">${nomEst}</p><p class="text-[11px] font-medium text-slate-500 mt-2">${fStr} <span class="mx-1">•</span> Por: <span class="font-bold text-slate-700">${ev.usuario}</span></p></div>`; }); } 
+                if(t.historialEventos && Array.isArray(t.historialEventos) && t.historialEventos.length > 0) { t.historialEventos.forEach(ev => { const nomEst = ESTADOS.find(e => e.id === ev.estado)?.nombre || ev.estado; const fStr = ev.fecha ? formatearFechaHora(ev.fecha) : 'Fecha desconocida'; tL.innerHTML += `<div class="relative pl-6 border-l-2 border-slate-200 pb-6 last:pb-0"><div class="absolute w-3 h-3 bg-slate-950 rounded-full -left-[7px] top-1 ring-4 ring-slate-50"></div><p class="text-[12px] font-black text-slate-900 uppercase tracking-wide leading-none">${nomEst}</p><p class="text-[11px] font-medium text-slate-500 mt-2">${fStr} <span class="mx-1">•</span> Por: <span class="font-bold text-slate-700">${ev.usuario || 'Sistema'}</span></p></div>`; }); } 
                 else { tL.innerHTML = '<p class="text-sm font-medium text-slate-500 italic">No hay registros de auditoría para este ticket.</p>'; }
                 document.getElementById('modalDetalle').classList.remove('hidden');
             };
@@ -622,13 +645,15 @@
                 const s = document.getElementById('h_search').value.toLowerCase(), sede = document.getElementById('h_sede').value, est = document.getElementById('h_estado').value, fIni = document.getElementById('h_fecha_ini').value, fFin = document.getElementById('h_fecha_fin').value;
                 let html = '';
                 ticketsGlobal.forEach(t => {
-                    const ref = t.referencia || '';
-                    let pS = s==='' || (t.id||'').toLowerCase().includes(s) || ref.toLowerCase().includes(s); 
+                    const refStr = String(t.referencia || '');
+                    const tIdStr = String(t.id || '');
+                    
+                    let pS = s==='' || tIdStr.toLowerCase().includes(s) || refStr.toLowerCase().includes(s); 
                     let pSede = sede==='' || t.sede === sede; 
                     let pEst = est==='' || t.estado === est; 
                     let pF = true;
                     
-                    if((fIni||fFin) && t.creadoEn) {
+                    if((fIni||fFin) && t.creadoEn && typeof t.creadoEn.toDate === 'function') {
                         const d = t.creadoEn.toDate(); d.setHours(0,0,0,0);
                         if(fIni && d < new Date(fIni+'T00:00:00')) pF=false;
                         if(fFin && d > new Date(fFin+'T00:00:00')) pF=false;
@@ -636,7 +661,7 @@
                     
                     if(pS && pSede && pEst && pF) {
                         const nEst = ESTADOS.find(e=>e.id===t.estado)?.nombre || t.estado;
-                        html += `<tr class="hover:bg-slate-50 cursor-pointer transition-colors" onclick="verDetalle('${t.id}')"><td class="p-4 pl-6 font-black text-slate-900">${t.id}</td><td class="p-4 text-slate-500">${formatearFecha(t.creadoEn)}</td><td class="p-4 font-bold text-slate-800">${ref.split(' - ')[0]}</td><td class="p-4 text-slate-600">${t.sede}</td><td class="p-4"><span class="bg-slate-100 text-slate-800 text-[10px] font-black px-3 py-1 rounded-full uppercase">${nEst}</span></td></tr>`;
+                        html += `<tr class="hover:bg-slate-50 cursor-pointer transition-colors" onclick="verDetalle('${t.id}')"><td class="p-4 pl-6 font-black text-slate-900">${tIdStr}</td><td class="p-4 text-slate-500">${formatearFecha(t.creadoEn)}</td><td class="p-4 font-bold text-slate-800">${refStr.split(' - ')[0]}</td><td class="p-4 text-slate-600">${t.sede || 'N/A'}</td><td class="p-4"><span class="bg-slate-100 text-slate-800 text-[10px] font-black px-3 py-1 rounded-full uppercase">${nEst}</span></td></tr>`;
                     }
                 });
                 const tb = document.getElementById('tbodyHistorial');
@@ -680,7 +705,7 @@
             function renderizarGraficos() {
                 if(!ticketsGlobal.length) return;
                 document.getElementById('kpiTotalTickets').textContent = ticketsGlobal.length;
-                let cP={}; ticketsGlobal.forEach(t => { const r=(t.referencia||'').split(' - ')[0]; if(r) cP[r]=(cP[r]||0)+1; }); let sP=Object.keys(cP).sort((a,b)=>cP[b]-cP[a]).slice(0,5);
+                let cP={}; ticketsGlobal.forEach(t => { const r=String(t.referencia||'').split(' - ')[0]; if(r) cP[r]=(cP[r]||0)+1; }); let sP=Object.keys(cP).sort((a,b)=>cP[b]-cP[a]).slice(0,5);
                 if(chartProds) chartProds.destroy(); chartProds=new Chart(document.getElementById('chartProductos'),{type:'bar',data:{labels:sP,datasets:[{data:sP.map(k=>cP[k]),backgroundColor:'#0f172a',borderRadius:8}]},options:{responsive: true, maintainAspectRatio: false, plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0}}}}});
                 let cS={}; ticketsGlobal.forEach(t => { if(t.sede) cS[t.sede]=(cS[t.sede]||0)+1; }); let sS=Object.keys(cS).sort((a,b)=>cS[b]-cS[a]).slice(0,5);
                 if(chartSedes) chartSedes.destroy(); chartSedes=new Chart(document.getElementById('chartSedes'),{type:'doughnut',data:{labels:sS,datasets:[{data:sS.map(k=>cS[k]),backgroundColor:['#0f172a','#334155','#475569','#94a3b8','#cbd5e1'],borderWidth:0}]},options:{responsive: true, maintainAspectRatio: false, cutout:'70%',plugins:{legend:{position:'right'}}}});
