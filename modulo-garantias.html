@@ -348,7 +348,13 @@
                 const diffTime = Math.abs(hoy - fechaBase);
                 return Math.floor(diffTime / (1000 * 60 * 60 * 24));
             }
+
+            // AQUI ESTÁ EL CÓDIGO DE LAS MINIATURAS
             const crearMediaHTML = (url) => String(url).toLowerCase().match(/\.(mp4|mov|webm)$|video%2F/) ? `<a href="${url}" target="_blank" class="shrink-0 block w-32 h-32 rounded-2xl bg-slate-950 border border-slate-700 overflow-hidden relative hover:opacity-80 transition-opacity shadow-md flex items-center justify-center group"><span class="absolute text-4xl z-10 group-hover:scale-110 transition-transform">▶️</span><video src="${url}#t=0.1" class="w-full h-full object-cover opacity-70" preload="metadata" muted playsinline></video></a>` : `<a href="${url}" target="_blank" class="shrink-0 block w-32 h-32 rounded-2xl bg-slate-100 border border-slate-200 bg-cover bg-center hover:opacity-80 transition-opacity shadow-sm flex items-center justify-center" style="background-image: url('${url}')"></a>`;
+
+            // Y AQUI SIGUE EL SWITCHVIEW QUE SE HABIA BORRADO
+            window.switchView = (viewName) => {
+                document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
                 document.querySelectorAll('.nav-btn').forEach(el => {
                     el.classList.remove('bg-slate-900', 'text-white');
                     el.classList.add('text-slate-500');
@@ -566,7 +572,6 @@
 
                     window.cambiarEstado = async (id, st) => { await ticketsRef.doc(id).update({ estado: st, historialEventos: firebase.firestore.FieldValue.arrayUnion({ estado: st, fecha: new Date(), usuario: currentUserEmail }) }); document.getElementById('modalDetalle').classList.add('hidden'); };
                     
-                    // 🔥 NUEVA LÓGICA DE GUARDAR INFORME TÉCNICO CON FOTOS/VIDEOS 🔥
                     window.guardarInformeTecnico = async () => { 
                         const txt = document.getElementById('txtDiagnostico').value; 
                         if(!txt) return alert("Escribe el informe detallado del diagnóstico."); 
@@ -607,7 +612,6 @@
                 }
             });
 
-            // FILTROS KANBAN BLINDADOS
             ['filtroTaller', 'filtroSedeKanban', 'filtroFechaKanban', 'searchInput'].forEach(id => {
                 const el = document.getElementById(id);
                 if(el) el.addEventListener('input', renderizarTarjetas);
@@ -686,12 +690,10 @@
                 const txtD = document.getElementById('txtDiagnostico'), btnD = document.getElementById('btnSaveDiagDiv'), bTop = document.getElementById('det_actions_top'); 
                 txtD.value = t.diagnostico||""; bTop.innerHTML = '';
                 
-                // LÓGICA DE MOSTRAR EL CAMPO DE SUBIR FOTO DE DIAGNÓSTICO
                 const divUploadDiag = document.getElementById('div_upload_diagnostico');
                 const galeriaDiag = document.getElementById('det_galeria_diagnostico');
                 const fotosDiagDiv = document.getElementById('det_fotos_diagnostico_div');
                 
-                // Limpiar campos previos
                 document.getElementById('f_fotos_diagnostico').value = '';
                 document.getElementById('preview-archivos-diagnostico').innerHTML = '';
                 fotosDiagDiv.innerHTML = '';
@@ -704,14 +706,13 @@
                     txtD.readOnly=false; txtD.className="w-full border border-slate-300 rounded-2xl p-6 text-sm font-medium text-slate-900 focus:outline-none focus:border-slate-950 shadow-sm transition-colors leading-relaxed bg-white"; 
                     btnD.classList.remove('hidden'); 
                     
-                    divUploadDiag.classList.remove('hidden'); // Mostrar arrastrar archivo
+                    divUploadDiag.classList.remove('hidden'); 
                     galeriaDiag.classList.add('hidden');
                 } else { 
                     txtD.readOnly=true; txtD.className="w-full border border-slate-200 rounded-2xl p-6 text-sm font-medium text-slate-500 bg-slate-50 shadow-sm leading-relaxed"; 
                     btnD.classList.add('hidden'); 
                     
-                    divUploadDiag.classList.add('hidden'); // Ocultar arrastrar archivo
-                    // Mostrar fotos de diagnóstico si existen
+                    divUploadDiag.classList.add('hidden'); 
                     if(t.fotosDiagnostico && t.fotosDiagnostico.length > 0) {
                         t.fotosDiagnostico.forEach(url => fotosDiagDiv.innerHTML += crearMediaHTML(url));
                         galeriaDiag.classList.remove('hidden');
