@@ -348,11 +348,7 @@
                 const diffTime = Math.abs(hoy - fechaBase);
                 return Math.floor(diffTime / (1000 * 60 * 60 * 24));
             }
-
-            const crearMediaHTML = (url) => String(url).toLowerCase().match(/\.(mp4|mov|webm)$|video%2F/) ? `<a href="${url}" target="_blank" class="shrink-0 block w-32 h-32 rounded-2xl bg-slate-950 border border-slate-700 overflow-hidden relative hover:opacity-80 transition-opacity shadow-md flex items-center justify-center group"><span class="absolute text-4xl z-10 group-hover:scale-110 transition-transform">▶️</span><video src="${url}" class="w-full h-full object-cover opacity-60" muted autoplay loop></video></a>` : `<a href="${url}" target="_blank" class="shrink-0 block w-32 h-32 rounded-2xl bg-slate-100 border border-slate-200 bg-cover bg-center hover:opacity-80 transition-opacity shadow-sm flex items-center justify-center" style="background-image: url('${url}')"></a>`;
-
-            window.switchView = (viewName) => {
-                document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+            const crearMediaHTML = (url) => String(url).toLowerCase().match(/\.(mp4|mov|webm)$|video%2F/) ? `<a href="${url}" target="_blank" class="shrink-0 block w-32 h-32 rounded-2xl bg-slate-950 border border-slate-700 overflow-hidden relative hover:opacity-80 transition-opacity shadow-md flex items-center justify-center group"><span class="absolute text-4xl z-10 group-hover:scale-110 transition-transform">▶️</span><video src="${url}#t=0.1" class="w-full h-full object-cover opacity-70" preload="metadata" muted playsinline></video></a>` : `<a href="${url}" target="_blank" class="shrink-0 block w-32 h-32 rounded-2xl bg-slate-100 border border-slate-200 bg-cover bg-center hover:opacity-80 transition-opacity shadow-sm flex items-center justify-center" style="background-image: url('${url}')"></a>`;
                 document.querySelectorAll('.nav-btn').forEach(el => {
                     el.classList.remove('bg-slate-900', 'text-white');
                     el.classList.add('text-slate-500');
