@@ -51,6 +51,7 @@
                         <input type="text" id="searchInput" placeholder="Buscar ticket, ref o cliente..." class="w-full bg-white border border-slate-200 text-slate-800 text-xs font-bold rounded-lg pl-9 pr-3 py-2 outline-none shadow-sm focus:border-slate-900 transition-colors">
                     </div>
                     <select id="filtroTaller" class="bg-white border border-slate-200 text-slate-800 text-xs font-bold rounded-lg px-4 py-2 outline-none cursor-pointer shadow-sm">
+                        <option value="">TODOS LOS TALLERES</option>
                         <option value="interno">SERVICIO TÉCNICO PARABARBEROS</option>
                         <option value="proveedor">SERVICIO TÉCNICO PROVEEDOR</option>
                     </select>
@@ -351,6 +352,12 @@
             };
 
             window.abrirModalNuevoTicket = () => {
+                document.getElementById('formGarantia').reset();
+                document.getElementById('t_modo_garantia').checked = false;
+                document.getElementById('wrapperCamposCliente').classList.remove('hidden');
+                document.querySelectorAll('.t-client-field').forEach(field => field.required = true);
+                document.getElementById('preview-archivos-nuevo').innerHTML='';
+
                 document.getElementById('modalNuevoTicket').classList.remove('hidden');
                 const offset = new Date().getTimezoneOffset() * 60000;
                 document.getElementById('t_fecha_creacion').value = (new Date(Date.now() - offset)).toISOString().slice(0, 10);
@@ -364,10 +371,9 @@
             };
             handleFilePreview('t_fotos', 'preview-archivos-nuevo'); handleFilePreview('f_fotos_reparacion', 'preview-archivos-reparacion');
 
-            // ===== ESPERAR A QUE FIREBASE VERIFIQUE LA SESIÓN ANTES DE LEER DATOS =====
             auth.onAuthStateChanged(user => {
                 if (user) {
-                    const currentUserEmail = user.email;
+                    const currentUserEmail = user.email; 
                     
                     const toggleModo = document.getElementById('t_modo_garantia');
                     const wrapperCamposCliente = document.getElementById('wrapperCamposCliente');
@@ -395,7 +401,6 @@
                         snapshot.forEach(doc => { 
                             const data = doc.data();
                             const id = doc.id;
-                            
                             const opt = `<option value="${data.nombre}">${data.nombre}</option>`; 
                             if(sNuevo) sNuevo.innerHTML += opt; 
                             if(sKanban) sKanban.innerHTML += opt; 
@@ -463,14 +468,13 @@
                         const cp = document.getElementById('countProductos'); if(cp) cp.textContent = total;
                     });
 
-                    // 🔥 EL ÚNICO LECTOR DE TICKETS PARA GARANTÍAS (BLINDADO) 🔥
+                    // 🔥 EL ÚNICO LECTOR DE TICKETS (BLINDADO) 🔥
                     ticketsRef.onSnapshot(snapshot => {
                         ticketsGlobal = []; 
                         snapshot.forEach(doc => { 
                             ticketsGlobal.push({ id: doc.id, ...doc.data() });
                         }); 
                         
-                        // Ordenamiento a prueba de errores
                         ticketsGlobal.sort((a,b) => {
                             const timeA = (a.creadoEn && typeof a.creadoEn.toMillis === 'function') ? a.creadoEn.toMillis() : 0;
                             const timeB = (b.creadoEn && typeof b.creadoEn.toMillis === 'function') ? b.creadoEn.toMillis() : 0;
@@ -479,6 +483,8 @@
 
                         renderizarTarjetas();
                         if(!document.getElementById('view_historial').classList.contains('hidden')) renderizarTablaHistorial();
+                    }, error => {
+                        console.error("Firebase Error: No se pudieron leer los tickets.", error);
                     });
 
                     document.getElementById('formGarantia').addEventListener('submit', async (e) => {
@@ -528,6 +534,9 @@
                             document.getElementById('wrapperCamposCliente').classList.remove('hidden');
                             document.querySelectorAll('.t-client-field').forEach(field => field.required = true);
                             document.getElementById('modalNuevoTicket').classList.add('hidden');
+                            
+                            switchView('kanban'); 
+                            
                         } catch(e) { 
                             console.error("Error guardando ticket: ", e);
                             alert("Hubo un error al generar el ticket."); 
@@ -562,41 +571,46 @@
                 ESTADOS.forEach(c => { const col = document.getElementById(`col-${c.id}`); if(col) col.innerHTML = ''; });
 
                 ticketsGlobal.forEach(t => {
-                    const refStr = String(t.referencia || '');
-                    const nomStr = String(t.nombre || '');
-                    const cedStr = String(t.cedula || '');
-                    const tIdStr = String(t.id || '');
-                    
-                    const passBusq = tIdStr.toLowerCase().includes(sBusq) || refStr.toLowerCase().includes(sBusq) || nomStr.toLowerCase().includes(sBusq) || cedStr.includes(sBusq);
-                    const passSede = sSede === '' || t.sede === sSede;
-                    
-                    let passFec = true;
-                    if(sFec && t.creadoEn && typeof t.creadoEn.toDate === 'function') { 
-                        const fd = new Date(sFec+'T12:00:00').toLocaleDateString(); 
-                        const td = t.creadoEn.toDate().toLocaleDateString(); 
-                        passFec = (fd===td); 
-                    }
-
-                    if (t.taller === sTaller && passBusq && passSede && passFec && document.getElementById(`col-${t.estado}`)) {
-                        conteos[t.estado]++; 
+                    try {
+                        const refStr = String(t.referencia || '');
+                        const nomStr = String(t.nombre || '');
+                        const cedStr = String(t.cedula || '');
+                        const tIdStr = String(t.id || '');
                         
-                        let mediaCountText = '';
-                        if (Array.isArray(t.fotos) && t.fotos.length > 0) {
-                            const hasVideo = t.fotos.some(u => String(u).toLowerCase().includes('.mp4'));
-                            mediaCountText = (hasVideo ? '🎥 ' : '📸 ') + t.fotos.length;
+                        const passBusq = sBusq === '' || tIdStr.toLowerCase().includes(sBusq) || refStr.toLowerCase().includes(sBusq) || nomStr.toLowerCase().includes(sBusq) || cedStr.includes(sBusq);
+                        const passSede = sSede === '' || t.sede === sSede;
+                        const passTaller = sTaller === '' || t.taller === sTaller;
+                        
+                        let passFec = true;
+                        if(sFec && t.creadoEn && typeof t.creadoEn.toDate === 'function') { 
+                            const fd = new Date(sFec+'T12:00:00').toLocaleDateString(); 
+                            const td = t.creadoEn.toDate().toLocaleDateString(); 
+                            passFec = (fd===td); 
                         }
-                        
-                        let borderClass = "border-slate-100", slaBadge = "";
-                        if (t.estado !== '7_entregado_cliente') {
-                            const dias = calcularDiasEnEstado(t);
-                            if (dias >= 6) { borderClass = "border-l-4 border-l-red-500 border-y-slate-100 border-r-slate-100"; slaBadge = `<span class="flex items-center gap-1 text-[10px] font-black text-red-600 bg-red-50 px-2 py-0.5 rounded-md border border-red-100"><span class="animate-pulse">🔴</span> ${dias} DÍAS</span>`; }
-                            else if (dias >= 3) { borderClass = "border-l-4 border-l-amber-400 border-y-slate-100 border-r-slate-100"; slaBadge = `<span class="flex items-center gap-1 text-[10px] font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-100">🟡 ${dias} DÍAS</span>`; }
-                            else { borderClass = "border-slate-100"; slaBadge = `<span class="flex items-center gap-1 text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100">🟢 ${dias} días</span>`; }
-                        }
-                        
-                        let inventarioBadge = t.tipoGarantia === 'inventario' ? `<span class="bg-indigo-100 text-indigo-700 text-[9px] font-black px-2 py-0.5 rounded-sm ml-2 border border-indigo-200">INVENTARIO</span>` : '';
 
-                        document.getElementById(`col-${t.estado}`).innerHTML += `<div onclick="verDetalle('${t.id}')" class="bg-white p-7 rounded-[22px] shadow-sm border ${borderClass} cursor-pointer hover:shadow-xl hover:border-slate-950 transition-all relative group"><div class="flex justify-between items-start mb-4"><h4 class="font-black text-slate-950 text-xl tracking-tight">${t.id}</h4>${slaBadge}</div><div class="space-y-2.5 text-[13px] text-slate-600 mb-4 border-b border-slate-100 pb-5 relative"><p class="flex justify-between items-start"><span class="font-bold text-slate-400 uppercase text-[10px] tracking-widest mt-1">Ref:</span> <span class="font-extrabold text-slate-900 text-right break-words w-4/5 leading-tight">${refStr}</span></p><p class="flex justify-between items-start"><span class="font-bold text-slate-400 uppercase text-[10px] tracking-widest mt-1">Sede:</span> <span class="font-semibold text-slate-800 text-right break-words w-4/5">${t.sede || 'N/A'}</span></p><p class="flex justify-between items-start"><span class="font-bold text-slate-400 uppercase text-[10px] tracking-widest mt-1">Cliente:</span> <span class="font-semibold text-slate-800 text-right break-words w-4/5">${nomStr}${inventarioBadge}</span></p>${mediaCountText !== '' ? `<div class="absolute -bottom-3 right-0 text-[10px] font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200 shadow-inner">${mediaCountText}</div>` : ''}</div><p class="text-[12px] text-slate-500 font-medium italic line-clamp-2 leading-relaxed">${t.diagnostico || 'Esperando revisión técnica...'}</p></div>`;
+                        if (passTaller && passBusq && passSede && passFec && document.getElementById(`col-${t.estado}`)) {
+                            conteos[t.estado]++; 
+                            
+                            let mediaCountText = '';
+                            if (Array.isArray(t.fotos) && t.fotos.length > 0) {
+                                const hasVideo = t.fotos.some(u => String(u).toLowerCase().includes('.mp4') || String(u).toLowerCase().includes('video'));
+                                mediaCountText = (hasVideo ? '🎥 ' : '📸 ') + t.fotos.length;
+                            }
+                            
+                            let borderClass = "border-slate-100", slaBadge = "";
+                            if (t.estado !== '7_entregado_cliente') {
+                                const dias = calcularDiasEnEstado(t);
+                                if (dias >= 6) { borderClass = "border-l-4 border-l-red-500 border-y-slate-100 border-r-slate-100"; slaBadge = `<span class="flex items-center gap-1 text-[10px] font-black text-red-600 bg-red-50 px-2 py-0.5 rounded-md border border-red-100"><span class="animate-pulse">🔴</span> ${dias} DÍAS</span>`; }
+                                else if (dias >= 3) { borderClass = "border-l-4 border-l-amber-400 border-y-slate-100 border-r-slate-100"; slaBadge = `<span class="flex items-center gap-1 text-[10px] font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-100">🟡 ${dias} DÍAS</span>`; }
+                                else { borderClass = "border-slate-100"; slaBadge = `<span class="flex items-center gap-1 text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100">🟢 ${dias} días</span>`; }
+                            }
+                            
+                            let inventarioBadge = t.tipoGarantia === 'inventario' ? `<span class="bg-indigo-100 text-indigo-700 text-[9px] font-black px-2 py-0.5 rounded-sm ml-2 border border-indigo-200">INVENTARIO</span>` : '';
+
+                            document.getElementById(`col-${t.estado}`).innerHTML += `<div onclick="verDetalle('${t.id}')" class="bg-white p-7 rounded-[22px] shadow-sm border ${borderClass} cursor-pointer hover:shadow-xl hover:border-slate-950 transition-all relative group"><div class="flex justify-between items-start mb-4"><h4 class="font-black text-slate-950 text-xl tracking-tight">${t.id}</h4>${slaBadge}</div><div class="space-y-2.5 text-[13px] text-slate-600 mb-4 border-b border-slate-100 pb-5 relative"><p class="flex justify-between items-start"><span class="font-bold text-slate-400 uppercase text-[10px] tracking-widest mt-1">Ref:</span> <span class="font-extrabold text-slate-900 text-right break-words w-4/5 leading-tight">${refStr}</span></p><p class="flex justify-between items-start"><span class="font-bold text-slate-400 uppercase text-[10px] tracking-widest mt-1">Sede:</span> <span class="font-semibold text-slate-800 text-right break-words w-4/5">${t.sede || 'N/A'}</span></p><p class="flex justify-between items-start"><span class="font-bold text-slate-400 uppercase text-[10px] tracking-widest mt-1">Cliente:</span> <span class="font-semibold text-slate-800 text-right break-words w-4/5">${nomStr}${inventarioBadge}</span></p>${mediaCountText !== '' ? `<div class="absolute -bottom-3 right-0 text-[10px] font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200 shadow-inner">${mediaCountText}</div>` : ''}</div><p class="text-[12px] text-slate-500 font-medium italic line-clamp-2 leading-relaxed">${t.diagnostico || 'Esperando revisión técnica...'}</p></div>`;
+                        }
+                    } catch (error) {
+                        console.error(`Fallo al dibujar el ticket ${t.id} (ignorado por seguridad)`, error);
                     }
                 });
                 ESTADOS.forEach(c => { const el = document.getElementById(`count-${c.id}`); if(el) el.textContent = conteos[c.id]; });
@@ -623,7 +637,10 @@
 
                 const cB = (txt, cls, st) => `<button onclick="cambiarEstado('${t.id}', '${st}')" class="px-6 py-2.5 rounded-xl text-sm font-bold shadow-sm transition-all ${cls}">${txt}</button>`;
                 if(t.estado==='1_recibir') bTop.innerHTML+=cB('Enviar a S.T.', 'bg-slate-950 text-white hover:bg-black', '2_envio_st');
-                if(t.estado==='3_diagnosticado') { bTop.innerHTML+=cB('Fue Reparado','bg-emerald-600 text-white hover:bg-emerald-700','4_reparado'); bTop.innerHTML+=cB('Cerrar Ticket (Pérdida)','bg-red-600 text-white hover:bg-red-700','7_entregado_cliente'); }
+                if(t.estado==='3_diagnosticado') { 
+                    bTop.innerHTML+=cB('Fue Reparado','bg-emerald-600 text-white hover:bg-emerald-700','4_reparado'); 
+                    bTop.innerHTML+=cB('Cerrar Ticket (Pérdida)','bg-red-600 text-white hover:bg-red-700','5_sin_reparacion'); 
+                }
                 if(t.estado==='5_sin_reparacion') bTop.innerHTML+=cB('Entregar a Asesor', 'bg-slate-950 text-white hover:bg-black', '6_entregado_asesor');
                 if(t.estado==='6_entregado_asesor') bTop.innerHTML+=cB('Cerrar Ticket (Entregado)', 'bg-slate-950 text-white hover:bg-black', '7_entregado_cliente');
 
