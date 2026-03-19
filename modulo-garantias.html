@@ -740,15 +740,26 @@
                 else { tL.innerHTML = '<p class="text-sm font-medium text-slate-500 italic">No hay registros de auditoría para este ticket.</p>'; }
                 document.getElementById('modalDetalle').classList.remove('hidden');
             };
-
             function renderizarTablaHistorial() {
                 const s = document.getElementById('h_search').value.toLowerCase(), sede = document.getElementById('h_sede').value, est = document.getElementById('h_estado').value, fIni = document.getElementById('h_fecha_ini').value, fFin = document.getElementById('h_fecha_fin').value;
                 let html = '';
-                ticketsGlobal.forEach(t => {
-                    const refStr = String(t.referencia || '');
+                
+                // Creamos una copia del array para no afectar el global y lo ordenamos por fecha descendente
+                let ticketsParaHistorial = [...ticketsGlobal].sort((a,b) => {
+                    const timeA = (a.creadoEn && typeof a.creadoEn.toMillis === 'function') ? a.creadoEn.toMillis() : 0;
+                    const timeB = (b.creadoEn && typeof b.creadoEn.toMillis === 'function') ? b.creadoEn.toMillis() : 0;
+                    return timeB - timeA; // Descendente: más reciente primero
+                });
+
+                ticketsParaHistorial.forEach(t => {
+                    const refCompleta = String(t.referencia || '');
+                    // Extraemos el nombre del producto (la segunda parte después del ' - ')
+                    const partesRef = refCompleta.split(' - ');
+                    const nombreProducto = partesRef.length > 1 ? partesRef[1] : refCompleta; 
+                    
                     const tIdStr = String(t.id || '');
                     
-                    let pS = s==='' || tIdStr.toLowerCase().includes(s) || refStr.toLowerCase().includes(s); 
+                    let pS = s==='' || tIdStr.toLowerCase().includes(s) || refCompleta.toLowerCase().includes(s); 
                     let pSede = sede==='' || t.sede === sede; 
                     let pEst = est==='' || t.estado === est; 
                     let pF = true;
@@ -761,7 +772,8 @@
                     
                     if(pS && pSede && pEst && pF) {
                         const nEst = ESTADOS.find(e=>e.id===t.estado)?.nombre || t.estado;
-                        html += `<tr class="hover:bg-slate-50 cursor-pointer transition-colors" onclick="verDetalle('${t.id}')"><td class="p-4 pl-6 font-black text-slate-900">${tIdStr}</td><td class="p-4 text-slate-500">${formatearFecha(t.creadoEn)}</td><td class="p-4 font-bold text-slate-800">${refStr.split(' - ')[0]}</td><td class="p-4 text-slate-600">${t.sede || 'N/A'}</td><td class="p-4"><span class="bg-slate-100 text-slate-800 text-[10px] font-black px-3 py-1 rounded-full uppercase">${nEst}</span></td></tr>`;
+                        // Usamos 'nombreProducto' en lugar de 'refStr.split(' - ')[0]'
+                        html += `<tr class="hover:bg-slate-50 cursor-pointer transition-colors" onclick="verDetalle('${t.id}')"><td class="p-4 pl-6 font-black text-slate-900">${tIdStr}</td><td class="p-4 text-slate-500">${formatearFecha(t.creadoEn)}</td><td class="p-4 font-bold text-slate-800 uppercase text-xs">${nombreProducto}</td><td class="p-4 text-slate-600">${t.sede || 'N/A'}</td><td class="p-4"><span class="bg-slate-100 text-slate-800 text-[10px] font-black px-3 py-1 rounded-full uppercase">${nEst}</span></td></tr>`;
                     }
                 });
                 const tb = document.getElementById('tbodyHistorial');
@@ -805,8 +817,49 @@
             function renderizarGraficos() {
                 if(!ticketsGlobal.length) return;
                 document.getElementById('kpiTotalTickets').textContent = ticketsGlobal.length;
-                let cP={}; ticketsGlobal.forEach(t => { const r=String(t.referencia||'').split(' - ')[0]; if(r) cP[r]=(cP[r]||0)+1; }); let sP=Object.keys(cP).sort((a,b)=>cP[b]-cP[a]).slice(0,5);
-                if(chartProds) chartProds.destroy(); chartProds=new Chart(document.getElementById('chartProductos'),{type:'bar',data:{labels:sP,datasets:[{data:sP.map(k=>cP[k]),backgroundColor:'#0f172a',borderRadius:8}]},options:{responsive: true, maintainAspectRatio: false, plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0}}}}});
+                
+                // 🔥 GRÁFICO 1 MODIFICADO PARA MOSTRAR NOMBRE DEL PRODUCTO 🔥
+                let cP={}; 
+                ticketsGlobal.forEach(t => { 
+                    const refCompleta = String(t.referencia||'');
+                    const partesRef = refCompleta.split(' - ');
+                    // Extraemos el nombre (índice 1) si existe, si no, tomamos la referencia completa
+                    const nombreProducto = partesRef.length > 1 ? partesRef[1].trim() : refCompleta.trim(); 
+                    
+                    if(nombreProducto) cP[nombreProducto]=(cP[nombreProducto]||0)+1; 
+                }); 
+                // Ordenamos y tomamos los 5 primeros, asegurando que se vean los nombres en mayúsculas
+                let sP=Object.keys(cP).sort((a,b)=>cP[b]-cP[a]).slice(0,5);
+                
+                if(chartProds) chartProds.destroy(); 
+                chartProds=new Chart(document.getElementById('chartProductos'),{
+                    type:'bar',
+                    data:{
+                        labels: sP.map(l => l.length > 15 ? l.substring(0, 15) + '...' : l), // Recortamos nombres muy largos para que quepan
+                        datasets:[{
+                            data:sP.map(k=>cP[k]),
+                            backgroundColor:'#0f172a',
+                            borderRadius:8
+                        }]
+                    },
+                    options:{
+                        responsive: true, 
+                        maintainAspectRatio: false, 
+                        plugins:{
+                            legend:{display:false},
+                            tooltip: { // Mostramos el nombre completo al pasar el mouse
+                                callbacks: {
+                                    title: function(context) { return sP[context[0].dataIndex]; }
+                                }
+                            }
+                        },
+                        scales:{
+                            y:{beginAtZero:true,ticks:{precision:0}},
+                            x:{ticks:{font:{size: 10, weight: 'bold'}}}
+                        }
+                    }
+                });
+
                 let cS={}; ticketsGlobal.forEach(t => { if(t.sede) cS[t.sede]=(cS[t.sede]||0)+1; }); let sS=Object.keys(cS).sort((a,b)=>cS[b]-cS[a]).slice(0,5);
                 if(chartSedes) chartSedes.destroy(); chartSedes=new Chart(document.getElementById('chartSedes'),{type:'doughnut',data:{labels:sS,datasets:[{data:sS.map(k=>cS[k]),backgroundColor:['#0f172a','#334155','#475569','#94a3b8','#cbd5e1'],borderWidth:0}]},options:{responsive: true, maintainAspectRatio: false, cutout:'70%',plugins:{legend:{position:'right'}}}});
                 let cE={}; ticketsGlobal.forEach(t => { if(t.estado) cE[t.estado]=(cE[t.estado]||0)+1; });
