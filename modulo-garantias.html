@@ -849,9 +849,186 @@
                 const tb = document.getElementById('tbodyHistorial');
                 if(tb) tb.innerHTML = html;
             }
+            // 🔥 NUEVA EXPORTACIÓN A EXCEL SÚPER DETALLADA 🔥
+            window.exportarExcel = () => {
+                const btn = document.querySelector('button[onclick="exportarExcel()"]');
+                const textoOriginal = btn.innerHTML;
+                btn.innerHTML = "⏳ Generando Excel...";
+                btn.disabled = true;
 
-            window.exportarExcel = () => { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById('tablaHistorialExportar'), {sheet:"Tickets"}), "Historial_Garantias.xlsx"); };
-            window.exportarPDF = () => { const doc = new window.jspdf.jsPDF(); doc.setFontSize(16); doc.text("Historial de Tickets", 14, 15); doc.autoTable({ html: '#tablaHistorialExportar', startY: 20, theme: 'grid', headStyles: { fillColor: [15, 23, 42] } }); doc.save('Historial_Garantias.pdf'); };
+                // 1. Tomamos los filtros actuales de la pantalla
+                const s = document.getElementById('h_search').value.toLowerCase();
+                const sede = document.getElementById('h_sede').value;
+                const est = document.getElementById('h_estado').value;
+                const fIni = document.getElementById('h_fecha_ini').value;
+                const fFin = document.getElementById('h_fecha_fin').value;
+
+                let ticketsAExportar = [];
+
+                // 2. Ordenamos y filtramos los tickets igual que en la vista
+                let ticketsOrdenados = [...ticketsGlobal].sort((a,b) => {
+                    const timeA = (a.creadoEn && typeof a.creadoEn.toMillis === 'function') ? a.creadoEn.toMillis() : 0;
+                    const timeB = (b.creadoEn && typeof b.creadoEn.toMillis === 'function') ? b.creadoEn.toMillis() : 0;
+                    return timeB - timeA; 
+                });
+
+                ticketsOrdenados.forEach(t => {
+                    const refStr = String(t.referencia || '');
+                    const tIdStr = String(t.id || '');
+                    
+                    let pS = s==='' || tIdStr.toLowerCase().includes(s) || refStr.toLowerCase().includes(s); 
+                    let pSede = sede==='' || t.sede === sede; 
+                    let pEst = est==='' || t.estado === est; 
+                    let pF = true;
+                    
+                    if((fIni||fFin) && t.creadoEn && typeof t.creadoEn.toDate === 'function') {
+                        const d = t.creadoEn.toDate(); d.setHours(0,0,0,0);
+                        if(fIni && d < new Date(fIni+'T00:00:00')) pF=false;
+                        if(fFin && d > new Date(fFin+'T00:00:00')) pF=false;
+                    }
+                    
+                    if(pS && pSede && pEst && pF) {
+                        const nEst = ESTADOS.find(e=>e.id===t.estado)?.nombre || t.estado;
+                        
+                        // 3. Armamos el objeto con TODAS las columnas que pediste
+                        ticketsAExportar.push({
+                            "ID Ticket": tIdStr,
+                            "Fecha de Creación": formatearFecha(t.creadoEn),
+                            "Estado Actual": nEst,
+                            "Sede / Asesor": t.sede || 'N/A',
+                            "Nombre del Cliente": t.nombre || 'N/A',
+                            "Cédula": t.cedula || 'N/A',
+                            "Teléfono": t.telefono || 'N/A',
+                            "N° Factura": t.factura || 'N/A',
+                            "Producto (Referencia)": refStr,
+                            "Falla Reportada": t.falla || 'N/A',
+                            "Dictamen de Servicio Técnico": t.diagnostico || 'Sin diagnóstico',
+                            "Observaciones Finales del Técnico": t.observacionesReparacion || 'Sin observaciones'
+                        });
+                    }
+                });
+
+                if(ticketsAExportar.length === 0) {
+                    alert("No hay tickets para exportar con los filtros actuales.");
+                    btn.innerHTML = textoOriginal;
+                    btn.disabled = false;
+                    return;
+                }
+
+                // 4. Construimos el Excel con formato
+                setTimeout(() => {
+                    const worksheet = XLSX.utils.json_to_sheet(ticketsAExportar);
+                    const workbook = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(workbook, worksheet, "Reporte Garantías");
+                    
+                    // Ajustamos el ancho de las columnas para que el texto largo se lea bien
+                    const wscols = [
+                        {wch:12}, {wch:18}, {wch:25}, {wch:25}, {wch:30}, 
+                        {wch:15}, {wch:15}, {wch:15}, {wch:40}, {wch:50}, 
+                        {wch:60}, {wch:60}
+                    ];
+                    worksheet['!cols'] = wscols;
+
+                    XLSX.writeFile(workbook, "Reporte_Completo_Garantias.xlsx");
+                    
+                    btn.innerHTML = textoOriginal;
+                    btn.disabled = false;
+                }, 500); // Pequeña pausa para que se vea la animación del botón
+            };
+            // 🔥 NUEVA EXPORTACIÓN A PDF SÚPER DETALLADA 🔥
+            window.exportarPDF = () => {
+                const btn = document.querySelector('button[onclick="exportarPDF()"]');
+                const textoOriginal = btn.innerHTML;
+                btn.innerHTML = "⏳ Generando PDF...";
+                btn.disabled = true;
+
+                // 1. Tomamos los filtros actuales de la pantalla
+                const s = document.getElementById('h_search').value.toLowerCase();
+                const sede = document.getElementById('h_sede').value;
+                const est = document.getElementById('h_estado').value;
+                const fIni = document.getElementById('h_fecha_ini').value;
+                const fFin = document.getElementById('h_fecha_fin').value;
+
+                let bodyData = [];
+
+                // 2. Ordenamos y filtramos los tickets
+                let ticketsOrdenados = [...ticketsGlobal].sort((a,b) => {
+                    const timeA = (a.creadoEn && typeof a.creadoEn.toMillis === 'function') ? a.creadoEn.toMillis() : 0;
+                    const timeB = (b.creadoEn && typeof b.creadoEn.toMillis === 'function') ? b.creadoEn.toMillis() : 0;
+                    return timeB - timeA; 
+                });
+
+                ticketsOrdenados.forEach(t => {
+                    const refStr = String(t.referencia || '');
+                    const tIdStr = String(t.id || '');
+                    
+                    let pS = s==='' || tIdStr.toLowerCase().includes(s) || refStr.toLowerCase().includes(s); 
+                    let pSede = sede==='' || t.sede === sede; 
+                    let pEst = est==='' || t.estado === est; 
+                    let pF = true;
+                    
+                    if((fIni||fFin) && t.creadoEn && typeof t.creadoEn.toDate === 'function') {
+                        const d = t.creadoEn.toDate(); d.setHours(0,0,0,0);
+                        if(fIni && d < new Date(fIni+'T00:00:00')) pF=false;
+                        if(fFin && d > new Date(fFin+'T00:00:00')) pF=false;
+                    }
+                    
+                    if(pS && pSede && pEst && pF) {
+                        const nEst = ESTADOS.find(e=>e.id===t.estado)?.nombre || t.estado;
+                        
+                        // 3. Armamos un array (fila) para la tabla del PDF
+                        bodyData.push([
+                            tIdStr,
+                            formatearFecha(t.creadoEn),
+                            nEst,
+                            t.sede || 'N/A',
+                            t.nombre || 'N/A',
+                            t.cedula || 'N/A',
+                            t.telefono || 'N/A',
+                            t.factura || 'N/A',
+                            refStr,
+                            t.falla || 'N/A',
+                            t.diagnostico || 'Sin dictamen',
+                            t.observacionesReparacion || 'Sin obs.'
+                        ]);
+                    }
+                });
+
+                if(bodyData.length === 0) {
+                    alert("No hay tickets para exportar con los filtros actuales.");
+                    btn.innerHTML = textoOriginal;
+                    btn.disabled = false;
+                    return;
+                }
+
+                setTimeout(() => {
+                    // 4. Creamos el PDF en modo 'landscape' (l) o sea, horizontal para que quepa todo
+                    const doc = new window.jspdf.jsPDF('l', 'pt', 'a4'); 
+                    doc.setFontSize(14); 
+                    doc.text("Reporte Detallado de Garantías", 40, 30); 
+                    
+                    doc.autoTable({ 
+                        startY: 40,
+                        head: [['ID', 'Fecha', 'Estado', 'Sede/Asesor', 'Cliente', 'Cédula', 'Teléfono', 'Factura', 'Producto', 'Falla Reportada', 'Dictamen Técnico', 'Obs. Finales']],
+                        body: bodyData,
+                        theme: 'grid', 
+                        headStyles: { fillColor: [15, 23, 42], fontSize: 7 }, // Letra pequeña para los títulos
+                        bodyStyles: { fontSize: 7, valign: 'top' },           // Letra pequeña para el texto
+                        columnStyles: {
+                            8: { cellWidth: 70 },  // Ancho fijo para Producto
+                            9: { cellWidth: 100 }, // Ancho fijo para Falla
+                            10: { cellWidth: 100 },// Ancho fijo para Dictamen
+                            11: { cellWidth: 80 }  // Ancho fijo para Observaciones
+                        },
+                        styles: { overflow: 'linebreak' } // Hace que el texto baje a la siguiente línea si es muy largo
+                    }); 
+                    
+                    doc.save('Reporte_Completo_Garantias.pdf');
+                    
+                    btn.innerHTML = textoOriginal;
+                    btn.disabled = false;
+                }, 500);
+            };
 
             window.procesarJSON = async () => {
                 const btn = document.getElementById('btnProcesarJson'); btn.textContent = "Procesando..."; btn.disabled = true;
