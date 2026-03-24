@@ -379,6 +379,9 @@
                 document.getElementById('t_modo_garantia').checked = false;
                 document.getElementById('wrapperCamposCliente').classList.remove('hidden');
                 document.querySelectorAll('.t-client-field').forEach(field => field.required = true);
+                
+                // 🔥 LIMPIEZA FORZOSA EN TICKET NUEVO 🔥
+                document.getElementById('t_fotos').value = '';
                 document.getElementById('preview-archivos-nuevo').innerHTML='';
 
                 document.getElementById('modalNuevoTicket').classList.remove('hidden');
@@ -558,6 +561,7 @@
                             await ticketsRef.doc(id).set(ticketData);
 
                             document.getElementById('formGarantia').reset(); 
+                            document.getElementById('t_fotos').value = '';
                             document.getElementById('preview-archivos-nuevo').innerHTML=''; 
                             document.getElementById('t_modo_garantia').checked = false;
                             document.getElementById('wrapperCamposCliente').classList.remove('hidden');
@@ -599,6 +603,9 @@
                                 historialEventos: firebase.firestore.FieldValue.arrayUnion({ estado: '3_diagnosticado', fecha: new Date(), usuario: currentUserEmail }) 
                             }); 
                             
+                            // 🔥 LIMPIEZA FORZOSA DESPUÉS DE GUARDAR 🔥
+                            document.getElementById('f_fotos_diagnostico').value = ''; 
+                            document.getElementById('preview-archivos-diagnostico').innerHTML = '';
                             document.getElementById('modalDetalle').classList.add('hidden'); 
                         } catch(e) { 
                             alert("Error al guardar el informe o subir archivos."); 
@@ -609,7 +616,39 @@
                         btn.disabled = false;
                     };
                     
-                    window.guardarPostReparacion = async () => { const txt = document.getElementById('txtObservacionesReparacion').value; if(!txt) return alert("Ingresa las observaciones finales."); const btn = document.getElementById('btnGuardarPostReparacion'); btn.textContent = "Guardando..."; btn.disabled=true; let urls = []; try { for(let f of document.getElementById('f_fotos_reparacion').files){ const r = storage.ref(`ep/${currentTicketIdAbierto}/${f.name}`); await r.put(f); urls.push(await r.getDownloadURL()); } await ticketsRef.doc(currentTicketIdAbierto).update({ observacionesReparacion: txt, fotosReparacion: urls, estado: '6_entregado_asesor', historialEventos: firebase.firestore.FieldValue.arrayUnion({ estado: '6_entregado_asesor', fecha: new Date(), usuario: currentUserEmail }) }); document.getElementById('modalDetalle').classList.add('hidden'); } catch(e) { alert("Error al guardar evidencias."); } btn.textContent = "Guardar Evidencia Final"; btn.disabled=false; };
+                    window.guardarPostReparacion = async () => { 
+                        const txt = document.getElementById('txtObservacionesReparacion').value; 
+                        if(!txt) return alert("Ingresa las observaciones finales."); 
+                        
+                        const btn = document.getElementById('btnGuardarPostReparacion'); 
+                        btn.textContent = "Guardando..."; 
+                        btn.disabled=true; 
+                        
+                        let urls = []; 
+                        try { 
+                            for(let f of document.getElementById('f_fotos_reparacion').files){ 
+                                const r = storage.ref(`ep/${currentTicketIdAbierto}/${f.name}`); 
+                                await r.put(f); 
+                                urls.push(await r.getDownloadURL()); 
+                            } 
+                            
+                            await ticketsRef.doc(currentTicketIdAbierto).update({ 
+                                observacionesReparacion: txt, 
+                                fotosReparacion: urls, 
+                                estado: '6_entregado_asesor', 
+                                historialEventos: firebase.firestore.FieldValue.arrayUnion({ estado: '6_entregado_asesor', fecha: new Date(), usuario: currentUserEmail }) 
+                            }); 
+                            
+                            // 🔥 LIMPIEZA FORZOSA DESPUÉS DE GUARDAR 🔥
+                            document.getElementById('f_fotos_reparacion').value = '';
+                            document.getElementById('preview-archivos-reparacion').innerHTML = '';
+                            document.getElementById('modalDetalle').classList.add('hidden'); 
+                        } catch(e) { 
+                            alert("Error al guardar evidencias."); 
+                        } 
+                        btn.textContent = "Guardar Evidencia Final"; 
+                        btn.disabled=false; 
+                    };
 
                 } else {
                     console.warn("Esperando autenticación de Firebase...");
@@ -680,7 +719,6 @@
                 ESTADOS.forEach(c => { const el = document.getElementById(`count-${c.id}`); if(el) el.textContent = conteos[c.id]; });
             }
 
-            // FUNCIÓN PARA ABRIR TICKET DESDE KANBAN (COMPLETO)
             window.verDetalle = (id) => {
                 const t = ticketsGlobal.find(x => x.id === id); if(!t) return; currentTicketIdAbierto = id;
                 document.getElementById('det_id').textContent = t.id || 'N/A'; 
@@ -699,6 +737,7 @@
                 const galeriaDiag = document.getElementById('det_galeria_diagnostico');
                 const fotosDiagDiv = document.getElementById('det_fotos_diagnostico_div');
                 
+                // 🔥 LIMPIEZA FORZOSA AL ABRIR UN TICKET 🔥
                 document.getElementById('f_fotos_diagnostico').value = '';
                 document.getElementById('preview-archivos-diagnostico').innerHTML = '';
                 fotosDiagDiv.innerHTML = '';
@@ -740,6 +779,10 @@
 
                 const formPostRep = document.getElementById('form_post_reparacion'), viewPostRep = document.getElementById('view_post_reparacion');
                 formPostRep.classList.add('hidden'); viewPostRep.classList.add('hidden'); document.getElementById('txtObservacionesReparacion').value=''; document.getElementById('preview-archivos-reparacion').innerHTML='';
+                
+                // 🔥 LIMPIEZA FORZOSA DEL INPUT DE FOTOS DE REPARACIÓN AL ABRIR TICKET 🔥
+                document.getElementById('f_fotos_reparacion').value = '';
+
                 if(t.estado==='4_reparado') { formPostRep.classList.remove('hidden'); btnDevolverRep.onclick = () => cambiarEstado(t.id, ESTADO_ANTERIOR[t.estado]); }
                 else if(t.observacionesReparacion) { document.getElementById('det_obs_reparacion').textContent = t.observacionesReparacion; const divFotosRep = document.getElementById('det_fotos_reparacion_div'); divFotosRep.innerHTML=""; if(Array.isArray(t.fotosReparacion) && t.fotosReparacion.length > 0) { t.fotosReparacion.forEach(url => divFotosRep.innerHTML += crearMediaHTML(url)); document.getElementById('det_galeria_reparacion').classList.remove('hidden'); } else document.getElementById('det_galeria_reparacion').classList.add('hidden'); viewPostRep.classList.remove('hidden'); }
 
@@ -750,11 +793,9 @@
                 document.getElementById('modalDetalle').classList.remove('hidden');
             };
 
-            // 🔥 NUEVA FUNCIÓN: ABRIR TICKET DESDE HISTORIAL (MODO LECTURA SIN FOTOS) 🔥
             window.verSoloDatos = (id) => {
                 const t = ticketsGlobal.find(x => x.id === id); if(!t) return;
                 
-                // Llenar textos
                 document.getElementById('det_id').textContent = t.id || 'N/A'; 
                 document.getElementById('det_cedula').textContent = t.cedula || 'N/A'; 
                 document.getElementById('det_telefono').textContent = t.telefono || 'N/A'; 
@@ -764,24 +805,20 @@
                 document.getElementById('det_referencia').textContent = t.referencia || 'N/A'; 
                 document.getElementById('det_falla').textContent = t.falla || 'N/A';
                 
-                // Diagnóstico en solo lectura
                 const txtD = document.getElementById('txtDiagnostico');
                 txtD.value = t.diagnostico || "Sin diagnóstico registrado."; 
                 txtD.readOnly = true; 
                 txtD.className = "w-full border border-slate-200 rounded-2xl p-6 text-sm font-medium text-slate-500 bg-slate-50 shadow-sm leading-relaxed";
                 
-                // Ocultar botones de acción y formularios
                 document.getElementById('det_actions_top').innerHTML = '';
                 document.getElementById('btnSaveDiagDiv').classList.add('hidden');
                 document.getElementById('div_upload_diagnostico').classList.add('hidden');
                 document.getElementById('form_post_reparacion').classList.add('hidden');
                 
-                // 🔥 OCULTAR TODAS LAS GALERÍAS DE FOTOS/VIDEOS 🔥
                 document.getElementById('det_galeria').classList.add('hidden');
                 document.getElementById('det_galeria_diagnostico').classList.add('hidden');
                 document.getElementById('det_galeria_reparacion').classList.add('hidden');
 
-                // Observaciones finales
                 const viewPostRep = document.getElementById('view_post_reparacion');
                 if(t.observacionesReparacion) {
                     document.getElementById('det_obs_reparacion').textContent = t.observacionesReparacion;
@@ -790,7 +827,6 @@
                     viewPostRep.classList.add('hidden');
                 }
 
-                // Timeline
                 const tL = document.getElementById('det_timeline'); tL.innerHTML = '';
                 if(t.historialEventos && Array.isArray(t.historialEventos) && t.historialEventos.length > 0) { 
                     t.historialEventos.forEach(ev => { 
@@ -835,7 +871,6 @@
                     
                     if(pS && pSede && pEst && pF) {
                         const nEst = ESTADOS.find(e=>e.id===t.estado)?.nombre || t.estado;
-                        // 🔥 AHORA EL BOTÓN LLAMA AL MODO LECTURA Y QUITA EL CLICK DE LA FILA 🔥
                         html += `<tr class="hover:bg-slate-50 transition-colors border-b border-slate-100">
                             <td class="p-4 pl-6 font-black text-slate-900">${tIdStr}</td>
                             <td class="p-4 text-slate-500">${formatearFecha(t.creadoEn)}</td>
@@ -849,14 +884,13 @@
                 const tb = document.getElementById('tbodyHistorial');
                 if(tb) tb.innerHTML = html;
             }
-            // 🔥 NUEVA EXPORTACIÓN A EXCEL SÚPER DETALLADA 🔥
+            
             window.exportarExcel = () => {
                 const btn = document.querySelector('button[onclick="exportarExcel()"]');
                 const textoOriginal = btn.innerHTML;
                 btn.innerHTML = "⏳ Generando Excel...";
                 btn.disabled = true;
 
-                // 1. Tomamos los filtros actuales de la pantalla
                 const s = document.getElementById('h_search').value.toLowerCase();
                 const sede = document.getElementById('h_sede').value;
                 const est = document.getElementById('h_estado').value;
@@ -865,7 +899,6 @@
 
                 let ticketsAExportar = [];
 
-                // 2. Ordenamos y filtramos los tickets igual que en la vista
                 let ticketsOrdenados = [...ticketsGlobal].sort((a,b) => {
                     const timeA = (a.creadoEn && typeof a.creadoEn.toMillis === 'function') ? a.creadoEn.toMillis() : 0;
                     const timeB = (b.creadoEn && typeof b.creadoEn.toMillis === 'function') ? b.creadoEn.toMillis() : 0;
@@ -890,7 +923,6 @@
                     if(pS && pSede && pEst && pF) {
                         const nEst = ESTADOS.find(e=>e.id===t.estado)?.nombre || t.estado;
                         
-                        // 3. Armamos el objeto con TODAS las columnas que pediste
                         ticketsAExportar.push({
                             "ID Ticket": tIdStr,
                             "Fecha de Creación": formatearFecha(t.creadoEn),
@@ -915,13 +947,11 @@
                     return;
                 }
 
-                // 4. Construimos el Excel con formato
                 setTimeout(() => {
                     const worksheet = XLSX.utils.json_to_sheet(ticketsAExportar);
                     const workbook = XLSX.utils.book_new();
                     XLSX.utils.book_append_sheet(workbook, worksheet, "Reporte Garantías");
                     
-                    // Ajustamos el ancho de las columnas para que el texto largo se lea bien
                     const wscols = [
                         {wch:12}, {wch:18}, {wch:25}, {wch:25}, {wch:30}, 
                         {wch:15}, {wch:15}, {wch:15}, {wch:40}, {wch:50}, 
@@ -933,16 +963,15 @@
                     
                     btn.innerHTML = textoOriginal;
                     btn.disabled = false;
-                }, 500); // Pequeña pausa para que se vea la animación del botón
+                }, 500); 
             };
-            // 🔥 NUEVA EXPORTACIÓN A PDF SÚPER DETALLADA 🔥
+            
             window.exportarPDF = () => {
                 const btn = document.querySelector('button[onclick="exportarPDF()"]');
                 const textoOriginal = btn.innerHTML;
                 btn.innerHTML = "⏳ Generando PDF...";
                 btn.disabled = true;
 
-                // 1. Tomamos los filtros actuales de la pantalla
                 const s = document.getElementById('h_search').value.toLowerCase();
                 const sede = document.getElementById('h_sede').value;
                 const est = document.getElementById('h_estado').value;
@@ -951,7 +980,6 @@
 
                 let bodyData = [];
 
-                // 2. Ordenamos y filtramos los tickets
                 let ticketsOrdenados = [...ticketsGlobal].sort((a,b) => {
                     const timeA = (a.creadoEn && typeof a.creadoEn.toMillis === 'function') ? a.creadoEn.toMillis() : 0;
                     const timeB = (b.creadoEn && typeof b.creadoEn.toMillis === 'function') ? b.creadoEn.toMillis() : 0;
@@ -976,7 +1004,6 @@
                     if(pS && pSede && pEst && pF) {
                         const nEst = ESTADOS.find(e=>e.id===t.estado)?.nombre || t.estado;
                         
-                        // 3. Armamos un array (fila) para la tabla del PDF
                         bodyData.push([
                             tIdStr,
                             formatearFecha(t.creadoEn),
@@ -1002,7 +1029,6 @@
                 }
 
                 setTimeout(() => {
-                    // 4. Creamos el PDF en modo 'landscape' (l) o sea, horizontal para que quepa todo
                     const doc = new window.jspdf.jsPDF('l', 'pt', 'a4'); 
                     doc.setFontSize(14); 
                     doc.text("Reporte Detallado de Garantías", 40, 30); 
@@ -1012,15 +1038,15 @@
                         head: [['ID', 'Fecha', 'Estado', 'Sede/Asesor', 'Cliente', 'Cédula', 'Teléfono', 'Factura', 'Producto', 'Falla Reportada', 'Dictamen Técnico', 'Obs. Finales']],
                         body: bodyData,
                         theme: 'grid', 
-                        headStyles: { fillColor: [15, 23, 42], fontSize: 7 }, // Letra pequeña para los títulos
-                        bodyStyles: { fontSize: 7, valign: 'top' },           // Letra pequeña para el texto
+                        headStyles: { fillColor: [15, 23, 42], fontSize: 7 },
+                        bodyStyles: { fontSize: 7, valign: 'top' },
                         columnStyles: {
-                            8: { cellWidth: 70 },  // Ancho fijo para Producto
-                            9: { cellWidth: 100 }, // Ancho fijo para Falla
-                            10: { cellWidth: 100 },// Ancho fijo para Dictamen
-                            11: { cellWidth: 80 }  // Ancho fijo para Observaciones
+                            8: { cellWidth: 70 },  
+                            9: { cellWidth: 100 }, 
+                            10: { cellWidth: 100 },
+                            11: { cellWidth: 80 }  
                         },
-                        styles: { overflow: 'linebreak' } // Hace que el texto baje a la siguiente línea si es muy largo
+                        styles: { overflow: 'linebreak' } 
                     }); 
                     
                     doc.save('Reporte_Completo_Garantias.pdf');
