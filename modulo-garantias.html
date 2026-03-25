@@ -420,14 +420,16 @@
                             clientFields.forEach(field => field.required = true);
                         }
                     });
-
                     sedesRef.orderBy('nombre').onSnapshot(snapshot => {
                         const sKanban = document.getElementById('filtroSedeKanban');
                         const sNuevo = document.getElementById('t_sede');
                         const listaSedesHTML = document.getElementById('listaSedes');
+                        // NUEVO: Agregamos la referencia al filtro del historial
+                        const sHistorial = document.getElementById('h_sede'); 
 
                         if(sNuevo) sNuevo.innerHTML = '<option value="" disabled selected>Selecciona una opción...</option>'; 
                         if(sKanban) sKanban.innerHTML = '<option value="">Todas las Sedes</option>';
+                        if(sHistorial) sHistorial.innerHTML = '<option value="">Todas las Sedes</option>'; // Llenado inicial
                         if(listaSedesHTML) listaSedesHTML.innerHTML = '';
 
                         snapshot.forEach(doc => { 
@@ -436,6 +438,7 @@
                             const opt = `<option value="${data.nombre}">${data.nombre}</option>`; 
                             if(sNuevo) sNuevo.innerHTML += opt; 
                             if(sKanban) sKanban.innerHTML += opt; 
+                            if(sHistorial) sHistorial.innerHTML += opt; // Llenamos el historial con cada sede
                             
                             if(listaSedesHTML) {
                                 listaSedesHTML.innerHTML += `
@@ -841,6 +844,21 @@
                 document.getElementById('modalDetalle').classList.remove('hidden');
             };
 
+            // 🔥 NUEVO: Llenar opciones de Estado y activar reactividad de filtros 🔥
+            const selectorEstadoHistorial = document.getElementById('h_estado');
+            if (selectorEstadoHistorial) {
+                selectorEstadoHistorial.innerHTML = '<option value="">Todos los Estados</option>';
+                ESTADOS.forEach(est => {
+                    selectorEstadoHistorial.innerHTML += `<option value="${est.id}">${est.nombre}</option>`;
+                });
+            }
+
+            // Hacer que los filtros del historial respondan al instante
+            ['h_search', 'h_sede', 'h_estado', 'h_fecha_ini', 'h_fecha_fin'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.addEventListener('input', renderizarTablaHistorial);
+            });
+            
             function renderizarTablaHistorial() {
                 const s = document.getElementById('h_search').value.toLowerCase(), sede = document.getElementById('h_sede').value, est = document.getElementById('h_estado').value, fIni = document.getElementById('h_fecha_ini').value, fFin = document.getElementById('h_fecha_fin').value;
                 let html = '';
