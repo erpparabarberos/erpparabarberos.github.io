@@ -462,7 +462,18 @@ function renderAllSections() {
 
             // 1. Dibuja las tablas personales (Solicitante y Manager)
             if (role === 'requester' || role === 'manager') {
-                const allMyRequests = sortedRequests.filter(r => r.requesterName === name);
+                const normalizeText = (text) => (text || '')
+    .toString()
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+
+const currentUserName = normalizeText(name);
+
+const allMyRequests = sortedRequests.filter(r => 
+    normalizeText(r.requesterName) === currentUserName
+);
                 const myShipped = allMyRequests.filter(r => r.status === 'shipped');
                 const myActive = applyFilters(allMyRequests.filter(r => !['completed', 'completed_incomplete', 'novelty_review', 'cancelled', 'shipped'].includes(r.status)), dom.requesterSearchId, dom.requesterDateFrom, dom.requesterDateTo);
                 const myNovelty = applyFilters(allMyRequests.filter(r => ['completed_incomplete', 'novelty_review'].includes(r.status)), dom.requesterSearchId, dom.requesterDateFrom, dom.requesterDateTo);
