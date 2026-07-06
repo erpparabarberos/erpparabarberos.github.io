@@ -407,9 +407,8 @@ loadSupportSummary();
                 closedAt: supportTimestamp,
                 history: [
                     {
-                        action: 'Soporte registrado como realizado',
-                        date: firebase.firestore.Timestamp.now(),
-                        detail: 'El soporte fue creado y cerrado automáticamente desde Registro rápido.'
+                        text: '<strong>Soporte registrado como realizado.</strong><br>El soporte fue creado y cerrado automáticamente desde Registro rápido.',
+                        timestamp: firebase.firestore.Timestamp.fromDate(new Date())
                     }
                 ],
 
