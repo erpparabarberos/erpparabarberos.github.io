@@ -253,6 +253,7 @@
     function handleFirestoreError(error, element) { element.innerHTML = `<div class="card" style="padding: 20px; border-left: 5px solid red;">Error al cargar datos: ${error.message}</div>`; }
     
     async function renderDashboard(container) { container.innerHTML = dashboardHTML; const cardsContainer = document.getElementById('dashboard-cards'); cardsContainer.innerHTML = 'Cargando estadísticas...'; const ticketsSnapshot = await db.collection('tickets').get(); const tickets = ticketsSnapshot.docs.map(doc => doc.data()); const openCount = tickets.filter(t => t.status === 'abierto').length; const closedCount = tickets.filter(t => t.status === 'cerrado').length; const totalCount = tickets.length; cardsContainer.innerHTML = `<a href="#tickets?status=abierto" class="stat-card open"><div class="stat-number">${openCount}</div><div class="stat-label">Tickets Abiertos</div></a><a href="#tickets?status=cerrado" class="stat-card closed"><div class="stat-number">${closedCount}</div><div class="stat-label">Tickets Cerrados</div></a><a href="#tickets" class="stat-card all"><div class="stat-number">${totalCount}</div><div class="stat-label">Todos los Tickets</div></a>`; const last7Days = Array(7).fill(0).reduce((acc, _, i) => { const d = new Date(); d.setDate(d.getDate() - i); acc[d.toISOString().split('T')[0]] = 0; return acc; }, {}); tickets.forEach(ticket => { if (ticket.createdAt) { const ticketDate = ticket.createdAt.toDate().toISOString().split('T')[0]; if (last7Days.hasOwnProperty(ticketDate)) { last7Days[ticketDate]++; } } }); const ctx = document.getElementById('ticketsChart').getContext('2d'); if(window.myChart) window.myChart.destroy(); window.myChart = new Chart(ctx, { type: 'bar', data: { labels: Object.keys(last7Days).map(d => new Date(d + 'T00:00:00').toLocaleDateString('es-ES', {day:'numeric', month:'short'})).reverse(), datasets: [{ label: '# de Tickets Creados', data: Object.values(last7Days).reverse(), backgroundColor: '#D32F2F', borderColor: '#B71C1C', borderWidth: 1 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } } }); }
+    
     async function renderNewTITicketForm(container) {
     container.innerHTML = newTITicketFormHTML;
 
@@ -297,16 +298,62 @@
         console.error('Error cargando datos iniciales:', error);
         alert('No se pudieron cargar solicitantes, sedes o inventario.');
     }
-
-    document.querySelectorAll('.quick-chip').forEach(btn => {
-        btn.addEventListener('click', () => {
-            categorySelect.value = btn.dataset.category || '';
-            if (btn.dataset.text) {
-                noveltyInput.value = btn.dataset.text;
-            }
+document.querySelectorAll('.quick-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.quick-chip').forEach(chip => {
+            chip.classList.remove('active');
         });
-    });
 
+        btn.classList.add('active');
+
+        categorySelect.value = btn.dataset.category || '';
+
+        if (btn.dataset.text) {
+            noveltyInput.value = btn.dataset.text;
+        }
+    });
+});
+async function loadSupportSummary() {
+    try {
+        const now = new Date();
+
+        const startOfToday = new Date(now);
+        startOfToday.setHours(0, 0, 0, 0);
+
+        const startOfWeek = new Date(now);
+        const day = startOfWeek.getDay();
+        const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1);
+        startOfWeek.setDate(diff);
+        startOfWeek.setHours(0, 0, 0, 0);
+
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+        const todaySnap = await db.collection('tickets')
+            .where('recordType', '==', 'soporte_realizado')
+            .where('registeredAt', '>=', startOfToday)
+            .get();
+
+        const weekSnap = await db.collection('tickets')
+            .where('recordType', '==', 'soporte_realizado')
+            .where('registeredAt', '>=', startOfWeek)
+            .get();
+
+        const monthSnap = await db.collection('tickets')
+            .where('recordType', '==', 'soporte_realizado')
+            .where('registeredAt', '>=', startOfMonth)
+            .get();
+
+        document.getElementById('today-supports').textContent = todaySnap.size;
+        document.getElementById('week-supports').textContent = weekSnap.size;
+        document.getElementById('month-supports').textContent = monthSnap.size;
+
+    } catch (error) {
+        console.error('Error cargando resumen de soportes:', error);
+    }
+}
+
+loadSupportSummary();
+        
     const form = document.getElementById('new-ticket-form');
 
     form.addEventListener('submit', async (e) => {
