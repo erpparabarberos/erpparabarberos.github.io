@@ -17,7 +17,206 @@
 
     // --- 3. TEMPLATES HTML ---
     const dashboardHTML = `<h1>📊 Dashboard</h1><div class="dashboard-stats" id="dashboard-cards"></div><div class="card" style="margin-top: 30px; border-top: 4px solid #D32F2F;"><h2>Tickets por Día (Últimos 7 días)</h2><div class="chart-container"><canvas id="ticketsChart"></canvas></div></div>`;
-    const newTITicketFormHTML = `<h1>➕ Crear Nuevo Ticket de TI</h1><div class="card"><form id="new-ticket-form"><div class="form-group"><label for="title">Título</label><input type="text" id="title" required></div><div class="form-group"><label>Descripción</label><div id="description-editor"></div></div><div class="inventory-form-grid"><div class="form-group"><label for="requester">Solicitante</label><select id="requester" required></select></div><div class="form-group"><label for="location">Ubicación</label><select id="location" required></select></div><div class="form-group"><label for="priority">Prioridad</label><select id="priority"><option value="baja">Baja</option><option value="media">Media</option><option value="alta">Alta</option></select></div><div class="form-group"><label for="ticket-datetime">Fecha y Hora del Ticket</label><input type="datetime-local" id="ticket-datetime" required></div></div><div class="form-group"><label>Dispositivos Asociados (opcional)</label><div id="associated-devices-container"><div class="device-input-group"><input type="text" class="device-search" list="device-list" placeholder="Busca por código, usuario, marca..."><button type="button" class="add-device-btn">+</button></div></div><datalist id="device-list"></datalist></div><button type="submit" class="primary">Crear Ticket</button></form></div>`;
+   const newTITicketFormHTML = `
+<section class="support-page">
+
+  <div class="support-header">
+    <div>
+      <h1>Registrar soporte realizado</h1>
+      <p>Registra rápidamente los soportes que ya fueron resueltos.</p>
+    </div>
+  </div>
+
+  <div class="support-type-cards">
+    <a class="support-type-card active" href="#crear-ticket-ti">
+      <span class="support-icon">🎧</span>
+      <strong>Soporte TI</strong>
+      <small>Soportes generales de tecnología</small>
+    </a>
+
+    <a class="support-type-card" href="#crear-ticket-velocity">
+      <span class="support-icon orange">⚡</span>
+      <strong>Velocity</strong>
+      <small>Casos relacionados con Velocity</small>
+    </a>
+
+    <a class="support-type-card" href="#crear-ticket-siigo">
+      <span class="support-icon cyan">S</span>
+      <strong>Siigo</strong>
+      <small>Casos relacionados con Siigo</small>
+    </a>
+
+    <a class="support-type-card" href="#nota-rapida">
+      <span class="support-icon purple">📝</span>
+      <strong>Nota rápida</strong>
+      <small>Guardar una novedad pendiente</small>
+    </a>
+
+    <a class="support-type-card" href="#soportes-atrasados">
+      <span class="support-icon red">⏱</span>
+      <strong>Soportes atrasados</strong>
+      <small>Cargar registros pendientes</small>
+    </a>
+  </div>
+
+  <div class="support-layout">
+
+    <div class="support-form-card">
+      <form id="new-ticket-form">
+
+        <div class="support-grid two">
+          <div class="form-group">
+            <label for="support-date">Fecha</label>
+            <input type="date" id="support-date" required>
+          </div>
+
+          <div class="form-group">
+            <label for="support-time">Hora</label>
+            <input type="time" id="support-time" required>
+          </div>
+        </div>
+
+        <div class="support-grid two">
+          <div class="form-group">
+            <label for="requester">Solicitante</label>
+            <select id="requester" required></select>
+          </div>
+
+          <div class="form-group">
+            <label for="location">Sede</label>
+            <select id="location" required></select>
+          </div>
+        </div>
+
+        <div class="support-grid two">
+          <div class="form-group">
+            <label for="support-type">Tipo de soporte</label>
+            <select id="support-type" required>
+              <option value="ti">Soporte TI</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="category">Categoría</label>
+            <select id="category" required>
+              <option value="">Selecciona una categoría</option>
+              <option value="impresora">Impresora</option>
+              <option value="equipo-lento">Equipo lento</option>
+              <option value="internet">Internet</option>
+              <option value="correo">Correo</option>
+              <option value="camara">Cámara</option>
+              <option value="instalacion">Instalación / configuración</option>
+              <option value="usuario-contrasena">Usuario o contraseña</option>
+              <option value="app-interna">App interna</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="quick-categories">
+          <button type="button" class="quick-chip" data-category="impresora" data-text="La impresora presentó fallas al momento de imprimir.">No imprime</button>
+          <button type="button" class="quick-chip" data-category="equipo-lento" data-text="El equipo presentó lentitud durante su uso.">Equipo lento</button>
+          <button type="button" class="quick-chip" data-category="internet" data-text="Se presentó novedad con la conexión a internet.">Sin internet</button>
+          <button type="button" class="quick-chip" data-category="correo" data-text="Se presentó novedad con el correo electrónico.">Correo</button>
+          <button type="button" class="quick-chip" data-category="camara" data-text="Se presentó novedad con una cámara o visualización de cámaras.">Cámara</button>
+          <button type="button" class="quick-chip" data-category="instalacion" data-text="Se realizó instalación o configuración requerida.">Instalación</button>
+          <button type="button" class="quick-chip" data-category="otro" data-text="">Otro</button>
+        </div>
+
+        <div class="form-group">
+          <label for="novelty">Novedad</label>
+          <textarea id="novelty" rows="3" placeholder="Describe brevemente la novedad reportada..." required></textarea>
+        </div>
+
+        <div class="support-grid two">
+          <div class="form-group">
+            <label for="management">Gestión realizada</label>
+            <textarea id="management" rows="4" placeholder="¿Qué acciones realizaste para atender el caso?" required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="solution">Solución aplicada</label>
+            <textarea id="solution" rows="4" placeholder="¿Cuál fue la solución o resultado?" required></textarea>
+          </div>
+        </div>
+
+        <div class="support-grid two">
+          <div class="form-group">
+            <label for="time-spent">Tiempo invertido</label>
+            <select id="time-spent" required>
+              <option value="">Selecciona el tiempo</option>
+              <option value="5">5 minutos</option>
+              <option value="10">10 minutos</option>
+              <option value="15">15 minutos</option>
+              <option value="20">20 minutos</option>
+              <option value="30">30 minutos</option>
+              <option value="45">45 minutos</option>
+              <option value="60">1 hora</option>
+              <option value="90">1 hora 30 minutos</option>
+              <option value="120">2 horas</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="associated-device">Equipo asociado <span>(opcional)</span></label>
+            <input type="text" id="associated-device" list="device-list" placeholder="Busca por código, usuario o marca...">
+            <datalist id="device-list"></datalist>
+          </div>
+        </div>
+
+        <div class="support-actions">
+          <button type="submit" class="primary support-primary-btn">Registrar soporte</button>
+          <button type="reset" class="support-secondary-btn">Limpiar formulario</button>
+        </div>
+
+      </form>
+    </div>
+
+    <aside class="support-side-panel">
+
+      <div class="support-summary-card">
+        <h3>Resumen de registros</h3>
+        <div class="support-kpis">
+          <div>
+            <strong id="today-supports">0</strong>
+            <span>Hoy</span>
+          </div>
+          <div>
+            <strong id="week-supports">0</strong>
+            <span>Semana</span>
+          </div>
+          <div>
+            <strong id="month-supports">0</strong>
+            <span>Mes</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="support-warning-card">
+        <strong>No dejes soportes sin registrar hoy</strong>
+        <p>Mantener los registros al día ayuda a mejorar la trazabilidad del área.</p>
+      </div>
+
+      <div class="support-success-card">
+        <strong>Cerrado automáticamente</strong>
+        <p>Los soportes de TI se cierran automáticamente al momento de registrarlos.</p>
+      </div>
+
+      <div class="support-tips-card">
+        <h3>Consejos rápidos</h3>
+        <ul>
+          <li>Sé específica en la novedad.</li>
+          <li>Registra la solución aplicada.</li>
+          <li>Asocia el equipo cuando sea posible.</li>
+          <li>El tiempo invertido mejora tus reportes.</li>
+        </ul>
+      </div>
+
+    </aside>
+
+  </div>
+</section>
+`;
     const newPlatformTicketFormHTML = `<h1 id="page-title"></h1><div class="card"><form id="new-platform-ticket-form"><div class="inventory-form-grid"><div class="form-group"><label for="fecha-reporte">Fecha de Reporte</label><input type="date" id="fecha-reporte" required></div><div class="form-group"><label for="hora-reporte">Hora de Reporte</label><input type="time" id="hora-reporte" required></div><div class="form-group"><label for="medio-solicitud">Medio de Solicitud</label><select id="medio-solicitud" required></select></div><div class="form-group"><label for="solicitante">Solicitante</label><select id="solicitante" required></select></div><div class="form-group"><label for="asesor-soporte">Asesor de Soporte</label><input type="text" id="asesor-soporte" required></div><div class="form-group"><label for="ticket-caso">Ticket del Caso</label><input type="text" id="ticket-caso"></div></div><div class="form-group"><label for="descripcion-novedad">Descripción de la Novedad</label><textarea id="descripcion-novedad" rows="4" required></textarea></div><button type="submit" class="primary">Crear Ticket</button></form></div>`;
     const ticketListHTML = `<div class="add-new-button-container"><button class="export-btn csv" data-format="csv">Exportar a Excel (CSV)</button><button class="export-btn pdf" data-format="pdf">Exportar a PDF</button></div><div class="card"><h2 id="tickets-list-title">Todos los Tickets</h2><div class="table-wrapper"><table id="data-table"><thead><tr><th># Ticket</th><th>Tipo</th><th>Título/Novedad</th><th>Solicitante</th><th>Fecha Creación</th><th>Fecha Cierre</th><th>Estado</th><th>Acciones</th></tr></thead><tbody></tbody></table></div></div>`;
     const historyPageHTML = `<h1>🔍 Historial y Búsqueda Avanzada</h1><div class="card"><form id="history-search-form"><div class="search-filters-grid"><div class="form-group"><label for="search-device">Dispositivo (por código)</label><input type="text" id="search-device" list="device-list-search" placeholder="Buscar por código..."></div><datalist id="device-list-search"></datalist><div class="form-group"><label for="search-requester">Solicitante</label><select id="search-requester"><option value="">Todos</option></select></div><div class="form-group"><label for="search-location">Ubicación</label><select id="search-location"><option value="">Todas</option></select></div><div class="form-group"><label for="search-status">Estado</label><select id="search-status"><option value="">Todos</option><option value="abierto">Abierto</option><option value="en-curso">En curso</option><option value="cerrado">Cerrado</option></select></div><div class="form-group"><label for="search-priority">Prioridad</label><select id="search-priority"><option value="">Todas</option><option value="baja">Baja</option><option value="media">Media</option><option value="alta">Alta</option></select></div><div class="form-group"><label for="search-ticket-type">Tipo de Ticket</label><select id="search-ticket-type"><option value="">Todos</option><option value="ti">TI</option><option value="velocity">Velocity</option><option value="siigo">Siigo</option></select></div><div class="form-group"><label for="search-start-date">Creado Desde</label><input type="date" id="search-start-date"></div><div class="form-group"><label for="search-end-date">Creado Hasta</label><input type="date" id="search-end-date"></div><div class="form-group"><button type="submit" class="primary" style="width:100%">Buscar</button></div></div></form></div><div class="add-new-button-container"><button class="export-btn csv" data-format="csv">Exportar a Excel (CSV)</button><button class="export-btn pdf" data-format="pdf">Exportar a PDF</button></div><div class="card"><h2 id="history-results-title">Resultados</h2><div class="table-wrapper"><table id="data-table"><thead><tr><th># Ticket</th><th>Título</th><th>Tipo</th><th>Ticket del Caso</th><th>Solicitante</th><th>Fecha Creación</th><th>Fecha Cierre</th><th>Estado</th><th>Acciones</th></tr></thead><tbody></tbody></table></div></div>`;
@@ -54,8 +253,147 @@
     function handleFirestoreError(error, element) { element.innerHTML = `<div class="card" style="padding: 20px; border-left: 5px solid red;">Error al cargar datos: ${error.message}</div>`; }
     
     async function renderDashboard(container) { container.innerHTML = dashboardHTML; const cardsContainer = document.getElementById('dashboard-cards'); cardsContainer.innerHTML = 'Cargando estadísticas...'; const ticketsSnapshot = await db.collection('tickets').get(); const tickets = ticketsSnapshot.docs.map(doc => doc.data()); const openCount = tickets.filter(t => t.status === 'abierto').length; const closedCount = tickets.filter(t => t.status === 'cerrado').length; const totalCount = tickets.length; cardsContainer.innerHTML = `<a href="#tickets?status=abierto" class="stat-card open"><div class="stat-number">${openCount}</div><div class="stat-label">Tickets Abiertos</div></a><a href="#tickets?status=cerrado" class="stat-card closed"><div class="stat-number">${closedCount}</div><div class="stat-label">Tickets Cerrados</div></a><a href="#tickets" class="stat-card all"><div class="stat-number">${totalCount}</div><div class="stat-label">Todos los Tickets</div></a>`; const last7Days = Array(7).fill(0).reduce((acc, _, i) => { const d = new Date(); d.setDate(d.getDate() - i); acc[d.toISOString().split('T')[0]] = 0; return acc; }, {}); tickets.forEach(ticket => { if (ticket.createdAt) { const ticketDate = ticket.createdAt.toDate().toISOString().split('T')[0]; if (last7Days.hasOwnProperty(ticketDate)) { last7Days[ticketDate]++; } } }); const ctx = document.getElementById('ticketsChart').getContext('2d'); if(window.myChart) window.myChart.destroy(); window.myChart = new Chart(ctx, { type: 'bar', data: { labels: Object.keys(last7Days).map(d => new Date(d + 'T00:00:00').toLocaleDateString('es-ES', {day:'numeric', month:'short'})).reverse(), datasets: [{ label: '# de Tickets Creados', data: Object.values(last7Days).reverse(), backgroundColor: '#D32F2F', borderColor: '#B71C1C', borderWidth: 1 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } } }); }
-    
-    async function renderNewTITicketForm(container) { container.innerHTML = newTITicketFormHTML; const quill = new Quill('#description-editor', { theme: 'snow', placeholder: 'Detalla el problema o solicitud...' }); const dateTimeInput = document.getElementById('ticket-datetime'); const now = new Date(); now.setMinutes(now.getMinutes() - now.getTimezoneOffset()); dateTimeInput.value = now.toISOString().slice(0, 16); const requesterSelect = document.getElementById('requester'); const locationSelect = document.getElementById('location'); const deviceDatalist = document.getElementById('device-list'); const [reqSnap, locSnap, invSnap] = await Promise.all([ db.collection('requesters').get(), db.collection('locations').get(), db.collection('inventory').get() ]); requesterSelect.innerHTML = '<option value="">Selecciona un solicitante</option>'; reqSnap.forEach(doc => requesterSelect.innerHTML += `<option value="${doc.id}">${doc.id}: ${doc.data().name}</option>`); locationSelect.innerHTML = '<option value="">Selecciona una ubicación</option>'; locSnap.forEach(doc => locationSelect.innerHTML += `<option value="${doc.id}">${doc.id}: ${doc.data().name}</option>`); const devices = invSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })); deviceDatalist.innerHTML = devices.map(d => { const userText = d.user ? `(Usuario: ${d.user})` : ''; const serialText = d.serial ? `(Serie: ${d.serial})` : ''; return `<option value="${d.id}">${d.id}: ${d.brand || ''} ${d.model || ''} ${userText} ${serialText}</option>`; }).join(''); const devicesContainer = document.getElementById('associated-devices-container'); devicesContainer.addEventListener('click', e => { if (e.target.classList.contains('add-device-btn')) { const newGroup = document.createElement('div'); newGroup.className = 'device-input-group'; newGroup.innerHTML = `<input type="text" class="device-search" list="device-list" placeholder="Busca por código, usuario, marca..."><button type="button" class="remove-device-btn">-</button>`; devicesContainer.appendChild(newGroup); } if (e.target.classList.contains('remove-device-btn')) { e.target.closest('.device-input-group').remove(); } }); const form = document.getElementById('new-ticket-form'); form.addEventListener('submit', async (e) => { e.preventDefault(); const counterRef = db.collection('counters').doc('ticketCounter'); try { const newTicketId = await db.runTransaction(async (transaction) => { const counterDoc = await transaction.get(counterRef); if (!counterDoc.exists) { throw "El documento contador de tickets no existe."; } const newNumber = counterDoc.data().currentNumber + 1; transaction.update(counterRef, { currentNumber: newNumber }); return `TICKET-${newNumber}`; }); const deviceInputs = document.querySelectorAll('.device-search'); const deviceIds = Array.from(deviceInputs).map(input => input.value.trim()).filter(value => value !== ''); const ticketDate = new Date(form['ticket-datetime'].value);const ticketTimestamp = firebase.firestore.Timestamp.fromDate(ticketDate); const ticketNumber = parseInt(newTicketId.split('-')[1], 10); const newTicketData = { numericId: ticketNumber, ticketType: 'ti', title: form.title.value, description: quill.root.innerHTML, requesterId: form.requester.value, locationId: form.location.value, priority: form.priority.value, status: 'abierto', solution: null, deviceIds: deviceIds, createdAt: ticketTimestamp, closedAt: null, history: [] }; await db.collection('tickets').doc(newTicketId).set(newTicketData); alert(`¡Ticket ${newTicketId} creado con éxito!`); window.location.hash = '#tickets'; } catch (error) { console.error("Error al crear el ticket: ", error); alert("No se pudo crear el ticket."); } }); }
+    async function renderNewTITicketForm(container) {
+    container.innerHTML = newTITicketFormHTML;
+
+    const dateInput = document.getElementById('support-date');
+    const timeInput = document.getElementById('support-time');
+    const requesterSelect = document.getElementById('requester');
+    const locationSelect = document.getElementById('location');
+    const deviceDatalist = document.getElementById('device-list');
+    const categorySelect = document.getElementById('category');
+    const noveltyInput = document.getElementById('novelty');
+
+    const now = new Date();
+    const localNow = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+    dateInput.value = localNow.toISOString().split('T')[0];
+    timeInput.value = localNow.toISOString().slice(11, 16);
+
+    try {
+        const [reqSnap, locSnap, invSnap] = await Promise.all([
+            db.collection('requesters').orderBy('name').get(),
+            db.collection('locations').orderBy('name').get(),
+            db.collection('inventory').get()
+        ]);
+
+        requesterSelect.innerHTML = '<option value="">Selecciona un solicitante</option>';
+        reqSnap.forEach(doc => {
+            requesterSelect.innerHTML += `<option value="${doc.id}">${doc.data().name}</option>`;
+        });
+
+        locationSelect.innerHTML = '<option value="">Selecciona una sede</option>';
+        locSnap.forEach(doc => {
+            locationSelect.innerHTML += `<option value="${doc.id}">${doc.data().name}</option>`;
+        });
+
+        const devices = invSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        deviceDatalist.innerHTML = devices.map(d => {
+            const userText = d.user ? ` - Usuario: ${d.user}` : '';
+            const brandText = `${d.brand || ''} ${d.model || ''}`.trim();
+            return `<option value="${d.id}">${brandText}${userText}</option>`;
+        }).join('');
+
+    } catch (error) {
+        console.error('Error cargando datos iniciales:', error);
+        alert('No se pudieron cargar solicitantes, sedes o inventario.');
+    }
+
+    document.querySelectorAll('.quick-chip').forEach(btn => {
+        btn.addEventListener('click', () => {
+            categorySelect.value = btn.dataset.category || '';
+            if (btn.dataset.text) {
+                noveltyInput.value = btn.dataset.text;
+            }
+        });
+    });
+
+    const form = document.getElementById('new-ticket-form');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const counterRef = db.collection('counters').doc('ticketCounter');
+
+        try {
+            const newTicketId = await db.runTransaction(async (transaction) => {
+                const counterDoc = await transaction.get(counterRef);
+
+                if (!counterDoc.exists) {
+                    throw new Error('El documento contador de tickets no existe.');
+                }
+
+                const newNumber = counterDoc.data().currentNumber + 1;
+                transaction.update(counterRef, { currentNumber: newNumber });
+
+                return `TICKET-${newNumber}`;
+            });
+
+            const fecha = form['support-date'].value;
+            const hora = form['support-time'].value;
+            const supportDate = new Date(`${fecha}T${hora}`);
+            const supportTimestamp = firebase.firestore.Timestamp.fromDate(supportDate);
+
+            const ticketNumber = parseInt(newTicketId.split('-')[1], 10);
+
+            const deviceValue = form['associated-device'].value.trim();
+            const deviceIds = deviceValue ? [deviceValue] : [];
+
+            const categoryText = form.category.options[form.category.selectedIndex].text;
+            const novelty = form.novelty.value.trim();
+            const management = form.management.value.trim();
+            const solution = form.solution.value.trim();
+
+            const newSupportData = {
+                numericId: ticketNumber,
+
+                // Compatibilidad con tu sistema actual
+                ticketType: 'ti',
+                title: categoryText,
+                description: novelty,
+                priority: 'media',
+                status: 'cerrado',
+                solution: solution,
+                requesterId: form.requester.value,
+                locationId: form.location.value,
+                deviceIds: deviceIds,
+                createdAt: supportTimestamp,
+                closedAt: supportTimestamp,
+                history: [
+                    {
+                        action: 'Soporte registrado como realizado',
+                        date: firebase.firestore.Timestamp.now(),
+                        detail: 'El soporte fue creado y cerrado automáticamente desde Registro rápido.'
+                    }
+                ],
+
+                // Nuevos campos para la bitácora
+                recordType: 'soporte_realizado',
+                supportType: 'ti',
+                category: form.category.value,
+                novelty: novelty,
+                management: management,
+                timeSpentMinutes: Number(form['time-spent'].value),
+                responsibleName: 'Jahan Michelle Chara',
+                registeredAt: firebase.firestore.FieldValue.serverTimestamp(),
+                isBacklogEntry: false,
+                autoClosed: true,
+                externalProvider: null,
+                externalCaseNumber: null,
+                externalAdvisor: null,
+                externalStatus: null
+            };
+
+            await db.collection('tickets').doc(newTicketId).set(newSupportData);
+
+            alert(`¡Soporte ${newTicketId} registrado y cerrado con éxito!`);
+            window.location.hash = '#tickets';
+
+        } catch (error) {
+            console.error('Error al registrar soporte:', error);
+            alert('No se pudo registrar el soporte.');
+        }
+    });
+}
     
     async function renderNewPlatformTicketForm(container, platform) { container.innerHTML = newPlatformTicketFormHTML; document.getElementById('page-title').innerText = `➕ Crear Nuevo Ticket de ${platform}`; const solicitanteSelect = document.getElementById('solicitante'); const medioSolicitudSelect = document.getElementById('medio-solicitud'); try { const reqQuery = await db.collection('requesters').where('name', '==', 'Jahan Michelle Chara').limit(1).get(); if (!reqQuery.empty) { const jahanDoc = reqQuery.docs[0]; solicitanteSelect.innerHTML = `<option value="${jahanDoc.id}">${jahanDoc.data().name}</option>`; solicitanteSelect.disabled = true; } else { solicitanteSelect.innerHTML = `<option value="">Usuario 'Jahan Michelle Chara' no encontrado</option>`; solicitanteSelect.disabled = true; } } catch (error) { console.error("Error al buscar solicitante:", error); solicitanteSelect.innerHTML = `<option value="">Error al cargar solicitante</option>`; solicitanteSelect.disabled = true; } let medioOptions = ''; if (platform === 'Velocity') { medioOptions = `<option value="WhatsApp">WhatsApp</option><option value="Centro de ayuda JIRA">Centro de ayuda JIRA</option>`; } else if (platform === 'Siigo') { medioOptions = `<option value="WhatsApp">WhatsApp</option><option value="Línea de atención Telefónica">Línea de atención Telefónica</option>`; } medioSolicitudSelect.innerHTML = medioOptions; const now = new Date(); document.getElementById('fecha-reporte').value = now.toISOString().split('T')[0]; document.getElementById('hora-reporte').value = now.toTimeString().slice(0, 5); const form = document.getElementById('new-platform-ticket-form'); form.addEventListener('submit', async (e) => { e.preventDefault(); const counterRef = db.collection('counters').doc('ticketCounter'); try { const newTicketId = await db.runTransaction(async (transaction) => { const counterDoc = await transaction.get(counterRef); if (!counterDoc.exists) throw "El contador de tickets no existe."; const newNumber = counterDoc.data().currentNumber + 1; transaction.update(counterRef, { currentNumber: newNumber }); return `TICKET-${newNumber}`; }); const fecha = form['fecha-reporte'].value; const hora = form['hora-reporte'].value; const createdAtTimestamp = firebase.firestore.Timestamp.fromDate(new Date(`${fecha}T${hora}`)); const ticketNumber = parseInt(newTicketId.split('-')[1], 10); const newTicketData = { numericId: ticketNumber, ticketType: platform.toLowerCase(), fechaDeReporte: fecha, horaDeReporte: hora, medioDeSolicitud: form['medio-solicitud'].value, requesterId: form['solicitante'].value, asesorDeSoporte: form['asesor-soporte'].value, descripcionDeLaNovedad: form['descripcion-novedad'].value, ticketDelCaso: form['ticket-caso'].value, status: 'abierto', solution: null, createdAt: createdAtTimestamp, closedAt: null, history: [] }; await db.collection('tickets').doc(newTicketId).set(newTicketData); alert(`¡Ticket ${newTicketId} creado con éxito!`); window.location.hash = '#tickets'; } catch (error) { console.error("Error al crear ticket de plataforma: ", error); alert("No se pudo crear el ticket."); } }); }
     
