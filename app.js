@@ -1015,8 +1015,6 @@ if (isProviderCase) {
 
     modalBody.innerHTML = `
         <div class="provider-ticket-modal">
-            <button type="button" class="provider-modal-close" id="detail-close-btn">×</button>
-
             <div class="provider-ticket-top">
                 <div class="provider-ticket-head-left">
                     <div class="provider-ticket-icon">🏷</div>
@@ -1100,11 +1098,7 @@ if (isProviderCase) {
             </div>
         </div>
     `;
-
-    document.getElementById('detail-close-btn').addEventListener('click', () => {
-        ticketModal.classList.add('hidden');
-    });
-
+    
     if (ticket.status !== 'cerrado') {
         document.getElementById('progress-form').addEventListener('submit', async (e) => {
             e.preventDefault();
