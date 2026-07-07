@@ -1126,3 +1126,79 @@ tr:hover td { background-color: #f8fafc; }
     background-color: #0ea5e9;
     color: #fff;
 }
+/* Soportes atrasados */
+.backlog-card {
+    overflow: hidden;
+}
+
+.backlog-actions-top {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.backlog-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.backlog-table {
+    min-width: 1600px;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+}
+
+.backlog-table thead th {
+    background: #f8fafc;
+    color: #334155;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    padding: 12px;
+    border: none;
+}
+
+.backlog-table tbody tr {
+    background: #fff;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+}
+
+.backlog-table td {
+    padding: 8px;
+    border-top: 1px solid #e2e8f0;
+    border-bottom: 1px solid #e2e8f0;
+    vertical-align: top;
+}
+
+.backlog-table td:first-child {
+    border-left: 1px solid #e2e8f0;
+}
+
+.backlog-table td:last-child {
+    border-right: 1px solid #e2e8f0;
+}
+
+.backlog-table input,
+.backlog-table select,
+.backlog-table textarea {
+    min-width: 140px;
+    border: 1px solid #dbe3ef;
+    background: #fff;
+    font-size: 13px;
+}
+
+.backlog-table textarea {
+    min-width: 220px;
+    resize: vertical;
+}
+
+.remove-backlog-row {
+    width: 36px !important;
+    height: 36px !important;
+    padding: 0 !important;
+    background: #ef4444 !important;
+    color: #fff !important;
+    border-radius: 8px !important;
+    font-size: 18px !important;
+}
