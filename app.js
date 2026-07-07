@@ -659,7 +659,19 @@ async function loadSupportSummary() {
 loadSupportSummary();
         
     const form = document.getElementById('new-ticket-form');
+const quickNoteRaw = sessionStorage.getItem('quickNoteToConvert');
 
+if (quickNoteRaw) {
+    const quickNote = JSON.parse(quickNoteRaw);
+
+    if (quickNote.supportType === 'ti') {
+        document.getElementById('novelty').value = quickNote.text || '';
+
+        if (quickNote.requesterId) {
+            document.getElementById('requester').value = quickNote.requesterId;
+        }
+    }
+}
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
@@ -734,7 +746,22 @@ loadSupportSummary();
             };
 
             await db.collection('tickets').doc(newTicketId).set(newSupportData);
+            const quickNoteRawAfterSave = sessionStorage.getItem('quickNoteToConvert');
 
+if (quickNoteRawAfterSave) {
+    const quickNote = JSON.parse(quickNoteRawAfterSave);
+
+    if (quickNote.supportType === 'ti') {
+        await db.collection('tickets').doc(quickNote.noteId).update({
+            status: 'convertida',
+            convertedToSupport: true,
+            convertedTicketId: newTicketId,
+            convertedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        sessionStorage.removeItem('quickNoteToConvert');
+    }
+}
             alert(`¡Soporte ${newTicketId} registrado y cerrado con éxito!`);
             window.location.hash = '#tickets';
 
@@ -814,6 +841,22 @@ loadSupportSummary();
     document.getElementById('hora-reporte').value = localNow.toISOString().slice(11, 16);
 
     const form = document.getElementById('new-platform-ticket-form');
+       const quickNoteRaw = sessionStorage.getItem('quickNoteToConvert');
+
+if (quickNoteRaw) {
+    const quickNote = JSON.parse(quickNoteRaw);
+
+    if (
+        (platform === 'Velocity' && quickNote.supportType === 'velocity') ||
+        (platform === 'Siigo' && quickNote.supportType === 'siigo')
+    ) {
+        document.getElementById('descripcion-novedad').value = quickNote.text || '';
+
+        if (quickNote.requesterId) {
+            document.getElementById('solicitante').value = quickNote.requesterId;
+        }
+    }
+}
 
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -894,7 +937,25 @@ loadSupportSummary();
             };
 
             await db.collection('tickets').doc(newTicketId).set(newTicketData);
+            const quickNoteRawAfterSave = sessionStorage.getItem('quickNoteToConvert');
 
+if (quickNoteRawAfterSave) {
+    const quickNote = JSON.parse(quickNoteRawAfterSave);
+
+    if (
+        (platform === 'Velocity' && quickNote.supportType === 'velocity') ||
+        (platform === 'Siigo' && quickNote.supportType === 'siigo')
+    ) {
+        await db.collection('tickets').doc(quickNote.noteId).update({
+            status: 'convertida',
+            convertedToSupport: true,
+            convertedTicketId: newTicketId,
+            convertedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        sessionStorage.removeItem('quickNoteToConvert');
+    }
+}
             alert(`¡Caso ${platform} registrado y dejado en seguimiento!`);
             window.location.hash = '#tickets';
 
@@ -1253,20 +1314,56 @@ if (isQuickNote) {
                     </div>
 
                     <div class="provider-action-card">
-                        <div class="provider-action-card-header">
-                            <div class="provider-action-icon green">✓</div>
-                            <div>
-                                <h4>Pendiente por completar</h4>
-                                <p>Después crearemos el botón para convertir esta nota en soporte TI, Velocity o Siigo.</p>
-                            </div>
-                        </div>
-                    </div>
+    <div class="provider-action-card-header">
+        <div class="provider-action-icon green">✓</div>
+        <div>
+            <h4>Convertir en soporte</h4>
+            <p>Elige a qué tipo de soporte quieres llevar esta nota.</p>
+        </div>
+    </div>
+
+    <form id="convert-note-form">
+        <div class="form-group">
+            <label for="convert-note-type">Convertir a</label>
+            <select id="convert-note-type" required>
+                <option value="ti">Soporte TI</option>
+                <option value="velocity">Velocity</option>
+                <option value="siigo">Siigo</option>
+            </select>
+        </div>
+
+        <button type="submit" class="provider-close-btn">Convertir nota</button>
+    </form>
+</div>
 
                 </div>
             </div>
         </div>
     `;
+    document.getElementById('convert-note-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
 
+    const convertType = document.getElementById('convert-note-type').value;
+
+    const noteToConvert = {
+        noteId: ticket.id,
+        text: ticket.description || '',
+        requesterId: ticket.requesterId || '',
+        supportType: convertType
+    };
+
+    sessionStorage.setItem('quickNoteToConvert', JSON.stringify(noteToConvert));
+
+    if (convertType === 'ti') {
+        window.location.hash = '#crear-ticket-ti';
+    } else if (convertType === 'velocity') {
+        window.location.hash = '#crear-ticket-velocity';
+    } else if (convertType === 'siigo') {
+        window.location.hash = '#crear-ticket-siigo';
+    }
+
+    ticketModal.classList.add('hidden');
+});
     document.getElementById('quick-note-progress-form').addEventListener('submit', async (e) => {
         e.preventDefault();
 
