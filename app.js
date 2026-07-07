@@ -326,10 +326,10 @@
             <label for="gestion-realizada">Gestión realizada</label>
             <textarea id="gestion-realizada" rows="4" placeholder="¿Qué hiciste o reportaste?" required></textarea>
           </div>
-
-          <div class="form-group">
-            <label for="respuesta-proveedor">Respuesta / observación</label>
-            <textarea id="respuesta-proveedor" rows="4" placeholder="Respuesta del proveedor o seguimiento..." required></textarea>
+          
+        <div class="form-group">
+          <label for="respuesta-proveedor">Respuesta del proveedor <span>(opcional)</span></label>
+          <textarea id="respuesta-proveedor" rows="4" placeholder="Déjalo vacío si el proveedor aún no responde..."></textarea>
           </div>
         </div>
 
@@ -730,6 +730,9 @@ loadSupportSummary();
             const novelty = document.getElementById('descripcion-novedad').value.trim();
             const management = document.getElementById('gestion-realizada').value.trim();
             const providerResponse = document.getElementById('respuesta-proveedor').value.trim();
+            const providerResponseText = providerResponse 
+                ? `<br>Respuesta: ${providerResponse}` 
+                : `<br>Respuesta: pendiente por proveedor.`;
 
             const newTicketData = {
                 numericId: ticketNumber,
@@ -751,7 +754,7 @@ loadSupportSummary();
 
                 history: [
                     {
-                        text: `<strong>Caso ${platform} registrado.</strong><br>Estado: ${estadoProveedor}. Queda en seguimiento.`,
+                        text: `<strong>Caso ${platform} registrado.</strong><br>Estado: ${estadoProveedor}. Queda en seguimiento.${providerResponseText}`,
                         timestamp: firebase.firestore.Timestamp.fromDate(new Date())
                     }
                 ],
