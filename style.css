@@ -1089,3 +1089,36 @@ tr:hover td { background-color: #f8fafc; }
     background-color: #8b5cf6;
     color: #fff;
 }
+/* Detalle moderno para Nota rápida */
+.provider-ticket-icon.note {
+    color: #7c3aed !important;
+    background: #f5f3ff !important;
+}
+
+.provider-case-badge.note {
+    background: #f5f3ff !important;
+    color: #7c3aed !important;
+}
+
+.provider-status-pill.note {
+    background: #f5f3ff !important;
+    color: #7c3aed !important;
+}
+
+.provider-history-dot.note {
+    background: #7c3aed !important;
+}
+
+.provider-history-badge.note {
+    background: #7c3aed !important;
+}
+
+.note-description-box {
+    border: 1px solid #dbe3ef;
+    background: #f8fafc;
+    padding: 22px;
+    font-size: 16px;
+    line-height: 1.6;
+    color: #0f172a;
+    min-height: 120px;
+}
