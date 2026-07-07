@@ -939,3 +939,93 @@ tr:hover td { background-color: #f8fafc; }
         flex-direction: column;
     }
 }
+/* Ajuste tamaño modal Velocity / Siigo */
+#ticket-modal .modal-content.large {
+    width: min(92vw, 1180px) !important;
+    max-height: 88vh !important;
+    overflow-y: auto !important;
+    padding: 0 !important;
+}
+
+.provider-ticket-modal {
+    padding: 22px !important;
+    border-radius: 20px !important;
+}
+
+.provider-ticket-top {
+    margin-bottom: 18px !important;
+}
+
+.provider-ticket-icon {
+    width: 56px !important;
+    height: 56px !important;
+    font-size: 22px !important;
+}
+
+.provider-ticket-head-left h2 {
+    font-size: 24px !important;
+}
+
+.provider-ticket-head-left p {
+    font-size: 13px !important;
+}
+
+.provider-ticket-layout {
+    grid-template-columns: 1.25fr 0.85fr !important;
+    gap: 16px !important;
+}
+
+.provider-panel,
+.provider-action-card {
+    padding: 18px !important;
+    border-radius: 16px !important;
+}
+
+.provider-panel-title {
+    font-size: 20px !important;
+    margin-bottom: 14px !important;
+}
+
+.provider-info-grid {
+    gap: 14px !important;
+}
+
+.provider-info-item {
+    min-height: 58px !important;
+}
+
+.provider-info-item span {
+    font-size: 12px !important;
+}
+
+.provider-info-item strong {
+    font-size: 15px !important;
+}
+
+.provider-action-card-header h4 {
+    font-size: 17px !important;
+}
+
+.provider-action-card-header p {
+    font-size: 13px !important;
+}
+
+.provider-action-icon {
+    width: 46px !important;
+    height: 46px !important;
+    font-size: 18px !important;
+}
+
+.provider-action-card textarea {
+    min-height: 95px !important;
+}
+
+.provider-progress-btn,
+.provider-close-btn {
+    min-height: 44px !important;
+    font-size: 12px !important;
+}
+
+.provider-modal-close {
+    display: none !important;
+}
