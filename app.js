@@ -1166,6 +1166,127 @@ loadSupportSummary();
     async function showEditClosedAtModal(ticketId, currentClosedAt) { const actionModal = document.getElementById('action-modal'); const modalBody = actionModal.querySelector('#action-modal-body'); const closedAtValue = currentClosedAt ? currentClosedAt.toDate().toISOString().split('T')[0] : ''; modalBody.innerHTML = `<h2>Editar Fecha de Cierre del Ticket ${ticketId}</h2><form id="edit-closed-at-form"><div class="form-group"><label for="closedAtDate">Fecha de Cierre</label><input type="date" id="closedAtDate" name="closedAtDate" value="${closedAtValue}"></div><div style="text-align: right; margin-top: 20px;"><button type="submit" class="primary">Guardar Fecha</button><button type="button" class="btn-secondary modal-close-btn" style="margin-left: 10px;">Cancelar</button></div></form>`; actionModal.classList.remove('hidden'); document.getElementById('edit-closed-at-form').addEventListener('submit', async (e) => { e.preventDefault(); const form = e.target; const newClosedAtDate = form.closedAtDate.value; try { if (newClosedAtDate) { const newClosedAtTimestamp = firebase.firestore.Timestamp.fromDate(new Date(newClosedAtDate + 'T00:00:00')); await db.collection('tickets').doc(ticketId).update({ closedAt: newClosedAtTimestamp }); } else { await db.collection('tickets').doc(ticketId).update({ closedAt: null }); } actionModal.classList.add('hidden'); showTicketModal(ticketId); } catch (error) { console.error("Error al actualizar la fecha de cierre:", error); alert("No se pudo actualizar la fecha de cierre. Revisa la consola."); } }); }
     
     async function showTicketModal(ticketId) { const ticketModal = document.getElementById('ticket-modal'); const modalBody = ticketModal.querySelector('#modal-body'); ticketModal.classList.remove('hidden'); modalBody.innerHTML = '<p>Cargando detalles del ticket...</p>'; const ticketDoc = await db.collection('tickets').doc(ticketId).get(); if (!ticketDoc.exists) { alert('Error: No se encontró el ticket.'); ticketModal.classList.add('hidden'); return; } const ticket = { id: ticketDoc.id, ...ticketDoc.data() }; const requesterName = ticket.requesterId ? (await db.collection('requesters').doc(ticket.requesterId).get()).data()?.name || ticket.requesterId : 'N/A';
+                                              const isQuickNote = ticket.ticketType === 'nota' || ticket.recordType === 'nota_rapida';
+
+if (isQuickNote) {
+    let historyItemsHTML = '';
+
+    if (ticket.history && ticket.history.length > 0) {
+        const orderedHistory = [...ticket.history].sort((a, b) => b.timestamp.toMillis() - a.timestamp.toMillis());
+
+        historyItemsHTML = orderedHistory.map((entry, index) => `
+            <div class="provider-history-item ${index === 0 ? 'latest' : ''}">
+                <div class="provider-history-line">
+                    <span class="provider-history-dot note"></span>
+                    ${index !== orderedHistory.length - 1 ? '<span class="provider-history-stick"></span>' : ''}
+                </div>
+                <div class="provider-history-content">
+                    <div class="provider-history-meta">
+                        <span>${entry.timestamp.toDate().toLocaleString('es-ES')}</span>
+                        ${index === 0 ? '<span class="provider-history-badge note">ÚLTIMA NOTA</span>' : ''}
+                    </div>
+                    <div class="provider-history-text">${entry.text}</div>
+                </div>
+            </div>
+        `).join('');
+    } else {
+        historyItemsHTML = `<div class="provider-history-empty">Aún no hay historial para esta nota.</div>`;
+    }
+
+    modalBody.innerHTML = `
+        <div class="provider-ticket-modal note-detail-modal">
+
+            <div class="provider-ticket-top">
+                <div class="provider-ticket-head-left">
+                    <div class="provider-ticket-icon note">📝</div>
+                    <div>
+                        <span class="provider-case-badge note">NOTA RÁPIDA</span>
+                        <h2>${ticket.id}</h2>
+                        <p>${ticket.supportType ? ticket.supportType.toUpperCase() : 'Pendiente por completar'}</p>
+                    </div>
+                </div>
+
+                <div class="provider-ticket-head-right">
+                    <span class="provider-status-pill note">PENDIENTE</span>
+                </div>
+            </div>
+
+            <div class="provider-ticket-layout">
+                <div class="provider-ticket-left">
+
+                    <div class="provider-panel">
+                        <div class="provider-panel-title">Nota registrada</div>
+                        <div class="note-description-box">
+                            ${ticket.description || 'Sin nota registrada.'}
+                        </div>
+                    </div>
+
+                    <div class="provider-panel">
+                        <div class="provider-panel-title">Historial</div>
+                        <div class="provider-history-list">
+                            ${historyItemsHTML}
+                        </div>
+                        <div class="provider-history-note">
+                            Esta nota queda pendiente para convertirla después en soporte completo.
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="provider-ticket-right">
+
+                    <div class="provider-action-card">
+                        <div class="provider-action-card-header">
+                            <div class="provider-action-icon blue">💬</div>
+                            <div>
+                                <h4>Añadir comentario</h4>
+                                <p>Agrega más información si recordaste algo nuevo.</p>
+                            </div>
+                        </div>
+
+                        <form id="quick-note-progress-form">
+                            <div class="form-group">
+                                <textarea id="quick-note-progress-text" rows="5" placeholder="Escribe un comentario adicional..." required></textarea>
+                            </div>
+                            <button type="submit" class="provider-progress-btn">Guardar comentario</button>
+                        </form>
+                    </div>
+
+                    <div class="provider-action-card">
+                        <div class="provider-action-card-header">
+                            <div class="provider-action-icon green">✓</div>
+                            <div>
+                                <h4>Pendiente por completar</h4>
+                                <p>Después crearemos el botón para convertir esta nota en soporte TI, Velocity o Siigo.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('quick-note-progress-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const text = document.getElementById('quick-note-progress-text').value.trim();
+        if (!text) return;
+
+        const newHistoryEntry = {
+            text: text,
+            timestamp: firebase.firestore.Timestamp.fromDate(new Date())
+        };
+
+        await db.collection('tickets').doc(ticket.id).update({
+            history: firebase.firestore.FieldValue.arrayUnion(newHistoryEntry)
+        });
+
+        showTicketModal(ticket.id);
+    });
+
+    return;
+}
                                               const isProviderCase = ticket.ticketType === 'velocity' || ticket.ticketType === 'siigo';
 
 if (isProviderCase) {
