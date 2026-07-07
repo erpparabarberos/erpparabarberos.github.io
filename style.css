@@ -1029,3 +1029,170 @@ tr:hover td { background-color: #f8fafc; }
 .provider-modal-close {
     display: none !important;
 }
+/* =========================
+   AJUSTE FINAL MODAL VELOCITY / SIIGO
+   Más ancho y mejor distribuido
+========================= */
+
+#ticket-modal .modal-content.large {
+    width: 96vw !important;
+    max-width: 1450px !important;
+    max-height: 92vh !important;
+    padding: 0 !important;
+    overflow-y: auto !important;
+    border-radius: 24px !important;
+}
+
+.provider-ticket-modal {
+    width: 100% !important;
+    min-height: auto !important;
+    padding: 28px 34px !important;
+    box-sizing: border-box !important;
+}
+
+/* Header más equilibrado */
+.provider-ticket-top {
+    display: grid !important;
+    grid-template-columns: 1fr auto !important;
+    align-items: start !important;
+    gap: 24px !important;
+    margin-bottom: 26px !important;
+}
+
+.provider-ticket-head-left {
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 18px !important;
+}
+
+.provider-ticket-icon {
+    width: 64px !important;
+    height: 64px !important;
+    flex: 0 0 64px !important;
+}
+
+.provider-ticket-head-left h2 {
+    font-size: 28px !important;
+    line-height: 1.1 !important;
+}
+
+.provider-ticket-head-left p {
+    margin-top: 8px !important;
+    font-size: 14px !important;
+}
+
+/* Distribución principal más amplia */
+.provider-ticket-layout {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1.45fr) minmax(360px, 0.85fr) !important;
+    gap: 28px !important;
+    align-items: start !important;
+}
+
+/* Columnas internas */
+.provider-ticket-left,
+.provider-ticket-right {
+    width: 100% !important;
+    min-width: 0 !important;
+}
+
+/* Tarjetas más uniformes */
+.provider-panel,
+.provider-action-card {
+    width: 100% !important;
+    padding: 24px !important;
+    border-radius: 18px !important;
+    box-sizing: border-box !important;
+}
+
+/* La información del reporte mejor distribuida */
+.provider-info-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    column-gap: 28px !important;
+    row-gap: 26px !important;
+}
+
+.provider-info-item {
+    min-height: auto !important;
+}
+
+.provider-info-item span {
+    font-size: 13px !important;
+    line-height: 1.3 !important;
+}
+
+.provider-info-item strong {
+    display: block !important;
+    font-size: 16px !important;
+    line-height: 1.3 !important;
+    word-break: normal !important;
+}
+
+/* Historial más limpio */
+.provider-history-item {
+    grid-template-columns: 28px 1fr !important;
+    gap: 18px !important;
+}
+
+.provider-history-content {
+    padding: 18px 22px !important;
+    border-radius: 16px !important;
+}
+
+/* Columna derecha más cómoda */
+.provider-ticket-right {
+    gap: 22px !important;
+}
+
+.provider-action-card textarea {
+    min-height: 120px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.provider-progress-btn,
+.provider-close-btn {
+    width: 100% !important;
+    min-height: 48px !important;
+    border-radius: 12px !important;
+}
+
+/* Editor de solución */
+#solution-editor {
+    min-height: 130px !important;
+}
+
+/* Evita que el botón rojo aparezca */
+.provider-modal-close {
+    display: none !important;
+}
+
+/* Responsive por si la pantalla es más pequeña */
+@media (max-width: 1200px) {
+    .provider-ticket-layout {
+        grid-template-columns: 1fr !important;
+    }
+
+    .provider-info-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+}
+
+@media (max-width: 760px) {
+    #ticket-modal .modal-content.large {
+        width: 98vw !important;
+    }
+
+    .provider-ticket-modal {
+        padding: 20px !important;
+    }
+
+    .provider-info-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .provider-ticket-top {
+        grid-template-columns: 1fr !important;
+    }
+}
