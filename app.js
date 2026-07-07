@@ -522,6 +522,79 @@
   </div>
 </section>
 `;
+    const backlogSupportsHTML = `
+<section class="support-page">
+
+  <div class="support-header">
+    <div>
+      <h1>Soportes atrasados</h1>
+      <p>Carga varios soportes pendientes en una sola tabla.</p>
+    </div>
+  </div>
+
+  <div class="support-type-cards">
+    <a class="support-type-card" href="#crear-ticket-ti">
+      <span class="support-icon">🎧</span>
+      <strong>Soporte TI</strong>
+      <small>Soportes generales de tecnología</small>
+    </a>
+
+    <a class="support-type-card" href="#crear-ticket-velocity">
+      <span class="support-icon orange">⚡</span>
+      <strong>Velocity</strong>
+      <small>Casos de plataforma externa</small>
+    </a>
+
+    <a class="support-type-card" href="#crear-ticket-siigo">
+      <span class="support-icon cyan">S</span>
+      <strong>Siigo</strong>
+      <small>Casos de plataforma externa</small>
+    </a>
+
+    <a class="support-type-card" href="#nota-rapida">
+      <span class="support-icon purple">📝</span>
+      <strong>Nota rápida</strong>
+      <small>Guardar algo pendiente</small>
+    </a>
+
+    <a class="support-type-card active" href="#soportes-atrasados">
+      <span class="support-icon red">⏱</span>
+      <strong>Soportes atrasados</strong>
+      <small>Cargar pendientes</small>
+    </a>
+  </div>
+
+  <div class="support-form-card backlog-card">
+    <div class="backlog-actions-top">
+      <button type="button" id="add-backlog-row" class="support-secondary-btn">Agregar fila</button>
+      <button type="button" id="save-backlog-supports" class="primary support-primary-btn">Guardar todos</button>
+    </div>
+
+    <div class="backlog-table-wrapper">
+      <table class="backlog-table">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Hora</th>
+            <th>Tipo</th>
+            <th>Solicitante</th>
+            <th>Sede</th>
+            <th>Categoría</th>
+            <th>Novedad</th>
+            <th>Gestión</th>
+            <th>Solución / respuesta</th>
+            <th>Tiempo</th>
+            <th>Estado</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="backlog-table-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+</section>
+`;
     const ticketListHTML = `<div class="add-new-button-container"><button class="export-btn csv" data-format="csv">Exportar a Excel (CSV)</button><button class="export-btn pdf" data-format="pdf">Exportar a PDF</button></div><div class="card"><h2 id="tickets-list-title">Todos los Tickets</h2><div class="table-wrapper"><table id="data-table"><thead><tr><th># Ticket</th><th>Tipo</th><th>Título/Novedad</th><th>Solicitante</th><th>Fecha Creación</th><th>Fecha Cierre</th><th>Estado</th><th>Acciones</th></tr></thead><tbody></tbody></table></div></div>`;
     const historyPageHTML = `<h1>🔍 Historial y Búsqueda Avanzada</h1><div class="card"><form id="history-search-form"><div class="search-filters-grid"><div class="form-group"><label for="search-device">Dispositivo (por código)</label><input type="text" id="search-device" list="device-list-search" placeholder="Buscar por código..."></div><datalist id="device-list-search"></datalist><div class="form-group"><label for="search-requester">Solicitante</label><select id="search-requester"><option value="">Todos</option></select></div><div class="form-group"><label for="search-location">Ubicación</label><select id="search-location"><option value="">Todas</option></select></div><div class="form-group"><label for="search-status">Estado</label><select id="search-status"><option value="">Todos</option><option value="abierto">Abierto</option><option value="en-curso">En curso</option><option value="cerrado">Cerrado</option></select></div><div class="form-group"><label for="search-priority">Prioridad</label><select id="search-priority"><option value="">Todas</option><option value="baja">Baja</option><option value="media">Media</option><option value="alta">Alta</option></select></div><div class="form-group"><label for="search-ticket-type">Tipo de Ticket</label><select id="search-ticket-type"><option value="">Todos</option><option value="ti">TI</option><option value="velocity">Velocity</option><option value="siigo">Siigo</option></select></div><div class="form-group"><label for="search-start-date">Creado Desde</label><input type="date" id="search-start-date"></div><div class="form-group"><label for="search-end-date">Creado Hasta</label><input type="date" id="search-end-date"></div><div class="form-group"><button type="submit" class="primary" style="width:100%">Buscar</button></div></div></form></div><div class="add-new-button-container"><button class="export-btn csv" data-format="csv">Exportar a Excel (CSV)</button><button class="export-btn pdf" data-format="pdf">Exportar a PDF</button></div><div class="card"><h2 id="history-results-title">Resultados</h2><div class="table-wrapper"><table id="data-table"><thead><tr><th># Ticket</th><th>Título</th><th>Tipo</th><th>Ticket del Caso</th><th>Solicitante</th><th>Fecha Creación</th><th>Fecha Cierre</th><th>Estado</th><th>Acciones</th></tr></thead><tbody></tbody></table></div></div>`;
     const knowledgeBaseHTML = `<h1>💡 Base de Conocimiento</h1><div class="add-new-button-container"><input type="text" id="kb-search-input" placeholder="🔍 Buscar en artículos y manuales..." style="flex-grow: 1; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);"><button id="add-manual-btn" class="primary">Crear Manual</button><button id="add-kb-article-btn" class="btn-blue">Crear Artículo</button></div><div id="kb-grid-container" class="kb-grid"></div>`;
@@ -1070,6 +1143,258 @@ if (quickNoteRawAfterSave) {
         }
     });
 }
+    async function renderBacklogSupports(container) {
+    container.innerHTML = backlogSupportsHTML;
+
+    const tableBody = document.getElementById('backlog-table-body');
+    const addRowBtn = document.getElementById('add-backlog-row');
+    const saveBtn = document.getElementById('save-backlog-supports');
+
+    let requesterOptions = '<option value="">Solicitante</option>';
+    let locationOptions = '<option value="">Sede</option>';
+
+    try {
+        const [reqSnap, locSnap] = await Promise.all([
+            db.collection('requesters').orderBy('name').get(),
+            db.collection('locations').orderBy('name').get()
+        ]);
+
+        reqSnap.forEach(doc => {
+            requesterOptions += `<option value="${doc.id}">${doc.data().name}</option>`;
+        });
+
+        locSnap.forEach(doc => {
+            locationOptions += `<option value="${doc.id}">${doc.data().name}</option>`;
+        });
+
+    } catch (error) {
+        console.error('Error cargando datos:', error);
+        alert('No se pudieron cargar solicitantes o sedes.');
+    }
+
+    function getTodayDate() {
+        const now = new Date();
+        const localNow = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+        return localNow.toISOString().split('T')[0];
+    }
+
+    function getCurrentTime() {
+        const now = new Date();
+        const localNow = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+        return localNow.toISOString().slice(11, 16);
+    }
+
+    function createBacklogRow() {
+        const tr = document.createElement('tr');
+        tr.className = 'backlog-row';
+
+        tr.innerHTML = `
+            <td><input type="date" class="backlog-date" value="${getTodayDate()}" required></td>
+            <td><input type="time" class="backlog-time" value="${getCurrentTime()}" required></td>
+
+            <td>
+                <select class="backlog-type" required>
+                    <option value="ti">TI</option>
+                    <option value="velocity">Velocity</option>
+                    <option value="siigo">Siigo</option>
+                </select>
+            </td>
+
+            <td>
+                <select class="backlog-requester" required>
+                    ${requesterOptions}
+                </select>
+            </td>
+
+            <td>
+                <select class="backlog-location" required>
+                    ${locationOptions}
+                </select>
+            </td>
+
+            <td>
+                <select class="backlog-category" required>
+                    <option value="">Categoría</option>
+                    <option value="impresora">Impresora</option>
+                    <option value="equipo-lento">Equipo lento</option>
+                    <option value="internet">Internet</option>
+                    <option value="correo">Correo</option>
+                    <option value="camara">Cámara</option>
+                    <option value="instalacion">Instalación</option>
+                    <option value="facturacion">Facturación</option>
+                    <option value="inventario">Inventario</option>
+                    <option value="usuarios">Usuarios / accesos</option>
+                    <option value="error-sistema">Error del sistema</option>
+                    <option value="otro">Otro</option>
+                </select>
+            </td>
+
+            <td><textarea class="backlog-novelty" rows="2" placeholder="Qué pasó..." required></textarea></td>
+            <td><textarea class="backlog-management" rows="2" placeholder="Qué hiciste..." required></textarea></td>
+            <td><textarea class="backlog-solution" rows="2" placeholder="Solución o respuesta..."></textarea></td>
+
+            <td>
+                <select class="backlog-time-spent" required>
+                    <option value="">Tiempo</option>
+                    <option value="5">5 min</option>
+                    <option value="10">10 min</option>
+                    <option value="15">15 min</option>
+                    <option value="20">20 min</option>
+                    <option value="30">30 min</option>
+                    <option value="45">45 min</option>
+                    <option value="60">1 h</option>
+                    <option value="90">1 h 30 min</option>
+                    <option value="120">2 h</option>
+                </select>
+            </td>
+
+            <td>
+                <select class="backlog-status" required>
+                    <option value="auto">Automático</option>
+                    <option value="cerrado">Cerrado</option>
+                    <option value="en-curso">En curso</option>
+                </select>
+            </td>
+
+            <td>
+                <button type="button" class="remove-backlog-row">×</button>
+            </td>
+        `;
+
+        tableBody.appendChild(tr);
+
+        tr.querySelector('.remove-backlog-row').addEventListener('click', () => {
+            if (tableBody.querySelectorAll('.backlog-row').length > 1) {
+                tr.remove();
+            }
+        });
+    }
+
+    createBacklogRow();
+
+    addRowBtn.addEventListener('click', createBacklogRow);
+
+    saveBtn.addEventListener('click', async () => {
+        const rows = Array.from(document.querySelectorAll('.backlog-row'));
+
+        if (rows.length === 0) {
+            alert('Agrega al menos una fila.');
+            return;
+        }
+
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Guardando...';
+
+        try {
+            for (const row of rows) {
+                const type = row.querySelector('.backlog-type').value;
+                const fecha = row.querySelector('.backlog-date').value;
+                const hora = row.querySelector('.backlog-time').value;
+                const requesterId = row.querySelector('.backlog-requester').value;
+                const locationId = row.querySelector('.backlog-location').value;
+                const category = row.querySelector('.backlog-category').value;
+                const categoryText = row.querySelector('.backlog-category').options[row.querySelector('.backlog-category').selectedIndex].text;
+                const novelty = row.querySelector('.backlog-novelty').value.trim();
+                const management = row.querySelector('.backlog-management').value.trim();
+                const solution = row.querySelector('.backlog-solution').value.trim();
+                const timeSpent = Number(row.querySelector('.backlog-time-spent').value);
+                const selectedStatus = row.querySelector('.backlog-status').value;
+
+                if (!fecha || !hora || !type || !requesterId || !locationId || !category || !novelty || !management || !timeSpent) {
+                    alert('Completa todos los campos obligatorios antes de guardar.');
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = 'Guardar todos';
+                    return;
+                }
+
+                const supportTimestamp = firebase.firestore.Timestamp.fromDate(new Date(`${fecha}T${hora}`));
+
+                let finalStatus = selectedStatus;
+
+                if (selectedStatus === 'auto') {
+                    finalStatus = type === 'ti' ? 'cerrado' : 'en-curso';
+                }
+
+                const counterRef = db.collection('counters').doc('ticketCounter');
+
+                const newTicketId = await db.runTransaction(async (transaction) => {
+                    const counterDoc = await transaction.get(counterRef);
+
+                    if (!counterDoc.exists) {
+                        throw new Error('El contador de tickets no existe.');
+                    }
+
+                    const newNumber = counterDoc.data().currentNumber + 1;
+                    transaction.update(counterRef, { currentNumber: newNumber });
+
+                    return `TICKET-${newNumber}`;
+                });
+
+                const ticketNumber = parseInt(newTicketId.split('-')[1], 10);
+
+                const isProvider = type === 'velocity' || type === 'siigo';
+                const platformName = type === 'velocity' ? 'Velocity' : type === 'siigo' ? 'Siigo' : null;
+
+                const backlogData = {
+                    numericId: ticketNumber,
+                    ticketType: type,
+                    recordType: 'soporte_realizado',
+                    supportType: type,
+
+                    title: isProvider ? `${platformName} - ${categoryText}` : categoryText,
+                    description: novelty,
+                    descripcionDeLaNovedad: novelty,
+
+                    requesterId: requesterId,
+                    locationId: locationId,
+                    category: category,
+                    novelty: novelty,
+                    management: management,
+                    solution: solution || null,
+                    timeSpentMinutes: timeSpent,
+
+                    priority: 'media',
+                    status: finalStatus,
+                    createdAt: supportTimestamp,
+                    closedAt: finalStatus === 'cerrado' ? supportTimestamp : null,
+                    registeredAt: firebase.firestore.FieldValue.serverTimestamp(),
+
+                    responsibleName: 'Jahan Michelle Chara',
+                    isBacklogEntry: true,
+                    autoClosed: type === 'ti' && finalStatus === 'cerrado',
+
+                    fechaDeReporte: fecha,
+                    horaDeReporte: hora,
+
+                    externalProvider: isProvider ? platformName : null,
+                    externalCaseNumber: null,
+                    externalAdvisor: null,
+                    externalStatus: isProvider ? 'cargado-atrasado' : null,
+                    providerResponse: isProvider ? (solution || null) : null,
+
+                    history: [
+                        {
+                            text: `<strong>Soporte atrasado cargado.</strong><br>${management}`,
+                            timestamp: firebase.firestore.Timestamp.fromDate(new Date())
+                        }
+                    ]
+                };
+
+                await db.collection('tickets').doc(newTicketId).set(backlogData);
+            }
+
+            alert('¡Soportes atrasados guardados correctamente!');
+            window.location.hash = '#tickets';
+
+        } catch (error) {
+            console.error('Error guardando soportes atrasados:', error);
+            alert('No se pudieron guardar los soportes atrasados.');
+        } finally {
+            saveBtn.disabled = false;
+            saveBtn.textContent = 'Guardar todos';
+        }
+    });
+}
     async function renderTicketList(container, params = {}) { container.innerHTML = ticketListHTML; setupTableSearch('table-search-input', 'data-table'); const [reqSnap] = await Promise.all([db.collection('requesters').get()]); const requestersMap = {}; reqSnap.forEach(doc => requestersMap[doc.id] = doc.data().name); const tableBody = document.querySelector('#data-table tbody'); const ticketsListTitle = document.getElementById('tickets-list-title'); let title = 'Todos los Tickets'; if (params.status === 'abierto') { title = 'Tickets Abiertos'; } else if (params.status === 'cerrado') { title = 'Tickets Cerrados'; } ticketsListTitle.innerText = title; 
     let query = db.collection('tickets'); 
     if (params.status) { query = query.where('status', '==', params.status); } 
@@ -1609,6 +1934,7 @@ let devicesHTML = ''; if (ticket.deviceIds && ticket.deviceIds.length > 0) { dev
             '#crear-ticket-velocity': c => renderNewPlatformTicketForm(c, 'Velocity'),
             '#crear-ticket-siigo': c => renderNewPlatformTicketForm(c, 'Siigo'),
             '#nota-rapida': renderQuickNote,
+            '#soportes-atrasados': renderBacklogSupports,
             '#tickets': renderTicketList, '#historial': renderHistoryPage,
             '#knowledge-base': renderKnowledgeBase, '#estadisticas': renderEstadisticas,
             '#maintenance': renderMaintenanceCalendar, '#configuracion': renderConfiguracion
