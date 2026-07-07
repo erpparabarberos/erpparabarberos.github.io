@@ -1085,3 +1085,7 @@ tr:hover td { background-color: #f8fafc; }
 .provider-modal-close {
     display: none !important;
 }
+.status-pendiente {
+    background-color: #8b5cf6;
+    color: #fff;
+}
