@@ -1041,3 +1041,47 @@ tr:hover td { background-color: #f8fafc; }
         padding-right: 56px !important;
     }
 }
+/* X del modal: dentro, limpia y sin cuadro */
+#ticket-modal .modal-close-btn {
+    position: absolute !important;
+    top: 18px !important;
+    right: 22px !important;
+    z-index: 50 !important;
+
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+
+    color: #64748b !important;
+    font-size: 28px !important;
+    font-weight: 400 !important;
+    line-height: 1 !important;
+
+    width: auto !important;
+    height: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+
+    cursor: pointer !important;
+}
+
+#ticket-modal .modal-close-btn:hover {
+    color: #0f172a !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+/* Asegura que el contenido no tape la X */
+#ticket-modal .modal-content.large {
+    position: relative !important;
+}
+
+/* Dejamos espacio arriba para que la X no choque con el contenido */
+.provider-ticket-modal {
+    padding-top: 34px !important;
+}
+
+/* El botón rojo/extra que habíamos creado queda eliminado visualmente */
+.provider-modal-close {
+    display: none !important;
+}
