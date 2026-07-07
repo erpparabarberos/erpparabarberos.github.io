@@ -1122,3 +1122,7 @@ tr:hover td { background-color: #f8fafc; }
     color: #0f172a;
     min-height: 120px;
 }
+.status-convertida {
+    background-color: #0ea5e9;
+    color: #fff;
+}
