@@ -217,7 +217,195 @@
   </div>
 </section>
 `;
-    const newPlatformTicketFormHTML = `<h1 id="page-title"></h1><div class="card"><form id="new-platform-ticket-form"><div class="inventory-form-grid"><div class="form-group"><label for="fecha-reporte">Fecha de Reporte</label><input type="date" id="fecha-reporte" required></div><div class="form-group"><label for="hora-reporte">Hora de Reporte</label><input type="time" id="hora-reporte" required></div><div class="form-group"><label for="medio-solicitud">Medio de Solicitud</label><select id="medio-solicitud" required></select></div><div class="form-group"><label for="solicitante">Solicitante</label><select id="solicitante" required></select></div><div class="form-group"><label for="asesor-soporte">Asesor de Soporte</label><input type="text" id="asesor-soporte" required></div><div class="form-group"><label for="ticket-caso">Ticket del Caso</label><input type="text" id="ticket-caso"></div></div><div class="form-group"><label for="descripcion-novedad">Descripción de la Novedad</label><textarea id="descripcion-novedad" rows="4" required></textarea></div><button type="submit" class="primary">Crear Ticket</button></form></div>`;
+    const newPlatformTicketFormHTML = `
+<section class="support-page">
+
+  <div class="support-header">
+    <div>
+      <h1 id="page-title">Registrar caso</h1>
+      <p id="page-subtitle">Guarda lo que gestionaste y deja el caso en seguimiento.</p>
+    </div>
+  </div>
+
+  <div class="support-type-cards">
+    <a class="support-type-card" href="#crear-ticket-ti">
+      <span class="support-icon">🎧</span>
+      <strong>Soporte TI</strong>
+      <small>Soportes generales de tecnología</small>
+    </a>
+
+    <a class="support-type-card" id="card-velocity" href="#crear-ticket-velocity">
+      <span class="support-icon orange">⚡</span>
+      <strong>Velocity</strong>
+      <small>Casos de plataforma externa</small>
+    </a>
+
+    <a class="support-type-card" id="card-siigo" href="#crear-ticket-siigo">
+      <span class="support-icon cyan">S</span>
+      <strong>Siigo</strong>
+      <small>Casos de plataforma externa</small>
+    </a>
+
+    <a class="support-type-card" href="#nota-rapida">
+      <span class="support-icon purple">📝</span>
+      <strong>Nota rápida</strong>
+      <small>Guardar algo pendiente</small>
+    </a>
+
+    <a class="support-type-card" href="#soportes-atrasados">
+      <span class="support-icon red">⏱</span>
+      <strong>Soportes atrasados</strong>
+      <small>Cargar pendientes</small>
+    </a>
+  </div>
+
+  <div class="support-layout">
+
+    <div class="support-form-card">
+      <form id="new-platform-ticket-form">
+
+        <div class="support-grid two">
+          <div class="form-group">
+            <label for="fecha-reporte">Fecha</label>
+            <input type="date" id="fecha-reporte" required>
+          </div>
+
+          <div class="form-group">
+            <label for="hora-reporte">Hora</label>
+            <input type="time" id="hora-reporte" required>
+          </div>
+        </div>
+
+        <div class="support-grid two">
+          <div class="form-group">
+            <label for="solicitante">Solicitante</label>
+            <select id="solicitante" required></select>
+          </div>
+
+          <div class="form-group">
+            <label for="location">Sede</label>
+            <select id="location" required></select>
+          </div>
+        </div>
+
+        <div class="support-grid two">
+          <div class="form-group">
+            <label for="medio-solicitud">Medio</label>
+            <select id="medio-solicitud" required></select>
+          </div>
+
+          <div class="form-group">
+            <label for="estado-proveedor">Estado</label>
+            <select id="estado-proveedor" required>
+              <option value="reportado-proveedor">Reportado al proveedor</option>
+              <option value="esperando-respuesta">Esperando respuesta</option>
+              <option value="en-seguimiento">En seguimiento</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="support-grid two">
+          <div class="form-group">
+            <label for="asesor-soporte">Asesor / canal</label>
+            <input type="text" id="asesor-soporte" placeholder="Nombre del asesor o canal">
+          </div>
+
+          <div class="form-group">
+            <label for="ticket-caso">Caso externo <span>(opcional)</span></label>
+            <input type="text" id="ticket-caso" placeholder="Número de caso, ticket o radicado">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="descripcion-novedad">Novedad</label>
+          <textarea id="descripcion-novedad" rows="3" placeholder="Describe qué pasó..." required></textarea>
+        </div>
+
+        <div class="support-grid two">
+          <div class="form-group">
+            <label for="gestion-realizada">Gestión realizada</label>
+            <textarea id="gestion-realizada" rows="4" placeholder="¿Qué hiciste o reportaste?" required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="respuesta-proveedor">Respuesta / observación</label>
+            <textarea id="respuesta-proveedor" rows="4" placeholder="Respuesta del proveedor o seguimiento..." required></textarea>
+          </div>
+        </div>
+
+        <div class="support-grid two">
+          <div class="form-group">
+            <label for="time-spent">Tiempo invertido</label>
+            <select id="time-spent" required>
+              <option value="">Selecciona el tiempo</option>
+              <option value="5">5 minutos</option>
+              <option value="10">10 minutos</option>
+              <option value="15">15 minutos</option>
+              <option value="20">20 minutos</option>
+              <option value="30">30 minutos</option>
+              <option value="45">45 minutos</option>
+              <option value="60">1 hora</option>
+              <option value="90">1 hora 30 minutos</option>
+              <option value="120">2 horas</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="category">Categoría</label>
+            <select id="category" required>
+              <option value="">Selecciona una categoría</option>
+              <option value="facturacion">Facturación</option>
+              <option value="inventario">Inventario</option>
+              <option value="usuarios">Usuarios / accesos</option>
+              <option value="error-sistema">Error del sistema</option>
+              <option value="configuracion">Configuración</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="support-actions">
+          <button type="submit" class="primary support-primary-btn">Registrar caso</button>
+          <button type="reset" class="support-secondary-btn">Limpiar formulario</button>
+        </div>
+
+      </form>
+    </div>
+
+    <aside class="support-side-panel">
+
+      <div class="support-summary-card">
+        <h3 id="platform-summary-title">Caso en seguimiento</h3>
+        <p style="color:#64748b; line-height:1.6; margin:0;">
+          Este registro queda abierto porque depende del proveedor.
+        </p>
+      </div>
+
+      <div class="support-warning-card">
+        <strong>No depende de ti</strong>
+        <p>Solo registra lo que gestionaste y el estado en el que quedó.</p>
+      </div>
+
+      <div class="support-success-card">
+        <strong>Queda en seguimiento</strong>
+        <p>No se cierra todavía. Se mantiene abierto hasta que el proveedor responda o solucione.</p>
+      </div>
+
+      <div class="support-tips-card">
+        <h3>Tips rápidos</h3>
+        <ul>
+          <li>Guarda el número de caso si existe.</li>
+          <li>Escribe por dónde lo reportaste.</li>
+          <li>Registra la respuesta del proveedor.</li>
+          <li>Después lo cerramos cuando ya esté solucionado.</li>
+        </ul>
+      </div>
+
+    </aside>
+
+  </div>
+</section>
+`;
     const ticketListHTML = `<div class="add-new-button-container"><button class="export-btn csv" data-format="csv">Exportar a Excel (CSV)</button><button class="export-btn pdf" data-format="pdf">Exportar a PDF</button></div><div class="card"><h2 id="tickets-list-title">Todos los Tickets</h2><div class="table-wrapper"><table id="data-table"><thead><tr><th># Ticket</th><th>Tipo</th><th>Título/Novedad</th><th>Solicitante</th><th>Fecha Creación</th><th>Fecha Cierre</th><th>Estado</th><th>Acciones</th></tr></thead><tbody></tbody></table></div></div>`;
     const historyPageHTML = `<h1>🔍 Historial y Búsqueda Avanzada</h1><div class="card"><form id="history-search-form"><div class="search-filters-grid"><div class="form-group"><label for="search-device">Dispositivo (por código)</label><input type="text" id="search-device" list="device-list-search" placeholder="Buscar por código..."></div><datalist id="device-list-search"></datalist><div class="form-group"><label for="search-requester">Solicitante</label><select id="search-requester"><option value="">Todos</option></select></div><div class="form-group"><label for="search-location">Ubicación</label><select id="search-location"><option value="">Todas</option></select></div><div class="form-group"><label for="search-status">Estado</label><select id="search-status"><option value="">Todos</option><option value="abierto">Abierto</option><option value="en-curso">En curso</option><option value="cerrado">Cerrado</option></select></div><div class="form-group"><label for="search-priority">Prioridad</label><select id="search-priority"><option value="">Todas</option><option value="baja">Baja</option><option value="media">Media</option><option value="alta">Alta</option></select></div><div class="form-group"><label for="search-ticket-type">Tipo de Ticket</label><select id="search-ticket-type"><option value="">Todos</option><option value="ti">TI</option><option value="velocity">Velocity</option><option value="siigo">Siigo</option></select></div><div class="form-group"><label for="search-start-date">Creado Desde</label><input type="date" id="search-start-date"></div><div class="form-group"><label for="search-end-date">Creado Hasta</label><input type="date" id="search-end-date"></div><div class="form-group"><button type="submit" class="primary" style="width:100%">Buscar</button></div></div></form></div><div class="add-new-button-container"><button class="export-btn csv" data-format="csv">Exportar a Excel (CSV)</button><button class="export-btn pdf" data-format="pdf">Exportar a PDF</button></div><div class="card"><h2 id="history-results-title">Resultados</h2><div class="table-wrapper"><table id="data-table"><thead><tr><th># Ticket</th><th>Título</th><th>Tipo</th><th>Ticket del Caso</th><th>Solicitante</th><th>Fecha Creación</th><th>Fecha Cierre</th><th>Estado</th><th>Acciones</th></tr></thead><tbody></tbody></table></div></div>`;
     const knowledgeBaseHTML = `<h1>💡 Base de Conocimiento</h1><div class="add-new-button-container"><input type="text" id="kb-search-input" placeholder="🔍 Buscar en artículos y manuales..." style="flex-grow: 1; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);"><button id="add-manual-btn" class="primary">Crear Manual</button><button id="add-kb-article-btn" class="btn-blue">Crear Artículo</button></div><div id="kb-grid-container" class="kb-grid"></div>`;
@@ -441,8 +629,162 @@ loadSupportSummary();
     });
 }
     
-    async function renderNewPlatformTicketForm(container, platform) { container.innerHTML = newPlatformTicketFormHTML; document.getElementById('page-title').innerText = `➕ Crear Nuevo Ticket de ${platform}`; const solicitanteSelect = document.getElementById('solicitante'); const medioSolicitudSelect = document.getElementById('medio-solicitud'); try { const reqQuery = await db.collection('requesters').where('name', '==', 'Jahan Michelle Chara').limit(1).get(); if (!reqQuery.empty) { const jahanDoc = reqQuery.docs[0]; solicitanteSelect.innerHTML = `<option value="${jahanDoc.id}">${jahanDoc.data().name}</option>`; solicitanteSelect.disabled = true; } else { solicitanteSelect.innerHTML = `<option value="">Usuario 'Jahan Michelle Chara' no encontrado</option>`; solicitanteSelect.disabled = true; } } catch (error) { console.error("Error al buscar solicitante:", error); solicitanteSelect.innerHTML = `<option value="">Error al cargar solicitante</option>`; solicitanteSelect.disabled = true; } let medioOptions = ''; if (platform === 'Velocity') { medioOptions = `<option value="WhatsApp">WhatsApp</option><option value="Centro de ayuda JIRA">Centro de ayuda JIRA</option>`; } else if (platform === 'Siigo') { medioOptions = `<option value="WhatsApp">WhatsApp</option><option value="Línea de atención Telefónica">Línea de atención Telefónica</option>`; } medioSolicitudSelect.innerHTML = medioOptions; const now = new Date(); document.getElementById('fecha-reporte').value = now.toISOString().split('T')[0]; document.getElementById('hora-reporte').value = now.toTimeString().slice(0, 5); const form = document.getElementById('new-platform-ticket-form'); form.addEventListener('submit', async (e) => { e.preventDefault(); const counterRef = db.collection('counters').doc('ticketCounter'); try { const newTicketId = await db.runTransaction(async (transaction) => { const counterDoc = await transaction.get(counterRef); if (!counterDoc.exists) throw "El contador de tickets no existe."; const newNumber = counterDoc.data().currentNumber + 1; transaction.update(counterRef, { currentNumber: newNumber }); return `TICKET-${newNumber}`; }); const fecha = form['fecha-reporte'].value; const hora = form['hora-reporte'].value; const createdAtTimestamp = firebase.firestore.Timestamp.fromDate(new Date(`${fecha}T${hora}`)); const ticketNumber = parseInt(newTicketId.split('-')[1], 10); const newTicketData = { numericId: ticketNumber, ticketType: platform.toLowerCase(), fechaDeReporte: fecha, horaDeReporte: hora, medioDeSolicitud: form['medio-solicitud'].value, requesterId: form['solicitante'].value, asesorDeSoporte: form['asesor-soporte'].value, descripcionDeLaNovedad: form['descripcion-novedad'].value, ticketDelCaso: form['ticket-caso'].value, status: 'abierto', solution: null, createdAt: createdAtTimestamp, closedAt: null, history: [] }; await db.collection('tickets').doc(newTicketId).set(newTicketData); alert(`¡Ticket ${newTicketId} creado con éxito!`); window.location.hash = '#tickets'; } catch (error) { console.error("Error al crear ticket de plataforma: ", error); alert("No se pudo crear el ticket."); } }); }
-    
+   async function renderNewPlatformTicketForm(container, platform) {
+    container.innerHTML = newPlatformTicketFormHTML;
+
+    document.getElementById('page-title').innerText = `Registrar caso ${platform}`;
+    document.getElementById('page-subtitle').innerText = `Guarda lo que gestionaste y deja el caso en seguimiento.`;
+    document.getElementById('platform-summary-title').innerText = `${platform} en seguimiento`;
+
+    if (platform === 'Velocity') {
+        document.getElementById('card-velocity').classList.add('active');
+    }
+
+    if (platform === 'Siigo') {
+        document.getElementById('card-siigo').classList.add('active');
+    }
+
+    const solicitanteSelect = document.getElementById('solicitante');
+    const locationSelect = document.getElementById('location');
+    const medioSolicitudSelect = document.getElementById('medio-solicitud');
+
+    try {
+        const [reqSnap, locSnap] = await Promise.all([
+            db.collection('requesters').orderBy('name').get(),
+            db.collection('locations').orderBy('name').get()
+        ]);
+
+        solicitanteSelect.innerHTML = '<option value="">Selecciona un solicitante</option>';
+        reqSnap.forEach(doc => {
+            solicitanteSelect.innerHTML += `<option value="${doc.id}">${doc.data().name}</option>`;
+        });
+
+        locationSelect.innerHTML = '<option value="">Selecciona una sede</option>';
+        locSnap.forEach(doc => {
+            locationSelect.innerHTML += `<option value="${doc.id}">${doc.data().name}</option>`;
+        });
+
+    } catch (error) {
+        console.error("Error cargando datos:", error);
+        alert("No se pudieron cargar solicitantes o sedes.");
+    }
+
+    if (platform === 'Velocity') {
+        medioSolicitudSelect.innerHTML = `
+            <option value="">Selecciona un medio</option>
+            <option value="WhatsApp">WhatsApp</option>
+            <option value="Centro de ayuda JIRA">Centro de ayuda JIRA</option>
+            <option value="Llamada">Llamada</option>
+            <option value="Correo">Correo</option>
+            <option value="Otro">Otro</option>
+        `;
+    }
+
+    if (platform === 'Siigo') {
+        medioSolicitudSelect.innerHTML = `
+            <option value="">Selecciona un medio</option>
+            <option value="WhatsApp">WhatsApp</option>
+            <option value="Línea de atención Telefónica">Línea de atención Telefónica</option>
+            <option value="Chat de soporte">Chat de soporte</option>
+            <option value="Correo">Correo</option>
+            <option value="Otro">Otro</option>
+        `;
+    }
+
+    const now = new Date();
+    const localNow = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+
+    document.getElementById('fecha-reporte').value = localNow.toISOString().split('T')[0];
+    document.getElementById('hora-reporte').value = localNow.toISOString().slice(11, 16);
+
+    const form = document.getElementById('new-platform-ticket-form');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const counterRef = db.collection('counters').doc('ticketCounter');
+
+        try {
+            const newTicketId = await db.runTransaction(async (transaction) => {
+                const counterDoc = await transaction.get(counterRef);
+
+                if (!counterDoc.exists) {
+                    throw new Error("El contador de tickets no existe.");
+                }
+
+                const newNumber = counterDoc.data().currentNumber + 1;
+                transaction.update(counterRef, { currentNumber: newNumber });
+
+                return `TICKET-${newNumber}`;
+            });
+
+            const fecha = document.getElementById('fecha-reporte').value;
+            const hora = document.getElementById('hora-reporte').value;
+            const createdAtTimestamp = firebase.firestore.Timestamp.fromDate(new Date(`${fecha}T${hora}`));
+
+            const ticketNumber = parseInt(newTicketId.split('-')[1], 10);
+            const estadoProveedor = document.getElementById('estado-proveedor').value;
+            const categorySelect = document.getElementById('category');
+            const categoryText = categorySelect.options[categorySelect.selectedIndex].text;
+
+            const novelty = document.getElementById('descripcion-novedad').value.trim();
+            const management = document.getElementById('gestion-realizada').value.trim();
+            const providerResponse = document.getElementById('respuesta-proveedor').value.trim();
+
+            const newTicketData = {
+                numericId: ticketNumber,
+
+                ticketType: platform.toLowerCase(),
+                title: `${platform} - ${categoryText}`,
+                descripcionDeLaNovedad: novelty,
+                description: novelty,
+                requesterId: document.getElementById('solicitante').value,
+                locationId: document.getElementById('location').value,
+                medioDeSolicitud: document.getElementById('medio-solicitud').value,
+                asesorDeSoporte: document.getElementById('asesor-soporte').value.trim(),
+                ticketDelCaso: document.getElementById('ticket-caso').value.trim(),
+
+                status: 'en-curso',
+                solution: providerResponse || null,
+                createdAt: createdAtTimestamp,
+                closedAt: null,
+
+                history: [
+                    {
+                        text: `<strong>Caso ${platform} registrado.</strong><br>Estado: ${estadoProveedor}. Queda en seguimiento.`,
+                        timestamp: firebase.firestore.Timestamp.fromDate(new Date())
+                    }
+                ],
+
+                recordType: 'soporte_realizado',
+                supportType: platform.toLowerCase(),
+                category: categorySelect.value,
+                novelty: novelty,
+                management: management,
+                timeSpentMinutes: Number(document.getElementById('time-spent').value),
+                responsibleName: 'Jahan Michelle Chara',
+                registeredAt: firebase.firestore.FieldValue.serverTimestamp(),
+                isBacklogEntry: false,
+                autoClosed: false,
+
+                externalProvider: platform,
+                externalCaseNumber: document.getElementById('ticket-caso').value.trim(),
+                externalAdvisor: document.getElementById('asesor-soporte').value.trim(),
+                externalStatus: estadoProveedor,
+                providerResponse: providerResponse || null
+            };
+
+            await db.collection('tickets').doc(newTicketId).set(newTicketData);
+
+            alert(`¡Caso ${platform} registrado y dejado en seguimiento!`);
+            window.location.hash = '#tickets';
+
+        } catch (error) {
+            console.error(`Error al registrar caso ${platform}:`, error);
+            alert(`No se pudo registrar el caso ${platform}.`);
+        }
+    });
+}
     async function renderTicketList(container, params = {}) { container.innerHTML = ticketListHTML; setupTableSearch('table-search-input', 'data-table'); const [reqSnap] = await Promise.all([db.collection('requesters').get()]); const requestersMap = {}; reqSnap.forEach(doc => requestersMap[doc.id] = doc.data().name); const tableBody = document.querySelector('#data-table tbody'); const ticketsListTitle = document.getElementById('tickets-list-title'); let title = 'Todos los Tickets'; if (params.status === 'abierto') { title = 'Tickets Abiertos'; } else if (params.status === 'cerrado') { title = 'Tickets Cerrados'; } ticketsListTitle.innerText = title; 
     let query = db.collection('tickets'); 
     if (params.status) { query = query.where('status', '==', params.status); } 
