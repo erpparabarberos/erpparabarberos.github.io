@@ -406,6 +406,122 @@
   </div>
 </section>
 `;
+    const quickNoteHTML = `
+<section class="support-page">
+
+  <div class="support-header">
+    <div>
+      <h1>Nota rápida</h1>
+      <p>Guarda una novedad en segundos para completarla después.</p>
+    </div>
+  </div>
+
+  <div class="support-type-cards">
+    <a class="support-type-card" href="#crear-ticket-ti">
+      <span class="support-icon">🎧</span>
+      <strong>Soporte TI</strong>
+      <small>Soportes generales de tecnología</small>
+    </a>
+
+    <a class="support-type-card" href="#crear-ticket-velocity">
+      <span class="support-icon orange">⚡</span>
+      <strong>Velocity</strong>
+      <small>Casos de plataforma externa</small>
+    </a>
+
+    <a class="support-type-card" href="#crear-ticket-siigo">
+      <span class="support-icon cyan">S</span>
+      <strong>Siigo</strong>
+      <small>Casos de plataforma externa</small>
+    </a>
+
+    <a class="support-type-card active" href="#nota-rapida">
+      <span class="support-icon purple">📝</span>
+      <strong>Nota rápida</strong>
+      <small>Guardar algo pendiente</small>
+    </a>
+
+    <a class="support-type-card" href="#soportes-atrasados">
+      <span class="support-icon red">⏱</span>
+      <strong>Soportes atrasados</strong>
+      <small>Cargar pendientes</small>
+    </a>
+  </div>
+
+  <div class="support-layout">
+
+    <div class="support-form-card">
+      <form id="quick-note-form">
+
+        <div class="support-grid two">
+          <div class="form-group">
+            <label for="note-date">Fecha</label>
+            <input type="date" id="note-date" required>
+          </div>
+
+          <div class="form-group">
+            <label for="note-time">Hora</label>
+            <input type="time" id="note-time" required>
+          </div>
+        </div>
+
+        <div class="support-grid two">
+          <div class="form-group">
+            <label for="note-type">Relacionado con</label>
+            <select id="note-type" required>
+              <option value="ti">Soporte TI</option>
+              <option value="velocity">Velocity</option>
+              <option value="siigo">Siigo</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="note-requester">Solicitante <span>(opcional)</span></label>
+            <select id="note-requester">
+              <option value="">Selecciona un solicitante</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="note-text">Nota</label>
+          <textarea id="note-text" rows="7" placeholder="Ej: Diana - Velocity no deja facturar - reportado a proveedor..." required></textarea>
+        </div>
+
+        <div class="support-actions">
+          <button type="submit" class="primary support-primary-btn">Guardar nota</button>
+          <button type="reset" class="support-secondary-btn">Limpiar</button>
+        </div>
+
+      </form>
+    </div>
+
+    <aside class="support-side-panel">
+      <div class="support-warning-card">
+        <strong>Para no olvidar</strong>
+        <p>Esta nota queda pendiente para que después la conviertas en soporte completo.</p>
+      </div>
+
+      <div class="support-success-card">
+        <strong>Registro rápido</strong>
+        <p>Úsala cuando no tengas tiempo de llenar todo el formulario.</p>
+      </div>
+
+      <div class="support-tips-card">
+        <h3>Ejemplo</h3>
+        <ul>
+          <li>Nombre de la persona.</li>
+          <li>Sistema o equipo afectado.</li>
+          <li>Qué pasó.</li>
+          <li>Qué hiciste o qué quedó pendiente.</li>
+        </ul>
+      </div>
+    </aside>
+
+  </div>
+</section>
+`;
     const ticketListHTML = `<div class="add-new-button-container"><button class="export-btn csv" data-format="csv">Exportar a Excel (CSV)</button><button class="export-btn pdf" data-format="pdf">Exportar a PDF</button></div><div class="card"><h2 id="tickets-list-title">Todos los Tickets</h2><div class="table-wrapper"><table id="data-table"><thead><tr><th># Ticket</th><th>Tipo</th><th>Título/Novedad</th><th>Solicitante</th><th>Fecha Creación</th><th>Fecha Cierre</th><th>Estado</th><th>Acciones</th></tr></thead><tbody></tbody></table></div></div>`;
     const historyPageHTML = `<h1>🔍 Historial y Búsqueda Avanzada</h1><div class="card"><form id="history-search-form"><div class="search-filters-grid"><div class="form-group"><label for="search-device">Dispositivo (por código)</label><input type="text" id="search-device" list="device-list-search" placeholder="Buscar por código..."></div><datalist id="device-list-search"></datalist><div class="form-group"><label for="search-requester">Solicitante</label><select id="search-requester"><option value="">Todos</option></select></div><div class="form-group"><label for="search-location">Ubicación</label><select id="search-location"><option value="">Todas</option></select></div><div class="form-group"><label for="search-status">Estado</label><select id="search-status"><option value="">Todos</option><option value="abierto">Abierto</option><option value="en-curso">En curso</option><option value="cerrado">Cerrado</option></select></div><div class="form-group"><label for="search-priority">Prioridad</label><select id="search-priority"><option value="">Todas</option><option value="baja">Baja</option><option value="media">Media</option><option value="alta">Alta</option></select></div><div class="form-group"><label for="search-ticket-type">Tipo de Ticket</label><select id="search-ticket-type"><option value="">Todos</option><option value="ti">TI</option><option value="velocity">Velocity</option><option value="siigo">Siigo</option></select></div><div class="form-group"><label for="search-start-date">Creado Desde</label><input type="date" id="search-start-date"></div><div class="form-group"><label for="search-end-date">Creado Hasta</label><input type="date" id="search-end-date"></div><div class="form-group"><button type="submit" class="primary" style="width:100%">Buscar</button></div></div></form></div><div class="add-new-button-container"><button class="export-btn csv" data-format="csv">Exportar a Excel (CSV)</button><button class="export-btn pdf" data-format="pdf">Exportar a PDF</button></div><div class="card"><h2 id="history-results-title">Resultados</h2><div class="table-wrapper"><table id="data-table"><thead><tr><th># Ticket</th><th>Título</th><th>Tipo</th><th>Ticket del Caso</th><th>Solicitante</th><th>Fecha Creación</th><th>Fecha Cierre</th><th>Estado</th><th>Acciones</th></tr></thead><tbody></tbody></table></div></div>`;
     const knowledgeBaseHTML = `<h1>💡 Base de Conocimiento</h1><div class="add-new-button-container"><input type="text" id="kb-search-input" placeholder="🔍 Buscar en artículos y manuales..." style="flex-grow: 1; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);"><button id="add-manual-btn" class="primary">Crear Manual</button><button id="add-kb-article-btn" class="btn-blue">Crear Artículo</button></div><div id="kb-grid-container" class="kb-grid"></div>`;
@@ -785,6 +901,111 @@ loadSupportSummary();
         } catch (error) {
             console.error(`Error al registrar caso ${platform}:`, error);
             alert(`No se pudo registrar el caso ${platform}.`);
+        }
+    });
+}
+    async function renderQuickNote(container) {
+    container.innerHTML = quickNoteHTML;
+
+    const dateInput = document.getElementById('note-date');
+    const timeInput = document.getElementById('note-time');
+    const requesterSelect = document.getElementById('note-requester');
+
+    const now = new Date();
+    const localNow = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+
+    dateInput.value = localNow.toISOString().split('T')[0];
+    timeInput.value = localNow.toISOString().slice(11, 16);
+
+    try {
+        const reqSnap = await db.collection('requesters').orderBy('name').get();
+
+        requesterSelect.innerHTML = '<option value="">Selecciona un solicitante</option>';
+        reqSnap.forEach(doc => {
+            requesterSelect.innerHTML += `<option value="${doc.id}">${doc.data().name}</option>`;
+        });
+
+    } catch (error) {
+        console.error('Error cargando solicitantes:', error);
+    }
+
+    const form = document.getElementById('quick-note-form');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const counterRef = db.collection('counters').doc('ticketCounter');
+
+        try {
+            const newTicketId = await db.runTransaction(async (transaction) => {
+                const counterDoc = await transaction.get(counterRef);
+
+                if (!counterDoc.exists) {
+                    throw new Error('El contador de tickets no existe.');
+                }
+
+                const newNumber = counterDoc.data().currentNumber + 1;
+                transaction.update(counterRef, { currentNumber: newNumber });
+
+                return `TICKET-${newNumber}`;
+            });
+
+            const fecha = document.getElementById('note-date').value;
+            const hora = document.getElementById('note-time').value;
+            const noteType = document.getElementById('note-type').value;
+            const noteText = document.getElementById('note-text').value.trim();
+            const requesterId = document.getElementById('note-requester').value;
+
+            const noteTimestamp = firebase.firestore.Timestamp.fromDate(new Date(`${fecha}T${hora}`));
+            const ticketNumber = parseInt(newTicketId.split('-')[1], 10);
+
+            const typeLabel = {
+                ti: 'Soporte TI',
+                velocity: 'Velocity',
+                siigo: 'Siigo',
+                otro: 'Otro'
+            }[noteType];
+
+            const quickNoteData = {
+                numericId: ticketNumber,
+                ticketType: 'nota',
+                recordType: 'nota_rapida',
+                supportType: noteType,
+
+                title: `Nota rápida - ${typeLabel}`,
+                description: noteText,
+                descripcionDeLaNovedad: noteText,
+
+                requesterId: requesterId || null,
+                locationId: null,
+                priority: 'media',
+                status: 'pendiente',
+
+                solution: null,
+                createdAt: noteTimestamp,
+                closedAt: null,
+                registeredAt: firebase.firestore.FieldValue.serverTimestamp(),
+
+                isQuickNote: true,
+                convertedToSupport: false,
+                responsibleName: 'Jahan Michelle Chara',
+
+                history: [
+                    {
+                        text: `<strong>Nota rápida registrada.</strong><br>${noteText}`,
+                        timestamp: firebase.firestore.Timestamp.fromDate(new Date())
+                    }
+                ]
+            };
+
+            await db.collection('tickets').doc(newTicketId).set(quickNoteData);
+
+            alert(`¡Nota rápida ${newTicketId} guardada!`);
+            window.location.hash = '#tickets';
+
+        } catch (error) {
+            console.error('Error guardando nota rápida:', error);
+            alert('No se pudo guardar la nota rápida.');
         }
     });
 }
@@ -1169,6 +1390,7 @@ let devicesHTML = ''; if (ticket.deviceIds && ticket.deviceIds.length > 0) { dev
             '#crear-ticket-ti': renderNewTITicketForm,
             '#crear-ticket-velocity': c => renderNewPlatformTicketForm(c, 'Velocity'),
             '#crear-ticket-siigo': c => renderNewPlatformTicketForm(c, 'Siigo'),
+            '#nota-rapida': renderQuickNote,
             '#tickets': renderTicketList, '#historial': renderHistoryPage,
             '#knowledge-base': renderKnowledgeBase, '#estadisticas': renderEstadisticas,
             '#maintenance': renderMaintenanceCalendar, '#configuracion': renderConfiguracion
