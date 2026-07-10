@@ -4105,3 +4105,33 @@ tr:hover td { background-color: #f8fafc; }
     align-self: start !important;
     white-space: nowrap !important;
 }
+.computer-all-tickets-list {
+    max-height: 330px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.computer-all-ticket-item {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+    align-items: start;
+    padding: 12px 0;
+    border-bottom: 1px solid #eef2f7;
+}
+
+.computer-all-ticket-item:last-child {
+    border-bottom: none;
+}
+
+.computer-all-ticket-item span {
+    align-self: start;
+    background: #dcfce7;
+    color: #16a34a;
+    border-radius: 999px;
+    padding: 5px 9px;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
