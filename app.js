@@ -1147,6 +1147,144 @@ const newTITicketFormHTML = `
 </section>
 `;
     const genericListPageHTML = `<h1 id="page-title"></h1><div class="add-new-button-container"><button class="export-btn csv" data-format="csv">Exportar a Excel (CSV)</button><button class="export-btn pdf" data-format="pdf">Exportar a PDF</button><button id="add-item-btn" class="btn-blue open-form-modal-btn">Añadir Nuevo</button></div><div class="card"><div class="table-search-container"><input type="text" id="table-search-input" placeholder="🔍 Buscar en la tabla..."></div><h2 id="item-list-title"></h2><div class="table-wrapper"><table id="data-table"><thead id="item-table-head"></thead><tbody id="item-table-body"></tbody></table></div></div>`;
+    const inventoryModernPageHTML = `
+<section class="inventory-modern-page">
+    <div class="inventory-modern-header">
+        <div class="inventory-modern-title-wrap">
+            <div class="inventory-modern-main-icon">💻</div>
+            <div>
+                <h1 id="inventory-page-title">Inventario</h1>
+                <p>Gestiona y consulta todos los activos de TI de la organización.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="inventory-modern-tabs" id="inventory-modern-tabs">
+        <a href="#inventory-computers" class="inventory-modern-tab" data-category="computers">💻 Computadores</a>
+        <a href="#inventory-phones" class="inventory-modern-tab" data-category="phones">📞 Teléfonos</a>
+        <a href="#inventory-cameras" class="inventory-modern-tab" data-category="cameras">📷 Cámaras</a>
+        <a href="#inventory-modems" class="inventory-modern-tab" data-category="modems">📡 Módems</a>
+        <a href="#inventory-communicators" class="inventory-modern-tab" data-category="communicators">📻 Radios</a>
+        <a href="#inventory-network" class="inventory-modern-tab" data-category="network">🌐 Redes</a>
+        <a href="#inventory-printers" class="inventory-modern-tab" data-category="printers">🖨️ Impresoras</a>
+    </div>
+
+    <div class="inventory-modern-panel">
+        <div class="inventory-modern-toolbar">
+            <div class="inventory-modern-search-wrap">
+                <input type="text" id="inventory-search-input" placeholder="Buscar por código, marca, modelo, serie, usuario...">
+            </div>
+
+            <div class="inventory-modern-filters">
+                <div class="inventory-filter-item">
+                    <label>Sede</label>
+                    <select id="inventory-filter-sede">
+                        <option value="">Todas las sedes</option>
+                    </select>
+                </div>
+
+                <div class="inventory-filter-item">
+                    <label>Estado</label>
+                    <select id="inventory-filter-status">
+                        <option value="">Todos los estados</option>
+                    </select>
+                </div>
+
+                <div class="inventory-filter-item">
+                    <label>Garantía</label>
+                    <select id="inventory-filter-warranty">
+                        <option value="">Todas</option>
+                        <option value="vigente">Vigente</option>
+                        <option value="proxima">Próxima a vencer</option>
+                        <option value="vencida">Vencida</option>
+                    </select>
+                </div>
+
+                <div class="inventory-filter-item">
+                    <label>Usuario</label>
+                    <select id="inventory-filter-user">
+                        <option value="">Todos los usuarios</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="inventory-modern-actions">
+                <button class="export-btn csv" data-format="csv">Exportar</button>
+                <button id="add-item-btn" class="btn-blue open-form-modal-btn">Añadir equipo</button>
+            </div>
+        </div>
+
+        <div class="inventory-kpi-grid">
+            <div class="inventory-kpi-card">
+                <div class="inventory-kpi-icon">🖥️</div>
+                <div>
+                    <strong id="inventory-kpi-total">0</strong>
+                    <span>Total equipos</span>
+                    <small>Todos los registros</small>
+                </div>
+            </div>
+
+            <div class="inventory-kpi-card">
+                <div class="inventory-kpi-icon green">✅</div>
+                <div>
+                    <strong id="inventory-kpi-uso">0</strong>
+                    <span>En uso</span>
+                    <small id="inventory-kpi-uso-percent">0% del total</small>
+                </div>
+            </div>
+
+            <div class="inventory-kpi-card">
+                <div class="inventory-kpi-icon orange">🛠️</div>
+                <div>
+                    <strong id="inventory-kpi-repair">0</strong>
+                    <span>En reparación</span>
+                    <small id="inventory-kpi-repair-percent">0% del total</small>
+                </div>
+            </div>
+
+            <div class="inventory-kpi-card">
+                <div class="inventory-kpi-icon gray">⛔</div>
+                <div>
+                    <strong id="inventory-kpi-retired">0</strong>
+                    <span>Retirados</span>
+                    <small id="inventory-kpi-retired-percent">0% del total</small>
+                </div>
+            </div>
+
+            <div class="inventory-kpi-card">
+                <div class="inventory-kpi-icon purple">🛡️</div>
+                <div>
+                    <strong id="inventory-kpi-warranty">0</strong>
+                    <span>Garantías próximas</span>
+                    <small>En los próximos 60 días</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="inventory-table-card">
+            <div class="inventory-table-wrapper">
+                <table id="data-table" class="inventory-modern-table">
+                    <thead id="inventory-table-head"></thead>
+                    <tbody id="inventory-table-body"></tbody>
+                </table>
+            </div>
+
+            <div class="inventory-table-footer">
+                <span id="inventory-results-text">Mostrando 0 registros</span>
+
+                <div class="inventory-pagination-mock">
+                    <button type="button">10 por página</button>
+                    <button type="button">‹</button>
+                    <button type="button" class="active">1</button>
+                    <button type="button">2</button>
+                    <button type="button">3</button>
+                    <button type="button">›</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+`;
     const maintenanceCalendarHTML = `<h1>📅 Planificación</h1><div class="add-new-button-container"><button class="export-btn csv" data-format="csv">Exportar a Excel (CSV)</button><button class="export-btn pdf" data-format="pdf">Exportar a PDF</button><button class="primary open-form-modal-btn" data-type="maintenance">Programar Tarea</button></div><div class="card"><div id="maintenance-calendar"></div><table id="data-table" style="display:none;"></table></div>`;
     const configHTML = `<h1>⚙️ Configuración</h1><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;"><div class="card"><h2>Gestionar Solicitantes</h2><form id="add-requester-form" style="display:flex; gap:10px; margin-bottom: 20px;"><input type="text" id="requester-name" placeholder="Nombre del solicitante" required style="flex-grow:1;"><button type="submit" class="primary">Añadir</button></form><ul id="requesters-list" class="config-list"></ul></div><div class="card"><h2>Gestionar Ubicaciones</h2><form id="add-location-form" style="display:flex; gap:10px; margin-bottom: 20px;"><input type="text" id="location-name" placeholder="Nombre de la ubicación" required style="flex-grow:1;"><button type="submit" class="primary">Añadir</button></form><ul id="locations-list" class="config-list"></ul></div></div>`;
 
@@ -3404,7 +3542,201 @@ if (quickNoteRawAfterSave) {
             }); 
         }, error => handleFirestoreError(error, tableBody)); 
     }
-    
+    function renderInventoryModernPage(container, params) {
+    container.innerHTML = inventoryModernPageHTML;
+
+    const category = params.category;
+    const config = inventoryCategoryConfig[category];
+
+    if (!config) {
+        container.innerHTML = `<h1>Error: categoría de inventario no encontrada.</h1>`;
+        return;
+    }
+
+    const pageTitle = document.getElementById('inventory-page-title');
+    const addButton = document.getElementById('add-item-btn');
+    const searchInput = document.getElementById('inventory-search-input');
+    const sedeFilter = document.getElementById('inventory-filter-sede');
+    const statusFilter = document.getElementById('inventory-filter-status');
+    const warrantyFilter = document.getElementById('inventory-filter-warranty');
+    const userFilter = document.getElementById('inventory-filter-user');
+    const tableHead = document.getElementById('inventory-table-head');
+    const tableBody = document.getElementById('inventory-table-body');
+    const resultsText = document.getElementById('inventory-results-text');
+
+    pageTitle.textContent = config.title;
+    addButton.textContent = `Añadir ${config.titleSingular}`;
+    addButton.dataset.type = 'inventory';
+    addButton.dataset.category = category;
+
+    document.querySelectorAll('.inventory-modern-tab').forEach(tab => {
+        if (tab.dataset.category === category) {
+            tab.classList.add('active');
+        }
+    });
+
+    const iconEdit = `<svg style="pointer-events:none; width:18px; height:18px; fill:#2563eb;" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>`;
+    const iconView = `<svg style="pointer-events:none; width:18px; height:18px; fill:#475569;" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>`;
+    const iconDelete = `<svg style="pointer-events:none; width:18px; height:18px; fill:#dc2626;" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>`;
+
+    const tableHeaders = Object.values(config.fields).map(field => field.label);
+    tableHead.innerHTML = `<tr>${tableHeaders.map(h => `<th>${h}</th>`).join('')}<th>Acciones</th></tr>`;
+
+    let allItems = [];
+
+    const fillSelectOptions = (selectEl, values, placeholder) => {
+        const currentValue = selectEl.value;
+        selectEl.innerHTML = `<option value="">${placeholder}</option>`;
+        [...new Set(values.filter(Boolean))].sort().forEach(value => {
+            selectEl.innerHTML += `<option value="${value}">${value}</option>`;
+        });
+        selectEl.value = currentValue;
+    };
+
+    const getWarrantyStatus = (dateStr) => {
+        if (!dateStr) return 'sin-garantia';
+
+        const today = new Date();
+        today.setHours(0,0,0,0);
+
+        const warrantyDate = new Date(dateStr);
+        warrantyDate.setHours(0,0,0,0);
+
+        const diffTime = warrantyDate - today;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        if (diffDays < 0) return 'vencida';
+        if (diffDays <= 60) return 'proxima';
+        return 'vigente';
+    };
+
+    const getStatusBadge = (status) => {
+        const normalized = (status || 'N/A').toLowerCase();
+
+        let cls = 'neutral';
+        if (normalized.includes('uso') || normalized.includes('producción')) cls = 'green';
+        else if (normalized.includes('ti') || normalized.includes('mantenimiento') || normalized.includes('dañado') || normalized.includes('repar')) cls = 'orange';
+        else if (normalized.includes('retir')) cls = 'gray';
+        else if (normalized.includes('almac')) cls = 'blue';
+
+        return `<span class="inventory-status-badge ${cls}">${status || 'N/A'}</span>`;
+    };
+
+    const updateKPIs = (items) => {
+        const total = items.length;
+
+        const enUso = items.filter(item => {
+            const st = (item.lifecycleStatus || item.status || '').toLowerCase();
+            return st.includes('uso') || st.includes('producción');
+        }).length;
+
+        const enRepair = items.filter(item => {
+            const st = (item.lifecycleStatus || item.status || '').toLowerCase();
+            return st.includes('ti') || st.includes('mantenimiento') || st.includes('dañado') || st.includes('repar');
+        }).length;
+
+        const retirados = items.filter(item => {
+            const st = (item.lifecycleStatus || item.status || '').toLowerCase();
+            return st.includes('retir');
+        }).length;
+
+        const proximasGarantias = items.filter(item => getWarrantyStatus(item.warrantyEndDate) === 'proxima').length;
+
+        const pct = (value) => total > 0 ? ((value / total) * 100).toFixed(1) : '0.0';
+
+        document.getElementById('inventory-kpi-total').textContent = total;
+        document.getElementById('inventory-kpi-uso').textContent = enUso;
+        document.getElementById('inventory-kpi-repair').textContent = enRepair;
+        document.getElementById('inventory-kpi-retired').textContent = retirados;
+        document.getElementById('inventory-kpi-warranty').textContent = proximasGarantias;
+
+        document.getElementById('inventory-kpi-uso-percent').textContent = `${pct(enUso)}% del total`;
+        document.getElementById('inventory-kpi-repair-percent').textContent = `${pct(enRepair)}% del total`;
+        document.getElementById('inventory-kpi-retired-percent').textContent = `${pct(retirados)}% del total`;
+    };
+
+    const renderTable = () => {
+        const searchValue = searchInput.value.trim().toLowerCase();
+        const sedeValue = sedeFilter.value;
+        const statusValue = statusFilter.value;
+        const warrantyValue = warrantyFilter.value;
+        const userValue = userFilter.value;
+
+        const filteredItems = allItems.filter(item => {
+            const textMatch = Object.keys(config.fields).some(key => {
+                const value = key === 'id' ? item.id : (item[key] || '');
+                return String(value).toLowerCase().includes(searchValue);
+            });
+
+            const sedeMatch = !sedeValue || (item.sede || '') === sedeValue;
+            const statusField = item.lifecycleStatus || item.status || '';
+            const statusMatch = !statusValue || statusField === statusValue;
+            const userMatch = !userValue || (item.user || '') === userValue;
+            const warrantyMatch = !warrantyValue || getWarrantyStatus(item.warrantyEndDate) === warrantyValue;
+
+            return textMatch && sedeMatch && statusMatch && userMatch && warrantyMatch;
+        });
+
+        updateKPIs(filteredItems);
+
+        tableBody.innerHTML = '';
+
+        if (filteredItems.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="${tableHeaders.length + 1}" style="text-align:center; padding:24px;">No hay elementos.</td></tr>`;
+            resultsText.textContent = `Mostrando 0 de ${allItems.length} registros`;
+            return;
+        }
+
+        filteredItems.forEach(item => {
+            const tr = document.createElement('tr');
+            tr.dataset.id = item.id;
+
+            let cellsHTML = '';
+
+            for (const key of Object.keys(config.fields)) {
+                let cellContent = key === 'id' ? item.id : (item[key] || 'N/A');
+
+                if (key === 'lifecycleStatus' || key === 'status') {
+                    cellContent = getStatusBadge(item[key] || 'N/A');
+                } else if (key === 'os' && cellContent !== 'N/A') {
+                    cellContent = `<a href="#credentials-software" style="color:#2563eb; text-decoration:underline;">${cellContent}</a>`;
+                }
+
+                cellsHTML += `<td data-field="${key}">${cellContent}</td>`;
+            }
+
+            const actionsHTML = `
+                <div class="inventory-actions-cell">
+                    <div class="action-icon-edit" title="Editar" data-id="${item.id}" data-collection="inventory" data-category="${category}">${iconEdit}</div>
+                    <div class="action-icon-view" title="Ver Detalles" data-id="${item.id}">${iconView}</div>
+                    <div class="action-icon-delete" title="Eliminar" data-id="${item.id}" data-collection="inventory">${iconDelete}</div>
+                </div>
+            `;
+
+            tr.innerHTML = `${cellsHTML}<td>${actionsHTML}</td>`;
+            tableBody.appendChild(tr);
+        });
+
+        resultsText.textContent = `Mostrando ${filteredItems.length} de ${allItems.length} ${config.title.toLowerCase()}`;
+    };
+
+    db.collection('inventory').where('category', '==', category).onSnapshot(snapshot => {
+        allItems = [];
+        snapshot.forEach(doc => allItems.push({ id: doc.id, ...doc.data() }));
+        allItems.sort((a, b) => (a.numericId || 0) - (b.numericId || 0));
+
+        fillSelectOptions(sedeFilter, allItems.map(item => item.sede), 'Todas las sedes');
+        fillSelectOptions(statusFilter, allItems.map(item => item.lifecycleStatus || item.status), 'Todos los estados');
+        fillSelectOptions(userFilter, allItems.map(item => item.user), 'Todos los usuarios');
+
+        renderTable();
+    }, error => handleFirestoreError(error, tableBody));
+
+    [searchInput, sedeFilter, statusFilter, warrantyFilter, userFilter].forEach(el => {
+        el.addEventListener('input', renderTable);
+        el.addEventListener('change', renderTable);
+    });
+}
     async function showDeviceHistoryModal(deviceId) { 
         const historyModal = document.getElementById('history-modal'); 
         const modalBody = historyModal.querySelector('#history-modal-body'); 
@@ -4061,7 +4393,7 @@ let devicesHTML = ''; if (ticket.deviceIds && ticket.deviceIds.length > 0) { dev
             
             document.querySelectorAll('.nav-item-with-submenu').forEach(el => el.classList.remove('open'));
             
-            if (path.startsWith('#inventory-')) renderGenericListPage(appContent, {category: path.replace('#inventory-', '')}, inventoryCategoryConfig, 'inventory', '💻'); 
+            if (path.startsWith('#inventory-')) renderInventoryModernPage(appContent, {category: path.replace('#inventory-', '')}); 
             else if (path.startsWith('#credentials-')) renderGenericListPage(appContent, {category: path.replace('#credentials-', '')}, credentialsCategoryConfig, 'credentials', '🔑'); 
             else if (path.startsWith('#services-')) renderGenericListPage(appContent, {category: path.replace('#services-', '')}, servicesCategoryConfig, 'services', '📡'); 
             else if (routes[path]) routes[path](appContent, Object.fromEntries(params)); 
