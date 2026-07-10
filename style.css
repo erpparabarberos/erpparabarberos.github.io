@@ -2887,3 +2887,354 @@ tr:hover td { background-color: #f8fafc; }
         grid-template-columns: 1fr !important;
     }
 }
+.inventory-modern-page{
+    padding:24px 24px 40px;
+}
+
+.inventory-modern-header{
+    margin-bottom:20px;
+}
+
+.inventory-modern-title-wrap{
+    display:flex;
+    align-items:flex-start;
+    gap:14px;
+}
+
+.inventory-modern-main-icon{
+    width:44px;
+    height:44px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#eef4ff;
+    border:1px solid #d8e4ff;
+    border-radius:10px;
+    font-size:20px;
+}
+
+.inventory-modern-title-wrap h1{
+    margin:0;
+    font-size:40px;
+    line-height:1.1;
+    color:#102a56;
+    font-weight:800;
+}
+
+.inventory-modern-title-wrap p{
+    margin:8px 0 0;
+    color:#64748b;
+    font-size:16px;
+}
+
+.inventory-modern-tabs{
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
+    margin-bottom:14px;
+    padding:14px 16px;
+    background:#fff;
+    border:1px solid #dbe4f0;
+    border-radius:10px;
+}
+
+.inventory-modern-tab{
+    text-decoration:none;
+    color:#334155;
+    font-weight:600;
+    font-size:14px;
+    padding:8px 10px;
+    border-bottom:2px solid transparent;
+}
+
+.inventory-modern-tab.active{
+    color:#2563eb;
+    border-bottom:2px solid #2563eb;
+}
+
+.inventory-modern-panel{
+    background:#fff;
+    border:1px solid #dbe4f0;
+    border-radius:12px;
+    padding:18px;
+}
+
+.inventory-modern-toolbar{
+    display:flex;
+    flex-wrap:wrap;
+    gap:16px;
+    align-items:end;
+    margin-bottom:18px;
+}
+
+.inventory-modern-search-wrap{
+    flex:1 1 260px;
+}
+
+.inventory-modern-search-wrap input{
+    width:100%;
+    height:44px;
+    border:1px solid #dbe4f0;
+    border-radius:8px;
+    padding:0 14px;
+    font-size:14px;
+}
+
+.inventory-modern-filters{
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
+    flex:3 1 680px;
+}
+
+.inventory-filter-item{
+    min-width:150px;
+    flex:1 1 150px;
+}
+
+.inventory-filter-item label{
+    display:block;
+    font-size:12px;
+    font-weight:700;
+    color:#64748b;
+    margin-bottom:6px;
+}
+
+.inventory-filter-item select{
+    width:100%;
+    height:44px;
+    border:1px solid #dbe4f0;
+    border-radius:8px;
+    padding:0 12px;
+    font-size:14px;
+    background:#fff;
+}
+
+.inventory-modern-actions{
+    display:flex;
+    gap:10px;
+    margin-left:auto;
+}
+
+.inventory-modern-actions .export-btn,
+.inventory-modern-actions .btn-blue{
+    height:44px;
+    padding:0 18px;
+    border-radius:8px;
+    font-weight:700;
+    font-size:14px;
+}
+
+.inventory-kpi-grid{
+    display:grid;
+    grid-template-columns:repeat(5, minmax(0,1fr));
+    gap:14px;
+    margin-bottom:18px;
+}
+
+.inventory-kpi-card{
+    background:#fff;
+    border:1px solid #dbe4f0;
+    border-radius:10px;
+    padding:16px;
+    display:flex;
+    gap:14px;
+    align-items:center;
+}
+
+.inventory-kpi-icon{
+    width:52px;
+    height:52px;
+    border-radius:12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#eef4ff;
+    color:#2563eb;
+    font-size:24px;
+    flex-shrink:0;
+}
+
+.inventory-kpi-icon.green{ background:#eafaf1; color:#16a34a; }
+.inventory-kpi-icon.orange{ background:#fff4e8; color:#ea580c; }
+.inventory-kpi-icon.gray{ background:#f1f5f9; color:#64748b; }
+.inventory-kpi-icon.purple{ background:#f4ecff; color:#7c3aed; }
+
+.inventory-kpi-card strong{
+    display:block;
+    font-size:32px;
+    line-height:1;
+    color:#102a56;
+    margin-bottom:6px;
+}
+
+.inventory-kpi-card span{
+    display:block;
+    font-weight:700;
+    color:#1e293b;
+}
+
+.inventory-kpi-card small{
+    display:block;
+    margin-top:4px;
+    color:#64748b;
+}
+
+.inventory-table-card{
+    background:#fff;
+    border:1px solid #dbe4f0;
+    border-radius:12px;
+    overflow:hidden;
+}
+
+.inventory-table-wrapper{
+    overflow:auto;
+}
+
+.inventory-modern-table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:1200px;
+}
+
+.inventory-modern-table thead th{
+    background:#f4f8fd;
+    color:#56708f;
+    font-size:12px;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:.02em;
+    padding:14px 12px;
+    border-bottom:1px solid #dbe4f0;
+    text-align:left;
+}
+
+.inventory-modern-table tbody td{
+    padding:14px 12px;
+    border-bottom:1px solid #edf2f7;
+    color:#243b53;
+    font-size:14px;
+    vertical-align:middle;
+}
+
+.inventory-modern-table tbody tr:hover{
+    background:#fafcff;
+}
+
+.inventory-status-badge{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:6px 10px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:700;
+    white-space:nowrap;
+}
+
+.inventory-status-badge.green{
+    background:#e7f8ec;
+    color:#1e8e4d;
+}
+
+.inventory-status-badge.orange{
+    background:#fff3e8;
+    color:#ea580c;
+}
+
+.inventory-status-badge.gray{
+    background:#eef2f7;
+    color:#64748b;
+}
+
+.inventory-status-badge.blue{
+    background:#e8f0ff;
+    color:#2563eb;
+}
+
+.inventory-status-badge.neutral{
+    background:#f1f5f9;
+    color:#475569;
+}
+
+.inventory-actions-cell{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.inventory-actions-cell .action-icon-edit,
+.inventory-actions-cell .action-icon-view,
+.inventory-actions-cell .action-icon-delete{
+    width:30px;
+    height:30px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    border-radius:6px;
+    background:transparent;
+}
+
+.inventory-table-footer{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:16px;
+    padding:14px 16px;
+    border-top:1px solid #e8edf5;
+    flex-wrap:wrap;
+}
+
+.inventory-table-footer span{
+    color:#64748b;
+    font-size:14px;
+}
+
+.inventory-pagination-mock{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+}
+
+.inventory-pagination-mock button{
+    min-width:36px;
+    height:36px;
+    border:1px solid #dbe4f0;
+    background:#fff;
+    border-radius:8px;
+    color:#475569;
+    padding:0 12px;
+    cursor:pointer;
+}
+
+.inventory-pagination-mock button.active{
+    background:#2563eb;
+    color:#fff;
+    border-color:#2563eb;
+}
+
+@media (max-width: 1200px){
+    .inventory-kpi-grid{
+        grid-template-columns:repeat(2, minmax(0,1fr));
+    }
+}
+
+@media (max-width: 768px){
+    .inventory-kpi-grid{
+        grid-template-columns:1fr;
+    }
+
+    .inventory-modern-toolbar{
+        flex-direction:column;
+        align-items:stretch;
+    }
+
+    .inventory-modern-actions{
+        margin-left:0;
+    }
+
+    .inventory-modern-title-wrap h1{
+        font-size:30px;
+    }
+}
