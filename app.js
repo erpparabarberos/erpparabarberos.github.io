@@ -4186,7 +4186,7 @@ if (quickNoteRawAfterSave) {
                             <div class="computer-sidebar-card">
                                 <h3>Últimos Tickets Asociados</h3>
                                 ${ticketsHTML}
-                                <a class="computer-see-all" href="#">Ver todos los tickets (${relatedTickets.length}) →</a>
+                                <a class="computer-see-all" href="#" id="computer-see-all-tickets">Ver todos los tickets (${relatedTickets.length}) →</a>
                             </div>
                         </aside>
 
@@ -4197,6 +4197,41 @@ if (quickNoteRawAfterSave) {
 document.getElementById('cancel-computer-edit-modal').addEventListener('click', () => {
     formModal.classList.add('hidden');
 });
+        const seeAllTicketsBtn = document.getElementById('computer-see-all-tickets');
+
+if (seeAllTicketsBtn) {
+    seeAllTicketsBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+
+        const ticketsListHTML = relatedTickets.length
+            ? relatedTickets.map(ticket => `
+                <div class="computer-all-ticket-item">
+                    <div>
+                        <a href="#" class="computer-ticket-link" data-id="${ticket.id}">#${ticket.id}</a>
+                        <p class="computer-ticket-text">${ticket.title || ticket.novelty || ticket.description || 'Sin descripción'}</p>
+                        <small class="computer-ticket-date">📅 ${formatTicketDate(ticket)}</small>
+                    </div>
+                    <span>${ticket.status || 'CERRADO'}</span>
+                </div>
+            `).join('')
+            : `<div class="computer-related-empty">No hay tickets asociados.</div>`;
+
+        const sidebarTicketsCard = seeAllTicketsBtn.closest('.computer-sidebar-card');
+
+        sidebarTicketsCard.innerHTML = `
+            <h3>Todos los tickets asociados</h3>
+            <div class="computer-all-tickets-list">
+                ${ticketsListHTML}
+            </div>
+            <a href="#" class="computer-see-all" id="computer-back-latest-tickets">← Volver a últimos tickets</a>
+        `;
+
+        document.getElementById('computer-back-latest-tickets').addEventListener('click', (event) => {
+            event.preventDefault();
+            showComputerEditModernModal(docId);
+        });
+    });
+}
         document.getElementById('computer-edit-modern-form').addEventListener('submit', async (e) => {
             e.preventDefault();
 
