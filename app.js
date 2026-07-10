@@ -947,7 +947,205 @@ const newTITicketFormHTML = `
 
 </section>
 `;
-    const statisticsHTML = `<div style="display: flex; justify-content: space-between; align-items: center;"><h1>📈 Centro de Análisis</h1><button class="primary" id="export-stats-pdf">Exportar a PDF</button></div><div id="stats-content"><div class="card"><h2>Filtro de Periodo</h2><div class="stats-filters"><div class="form-group"><label for="start-date">Fecha de Inicio</label><input type="date" id="start-date"></div><div class="form-group"><label for="end-date">Fecha de Fin</label><input type="date" id="end-date"></div><button id="generate-report-btn" class="primary">Generar Reporte</button></div></div><h2>Análisis de Tickets</h2><div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 25px;"><div class="card"><h3>Tickets por Prioridad</h3><div class="chart-container"><canvas id="ticketsByPriorityChart"></canvas></div></div><div class="card"><h3>Tickets por Categoría de Dispositivo</h3><div class="chart-container"><canvas id="ticketsByDeviceCategoryChart"></canvas></div></div><div class="card"><h3>Top 5 Dispositivos Problemáticos</h3><ul id="top-devices-list" class="kpi-list"></ul></div><div class="card"><h3>Top 5 Solicitantes</h3><ul id="top-requesters-list" class="kpi-list"></ul></div></div><div class="card"><h3>Flujo de Tickets (Creados vs. Cerrados)</h3><div class="chart-container"><canvas id="ticket-flow-chart"></canvas></div></div><h2 style="margin-top: 40px;">Resumen de Inventario</h2><div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 25px;"><div class="card"><h3>Dispositivos por Categoría</h3><div class="chart-container"><canvas id="inventoryByCategoryChart"></canvas></div></div><div class="card"><h3>Computadores por SO</h3><div class="chart-container"><canvas id="computersByOsChart"></canvas></div></div></div></div>`;
+    const statisticsHTML = `
+<section class="reports-modern-page">
+
+    <div class="reports-modern-header">
+        <div class="reports-title-wrap">
+            <div class="reports-main-icon">📈</div>
+            <div>
+                <h1>Centro de análisis</h1>
+                <p>Resumen ejecutivo y análisis de la actividad de soporte técnico.</p>
+            </div>
+        </div>
+
+        <button id="export-report-pdf" class="reports-export-pdf">📄 Exportar PDF</button>
+    </div>
+
+    <div class="reports-filter-card">
+        <div class="reports-filter-grid">
+            <div class="reports-filter-group">
+                <label for="stats-start-date">Fecha inicio</label>
+                <input type="date" id="stats-start-date">
+            </div>
+
+            <div class="reports-filter-group">
+                <label for="stats-end-date">Fecha fin</label>
+                <input type="date" id="stats-end-date">
+            </div>
+
+            <div class="reports-filter-group">
+                <label for="stats-ticket-type">Tipo de ticket</label>
+                <select id="stats-ticket-type">
+                    <option value="">Todos los tipos</option>
+                    <option value="ti">Soporte TI</option>
+                    <option value="velocity">Velocity</option>
+                    <option value="siigo">Siigo</option>
+                    <option value="nota">Nota rápida</option>
+                </select>
+            </div>
+
+            <div class="reports-filter-group">
+                <label for="stats-status">Estado</label>
+                <select id="stats-status">
+                    <option value="">Todos los estados</option>
+                    <option value="cerrado">Cerrado</option>
+                    <option value="en-curso">En curso</option>
+                    <option value="pendiente">Pendiente</option>
+                    <option value="convertida">Convertida</option>
+                    <option value="abierto">Abierto</option>
+                </select>
+            </div>
+
+            <button id="generate-stats-report" class="reports-generate-btn">Generar reporte</button>
+        </div>
+    </div>
+
+    <div class="reports-kpi-grid">
+        <div class="reports-kpi-card blue">
+            <div class="reports-kpi-icon">🎫</div>
+            <div>
+                <strong id="reports-total-tickets">0</strong>
+                <span>Total tickets</span>
+                <small id="reports-total-percent">100% del periodo</small>
+            </div>
+        </div>
+
+        <div class="reports-kpi-card green">
+            <div class="reports-kpi-icon">✓</div>
+            <div>
+                <strong id="reports-closed-tickets">0</strong>
+                <span>Cerrados</span>
+                <small id="reports-closed-percent">0% del total</small>
+            </div>
+        </div>
+
+        <div class="reports-kpi-card orange">
+            <div class="reports-kpi-icon">◷</div>
+            <div>
+                <strong id="reports-progress-tickets">0</strong>
+                <span>En curso</span>
+                <small id="reports-progress-percent">0% del total</small>
+            </div>
+        </div>
+
+        <div class="reports-kpi-card purple">
+            <div class="reports-kpi-icon">⏱</div>
+            <div>
+                <strong id="reports-time-spent">0h 0m</strong>
+                <span>Tiempo invertido</span>
+                <small>Total del periodo</small>
+            </div>
+        </div>
+
+        <div class="reports-kpi-card blue">
+            <div class="reports-kpi-icon">📁</div>
+            <div>
+                <strong id="reports-top-category">N/A</strong>
+                <span>Categoría principal</span>
+                <small id="reports-top-category-count">0 tickets</small>
+            </div>
+        </div>
+
+        <div class="reports-kpi-card blue">
+            <div class="reports-kpi-icon">👤</div>
+            <div>
+                <strong id="reports-top-requester">N/A</strong>
+                <span>Solicitante top</span>
+                <small id="reports-top-requester-count">0 tickets</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="reports-grid-main">
+
+        <div class="reports-card">
+            <div class="reports-card-header">
+                <h3>Tickets por estado</h3>
+            </div>
+            <div class="reports-chart-box donut">
+                <canvas id="reportStatusChart"></canvas>
+            </div>
+        </div>
+
+        <div class="reports-card">
+            <div class="reports-card-header">
+                <h3>Tickets por tipo</h3>
+            </div>
+            <div class="reports-chart-box">
+                <canvas id="reportTypeChart"></canvas>
+            </div>
+        </div>
+
+        <div class="reports-card">
+            <div class="reports-card-header">
+                <h3>Creados vs cerrados</h3>
+            </div>
+            <div class="reports-chart-box">
+                <canvas id="reportFlowChart"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="reports-grid-secondary">
+
+        <div class="reports-card">
+            <div class="reports-card-header">
+                <h3>Tiempo invertido por categoría</h3>
+                <span>Horas totales</span>
+            </div>
+            <div class="reports-chart-box">
+                <canvas id="reportTimeByCategoryChart"></canvas>
+            </div>
+        </div>
+
+        <div class="reports-card">
+            <div class="reports-card-header">
+                <h3>Top solicitantes</h3>
+                <span>Por número de tickets</span>
+            </div>
+            <div id="reports-top-requesters-list" class="reports-ranking-list"></div>
+        </div>
+
+        <div class="reports-card">
+            <div class="reports-card-header">
+                <h3>Top dispositivos problemáticos</h3>
+                <span>Más tickets registrados</span>
+            </div>
+            <div id="reports-top-devices-list" class="reports-ranking-list"></div>
+        </div>
+
+    </div>
+
+    <div class="reports-section-title">Resumen de inventario</div>
+
+    <div class="reports-inventory-grid">
+
+        <div class="reports-card">
+            <div class="reports-card-header">
+                <h3>Dispositivos por categoría</h3>
+                <span id="reports-total-devices">Total de dispositivos: 0</span>
+            </div>
+            <div class="reports-chart-box">
+                <canvas id="reportInventoryCategoryChart"></canvas>
+            </div>
+        </div>
+
+        <div class="reports-card">
+            <div class="reports-card-header">
+                <h3>Computadores por sistema operativo</h3>
+                <span id="reports-total-computers">Total de computadores: 0</span>
+            </div>
+            <div class="reports-chart-box donut">
+                <canvas id="reportOSChart"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+</section>
+`;
     const genericListPageHTML = `<h1 id="page-title"></h1><div class="add-new-button-container"><button class="export-btn csv" data-format="csv">Exportar a Excel (CSV)</button><button class="export-btn pdf" data-format="pdf">Exportar a PDF</button><button id="add-item-btn" class="btn-blue open-form-modal-btn">Añadir Nuevo</button></div><div class="card"><div class="table-search-container"><input type="text" id="table-search-input" placeholder="🔍 Buscar en la tabla..."></div><h2 id="item-list-title"></h2><div class="table-wrapper"><table id="data-table"><thead id="item-table-head"></thead><tbody id="item-table-body"></tbody></table></div></div>`;
     const maintenanceCalendarHTML = `<h1>📅 Planificación</h1><div class="add-new-button-container"><button class="export-btn csv" data-format="csv">Exportar a Excel (CSV)</button><button class="export-btn pdf" data-format="pdf">Exportar a PDF</button><button class="primary open-form-modal-btn" data-type="maintenance">Programar Tarea</button></div><div class="card"><div id="maintenance-calendar"></div><table id="data-table" style="display:none;"></table></div>`;
     const configHTML = `<h1>⚙️ Configuración</h1><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;"><div class="card"><h2>Gestionar Solicitantes</h2><form id="add-requester-form" style="display:flex; gap:10px; margin-bottom: 20px;"><input type="text" id="requester-name" placeholder="Nombre del solicitante" required style="flex-grow:1;"><button type="submit" class="primary">Añadir</button></form><ul id="requesters-list" class="config-list"></ul></div><div class="card"><h2>Gestionar Ubicaciones</h2><form id="add-location-form" style="display:flex; gap:10px; margin-bottom: 20px;"><input type="text" id="location-name" placeholder="Nombre de la ubicación" required style="flex-grow:1;"><button type="submit" class="primary">Añadir</button></form><ul id="locations-list" class="config-list"></ul></div></div>`;
@@ -2510,9 +2708,579 @@ if (quickNoteRawAfterSave) {
         renderTimeline();
     });
 }
-    async function renderEstadisticas(container) { container.innerHTML = statisticsHTML; const generateBtn = document.getElementById('generate-report-btn'); document.getElementById('export-stats-pdf').addEventListener('click', exportStatsToPDF); let charts = {}; const chartContexts = { ticketsByPriority: document.getElementById('ticketsByPriorityChart').getContext('2d'), ticketsByDeviceCategory: document.getElementById('ticketsByDeviceCategoryChart').getContext('2d'), ticketFlow: document.getElementById('ticket-flow-chart').getContext('2d'), inventoryByCategory: document.getElementById('inventoryByCategoryChart').getContext('2d'), computersByOs: document.getElementById('computersByOsChart').getContext('2d') }; const topDevicesList = document.getElementById('top-devices-list'); const topRequestersList = document.getElementById('top-requesters-list'); const startDateInput = document.getElementById('start-date'); const endDateInput = document.getElementById('end-date'); const today = new Date(); const oneMonthAgo = new Date(new Date().setMonth(today.getMonth() - 1)); startDateInput.value = oneMonthAgo.toISOString().split('T')[0]; endDateInput.value = today.toISOString().split('T')[0]; const generateReports = async () => { const startDate = new Date(startDateInput.value); startDate.setHours(0, 0, 0, 0); const endDate = new Date(endDateInput.value); endDate.setHours(23, 59, 59, 999); try { const [ticketsSnapshot, inventorySnapshot, requestersSnapshot] = await Promise.all([ db.collection('tickets').where('createdAt', '>=', startDate).where('createdAt', '<=', endDate).get(), db.collection('inventory').get(), db.collection('requesters').get() ]); const tickets = ticketsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); const inventory = inventorySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); const requestersMap = {}; requestersSnapshot.forEach(doc => requestersMap[doc.id] = doc.data().name); const priorityCounts = tickets.reduce((acc, ticket) => { acc[ticket.priority] = (acc[ticket.priority] || 0) + 1; return acc; }, {}); if (charts.ticketsByPriority) charts.ticketsByPriority.destroy(); charts.ticketsByPriority = new Chart(chartContexts.ticketsByPriority, { type: 'doughnut', data: { labels: Object.keys(priorityCounts).map(p => capitalizar(p)), datasets: [{ data: Object.values(priorityCounts), backgroundColor: ['#D32F2F', '#ffc107', '#334155'] }] }, options: { responsive: true, maintainAspectRatio: false } }); const inventoryMap = {}; inventory.forEach(item => inventoryMap[item.id] = item); const ticketsWithDeviceCategory = tickets.map(ticket => ({...ticket, deviceCategory: ticket.deviceIds && ticket.deviceIds.length > 0 ? (inventoryMap[ticket.deviceIds[0]]?.category || 'Sin categoría') : 'Sin dispositivo'})); const deviceCategoryCounts = ticketsWithDeviceCategory.reduce((acc, ticket) => { acc[ticket.deviceCategory] = (acc[ticket.deviceCategory] || 0) + 1; return acc; }, {}); if (charts.ticketsByDeviceCategory) charts.ticketsByDeviceCategory.destroy(); charts.ticketsByDeviceCategory = new Chart(chartContexts.ticketsByDeviceCategory, { type: 'pie', data: { labels: Object.keys(deviceCategoryCounts).map(k => inventoryCategoryConfig[k]?.title || k), datasets: [{ data: Object.values(deviceCategoryCounts), backgroundColor: ['#D32F2F', '#17a2b8', '#ffc107', '#6c757d', '#28a745', '#dc3545', '#343a40'] }] }, options: { responsive: true, maintainAspectRatio: false } }); const deviceTicketCounts = tickets.reduce((acc, ticket) => { if(ticket.deviceIds && Array.isArray(ticket.deviceIds)) { ticket.deviceIds.forEach(deviceId => { if(deviceId) acc[deviceId] = (acc[deviceId] || 0) + 1; }); } return acc; }, {}); const topDevices = Object.entries(deviceTicketCounts).sort((a, b) => b[1] - a[1]).slice(0, 5); topDevicesList.innerHTML = topDevices.map(([id, count]) => { const device = inventoryMap[id]; return `<li><span>${device ? `${device.brand} ${device.model}` : id}</span><span>${count}</span></li>`; }).join('') || '<li>No hay datos</li>'; const requesterTicketCounts = tickets.reduce((acc, ticket) => { if(ticket.requesterId) acc[ticket.requesterId] = (acc[ticket.requesterId] || 0) + 1; return acc; }, {}); const topRequesters = Object.entries(requesterTicketCounts).sort((a, b) => b[1] - a[1]).slice(0, 5); topRequestersList.innerHTML = topRequesters.map(([id, count]) => `<li><span>${requestersMap[id] || id}</span><span>${count}</span></li>`).join('') || '<li>No hay datos</li>'; const closedTicketsSnapshot = await db.collection('tickets').where('closedAt', '>=', startDate).where('closedAt', '<=', endDate).get(); const closedTicketsInRange = closedTicketsSnapshot.docs.map(doc => doc.data()); const dataByDay = {}; for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) { dataByDay[d.toISOString().split('T')[0]] = { created: 0, closed: 0 }; } tickets.forEach(t => { const day = t.createdAt.toDate().toISOString().split('T')[0]; if (dataByDay[day]) dataByDay[day].created++; }); closedTicketsInRange.forEach(t => { const day = t.closedAt.toDate().toISOString().split('T')[0]; if (dataByDay[day]) dataByDay[day].closed++; }); if (charts.ticketFlow) charts.ticketFlow.destroy(); charts.ticketFlow = new Chart(chartContexts.ticketFlow, { type: 'line', data: { labels: Object.keys(dataByDay), datasets: [ { label: 'Tickets Creados', data: Object.values(dataByDay).map(d => d.created), borderColor: '#D32F2F', fill: true }, { label: 'Tickets Cerrados', data: Object.values(dataByDay).map(d => d.closed), borderColor: '#10b981', fill: true } ] }, options: { scales: { y: { beginAtZero: true } } } }); const categoryCounts = inventory.reduce((acc, item) => { acc[item.category] = (acc[item.category] || 0) + 1; return acc; }, {}); if (charts.inventoryByCategory) charts.inventoryByCategory.destroy(); charts.inventoryByCategory = new Chart(chartContexts.inventoryByCategory, { type: 'bar', data: { labels: Object.keys(categoryCounts).map(k => inventoryCategoryConfig[k]?.title || k), datasets: [{ label: '# de Dispositivos', data: Object.values(categoryCounts), backgroundColor: '#D32F2F' }] }, options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false } }); const computers = inventory.filter(item => item.category === 'computers'); const osCounts = computers.reduce((acc, item) => { acc[item.os] = (acc[item.os] || 0) + 1; return acc; }, {}); if (charts.computersByOs) charts.computersByOs.destroy(); charts.computersByOs = new Chart(chartContexts.computersByOs, { type: 'pie', data: { labels: Object.keys(osCounts), datasets: [{ data: Object.values(osCounts), backgroundColor: ['#D32F2F', '#17a2b8', '#ffc107', '#6c757d', '#28a745', '#dc3545'] }] }, options: { responsive: true, maintainAspectRatio: false } }); } catch(error) { handleFirestoreError(error, container); }}; generateBtn.addEventListener('click', generateReports); generateReports(); }
-    
-    // 🔥 CORRECCIÓN: ESTILOS INLINE PARA ESTADOS (ACTIVO/INACTIVO)
+   async function renderEstadisticas(container) {
+    container.innerHTML = statisticsHTML;
+
+    const startDateInput = document.getElementById('stats-start-date');
+    const endDateInput = document.getElementById('stats-end-date');
+    const typeSelect = document.getElementById('stats-ticket-type');
+    const statusSelect = document.getElementById('stats-status');
+    const generateBtn = document.getElementById('generate-stats-report');
+    const exportPdfBtn = document.getElementById('export-report-pdf');
+
+    const now = new Date();
+    const endDefault = new Date(now);
+    const startDefault = new Date(now);
+    startDefault.setDate(startDefault.getDate() - 30);
+
+    startDateInput.value = startDefault.toISOString().split('T')[0];
+    endDateInput.value = endDefault.toISOString().split('T')[0];
+
+    const chartColors = {
+        blue: '#2563eb',
+        green: '#22c55e',
+        orange: '#f97316',
+        purple: '#8b5cf6',
+        red: '#ef4444',
+        cyan: '#14b8a6',
+        gray: '#64748b',
+        yellow: '#facc15'
+    };
+
+    function destroyChart(instanceName) {
+        if (window[instanceName]) {
+            window[instanceName].destroy();
+        }
+    }
+
+    function getDate(ticket) {
+        if (ticket.createdAt && ticket.createdAt.toDate) return ticket.createdAt.toDate();
+        if (ticket.registeredAt && ticket.registeredAt.toDate) return ticket.registeredAt.toDate();
+        return null;
+    }
+
+    function getClosedDate(ticket) {
+        if (ticket.closedAt && ticket.closedAt.toDate) return ticket.closedAt.toDate();
+        return null;
+    }
+
+    function formatMinutes(minutes) {
+        const total = Number(minutes) || 0;
+        const h = Math.floor(total / 60);
+        const m = total % 60;
+        return `${h}h ${m}m`;
+    }
+
+    function percent(value, total) {
+        if (!total) return '0%';
+        return `${((value / total) * 100).toFixed(1)}%`;
+    }
+
+    function getTypeLabel(type) {
+        const labels = {
+            ti: 'Soporte TI',
+            velocity: 'Velocity',
+            siigo: 'Siigo',
+            nota: 'Nota rápida',
+            otro: 'Otro'
+        };
+
+        return labels[type] || capitalizar(type || 'Otro');
+    }
+
+    function getCategoryLabel(ticket) {
+        return ticket.category ||
+            ticket.supportType ||
+            ticket.ticketType ||
+            'Sin categoría';
+    }
+
+    function getDeviceNamesFromTicket(ticket, devicesMap) {
+        const possibleIds = [];
+
+        if (Array.isArray(ticket.devices)) possibleIds.push(...ticket.devices);
+        if (Array.isArray(ticket.deviceIds)) possibleIds.push(...ticket.deviceIds);
+        if (Array.isArray(ticket.associatedDevices)) possibleIds.push(...ticket.associatedDevices);
+        if (ticket.deviceId) possibleIds.push(ticket.deviceId);
+
+        return possibleIds.map(id => {
+            if (typeof id === 'string') {
+                return devicesMap[id]?.name || devicesMap[id]?.code || id;
+            }
+
+            if (typeof id === 'object' && id !== null) {
+                return id.name || id.code || id.id || 'Dispositivo sin nombre';
+            }
+
+            return 'Dispositivo sin nombre';
+        });
+    }
+
+    function countBy(items, getter) {
+        const result = {};
+
+        items.forEach(item => {
+            const key = getter(item) || 'Sin definir';
+            result[key] = (result[key] || 0) + 1;
+        });
+
+        return result;
+    }
+
+    function sumBy(items, getter) {
+        const result = {};
+
+        items.forEach(item => {
+            const key = getter(item.key) || 'Sin definir';
+            result[key] = (result[key] || 0) + item.value;
+        });
+
+        return result;
+    }
+
+    function sortEntries(obj, limit = null) {
+        const entries = Object.entries(obj).sort((a, b) => b[1] - a[1]);
+        return limit ? entries.slice(0, limit) : entries;
+    }
+
+    function setText(id, value) {
+        const el = document.getElementById(id);
+        if (el) el.textContent = value;
+    }
+
+    function buildDateLabels(start, end) {
+        const labels = [];
+        const current = new Date(start);
+
+        while (current <= end) {
+            labels.push(new Date(current));
+            current.setDate(current.getDate() + 1);
+        }
+
+        return labels;
+    }
+
+    function renderRanking(containerId, entries, emptyText) {
+        const container = document.getElementById(containerId);
+
+        if (!entries.length) {
+            container.innerHTML = `<div class="reports-empty">No hay datos para mostrar.</div>`;
+            return;
+        }
+
+        const max = Math.max(...entries.map(item => item[1])) || 1;
+
+        container.innerHTML = entries.map(([label, value], index) => {
+            const width = Math.round((value / max) * 100);
+
+            return `
+                <div class="reports-ranking-row">
+                    <span class="reports-rank-number">${index + 1}</span>
+                    <div class="reports-rank-content">
+                        <strong>${label || emptyText}</strong>
+                        <div class="reports-rank-bar">
+                            <i style="width:${width}%"></i>
+                        </div>
+                    </div>
+                    <em>${value}</em>
+                </div>
+            `;
+        }).join('');
+    }
+
+    async function loadReport() {
+        try {
+            generateBtn.disabled = true;
+            generateBtn.textContent = 'Generando...';
+
+            const start = new Date(startDateInput.value + 'T00:00:00');
+            const end = new Date(endDateInput.value + 'T23:59:59');
+
+            const [ticketsSnap, requestersSnap, devicesSnap] = await Promise.all([
+                db.collection('tickets').get(),
+                db.collection('requesters').get(),
+                db.collection('devices').get()
+            ]);
+
+            const requestersMap = {};
+            requestersSnap.forEach(doc => {
+                requestersMap[doc.id] = doc.data().name || doc.id;
+            });
+
+            const devicesMap = {};
+            devicesSnap.forEach(doc => {
+                devicesMap[doc.id] = {
+                    id: doc.id,
+                    ...doc.data()
+                };
+            });
+
+            let tickets = ticketsSnap.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            })).filter(ticket => {
+                const date = getDate(ticket);
+                if (!date) return false;
+
+                const matchDate = date >= start && date <= end;
+                const matchType = !typeSelect.value || ticket.ticketType === typeSelect.value;
+                const matchStatus = !statusSelect.value || ticket.status === statusSelect.value;
+
+                return matchDate && matchType && matchStatus;
+            });
+
+            const total = tickets.length;
+            const closed = tickets.filter(t => t.status === 'cerrado').length;
+            const progress = tickets.filter(t => t.status === 'en-curso' || t.status === 'abierto').length;
+            const pending = tickets.filter(t => t.status === 'pendiente').length;
+            const totalMinutes = tickets.reduce((sum, ticket) => sum + (Number(ticket.timeSpentMinutes) || 0), 0);
+
+            const categoryCounts = countBy(tickets, ticket => getCategoryLabel(ticket));
+            const requesterCounts = countBy(tickets, ticket => requestersMap[ticket.requesterId] || 'Sin solicitante');
+
+            const topCategory = sortEntries(categoryCounts, 1)[0];
+            const topRequester = sortEntries(requesterCounts, 1)[0];
+
+            setText('reports-total-tickets', total);
+            setText('reports-closed-tickets', closed);
+            setText('reports-progress-tickets', progress);
+            setText('reports-time-spent', formatMinutes(totalMinutes));
+
+            setText('reports-total-percent', total ? '100% del periodo' : 'Sin tickets en el periodo');
+            setText('reports-closed-percent', `${percent(closed, total)} del total`);
+            setText('reports-progress-percent', `${percent(progress, total)} del total`);
+
+            setText('reports-top-category', topCategory ? capitalizar(topCategory[0]) : 'N/A');
+            setText('reports-top-category-count', topCategory ? `${topCategory[1]} tickets` : '0 tickets');
+
+            setText('reports-top-requester', topRequester ? topRequester[0] : 'N/A');
+            setText('reports-top-requester-count', topRequester ? `${topRequester[1]} tickets` : '0 tickets');
+
+            renderStatusChart(total, closed, progress, pending);
+            renderTypeChart(tickets);
+            renderFlowChart(tickets, start, end);
+            renderTimeByCategoryChart(tickets);
+            renderTopLists(tickets, requestersMap, devicesMap);
+            renderInventoryCharts(devicesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+
+        } catch (error) {
+            console.error('Error generando reporte:', error);
+            alert('No se pudo generar el reporte. Revisa la consola.');
+        } finally {
+            generateBtn.disabled = false;
+            generateBtn.textContent = 'Generar reporte';
+        }
+    }
+
+    function renderStatusChart(total, closed, progress, pending) {
+        destroyChart('reportStatusChartInstance');
+
+        const ctx = document.getElementById('reportStatusChart').getContext('2d');
+
+        window.reportStatusChartInstance = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Cerrados', 'En curso', 'Pendientes'],
+                datasets: [{
+                    data: [closed, progress, pending],
+                    backgroundColor: [chartColors.green, chartColors.orange, chartColors.purple],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '65%',
+                plugins: {
+                    legend: {
+                        position: 'right'
+                    }
+                }
+            },
+            plugins: [{
+                id: 'centerText',
+                beforeDraw(chart) {
+                    const { ctx, chartArea } = chart;
+                    if (!chartArea) return;
+
+                    ctx.save();
+                    ctx.font = '800 24px Arial';
+                    ctx.fillStyle = '#0f172a';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(total, (chartArea.left + chartArea.right) / 2, (chartArea.top + chartArea.bottom) / 2 - 4);
+
+                    ctx.font = '700 12px Arial';
+                    ctx.fillStyle = '#64748b';
+                    ctx.fillText('Total', (chartArea.left + chartArea.right) / 2, (chartArea.top + chartArea.bottom) / 2 + 18);
+                    ctx.restore();
+                }
+            }]
+        });
+    }
+
+    function renderTypeChart(tickets) {
+        destroyChart('reportTypeChartInstance');
+
+        const counts = countBy(tickets, ticket => getTypeLabel(ticket.ticketType));
+        const entries = sortEntries(counts);
+
+        const ctx = document.getElementById('reportTypeChart').getContext('2d');
+
+        window.reportTypeChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: entries.map(e => e[0]),
+                datasets: [{
+                    label: 'Tickets',
+                    data: entries.map(e => e[1]),
+                    backgroundColor: chartColors.blue,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function renderFlowChart(tickets, start, end) {
+        destroyChart('reportFlowChartInstance');
+
+        const days = buildDateLabels(start, end);
+
+        const createdData = days.map(day => {
+            const startDay = new Date(day);
+            startDay.setHours(0, 0, 0, 0);
+
+            const endDay = new Date(day);
+            endDay.setHours(23, 59, 59, 999);
+
+            return tickets.filter(ticket => {
+                const date = getDate(ticket);
+                return date && date >= startDay && date <= endDay;
+            }).length;
+        });
+
+        const closedData = days.map(day => {
+            const startDay = new Date(day);
+            startDay.setHours(0, 0, 0, 0);
+
+            const endDay = new Date(day);
+            endDay.setHours(23, 59, 59, 999);
+
+            return tickets.filter(ticket => {
+                const date = getClosedDate(ticket);
+                return date && date >= startDay && date <= endDay;
+            }).length;
+        });
+
+        const ctx = document.getElementById('reportFlowChart').getContext('2d');
+
+        window.reportFlowChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: days.map(day => day.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })),
+                datasets: [
+                    {
+                        label: 'Creados',
+                        data: createdData,
+                        borderColor: chartColors.blue,
+                        backgroundColor: 'rgba(37,99,235,0.08)',
+                        fill: true,
+                        tension: 0.35,
+                        pointRadius: 3
+                    },
+                    {
+                        label: 'Cerrados',
+                        data: closedData,
+                        borderColor: chartColors.green,
+                        backgroundColor: 'rgba(34,197,94,0.08)',
+                        fill: true,
+                        tension: 0.35,
+                        pointRadius: 3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function renderTimeByCategoryChart(tickets) {
+        destroyChart('reportTimeByCategoryChartInstance');
+
+        const minutesByCategory = {};
+
+        tickets.forEach(ticket => {
+            const category = capitalizar(getCategoryLabel(ticket));
+            minutesByCategory[category] = (minutesByCategory[category] || 0) + (Number(ticket.timeSpentMinutes) || 0);
+        });
+
+        const entries = sortEntries(minutesByCategory, 6);
+
+        const ctx = document.getElementById('reportTimeByCategoryChart').getContext('2d');
+
+        window.reportTimeByCategoryChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: entries.map(e => e[0]),
+                datasets: [{
+                    label: 'Horas',
+                    data: entries.map(e => Number((e[1] / 60).toFixed(1))),
+                    backgroundColor: chartColors.blue,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+
+    function renderTopLists(tickets, requestersMap, devicesMap) {
+        const requesterCounts = countBy(tickets, ticket => requestersMap[ticket.requesterId] || 'Sin solicitante');
+        renderRanking('reports-top-requesters-list', sortEntries(requesterCounts, 5), 'Sin solicitante');
+
+        const deviceCounts = {};
+
+        tickets.forEach(ticket => {
+            const deviceNames = getDeviceNamesFromTicket(ticket, devicesMap);
+
+            if (!deviceNames.length) return;
+
+            deviceNames.forEach(name => {
+                deviceCounts[name] = (deviceCounts[name] || 0) + 1;
+            });
+        });
+
+        renderRanking('reports-top-devices-list', sortEntries(deviceCounts, 5), 'Sin dispositivo');
+    }
+
+    function renderInventoryCharts(devices) {
+        const totalDevices = devices.length;
+        setText('reports-total-devices', `Total de dispositivos: ${totalDevices}`);
+
+        const categoryCounts = countBy(devices, device => device.category || device.type || 'Sin categoría');
+
+        destroyChart('reportInventoryCategoryChartInstance');
+
+        const categoryEntries = sortEntries(categoryCounts, 8);
+        const categoryCtx = document.getElementById('reportInventoryCategoryChart').getContext('2d');
+
+        window.reportInventoryCategoryChartInstance = new Chart(categoryCtx, {
+            type: 'bar',
+            data: {
+                labels: categoryEntries.map(e => e[0]),
+                datasets: [{
+                    label: '# de dispositivos',
+                    data: categoryEntries.map(e => e[1]),
+                    backgroundColor: chartColors.blue,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
+
+        const computers = devices.filter(device => {
+            const category = `${device.category || ''} ${device.type || ''}`.toLowerCase();
+            return category.includes('comput') || category.includes('pc') || category.includes('laptop');
+        });
+
+        setText('reports-total-computers', `Total de computadores: ${computers.length}`);
+
+        const osCounts = countBy(computers, device => device.os || device.operatingSystem || device.sistemaOperativo || 'Sin SO');
+
+        destroyChart('reportOSChartInstance');
+
+        const osEntries = sortEntries(osCounts);
+        const osCtx = document.getElementById('reportOSChart').getContext('2d');
+
+        window.reportOSChartInstance = new Chart(osCtx, {
+            type: 'doughnut',
+            data: {
+                labels: osEntries.map(e => e[0]),
+                datasets: [{
+                    data: osEntries.map(e => e[1]),
+                    backgroundColor: [
+                        chartColors.blue,
+                        chartColors.green,
+                        chartColors.orange,
+                        chartColors.purple,
+                        chartColors.cyan,
+                        chartColors.gray
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '65%',
+                plugins: {
+                    legend: {
+                        position: 'right'
+                    }
+                }
+            }
+        });
+    }
+
+    generateBtn.addEventListener('click', loadReport);
+
+    exportPdfBtn.addEventListener('click', () => {
+        window.print();
+    });
+
+    loadReport();
+}
     function renderGenericListPage(container, params, configObject, collectionName, icon) { 
         container.innerHTML = genericListPageHTML; 
         setupTableSearch('table-search-input', 'data-table'); 
