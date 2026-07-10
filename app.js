@@ -4060,7 +4060,7 @@ if (quickNoteRawAfterSave) {
                             <p>Actualiza la información del equipo</p>
                         </div>
                     </div>
-                    <button type="button" class="computer-edit-x modal-close-btn">×</button>
+                    <button type="button" class="computer-edit-x" id="close-computer-edit-modal">×</button>
                 </div>
 
                 <form id="computer-edit-modern-form">
@@ -4144,7 +4144,7 @@ if (quickNoteRawAfterSave) {
                             </div>
 
                             <div class="computer-edit-bottom">
-                                <button type="button" class="computer-cancel-btn modal-close-btn">Cancelar</button>
+                                <button type="button" class="computer-cancel-btn" id="cancel-computer-edit-modal">Cancelar</button>
                                 <button type="submit" class="computer-save-btn">Guardar Cambios</button>
                             </div>
                         </div>
@@ -4196,6 +4196,13 @@ if (quickNoteRawAfterSave) {
             </div>
         `;
 
+        document.getElementById('close-computer-edit-modal').addEventListener('click', () => {
+    formModal.classList.add('hidden');
+});
+
+document.getElementById('cancel-computer-edit-modal').addEventListener('click', () => {
+    formModal.classList.add('hidden');
+});
         document.getElementById('computer-edit-modern-form').addEventListener('submit', async (e) => {
             e.preventDefault();
 
