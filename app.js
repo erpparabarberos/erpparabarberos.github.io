@@ -2889,7 +2889,7 @@ if (quickNoteRawAfterSave) {
             const [ticketsSnap, requestersSnap, devicesSnap] = await Promise.all([
                 db.collection('tickets').get(),
                 db.collection('requesters').get(),
-                db.collection('devices').get()
+                db.collection('inventory').get()
             ]);
 
             const requestersMap = {};
@@ -3186,93 +3186,110 @@ if (quickNoteRawAfterSave) {
 
         renderRanking('reports-top-devices-list', sortEntries(deviceCounts, 5), 'Sin dispositivo');
     }
+       function renderInventoryCharts(devices) {
+    const totalDevices = devices.length;
+    setText('reports-total-devices', `Total de dispositivos: ${totalDevices}`);
 
-    function renderInventoryCharts(devices) {
-        const totalDevices = devices.length;
-        setText('reports-total-devices', `Total de dispositivos: ${totalDevices}`);
+    const categoryLabels = {
+        computers: 'Computadores',
+        phones: 'Teléfonos',
+        cameras: 'Cámaras',
+        modems: 'Módems',
+        communicators: 'Comunicadores',
+        network: 'Dispositivos de Red',
+        printers: 'Impresoras'
+    };
 
-        const categoryCounts = countBy(devices, device => device.category || device.type || 'Sin categoría');
+    const categoryCounts = {};
 
-        destroyChart('reportInventoryCategoryChartInstance');
+    devices.forEach(device => {
+        const categoryKey = device.category || 'Sin categoría';
+        const label = categoryLabels[categoryKey] || capitalizar(categoryKey);
 
-        const categoryEntries = sortEntries(categoryCounts, 8);
-        const categoryCtx = document.getElementById('reportInventoryCategoryChart').getContext('2d');
+        categoryCounts[label] = (categoryCounts[label] || 0) + 1;
+    });
 
-        window.reportInventoryCategoryChartInstance = new Chart(categoryCtx, {
-            type: 'bar',
-            data: {
-                labels: categoryEntries.map(e => e[0]),
-                datasets: [{
-                    label: '# de dispositivos',
-                    data: categoryEntries.map(e => e[1]),
-                    backgroundColor: chartColors.blue,
-                    borderRadius: 4
-                }]
+    destroyChart('reportInventoryCategoryChartInstance');
+
+    const categoryEntries = sortEntries(categoryCounts, 8);
+    const categoryCtx = document.getElementById('reportInventoryCategoryChart').getContext('2d');
+
+    window.reportInventoryCategoryChartInstance = new Chart(categoryCtx, {
+        type: 'bar',
+        data: {
+            labels: categoryEntries.map(e => e[0]),
+            datasets: [{
+                label: '# de dispositivos',
+                data: categoryEntries.map(e => e[1]),
+                backgroundColor: chartColors.blue,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
             },
-            options: {
-                indexAxis: 'y',
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                },
-                scales: {
-                    x: {
-                        beginAtZero: true,
-                        ticks: {
-                            precision: 0
-                        }
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0
                     }
                 }
             }
-        });
+        }
+    });
 
-        const computers = devices.filter(device => {
-            const category = `${device.category || ''} ${device.type || ''}`.toLowerCase();
-            return category.includes('comput') || category.includes('pc') || category.includes('laptop');
-        });
+    const computers = devices.filter(device => device.category === 'computers');
 
-        setText('reports-total-computers', `Total de computadores: ${computers.length}`);
+    setText('reports-total-computers', `Total de computadores: ${computers.length}`);
 
-        const osCounts = countBy(computers, device => device.os || device.operatingSystem || device.sistemaOperativo || 'Sin SO');
+    const osCounts = {};
 
-        destroyChart('reportOSChartInstance');
+    computers.forEach(computer => {
+        const osValue = computer.os || 'Sin SO';
+        osCounts[osValue] = (osCounts[osValue] || 0) + 1;
+    });
 
-        const osEntries = sortEntries(osCounts);
-        const osCtx = document.getElementById('reportOSChart').getContext('2d');
+    destroyChart('reportOSChartInstance');
 
-        window.reportOSChartInstance = new Chart(osCtx, {
-            type: 'doughnut',
-            data: {
-                labels: osEntries.map(e => e[0]),
-                datasets: [{
-                    data: osEntries.map(e => e[1]),
-                    backgroundColor: [
-                        chartColors.blue,
-                        chartColors.green,
-                        chartColors.orange,
-                        chartColors.purple,
-                        chartColors.cyan,
-                        chartColors.gray
-                    ],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                cutout: '65%',
-                plugins: {
-                    legend: {
-                        position: 'right'
-                    }
+    const osEntries = sortEntries(osCounts);
+    const osCtx = document.getElementById('reportOSChart').getContext('2d');
+
+    window.reportOSChartInstance = new Chart(osCtx, {
+        type: 'doughnut',
+        data: {
+            labels: osEntries.map(e => e[0]),
+            datasets: [{
+                data: osEntries.map(e => e[1]),
+                backgroundColor: [
+                    chartColors.blue,
+                    chartColors.green,
+                    chartColors.orange,
+                    chartColors.purple,
+                    chartColors.cyan,
+                    chartColors.gray
+                ],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '65%',
+            plugins: {
+                legend: {
+                    position: 'right'
                 }
             }
-        });
-    }
-
+        }
+    });
+}
     generateBtn.addEventListener('click', loadReport);
 
     exportPdfBtn.addEventListener('click', () => {
