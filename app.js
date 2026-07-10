@@ -17,7 +17,155 @@
 
     // --- 3. TEMPLATES HTML ---
     const dashboardHTML = `
-    const newTITicketFormHTML = `
+<section class="pb-dashboard">
+
+    <div class="pb-dashboard-header">
+        <div>
+            <h1>Panel de control</h1>
+            <p>Resumen general de la gestión de soportes y actividad del módulo.</p>
+        </div>
+
+        <div class="pb-dashboard-filters">
+            <input type="date" id="dashboard-date-filter">
+            <select id="dashboard-requester-filter">
+                <option value="">Todos los solicitantes</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="pb-dashboard-grid-top">
+
+        <div class="pb-card pb-chart-card">
+            <div class="pb-card-header">
+                <h3>Tendencia de soportes</h3>
+                <select id="dashboard-range-filter">
+                    <option value="7">Últimos 7 días</option>
+                    <option value="15">Últimos 15 días</option>
+                    <option value="30">Últimos 30 días</option>
+                </select>
+            </div>
+            <div class="pb-chart-container">
+                <canvas id="supportTrendChart"></canvas>
+            </div>
+        </div>
+
+        <div class="pb-card pb-heatmap-card">
+            <div class="pb-card-header">
+                <h3>Actividad mensual</h3>
+                <span id="dashboard-month-label">Mes actual</span>
+            </div>
+            <div id="monthly-activity-grid" class="pb-month-grid"></div>
+            <div class="pb-heatmap-legend">
+                <span><i class="level-0"></i>0</span>
+                <span><i class="level-1"></i>1–5</span>
+                <span><i class="level-2"></i>6–10</span>
+                <span><i class="level-3"></i>11–20</span>
+                <span><i class="level-4"></i>20+</span>
+            </div>
+        </div>
+
+        <div class="pb-card pb-summary-card">
+            <h3>Resumen general</h3>
+
+            <div class="pb-summary-item blue">
+                <div class="pb-summary-icon">▣</div>
+                <div>
+                    <span>Total del mes</span>
+                    <strong id="dash-total-month">0</strong>
+                </div>
+            </div>
+
+            <div class="pb-summary-item green">
+                <div class="pb-summary-icon">◷</div>
+                <div>
+                    <span>Tiempo invertido</span>
+                    <strong id="dash-time-month">0h 0m</strong>
+                </div>
+            </div>
+
+            <div class="pb-summary-item purple">
+                <div class="pb-summary-icon">✓</div>
+                <div>
+                    <span>Casos cerrados</span>
+                    <strong id="dash-closed-month">0</strong>
+                </div>
+            </div>
+
+            <div class="pb-summary-item orange">
+                <div class="pb-summary-icon">⌛</div>
+                <div>
+                    <span>Casos en seguimiento</span>
+                    <strong id="dash-followup-month">0</strong>
+                </div>
+            </div>
+
+            <a href="#estadisticas" class="pb-report-link">Ver reporte completo →</a>
+        </div>
+
+    </div>
+
+    <div class="pb-kpi-row">
+        <div class="pb-kpi-card blue">
+            <span>Total del mes</span>
+            <strong id="kpi-total-month">0</strong>
+            <small>Soportes registrados</small>
+        </div>
+
+        <div class="pb-kpi-card green">
+            <span>Tiempo invertido</span>
+            <strong id="kpi-time-month">0h 0m</strong>
+            <small>Tiempo total registrado</small>
+        </div>
+
+        <div class="pb-kpi-card purple">
+            <span>Casos cerrados</span>
+            <strong id="kpi-closed-month">0</strong>
+            <small>Finalizados este mes</small>
+        </div>
+
+        <div class="pb-kpi-card orange">
+            <span>Casos en seguimiento</span>
+            <strong id="kpi-followup-month">0</strong>
+            <small>Velocity, Siigo o pendientes</small>
+        </div>
+    </div>
+
+    <div class="pb-dashboard-grid-bottom">
+
+        <div class="pb-card">
+            <div class="pb-card-header">
+                <h3>Solicitantes frecuentes</h3>
+                <a href="#tickets">Ver todos →</a>
+            </div>
+            <div id="top-requesters-dashboard" class="pb-requester-list"></div>
+        </div>
+
+        <div class="pb-card">
+            <div class="pb-card-header">
+                <h3>Categorías más comunes</h3>
+            </div>
+            <div class="pb-category-layout">
+                <div class="pb-donut-wrap">
+                    <canvas id="categoryDashboardChart"></canvas>
+                </div>
+                <div id="category-dashboard-list" class="pb-category-list"></div>
+            </div>
+        </div>
+
+        <div class="pb-card">
+            <div class="pb-card-header">
+                <h3>Actividad reciente</h3>
+                <a href="#tickets">Ver todo →</a>
+            </div>
+            <div id="recent-activity-dashboard" class="pb-activity-list"></div>
+        </div>
+
+    </div>
+
+</section>
+`;
+
+const newTITicketFormHTML = `
 <section class="support-page">
 
   <div class="support-header">
