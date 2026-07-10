@@ -365,6 +365,184 @@ const newTITicketFormHTML = `
   </div>
 </section>
 `;
+    const computerEditModernTemplate = (item = {}, relatedTickets = []) => {
+    const formatDate = (value) => value || '';
+    const statusText = item.lifecycleStatus || item.status || 'N/A';
+
+    return `
+    <div class="computer-edit-modern">
+        <div class="computer-edit-header">
+            <div class="computer-edit-header-left">
+                <div class="computer-edit-icon">💻</div>
+                <div>
+                    <h2>Editar Computador</h2>
+                    <p>Actualiza la información del equipo</p>
+                </div>
+            </div>
+            <button type="button" class="computer-edit-close modal-close-x">×</button>
+        </div>
+
+        <div class="computer-edit-body">
+            <div class="computer-edit-main">
+                <div class="computer-edit-grid">
+                    <div class="field-group">
+                        <label>MARCA</label>
+                        <select id="edit-brand">
+                            <option value="${item.brand || ''}" selected>${item.brand || 'Selecciona marca'}</option>
+                            <option>HP</option>
+                            <option>ASUS</option>
+                            <option>LENOVO</option>
+                            <option>Apple</option>
+                            <option>Dell</option>
+                            <option>Acer</option>
+                        </select>
+                    </div>
+
+                    <div class="field-group">
+                        <label>MODELO</label>
+                        <input id="edit-model" type="text" value="${item.model || ''}">
+                    </div>
+
+                    <div class="field-group">
+                        <label>SERIAL</label>
+                        <input id="edit-serial" type="text" value="${item.serial || ''}">
+                    </div>
+
+                    <div class="field-group">
+                        <label>USUARIO</label>
+                        <input id="edit-user" type="text" value="${item.user || ''}">
+                    </div>
+
+                    <div class="field-group">
+                        <label>CPU</label>
+                        <input id="edit-cpu" type="text" value="${item.cpu || ''}">
+                    </div>
+
+                    <div class="field-group">
+                        <label>RAM (GB)</label>
+                        <input id="edit-ram" type="text" value="${item.ram || ''}">
+                    </div>
+
+                    <div class="field-group">
+                        <label>ALMACENAMIENTO (GB)</label>
+                        <input id="edit-storage" type="text" value="${item.storage || ''}">
+                    </div>
+
+                    <div class="field-group">
+                        <label>LICENCIA DE SO ASIGNADA</label>
+                        <input id="edit-os" type="text" value="${item.os || ''}">
+                    </div>
+
+                    <div class="field-group">
+                        <label>SEDE</label>
+                        <select id="edit-sede">
+                            <option value="${item.sede || ''}" selected>${item.sede || 'Selecciona sede'}</option>
+                            <option>LOC-1: Administrativo</option>
+                            <option>LOC-2: Inventarios Parabarberos</option>
+                            <option>LOC-3: Centro</option>
+                            <option>LOC-5: Pasto</option>
+                        </select>
+                    </div>
+
+                    <div class="field-group small">
+                        <label>FECHA DE COMPRA</label>
+                        <input id="edit-purchase-date" type="date" value="${formatDate(item.purchaseDate)}">
+                    </div>
+
+                    <div class="field-group small">
+                        <label>FIN DE GARANTÍA</label>
+                        <input id="edit-warranty-date" type="date" value="${formatDate(item.warrantyEndDate)}">
+                    </div>
+
+                    <div class="field-group small">
+                        <label>ESTADO</label>
+                        <select id="edit-status">
+                            <option value="${statusText}" selected>${statusText}</option>
+                            <option>En Uso</option>
+                            <option>Producción</option>
+                            <option>En Almacén</option>
+                            <option>Retirado</option>
+                            <option>Mantenimiento TI</option>
+                            <option>En Reparación</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="field-group full">
+                    <label>OBSERVACIONES</label>
+                    <textarea id="edit-observations" rows="4" placeholder="Escribe observaciones (opcional)...">${item.observations || ''}</textarea>
+                </div>
+
+                <div class="computer-edit-footer">
+                    <button type="button" class="btn-cancel modal-close-btn">Cancelar</button>
+                    <button type="button" class="btn-save" id="save-computer-edit-btn" data-id="${item.id || ''}">Guardar Cambios</button>
+                </div>
+            </div>
+
+            <aside class="computer-edit-sidebar">
+                <div class="sidebar-card">
+                    <h3>Resumen del equipo</h3>
+
+                    <div class="sidebar-row">
+                        <span class="sidebar-label">Código / Serial</span>
+                        <strong>${item.serial || item.id || 'N/A'}</strong>
+                    </div>
+
+                    <div class="sidebar-row">
+                        <span class="sidebar-label">Categoría</span>
+                        <strong>Computadores de escritorio</strong>
+                    </div>
+
+                    <div class="sidebar-row">
+                        <span class="sidebar-label">Estado</span>
+                        <strong class="green-dot">${statusText}</strong>
+                    </div>
+
+                    <div class="sidebar-row">
+                        <span class="sidebar-label">Garantía</span>
+                        <strong>${item.warrantyEndDate || 'N/A'}</strong>
+                    </div>
+
+                    <div class="sidebar-row">
+                        <span class="sidebar-label">Usuario actual</span>
+                        <strong>${item.user || 'N/A'}</strong>
+                    </div>
+
+                    <div class="sidebar-row">
+                        <span class="sidebar-label">Sede</span>
+                        <strong>${item.sede || 'N/A'}</strong>
+                    </div>
+                </div>
+
+                <div class="sidebar-card">
+                    <h3>Últimos Tickets Asociados</h3>
+
+                    <div class="related-tickets-list">
+                        ${
+                            relatedTickets.length
+                                ? relatedTickets.slice(0, 2).map(ticket => `
+                                    <div class="related-ticket-item">
+                                        <a href="#">#${ticket.ticketNumber || ticket.id || 'TICKET'}</a>
+                                        <p>${ticket.title || ticket.description || 'Sin descripción'}</p>
+                                        <small>${ticket.createdAt || ticket.createdDate || ''}</small>
+                                        <span class="ticket-badge closed">${ticket.status || 'CERRADO'}</span>
+                                    </div>
+                                `).join('')
+                                : `
+                                    <div class="related-ticket-empty">
+                                        No hay tickets asociados.
+                                    </div>
+                                `
+                        }
+
+                        <a href="#" class="see-all-tickets">Ver todos los tickets (${relatedTickets.length}) →</a>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+    `;
+};
     const newPlatformTicketFormHTML = `
 <section class="support-page">
 
