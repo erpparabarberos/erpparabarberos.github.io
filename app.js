@@ -4041,9 +4041,9 @@ if (quickNoteRawAfterSave) {
             ? relatedTickets.slice(0, 2).map(ticket => `
                 <div class="computer-related-ticket">
                     <div>
-                        <a href="#" class="view-ticket-btn" data-id="${ticket.id}">#${ticket.id}</a>
-                        <p>${ticket.title || ticket.novelty || ticket.description || 'Sin descripción'}</p>
-                        <small>📅 ${formatTicketDate(ticket)}</small>
+                    <a href="#" class="computer-ticket-link" data-id="${ticket.id}">#${ticket.id}</a>
+                    <p class="computer-ticket-text">${ticket.title || ticket.novelty || ticket.description || 'Sin descripción'}</p>
+                    <small class="computer-ticket-date">📅 ${formatTicketDate(ticket)}</small>
                     </div>
                     <span>${ticket.status || 'CERRADO'}</span>
                 </div>
@@ -4060,7 +4060,6 @@ if (quickNoteRawAfterSave) {
                             <p>Actualiza la información del equipo</p>
                         </div>
                     </div>
-                    <button type="button" class="computer-edit-x" id="close-computer-edit-modal">×</button>
                 </div>
 
                 <form id="computer-edit-modern-form">
@@ -4195,11 +4194,6 @@ if (quickNoteRawAfterSave) {
                 </form>
             </div>
         `;
-
-        document.getElementById('close-computer-edit-modal').addEventListener('click', () => {
-    formModal.classList.add('hidden');
-});
-
 document.getElementById('cancel-computer-edit-modal').addEventListener('click', () => {
     formModal.classList.add('hidden');
 });
