@@ -1154,7 +1154,6 @@ const newTITicketFormHTML = `
             <div class="inventory-modern-main-icon">💻</div>
             <div>
                 <h1 id="inventory-page-title">Inventario</h1>
-                <p>Gestiona y consulta todos los activos de TI de la organización.</p>
             </div>
         </div>
     </div>
