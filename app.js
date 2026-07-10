@@ -744,7 +744,160 @@ const newTITicketFormHTML = `
 </section>
 `;
     const ticketListHTML = `<div class="add-new-button-container"><button class="export-btn csv" data-format="csv">Exportar a Excel (CSV)</button><button class="export-btn pdf" data-format="pdf">Exportar a PDF</button></div><div class="card"><h2 id="tickets-list-title">Todos los Tickets</h2><div class="table-wrapper"><table id="data-table"><thead><tr><th># Ticket</th><th>Tipo</th><th>Título/Novedad</th><th>Solicitante</th><th>Fecha Creación</th><th>Fecha Cierre</th><th>Estado</th><th>Acciones</th></tr></thead><tbody></tbody></table></div></div>`;
-    const historyPageHTML = `<h1>🔍 Historial y Búsqueda Avanzada</h1><div class="card"><form id="history-search-form"><div class="search-filters-grid"><div class="form-group"><label for="search-device">Dispositivo (por código)</label><input type="text" id="search-device" list="device-list-search" placeholder="Buscar por código..."></div><datalist id="device-list-search"></datalist><div class="form-group"><label for="search-requester">Solicitante</label><select id="search-requester"><option value="">Todos</option></select></div><div class="form-group"><label for="search-location">Ubicación</label><select id="search-location"><option value="">Todas</option></select></div><div class="form-group"><label for="search-status">Estado</label><select id="search-status"><option value="">Todos</option><option value="abierto">Abierto</option><option value="en-curso">En curso</option><option value="cerrado">Cerrado</option></select></div><div class="form-group"><label for="search-priority">Prioridad</label><select id="search-priority"><option value="">Todas</option><option value="baja">Baja</option><option value="media">Media</option><option value="alta">Alta</option></select></div><div class="form-group"><label for="search-ticket-type">Tipo de Ticket</label><select id="search-ticket-type"><option value="">Todos</option><option value="ti">TI</option><option value="velocity">Velocity</option><option value="siigo">Siigo</option></select></div><div class="form-group"><label for="search-start-date">Creado Desde</label><input type="date" id="search-start-date"></div><div class="form-group"><label for="search-end-date">Creado Hasta</label><input type="date" id="search-end-date"></div><div class="form-group"><button type="submit" class="primary" style="width:100%">Buscar</button></div></div></form></div><div class="add-new-button-container"><button class="export-btn csv" data-format="csv">Exportar a Excel (CSV)</button><button class="export-btn pdf" data-format="pdf">Exportar a PDF</button></div><div class="card"><h2 id="history-results-title">Resultados</h2><div class="table-wrapper"><table id="data-table"><thead><tr><th># Ticket</th><th>Título</th><th>Tipo</th><th>Ticket del Caso</th><th>Solicitante</th><th>Fecha Creación</th><th>Fecha Cierre</th><th>Estado</th><th>Acciones</th></tr></thead><tbody></tbody></table></div></div>`;
+    const historyPageHTML = `
+<section class="history-modern-page">
+
+    <div class="history-modern-header">
+        <div class="history-modern-title">
+            <div class="history-title-icon">🔎</div>
+            <div>
+                <h1>Historial de soportes</h1>
+                <p>Resumen de actividad y casos registrados.</p>
+            </div>
+        </div>
+
+        <div class="history-export-actions">
+            <button class="history-export-btn excel export-btn csv" data-format="csv">Exportar Excel</button>
+            <button class="history-export-btn pdf export-btn pdf" data-format="pdf">Exportar PDF</button>
+        </div>
+    </div>
+
+    <div class="history-kpi-grid">
+        <div class="history-kpi-card blue">
+            <div class="history-kpi-icon">🎫</div>
+            <div>
+                <strong id="history-total-count">0</strong>
+                <span>Total de tickets</span>
+                <small>Todos los estados</small>
+            </div>
+        </div>
+
+        <div class="history-kpi-card green">
+            <div class="history-kpi-icon">✓</div>
+            <div>
+                <strong id="history-closed-count">0</strong>
+                <span>Cerrados</span>
+                <small>Casos finalizados</small>
+            </div>
+        </div>
+
+        <div class="history-kpi-card orange">
+            <div class="history-kpi-icon">◷</div>
+            <div>
+                <strong id="history-progress-count">0</strong>
+                <span>En curso</span>
+                <small>Casos en seguimiento</small>
+            </div>
+        </div>
+
+        <div class="history-kpi-card purple">
+            <div class="history-kpi-icon">⌛</div>
+            <div>
+                <strong id="history-pending-count">0</strong>
+                <span>Pendientes</span>
+                <small>Notas o casos pendientes</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="history-filter-card">
+        <form id="history-search-form" class="history-filter-form">
+
+            <div class="history-filter-group search">
+                <label for="history-search-text">Buscar</label>
+                <input type="text" id="history-search-text" placeholder="Buscar por código, título o solicitante...">
+            </div>
+
+            <div class="history-filter-group">
+                <label for="search-ticket-type">Tipo</label>
+                <select id="search-ticket-type">
+                    <option value="">Todos</option>
+                    <option value="ti">TI</option>
+                    <option value="velocity">Velocity</option>
+                    <option value="siigo">Siigo</option>
+                    <option value="nota">Nota</option>
+                </select>
+            </div>
+
+            <div class="history-filter-group">
+                <label for="search-status">Estado</label>
+                <select id="search-status">
+                    <option value="">Todos</option>
+                    <option value="abierto">Abierto</option>
+                    <option value="en-curso">En curso</option>
+                    <option value="cerrado">Cerrado</option>
+                    <option value="pendiente">Pendiente</option>
+                    <option value="convertida">Convertida</option>
+                </select>
+            </div>
+
+            <div class="history-filter-group">
+                <label for="search-requester">Solicitante</label>
+                <select id="search-requester">
+                    <option value="">Todos</option>
+                </select>
+            </div>
+
+            <div class="history-filter-group">
+                <label for="search-start-date">Fecha desde</label>
+                <input type="date" id="search-start-date">
+            </div>
+
+            <div class="history-filter-group">
+                <label for="search-end-date">Fecha hasta</label>
+                <input type="date" id="search-end-date">
+            </div>
+
+            <div class="history-filter-actions">
+                <button type="submit" class="history-filter-btn">Filtrar</button>
+                <button type="button" id="history-clear-btn" class="history-clear-btn">Limpiar</button>
+            </div>
+
+        </form>
+    </div>
+
+    <div class="history-timeline-card">
+        <div class="history-timeline-header">
+            <div>
+                <h2>Línea de tiempo de actividad</h2>
+                <p id="history-results-counter">Mostrando resultados</p>
+            </div>
+
+            <div class="history-sort-box">
+                <label for="history-sort-select">Ordenar por:</label>
+                <select id="history-sort-select">
+                    <option value="desc">Más recientes</option>
+                    <option value="asc">Más antiguos</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="history-timeline-list" class="history-timeline-list"></div>
+
+        <div class="history-load-more-wrap">
+            <button type="button" id="history-load-more" class="history-load-more-btn">Cargar más</button>
+        </div>
+    </div>
+
+    <table id="data-table" style="display:none;">
+        <thead>
+            <tr>
+                <th># Ticket</th>
+                <th>Título</th>
+                <th>Tipo</th>
+                <th>Solicitante</th>
+                <th>Fecha Creación</th>
+                <th>Fecha Cierre</th>
+                <th>Estado</th>
+                <th>Prioridad</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+</section>
+`;
     const knowledgeBaseHTML = `<h1>💡 Base de Conocimiento</h1><div class="add-new-button-container"><input type="text" id="kb-search-input" placeholder="🔍 Buscar en artículos y manuales..." style="flex-grow: 1; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);"><button id="add-manual-btn" class="primary">Crear Manual</button><button id="add-kb-article-btn" class="btn-blue">Crear Artículo</button></div><div id="kb-grid-container" class="kb-grid"></div>`;
     const statisticsHTML = `<div style="display: flex; justify-content: space-between; align-items: center;"><h1>📈 Centro de Análisis</h1><button class="primary" id="export-stats-pdf">Exportar a PDF</button></div><div id="stats-content"><div class="card"><h2>Filtro de Periodo</h2><div class="stats-filters"><div class="form-group"><label for="start-date">Fecha de Inicio</label><input type="date" id="start-date"></div><div class="form-group"><label for="end-date">Fecha de Fin</label><input type="date" id="end-date"></div><button id="generate-report-btn" class="primary">Generar Reporte</button></div></div><h2>Análisis de Tickets</h2><div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 25px;"><div class="card"><h3>Tickets por Prioridad</h3><div class="chart-container"><canvas id="ticketsByPriorityChart"></canvas></div></div><div class="card"><h3>Tickets por Categoría de Dispositivo</h3><div class="chart-container"><canvas id="ticketsByDeviceCategoryChart"></canvas></div></div><div class="card"><h3>Top 5 Dispositivos Problemáticos</h3><ul id="top-devices-list" class="kpi-list"></ul></div><div class="card"><h3>Top 5 Solicitantes</h3><ul id="top-requesters-list" class="kpi-list"></ul></div></div><div class="card"><h3>Flujo de Tickets (Creados vs. Cerrados)</h3><div class="chart-container"><canvas id="ticket-flow-chart"></canvas></div></div><h2 style="margin-top: 40px;">Resumen de Inventario</h2><div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 25px;"><div class="card"><h3>Dispositivos por Categoría</h3><div class="chart-container"><canvas id="inventoryByCategoryChart"></canvas></div></div><div class="card"><h3>Computadores por SO</h3><div class="chart-container"><canvas id="computersByOsChart"></canvas></div></div></div></div>`;
     const genericListPageHTML = `<h1 id="page-title"></h1><div class="add-new-button-container"><button class="export-btn csv" data-format="csv">Exportar a Excel (CSV)</button><button class="export-btn pdf" data-format="pdf">Exportar a PDF</button><button id="add-item-btn" class="btn-blue open-form-modal-btn">Añadir Nuevo</button></div><div class="card"><div class="table-search-container"><input type="text" id="table-search-input" placeholder="🔍 Buscar en la tabla..."></div><h2 id="item-list-title"></h2><div class="table-wrapper"><table id="data-table"><thead id="item-table-head"></thead><tbody id="item-table-body"></tbody></table></div></div>`;
@@ -1956,8 +2109,359 @@ if (quickNoteRawAfterSave) {
     ticketsData.sort((a,b) => (a.numericId || 0) - (b.numericId || 0)); 
     ticketsData.forEach(ticket => { const tr = document.createElement('tr'); const createdAt = ticket.createdAt ? ticket.createdAt.toDate().toLocaleDateString('es-ES') : 'N/A'; const closedAt = ticket.closedAt ? ticket.closedAt.toDate().toLocaleDateString('es-ES') : 'N/A'; const displayTitle = ticket.ticketType === 'ti' ? ticket.title : ticket.descripcionDeLaNovedad; const ticketTypeDisplay = ticket.ticketType ? capitalizar(ticket.ticketType) : 'TI'; tr.innerHTML = `<td>${ticket.id}</td><td><span class="status ${ticketTypeDisplay === 'TI' ? 'status-abierto' : 'status-en-curso'}">${ticketTypeDisplay}</span></td><td>${displayTitle ? (displayTitle.substring(0, 50) + (displayTitle.length > 50 ? '...' : '')) : 'Sin título'}</td><td>${requestersMap[ticket.requesterId] || 'N/A'}</td><td>${createdAt}</td><td>${closedAt}</td><td><span class="status status-${ticket.status}">${capitalizar(ticket.status.replace('-', ' '))}</span></td><td><button class="primary btn-accion-ticket" style="padding: 6px 12px; font-size: 12px; white-space: nowrap; width: auto;" data-id="${ticket.id}">Ver Detalles</button></td>`; tableBody.appendChild(tr); }); }, error => handleFirestoreError(error, tableBody)); }
     
-    async function renderHistoryPage(container) { container.innerHTML = historyPageHTML; const form = document.getElementById('history-search-form'); const deviceDatalist = document.getElementById('device-list-search'); const requesterSelect = document.getElementById('search-requester'); const locationSelect = document.getElementById('search-location'); const resultsTableBody = document.getElementById('data-table').querySelector('tbody'); const requestersMap = {}; const locationsMap = {}; try { const [reqSnap, locSnap, invSnap] = await Promise.all([db.collection('requesters').orderBy('name').get(), db.collection('locations').orderBy('name').get(), db.collection('inventory').get()]); requesterSelect.innerHTML = '<option value="">Todos</option>'; reqSnap.forEach(doc => { requestersMap[doc.id] = doc.data().name; requesterSelect.innerHTML += `<option value="${doc.id}">${doc.data().name}</option>`; }); locationSelect.innerHTML = '<option value="">Todas</option>'; locSnap.forEach(doc => { locationsMap[doc.id] = doc.data().name; locationSelect.innerHTML += `<option value="${doc.id}">${doc.data().name}</option>`; }); const devices = invSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })); deviceDatalist.innerHTML = devices.map(d => `<option value="${d.id}">${d.id}: ${d.brand || ''} ${d.model || ''} (Usuario: ${d.user || 'N/A'})</option>`).join(''); } catch (error) { handleFirestoreError(error, container); return; } form.addEventListener('submit', async (e) => { e.preventDefault(); resultsTableBody.innerHTML = `<tr><td colspan="9">Buscando...</td></tr>`; let query = db.collection('tickets'); const filters = { deviceIds: form['search-device'].value, requesterId: form['search-requester'].value, locationId: form['search-location'].value, status: form['search-status'].value, priority: form['search-priority'].value, ticketType: form['search-ticket-type'].value }; for (const [key, value] of Object.entries(filters)) { if (value) { if (key === 'deviceIds') { query = query.where(key, 'array-contains', value); } else { query = query.where(key, '==', value); } } } const startDateValue = form['search-start-date'].value; const endDateValue = form['search-end-date'].value; if (startDateValue) { const startDate = new Date(startDateValue); startDate.setHours(0, 0, 0, 0); query = query.where('createdAt', '>=', startDate); } if (endDateValue) { const endDate = new Date(endDateValue); endDate.setHours(23, 59, 59, 999); query = query.where('createdAt', '<=', endDate); } try { const snapshot = await query.get(); let tickets = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); tickets.sort((a,b) => (b.createdAt?.toMillis()||0) - (a.createdAt?.toMillis()||0)); resultsTableBody.innerHTML = ''; if (tickets.length === 0) { resultsTableBody.innerHTML = `<tr><td colspan="9">No se encontraron tickets con esos criterios.</td></tr>`; return; } tickets.forEach(ticket => { const tr = document.createElement('tr'); const closedAtText = ticket.closedAt && ticket.closedAt.toDate ? ticket.closedAt.toDate().toLocaleString('es-ES') : 'N/A'; const requesterDisplayName = requestersMap[ticket.requesterId] || 'N/A'; const displayTitle = ticket.ticketType === 'ti' ? ticket.title : ticket.descripcionDeLaNovedad; const ticketTypeDisplay = ticket.ticketType ? capitalizar(ticket.ticketType) : 'TI'; tr.innerHTML = `<td>${ticket.id}</td><td>${displayTitle ? (displayTitle.substring(0, 50) + (displayTitle.length > 50 ? '...' : '')) : 'Sin título'}</td><td><span class="status ${ticketTypeDisplay === 'TI' ? 'status-abierto' : 'status-en-curso'}">${ticketTypeDisplay}</span></td><td>${ticket.ticketDelCaso || 'N/A'}</td><td>${requesterDisplayName}</td><td>${ticket.createdAt.toDate().toLocaleString('es-ES')}</td><td>${closedAtText}</td><td><span class="status status-${ticket.status}">${capitalizar(ticket.status.replace('-', ' '))}</span></td><td><button class="primary btn-accion-ticket" style="padding: 6px 12px; font-size: 12px; white-space: nowrap; width: auto;" data-id="${ticket.id}">Ver Detalles</button></td>`; resultsTableBody.appendChild(tr); }); } catch (error) { handleFirestoreError(error, resultsTableBody); } }); form.dispatchEvent(new Event('submit')); }
-    
+    async function renderHistoryPage(container) {
+    container.innerHTML = historyPageHTML;
+
+    const form = document.getElementById('history-search-form');
+    const searchInput = document.getElementById('history-search-text');
+    const requesterSelect = document.getElementById('search-requester');
+    const typeSelect = document.getElementById('search-ticket-type');
+    const statusSelect = document.getElementById('search-status');
+    const startDateInput = document.getElementById('search-start-date');
+    const endDateInput = document.getElementById('search-end-date');
+    const clearBtn = document.getElementById('history-clear-btn');
+    const sortSelect = document.getElementById('history-sort-select');
+    const timelineList = document.getElementById('history-timeline-list');
+    const loadMoreBtn = document.getElementById('history-load-more');
+    const exportTableBody = document.querySelector('#data-table tbody');
+
+    let allTickets = [];
+    let filteredTickets = [];
+    let currentLimit = 8;
+    const requestersMap = {};
+    const locationsMap = {};
+
+    function safeDate(ticket) {
+        if (ticket.createdAt && ticket.createdAt.toDate) return ticket.createdAt.toDate();
+        if (ticket.registeredAt && ticket.registeredAt.toDate) return ticket.registeredAt.toDate();
+        return null;
+    }
+
+    function safeDateText(ticket) {
+        const date = safeDate(ticket);
+        return date ? date.toLocaleString('es-ES') : 'N/A';
+    }
+
+    function safeClosedText(ticket) {
+        return ticket.closedAt && ticket.closedAt.toDate
+            ? ticket.closedAt.toDate().toLocaleString('es-ES')
+            : 'N/A';
+    }
+
+    function getTitle(ticket) {
+        return ticket.title ||
+            ticket.description ||
+            ticket.descripcionDeLaNovedad ||
+            ticket.novelty ||
+            'Sin título';
+    }
+
+    function getTypeLabel(type) {
+        const labels = {
+            ti: 'TI',
+            velocity: 'Velocity',
+            siigo: 'Siigo',
+            nota: 'Nota'
+        };
+
+        return labels[type] || capitalizar(type || 'TI');
+    }
+
+    function getStatusLabel(status) {
+        const labels = {
+            abierto: 'Abierto',
+            'en-curso': 'En curso',
+            cerrado: 'Cerrado',
+            pendiente: 'Pendiente',
+            convertida: 'Convertida'
+        };
+
+        return labels[status] || capitalizar(status || 'Sin estado');
+    }
+
+    function getPriorityLabel(priority) {
+        if (!priority) return 'Media';
+        return capitalizar(priority);
+    }
+
+    function getTypeIcon(type) {
+        if (type === 'velocity') return '⚡';
+        if (type === 'siigo') return 'S';
+        if (type === 'nota') return '📝';
+        return '🎧';
+    }
+
+    function getTypeClass(type) {
+        if (type === 'velocity') return 'velocity';
+        if (type === 'siigo') return 'siigo';
+        if (type === 'nota') return 'nota';
+        return 'ti';
+    }
+
+    function getDayGroupLabel(date) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+
+        const target = new Date(date);
+        target.setHours(0, 0, 0, 0);
+
+        if (target.getTime() === today.getTime()) return 'Hoy';
+        if (target.getTime() === yesterday.getTime()) return 'Ayer';
+
+        return date.toLocaleDateString('es-ES', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+    }
+
+    function matchesDateRange(ticket) {
+        const ticketDate = safeDate(ticket);
+        if (!ticketDate) return false;
+
+        if (startDateInput.value) {
+            const start = new Date(startDateInput.value);
+            start.setHours(0, 0, 0, 0);
+
+            if (ticketDate < start) return false;
+        }
+
+        if (endDateInput.value) {
+            const end = new Date(endDateInput.value);
+            end.setHours(23, 59, 59, 999);
+
+            if (ticketDate > end) return false;
+        }
+
+        return true;
+    }
+
+    function applyFilters() {
+        const searchTerm = searchInput.value.trim().toLowerCase();
+        const requesterValue = requesterSelect.value;
+        const typeValue = typeSelect.value;
+        const statusValue = statusSelect.value;
+
+        filteredTickets = allTickets.filter(ticket => {
+            const title = getTitle(ticket).toLowerCase();
+            const requesterName = (requestersMap[ticket.requesterId] || '').toLowerCase();
+            const id = ticket.id.toLowerCase();
+
+            const matchSearch = !searchTerm ||
+                id.includes(searchTerm) ||
+                title.includes(searchTerm) ||
+                requesterName.includes(searchTerm);
+
+            const matchRequester = !requesterValue || ticket.requesterId === requesterValue;
+            const matchType = !typeValue || ticket.ticketType === typeValue;
+            const matchStatus = !statusValue || ticket.status === statusValue;
+            const matchDate = matchesDateRange(ticket);
+
+            return matchSearch && matchRequester && matchType && matchStatus && matchDate;
+        });
+
+        filteredTickets.sort((a, b) => {
+            const dateA = safeDate(a)?.getTime() || 0;
+            const dateB = safeDate(b)?.getTime() || 0;
+
+            return sortSelect.value === 'asc' ? dateA - dateB : dateB - dateA;
+        });
+
+        currentLimit = 8;
+
+        renderSummary();
+        renderTimeline();
+        renderExportTable();
+    }
+
+    function renderSummary() {
+        const total = filteredTickets.length;
+        const closed = filteredTickets.filter(t => t.status === 'cerrado').length;
+        const progress = filteredTickets.filter(t => t.status === 'en-curso' || t.status === 'abierto').length;
+        const pending = filteredTickets.filter(t => t.status === 'pendiente').length;
+
+        document.getElementById('history-total-count').textContent = total;
+        document.getElementById('history-closed-count').textContent = closed;
+        document.getElementById('history-progress-count').textContent = progress;
+        document.getElementById('history-pending-count').textContent = pending;
+
+        document.getElementById('history-results-counter').textContent =
+            `Mostrando ${Math.min(currentLimit, total)} de ${total} resultados`;
+    }
+
+    function renderTimeline() {
+        const visibleTickets = filteredTickets.slice(0, currentLimit);
+
+        if (visibleTickets.length === 0) {
+            timelineList.innerHTML = `
+                <div class="history-empty-state">
+                    No se encontraron soportes con esos filtros.
+                </div>
+            `;
+
+            loadMoreBtn.style.display = 'none';
+            document.getElementById('history-results-counter').textContent = 'Sin resultados';
+            return;
+        }
+
+        let html = '';
+        let lastGroup = '';
+
+        visibleTickets.forEach(ticket => {
+            const ticketDate = safeDate(ticket);
+            const groupLabel = ticketDate ? getDayGroupLabel(ticketDate) : 'Sin fecha';
+            const dateText = ticketDate ? ticketDate.toLocaleDateString('es-ES') : 'N/A';
+            const timeText = ticketDate ? ticketDate.toLocaleTimeString('es-ES', {
+                hour: '2-digit',
+                minute: '2-digit'
+            }) : 'N/A';
+
+            if (groupLabel !== lastGroup) {
+                html += `
+                    <div class="history-day-group">
+                        <div class="history-day-label">
+                            <strong>${groupLabel}</strong>
+                            <span>${dateText}</span>
+                        </div>
+                    </div>
+                `;
+
+                lastGroup = groupLabel;
+            }
+
+            const typeClass = getTypeClass(ticket.ticketType);
+            const requester = requestersMap[ticket.requesterId] || 'Sin solicitante';
+            const location = locationsMap[ticket.locationId] || ticket.locationId || 'Sin sede';
+            const title = getTitle(ticket);
+            const shortTitle = title.length > 70 ? title.substring(0, 70) + '...' : title;
+
+            html += `
+                <div class="history-timeline-row">
+                    <div class="history-row-time">
+                        <span>${timeText}</span>
+                        <i class="${typeClass}"></i>
+                    </div>
+
+                    <div class="history-row-card">
+                        <div class="history-row-main">
+                            <div class="history-row-ticket">
+                                <small>${ticket.id}</small>
+                                <strong>${shortTitle}</strong>
+                                <span>${requester} · ${location}</span>
+                            </div>
+
+                            <div class="history-row-field">
+                                <label>Tipo</label>
+                                <span class="history-pill type ${typeClass}">
+                                    ${getTypeIcon(ticket.ticketType)} ${getTypeLabel(ticket.ticketType)}
+                                </span>
+                            </div>
+
+                            <div class="history-row-field">
+                                <label>Estado</label>
+                                <span class="history-pill state ${ticket.status || 'abierto'}">
+                                    ${getStatusLabel(ticket.status)}
+                                </span>
+                            </div>
+
+                            <div class="history-row-field">
+                                <label>Prioridad</label>
+                                <span class="history-pill priority ${(ticket.priority || 'media').toLowerCase()}">
+                                    ${getPriorityLabel(ticket.priority)}
+                                </span>
+                            </div>
+
+                            <button class="history-view-btn btn-accion-ticket" data-id="${ticket.id}" title="Ver detalles">👁</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        timelineList.innerHTML = html;
+
+        loadMoreBtn.style.display = filteredTickets.length > currentLimit ? 'inline-flex' : 'none';
+
+        document.getElementById('history-results-counter').textContent =
+            `Mostrando ${Math.min(currentLimit, filteredTickets.length)} de ${filteredTickets.length} resultados`;
+    }
+
+    function renderExportTable() {
+        exportTableBody.innerHTML = '';
+
+        filteredTickets.forEach(ticket => {
+            const tr = document.createElement('tr');
+            const title = getTitle(ticket);
+            const requester = requestersMap[ticket.requesterId] || 'N/A';
+
+            tr.innerHTML = `
+                <td>${ticket.id}</td>
+                <td>${title}</td>
+                <td>${getTypeLabel(ticket.ticketType)}</td>
+                <td>${requester}</td>
+                <td>${safeDateText(ticket)}</td>
+                <td>${safeClosedText(ticket)}</td>
+                <td>${getStatusLabel(ticket.status)}</td>
+                <td>${getPriorityLabel(ticket.priority)}</td>
+                <td>Ver detalles</td>
+            `;
+
+            exportTableBody.appendChild(tr);
+        });
+    }
+
+    try {
+        const [ticketsSnap, reqSnap, locSnap] = await Promise.all([
+            db.collection('tickets').get(),
+            db.collection('requesters').orderBy('name').get(),
+            db.collection('locations').orderBy('name').get()
+        ]);
+
+        requesterSelect.innerHTML = '<option value="">Todos</option>';
+
+        reqSnap.forEach(doc => {
+            requestersMap[doc.id] = doc.data().name;
+            requesterSelect.innerHTML += `<option value="${doc.id}">${doc.data().name}</option>`;
+        });
+
+        locSnap.forEach(doc => {
+            locationsMap[doc.id] = doc.data().name;
+        });
+
+        allTickets = ticketsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+            .filter(ticket => safeDate(ticket));
+
+        applyFilters();
+
+    } catch (error) {
+        console.error('Error cargando historial:', error);
+        timelineList.innerHTML = `
+            <div class="history-empty-state">
+                No se pudo cargar el historial. Revisa la consola.
+            </div>
+        `;
+    }
+
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        applyFilters();
+    });
+
+    clearBtn.addEventListener('click', () => {
+        form.reset();
+        applyFilters();
+    });
+
+    sortSelect.addEventListener('change', applyFilters);
+
+    loadMoreBtn.addEventListener('click', () => {
+        currentLimit += 8;
+        renderTimeline();
+    });
+}
     async function renderEstadisticas(container) { container.innerHTML = statisticsHTML; const generateBtn = document.getElementById('generate-report-btn'); document.getElementById('export-stats-pdf').addEventListener('click', exportStatsToPDF); let charts = {}; const chartContexts = { ticketsByPriority: document.getElementById('ticketsByPriorityChart').getContext('2d'), ticketsByDeviceCategory: document.getElementById('ticketsByDeviceCategoryChart').getContext('2d'), ticketFlow: document.getElementById('ticket-flow-chart').getContext('2d'), inventoryByCategory: document.getElementById('inventoryByCategoryChart').getContext('2d'), computersByOs: document.getElementById('computersByOsChart').getContext('2d') }; const topDevicesList = document.getElementById('top-devices-list'); const topRequestersList = document.getElementById('top-requesters-list'); const startDateInput = document.getElementById('start-date'); const endDateInput = document.getElementById('end-date'); const today = new Date(); const oneMonthAgo = new Date(new Date().setMonth(today.getMonth() - 1)); startDateInput.value = oneMonthAgo.toISOString().split('T')[0]; endDateInput.value = today.toISOString().split('T')[0]; const generateReports = async () => { const startDate = new Date(startDateInput.value); startDate.setHours(0, 0, 0, 0); const endDate = new Date(endDateInput.value); endDate.setHours(23, 59, 59, 999); try { const [ticketsSnapshot, inventorySnapshot, requestersSnapshot] = await Promise.all([ db.collection('tickets').where('createdAt', '>=', startDate).where('createdAt', '<=', endDate).get(), db.collection('inventory').get(), db.collection('requesters').get() ]); const tickets = ticketsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); const inventory = inventorySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); const requestersMap = {}; requestersSnapshot.forEach(doc => requestersMap[doc.id] = doc.data().name); const priorityCounts = tickets.reduce((acc, ticket) => { acc[ticket.priority] = (acc[ticket.priority] || 0) + 1; return acc; }, {}); if (charts.ticketsByPriority) charts.ticketsByPriority.destroy(); charts.ticketsByPriority = new Chart(chartContexts.ticketsByPriority, { type: 'doughnut', data: { labels: Object.keys(priorityCounts).map(p => capitalizar(p)), datasets: [{ data: Object.values(priorityCounts), backgroundColor: ['#D32F2F', '#ffc107', '#334155'] }] }, options: { responsive: true, maintainAspectRatio: false } }); const inventoryMap = {}; inventory.forEach(item => inventoryMap[item.id] = item); const ticketsWithDeviceCategory = tickets.map(ticket => ({...ticket, deviceCategory: ticket.deviceIds && ticket.deviceIds.length > 0 ? (inventoryMap[ticket.deviceIds[0]]?.category || 'Sin categoría') : 'Sin dispositivo'})); const deviceCategoryCounts = ticketsWithDeviceCategory.reduce((acc, ticket) => { acc[ticket.deviceCategory] = (acc[ticket.deviceCategory] || 0) + 1; return acc; }, {}); if (charts.ticketsByDeviceCategory) charts.ticketsByDeviceCategory.destroy(); charts.ticketsByDeviceCategory = new Chart(chartContexts.ticketsByDeviceCategory, { type: 'pie', data: { labels: Object.keys(deviceCategoryCounts).map(k => inventoryCategoryConfig[k]?.title || k), datasets: [{ data: Object.values(deviceCategoryCounts), backgroundColor: ['#D32F2F', '#17a2b8', '#ffc107', '#6c757d', '#28a745', '#dc3545', '#343a40'] }] }, options: { responsive: true, maintainAspectRatio: false } }); const deviceTicketCounts = tickets.reduce((acc, ticket) => { if(ticket.deviceIds && Array.isArray(ticket.deviceIds)) { ticket.deviceIds.forEach(deviceId => { if(deviceId) acc[deviceId] = (acc[deviceId] || 0) + 1; }); } return acc; }, {}); const topDevices = Object.entries(deviceTicketCounts).sort((a, b) => b[1] - a[1]).slice(0, 5); topDevicesList.innerHTML = topDevices.map(([id, count]) => { const device = inventoryMap[id]; return `<li><span>${device ? `${device.brand} ${device.model}` : id}</span><span>${count}</span></li>`; }).join('') || '<li>No hay datos</li>'; const requesterTicketCounts = tickets.reduce((acc, ticket) => { if(ticket.requesterId) acc[ticket.requesterId] = (acc[ticket.requesterId] || 0) + 1; return acc; }, {}); const topRequesters = Object.entries(requesterTicketCounts).sort((a, b) => b[1] - a[1]).slice(0, 5); topRequestersList.innerHTML = topRequesters.map(([id, count]) => `<li><span>${requestersMap[id] || id}</span><span>${count}</span></li>`).join('') || '<li>No hay datos</li>'; const closedTicketsSnapshot = await db.collection('tickets').where('closedAt', '>=', startDate).where('closedAt', '<=', endDate).get(); const closedTicketsInRange = closedTicketsSnapshot.docs.map(doc => doc.data()); const dataByDay = {}; for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) { dataByDay[d.toISOString().split('T')[0]] = { created: 0, closed: 0 }; } tickets.forEach(t => { const day = t.createdAt.toDate().toISOString().split('T')[0]; if (dataByDay[day]) dataByDay[day].created++; }); closedTicketsInRange.forEach(t => { const day = t.closedAt.toDate().toISOString().split('T')[0]; if (dataByDay[day]) dataByDay[day].closed++; }); if (charts.ticketFlow) charts.ticketFlow.destroy(); charts.ticketFlow = new Chart(chartContexts.ticketFlow, { type: 'line', data: { labels: Object.keys(dataByDay), datasets: [ { label: 'Tickets Creados', data: Object.values(dataByDay).map(d => d.created), borderColor: '#D32F2F', fill: true }, { label: 'Tickets Cerrados', data: Object.values(dataByDay).map(d => d.closed), borderColor: '#10b981', fill: true } ] }, options: { scales: { y: { beginAtZero: true } } } }); const categoryCounts = inventory.reduce((acc, item) => { acc[item.category] = (acc[item.category] || 0) + 1; return acc; }, {}); if (charts.inventoryByCategory) charts.inventoryByCategory.destroy(); charts.inventoryByCategory = new Chart(chartContexts.inventoryByCategory, { type: 'bar', data: { labels: Object.keys(categoryCounts).map(k => inventoryCategoryConfig[k]?.title || k), datasets: [{ label: '# de Dispositivos', data: Object.values(categoryCounts), backgroundColor: '#D32F2F' }] }, options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false } }); const computers = inventory.filter(item => item.category === 'computers'); const osCounts = computers.reduce((acc, item) => { acc[item.os] = (acc[item.os] || 0) + 1; return acc; }, {}); if (charts.computersByOs) charts.computersByOs.destroy(); charts.computersByOs = new Chart(chartContexts.computersByOs, { type: 'pie', data: { labels: Object.keys(osCounts), datasets: [{ data: Object.values(osCounts), backgroundColor: ['#D32F2F', '#17a2b8', '#ffc107', '#6c757d', '#28a745', '#dc3545'] }] }, options: { responsive: true, maintainAspectRatio: false } }); } catch(error) { handleFirestoreError(error, container); }}; generateBtn.addEventListener('click', generateReports); generateReports(); }
     
     // 🔥 CORRECCIÓN: ESTILOS INLINE PARA ESTADOS (ACTIVO/INACTIVO)
