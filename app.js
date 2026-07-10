@@ -898,7 +898,55 @@ const newTITicketFormHTML = `
 
 </section>
 `;
-    const knowledgeBaseHTML = `<h1>💡 Base de Conocimiento</h1><div class="add-new-button-container"><input type="text" id="kb-search-input" placeholder="🔍 Buscar en artículos y manuales..." style="flex-grow: 1; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);"><button id="add-manual-btn" class="primary">Crear Manual</button><button id="add-kb-article-btn" class="btn-blue">Crear Artículo</button></div><div id="kb-grid-container" class="kb-grid"></div>`;
+    const knowledgeBaseHTML = `
+<section class="kb-modern-page">
+
+    <div class="kb-modern-header">
+        <div class="kb-header-left">
+            <div class="kb-main-icon">📘</div>
+            <div>
+                <h1>Base de conocimiento</h1>
+                <p>Encuentra guías, manuales y artículos para resolver incidencias de forma rápida.</p>
+            </div>
+        </div>
+
+        <div class="kb-header-actions">
+            <button id="add-manual-btn" class="kb-action-btn primary">📘 Crear manual</button>
+            <button id="add-kb-article-btn" class="kb-action-btn secondary">📄 Crear artículo</button>
+        </div>
+    </div>
+
+    <div class="kb-search-box">
+        <span>🔍</span>
+        <input type="text" id="kb-search-input" placeholder="Buscar en artículos y manuales...">
+        <small>Ctrl K</small>
+    </div>
+
+    <div class="kb-category-chips">
+        <button type="button" class="kb-chip active" data-category="">▦ Todos</button>
+        <button type="button" class="kb-chip" data-category="Redes">☍ Redes</button>
+        <button type="button" class="kb-chip" data-category="Impresoras">▣ Impresoras</button>
+        <button type="button" class="kb-chip" data-category="Velocity">Ⅴ Velocity</button>
+        <button type="button" class="kb-chip" data-category="Siigo">$ Siigo</button>
+        <button type="button" class="kb-chip" data-category="Dispositivos">▯ Dispositivos</button>
+        <button type="button" class="kb-chip" data-category="Equipos">▭ Equipos</button>
+        <button type="button" class="kb-chip" data-category="Cámaras">▣ Cámaras</button>
+        <button type="button" class="kb-chip" data-category="Manual">📖 Manuales</button>
+        <button type="button" class="kb-chip" data-category="Artículo">📄 Artículos</button>
+    </div>
+
+    <div id="kb-results-info" class="kb-results-info">
+        Mostrando artículos
+    </div>
+
+    <div id="kb-grid-container" class="kb-modern-grid"></div>
+
+    <div class="kb-pagination-info">
+        <span id="kb-pagination-text">Mostrando resultados</span>
+    </div>
+
+</section>
+`;
     const statisticsHTML = `<div style="display: flex; justify-content: space-between; align-items: center;"><h1>📈 Centro de Análisis</h1><button class="primary" id="export-stats-pdf">Exportar a PDF</button></div><div id="stats-content"><div class="card"><h2>Filtro de Periodo</h2><div class="stats-filters"><div class="form-group"><label for="start-date">Fecha de Inicio</label><input type="date" id="start-date"></div><div class="form-group"><label for="end-date">Fecha de Fin</label><input type="date" id="end-date"></div><button id="generate-report-btn" class="primary">Generar Reporte</button></div></div><h2>Análisis de Tickets</h2><div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 25px;"><div class="card"><h3>Tickets por Prioridad</h3><div class="chart-container"><canvas id="ticketsByPriorityChart"></canvas></div></div><div class="card"><h3>Tickets por Categoría de Dispositivo</h3><div class="chart-container"><canvas id="ticketsByDeviceCategoryChart"></canvas></div></div><div class="card"><h3>Top 5 Dispositivos Problemáticos</h3><ul id="top-devices-list" class="kpi-list"></ul></div><div class="card"><h3>Top 5 Solicitantes</h3><ul id="top-requesters-list" class="kpi-list"></ul></div></div><div class="card"><h3>Flujo de Tickets (Creados vs. Cerrados)</h3><div class="chart-container"><canvas id="ticket-flow-chart"></canvas></div></div><h2 style="margin-top: 40px;">Resumen de Inventario</h2><div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 25px;"><div class="card"><h3>Dispositivos por Categoría</h3><div class="chart-container"><canvas id="inventoryByCategoryChart"></canvas></div></div><div class="card"><h3>Computadores por SO</h3><div class="chart-container"><canvas id="computersByOsChart"></canvas></div></div></div></div>`;
     const genericListPageHTML = `<h1 id="page-title"></h1><div class="add-new-button-container"><button class="export-btn csv" data-format="csv">Exportar a Excel (CSV)</button><button class="export-btn pdf" data-format="pdf">Exportar a PDF</button><button id="add-item-btn" class="btn-blue open-form-modal-btn">Añadir Nuevo</button></div><div class="card"><div class="table-search-container"><input type="text" id="table-search-input" placeholder="🔍 Buscar en la tabla..."></div><h2 id="item-list-title"></h2><div class="table-wrapper"><table id="data-table"><thead id="item-table-head"></thead><tbody id="item-table-body"></tbody></table></div></div>`;
     const maintenanceCalendarHTML = `<h1>📅 Planificación</h1><div class="add-new-button-container"><button class="export-btn csv" data-format="csv">Exportar a Excel (CSV)</button><button class="export-btn pdf" data-format="pdf">Exportar a PDF</button><button class="primary open-form-modal-btn" data-type="maintenance">Programar Tarea</button></div><div class="card"><div id="maintenance-calendar"></div><table id="data-table" style="display:none;"></table></div>`;
@@ -2971,7 +3019,183 @@ if (isProviderCase) {
 }
 let devicesHTML = ''; if (ticket.deviceIds && ticket.deviceIds.length > 0) { devicesHTML = `<div class="ticket-detail-item"><strong>Dispositivos:</strong><ul style="margin-top: 5px; padding-left: 20px;">${ticket.deviceIds.map(id => `<li>${id}</li>`).join('')}</ul></div>`; } let mainContentHTML = ''; if (ticket.ticketType === 'velocity' || ticket.ticketType === 'siigo') { mainContentHTML = `<h4>Detalles del Reporte</h4><div class="ticket-details-grid"><div><strong>Fecha de Reporte:</strong> ${ticket.fechaDeReporte || 'N/A'}</div><div><strong>Hora de Reporte:</strong> ${ticket.horaDeReporte || 'N/A'}</div><div><strong>Medio de Solicitud:</strong> ${ticket.medioDeSolicitud || 'N/A'}</div><div><strong>Asesor de Soporte:</strong> ${ticket.asesorDeSoporte || 'N/A'}</div><div><strong>Ticket del Caso:</strong> ${ticket.ticketDelCaso || 'N/A'}</div></div><hr><h4>Descripción de la Novedad</h4><div class="card">${ticket.descripcionDeLaNovedad}</div>`; } else { mainContentHTML = `<h3>Descripción</h3><div class="card">${ticket.description}</div>`; } let historyHTML = '<h3>Historial de Avances</h3>'; if (ticket.history && ticket.history.length > 0) { historyHTML += '<ul class="ticket-history-log">'; ticket.history.sort((a, b) => b.timestamp.toMillis() - a.timestamp.toMillis()); ticket.history.forEach(entry => { historyHTML += `<li><div class="history-meta">Registrado el: ${entry.timestamp.toDate().toLocaleString('es-ES')}</div><div class="history-text">${entry.text}</div></li>`; }); historyHTML += '</ul>'; } else { historyHTML += '<p>No hay avances registrados.</p>'; } let actionsHTML = ''; if (ticket.status === 'abierto' || ticket.status === 'en-curso') { actionsHTML = `<hr><h3>Añadir Avance</h3><form id="progress-form"><div class="form-group"><textarea id="progress-text" rows="3" placeholder="Describe el avance realizado..." required></textarea></div><button type="submit" class="btn-warning">Guardar Avance y Poner "En Curso"</button></form><hr><h3>Añadir Solución Final y Cerrar Ticket</h3><form id="solution-form"><div class="form-group"><div id="solution-editor"></div></div><button type="submit" class="primary">Guardar Solución y Cerrar</button></form>`; } else if (ticket.status === 'cerrado') { actionsHTML = `<hr><h3>Solución Aplicada</h3><div class="card">${ticket.solution || 'No se especificó solución.'}</div>`; if (ticket.solution) { actionsHTML += `<div style="text-align: right; margin-top: 15px;"><button id="create-kb-from-ticket-btn" class="btn-blue">📝 Crear Artículo de Conocimiento</button></div>`; } } let modalActions = `<div class="ticket-modal-actions">`; if ((ticket.status === 'abierto' || ticket.status === 'en-curso') && ticket.ticketType === 'ti') { modalActions += `<button id="edit-ticket-btn" class="btn-secondary">✏️ Editar Ticket</button>`; } if (ticket.status === 'cerrado') { modalActions += `<button id="reopen-ticket-btn" class="btn-warning">↩️ Reabrir Ticket</button>`; } if (ticket.closedAt) { modalActions += `<button id="edit-closed-at-date-btn" class="btn-secondary" style="margin-left:10px;">🗓️ Editar Fecha Cierre</button>`; } modalActions += `</div>`; modalBody.innerHTML = `<div class="ticket-modal-layout"><div class="ticket-modal-main"><h2>Ticket ${ticket.id} (${capitalizar(ticket.ticketType || 'TI')})</h2>${modalActions}<hr>${mainContentHTML}${historyHTML}${actionsHTML}</div><div class="ticket-modal-sidebar"><h3>Detalles del Ticket</h3><div class="ticket-detail-item"><strong>Estado:</strong> <span class="status status-${ticket.status}">${capitalizar(ticket.status.replace('-', ' '))}</span></div>${ticket.priority ? `<div class="ticket-detail-item"><strong>Prioridad:</strong> ${capitalizar(ticket.priority)}</div>` : ''}<div class="ticket-detail-item"><strong>Solicitante:</strong> ${requesterName}</div>${ticket.locationId ? `<div class="ticket-detail-item"><strong>Ubicación:</strong> ${ticket.locationId}</div>` : ''}<div class="ticket-detail-item"><strong>Creado:</strong> ${ticket.createdAt.toDate().toLocaleString('es-ES')}</div>${ticket.closedAt ? `<div class="ticket-detail-item"><strong>Cerrado:</strong> ${ticket.closedAt.toDate().toLocaleString('es-ES')}</div>` : ''}${devicesHTML}</div></div>`; if ((ticket.status === 'abierto' || ticket.status === 'en-curso') && ticket.ticketType === 'ti') { document.getElementById('edit-ticket-btn').addEventListener('click', () => { ticketModal.classList.add('hidden'); showEditTicketModal(ticket.id); }); } if (document.getElementById('edit-closed-at-date-btn')) { document.getElementById('edit-closed-at-date-btn').addEventListener('click', () => { ticketModal.classList.add('hidden'); showEditClosedAtModal(ticket.id, ticket.closedAt); }); } if (ticket.status === 'abierto' || ticket.status === 'en-curso') { document.getElementById('progress-form').addEventListener('submit', async (e) => { e.preventDefault(); const text = document.getElementById('progress-text').value; if (!text.trim()) return; const newHistoryEntry = { text: text, timestamp: firebase.firestore.FieldValue.serverTimestamp() }; await db.collection('tickets').doc(ticket.id).update({ status: 'en-curso', history: firebase.firestore.FieldValue.arrayUnion(newHistoryEntry) }); showTicketModal(ticket.id); }); const solutionEditor = new Quill('#solution-editor', { theme: 'snow', placeholder: 'Describe la solución final aplicada...' }); document.getElementById('solution-form').addEventListener('submit', e => { e.preventDefault(); db.collection('tickets').doc(ticket.id).update({ solution: solutionEditor.root.innerHTML, status: 'cerrado', closedAt: firebase.firestore.FieldValue.serverTimestamp() }).then(() => showTicketModal(ticket.id)); }); } if (ticket.status === 'cerrado') { document.getElementById('reopen-ticket-btn').addEventListener('click', async () => { if (confirm('¿Estás seguro de que quieres reabrir este ticket?')) { const reopeningHistoryEntry = { text: `<strong>Ticket reabierto</strong> por el usuario.`, timestamp: firebase.firestore.Timestamp.fromDate(new Date()) }; try { await db.collection('tickets').doc(ticket.id).update({ status: 'abierto', closedAt: null, solution: null, history: firebase.firestore.FieldValue.arrayUnion(reopeningHistoryEntry) }); showTicketModal(ticket.id); } catch (error) { console.error("Error al reabrir el ticket:", error); alert("No se pudo reabrir el ticket."); } } }); const createKbBtn = document.getElementById('create-kb-from-ticket-btn'); if (createKbBtn) { createKbBtn.addEventListener('click', () => { const prefillData = { title: ticket.title, problem: ticket.description, solution: ticket.solution, type: 'article' }; ticketModal.classList.add('hidden'); showKnowledgeBaseFormModal(null, prefillData); }); } } }
     
-    async function renderKnowledgeBase(container) { container.innerHTML = knowledgeBaseHTML; const gridContainer = document.getElementById('kb-grid-container'); const searchInput = document.getElementById('kb-search-input'); document.getElementById('add-kb-article-btn').addEventListener('click', () => showKnowledgeBaseFormModal()); document.getElementById('add-manual-btn').addEventListener('click', () => showManualFormModal()); let articles = []; db.collection('knowledge_base').orderBy('createdAt', 'desc').onSnapshot(snapshot => { gridContainer.innerHTML = ''; if (snapshot.empty) { gridContainer.innerHTML = '<p>No hay artículos ni manuales en la base de conocimiento todavía.</p>'; return; } articles = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); displayArticles(articles); }, error => handleFirestoreError(error, gridContainer)); function displayArticles(articlesToDisplay) { gridContainer.innerHTML = ''; articlesToDisplay.forEach(article => { const card = document.createElement('div'); const isManual = article.type === 'manual'; card.className = `kb-card ${isManual ? 'manual-card' : ''}`; card.dataset.id = article.id; const tempDiv = document.createElement('div'); tempDiv.innerHTML = article.solution; const solutionSnippet = tempDiv.textContent || tempDiv.innerText || ""; card.innerHTML = `<h3>${article.title}</h3><span class="kb-category">${article.category || 'Sin categoría'}</span><div class="kb-solution-snippet">${solutionSnippet}</div>`; card.addEventListener('click', () => showKnowledgeBaseArticleModal(article.id)); gridContainer.appendChild(card); }); } searchInput.addEventListener('input', (e) => { const searchTerm = e.target.value.toLowerCase(); if (!searchTerm) { displayArticles(articles); return; } const filteredArticles = articles.filter(article => article.title.toLowerCase().includes(searchTerm) || (article.category && article.category.toLowerCase().includes(searchTerm)) || article.solution.toLowerCase().includes(searchTerm) || (article.problem && article.problem.toLowerCase().includes(searchTerm))); displayArticles(filteredArticles); }); }
+    async function renderKnowledgeBase(container) {
+    container.innerHTML = knowledgeBaseHTML;
+
+    const gridContainer = document.getElementById('kb-grid-container');
+    const searchInput = document.getElementById('kb-search-input');
+    const resultsInfo = document.getElementById('kb-results-info');
+    const paginationText = document.getElementById('kb-pagination-text');
+    const chips = document.querySelectorAll('.kb-chip');
+
+    let articles = [];
+    let activeCategory = '';
+
+    function stripHtml(html) {
+        const div = document.createElement('div');
+        div.innerHTML = html || '';
+        return div.textContent || div.innerText || '';
+    }
+
+    function getArticleType(article) {
+        return article.type === 'manual' ? 'Manual' : 'Artículo';
+    }
+
+    function getShortDescription(article) {
+        const problem = stripHtml(article.problem);
+        const solution = stripHtml(article.solution);
+        const baseText = problem || solution || 'Sin descripción registrada.';
+
+        return baseText.length > 120 ? baseText.substring(0, 120) + '...' : baseText;
+    }
+
+    function getUpdatedDate(article) {
+        const date = article.updatedAt?.toDate?.() || article.createdAt?.toDate?.();
+
+        if (!date) return 'Sin fecha';
+
+        return date.toLocaleDateString('es-ES', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric'
+        });
+    }
+
+    function getCategoryIcon(category, type) {
+        const cleanCategory = (category || '').toLowerCase();
+
+        if (type === 'manual') return '📘';
+        if (cleanCategory.includes('red')) return '☍';
+        if (cleanCategory.includes('impres')) return '▣';
+        if (cleanCategory.includes('velocity')) return 'Ⅴ';
+        if (cleanCategory.includes('siigo')) return '$';
+        if (cleanCategory.includes('cam')) return '▣';
+        if (cleanCategory.includes('dispositivo')) return '▯';
+        if (cleanCategory.includes('equipo')) return '▭';
+
+        return '📄';
+    }
+
+    function matchesCategory(article) {
+        if (!activeCategory) return true;
+
+        if (activeCategory === 'Manual') {
+            return article.type === 'manual';
+        }
+
+        if (activeCategory === 'Artículo') {
+            return article.type !== 'manual';
+        }
+
+        return (article.category || '').toLowerCase() === activeCategory.toLowerCase();
+    }
+
+    function displayArticles() {
+        const searchTerm = searchInput.value.trim().toLowerCase();
+
+        const filteredArticles = articles.filter(article => {
+            const text = [
+                article.title,
+                article.category,
+                article.problem,
+                article.solution,
+                article.type
+            ].join(' ').toLowerCase();
+
+            return text.includes(searchTerm) && matchesCategory(article);
+        });
+
+        if (filteredArticles.length === 0) {
+            gridContainer.innerHTML = `
+                <div class="kb-empty-state">
+                    No se encontraron artículos con esos filtros.
+                </div>
+            `;
+
+            resultsInfo.textContent = 'Sin resultados';
+            paginationText.textContent = 'Mostrando 0 artículos';
+            return;
+        }
+
+        resultsInfo.textContent = searchTerm
+            ? `Se encontraron ${filteredArticles.length} resultados para “${searchInput.value}”`
+            : `Mostrando ${filteredArticles.length} artículos`;
+
+        paginationText.textContent = `Mostrando 1 a ${filteredArticles.length} de ${articles.length} artículos`;
+
+        gridContainer.innerHTML = filteredArticles.map(article => {
+            const category = article.category || getArticleType(article);
+            const type = getArticleType(article);
+            const icon = getCategoryIcon(category, article.type);
+            const description = getShortDescription(article);
+
+            return `
+                <article class="kb-modern-card" data-id="${article.id}">
+                    <div class="kb-card-icon">${icon}</div>
+
+                    <div class="kb-card-content">
+                        <span class="kb-card-category">${category}</span>
+                        <h3>${article.title || 'Sin título'}</h3>
+                        <p>${description}</p>
+
+                        <div class="kb-card-footer">
+                            <span>📅 Actualizado: ${getUpdatedDate(article)}</span>
+                            <button type="button" class="kb-view-detail" data-id="${article.id}">
+                                Ver detalle →
+                            </button>
+                        </div>
+                    </div>
+                </article>
+            `;
+        }).join('');
+
+        document.querySelectorAll('.kb-modern-card, .kb-view-detail').forEach(element => {
+            element.addEventListener('click', (event) => {
+                event.stopPropagation();
+                const articleId = element.dataset.id;
+                showKnowledgeBaseArticleModal(articleId);
+            });
+        });
+    }
+
+    try {
+        const snapshot = await db.collection('knowledge_base').orderBy('updatedAt', 'desc').get();
+
+        articles = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+
+        displayArticles();
+
+    } catch (error) {
+        console.error('Error cargando base de conocimiento:', error);
+        gridContainer.innerHTML = `
+            <div class="kb-empty-state">
+                No se pudo cargar la base de conocimiento.
+            </div>
+        `;
+    }
+
+    searchInput.addEventListener('input', displayArticles);
+
+    chips.forEach(chip => {
+        chip.addEventListener('click', () => {
+            chips.forEach(item => item.classList.remove('active'));
+            chip.classList.add('active');
+            activeCategory = chip.dataset.category || '';
+            displayArticles();
+        });
+    });
+
+    document.getElementById('add-kb-article-btn').addEventListener('click', () => {
+        showKnowledgeBaseFormModal();
+    });
+
+    document.getElementById('add-manual-btn').addEventListener('click', () => {
+        showManualFormModal();
+    });
+}
     async function showKnowledgeBaseFormModal(docId = null, prefillData = {}) { const formModal = document.getElementById('form-modal'); const modalBody = formModal.querySelector('#form-modal-body'); const isEditing = docId !== null; let existingData = {}; if (isEditing) { const docSnap = await db.collection('knowledge_base').doc(docId).get(); if (docSnap.exists) { existingData = docSnap.data(); } } else { existingData = prefillData; } const { title = '', category = '', problem = '', solution = '' } = existingData; modalBody.innerHTML = `<h2>${isEditing ? 'Editar' : 'Crear'} Artículo de Conocimiento</h2><form id="kb-form"><div class="form-group"><label for="kb-title">Título</label><input type="text" id="kb-title" value="${title}" required></div><div class="form-group"><label for="kb-category">Categoría</label><select id="kb-category" required><option value="" ${!category ? 'selected' : ''} disabled>Selecciona una categoría</option><option value="Redes" ${category === 'Redes' ? 'selected' : ''}>Redes</option><option value="Dispositivos" ${category === 'Dispositivos' ? 'selected' : ''}>Dispositivos</option><option value="Bases de Datos" ${category === 'Bases de Datos' ? 'selected' : ''}>Bases de Datos</option><option value="Programas" ${category === 'Programas' ? 'selected' : ''}>Programas</option></select></div><div class="form-group"><label>Descripción del Problema/Síntoma</label><div id="kb-problem-editor" style="height: 150px;"></div></div><div class="form-group"><label>Solución Paso a Paso</label><div id="kb-solution-editor" style="height: 250px;"></div></div><div style="text-align: right; margin-top: 20px;"><button type="submit" class="primary">${isEditing ? 'Guardar Cambios' : 'Guardar Artículo'}</button></div></form>`; const problemEditor = new Quill('#kb-problem-editor', { theme: 'snow' }); problemEditor.root.innerHTML = problem; const solutionEditor = new Quill('#kb-solution-editor', { theme: 'snow' }); solutionEditor.root.innerHTML = solution; formModal.classList.remove('hidden'); document.getElementById('kb-form').addEventListener('submit', async (e) => { e.preventDefault(); const formData = { title: document.getElementById('kb-title').value, category: document.getElementById('kb-category').value, problem: problemEditor.root.innerHTML, solution: solutionEditor.root.innerHTML, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), type: 'article' }; try { if (isEditing) { await db.collection('knowledge_base').doc(docId).update(formData); } else { formData.createdAt = firebase.firestore.FieldValue.serverTimestamp(); await db.collection('knowledge_base').add(formData); } formModal.classList.add('hidden'); if (window.location.hash === '#knowledge-base') { renderKnowledgeBase(document.getElementById('app-content')); } } catch (error) { console.error("Error guardando artículo:", error); alert("No se pudo guardar el artículo."); } }); }
     async function showManualFormModal(docId = null) { const formModal = document.getElementById('form-modal'); const modalBody = formModal.querySelector('#form-modal-body'); const isEditing = docId !== null; let existingData = {}; if (isEditing) { const docSnap = await db.collection('knowledge_base').doc(docId).get(); if (docSnap.exists) { existingData = docSnap.data(); } } const { title = '', category = '', solution = '' } = existingData; modalBody.innerHTML = `<h2>${isEditing ? 'Editar' : 'Crear'} Manual</h2><form id="manual-form"><div class="form-group"><label for="manual-title">Título del Manual</label><input type="text" id="manual-title" value="${title}" required></div><div class="form-group"><label for="manual-category">Categoría</label><select id="manual-category" required><option value="" ${!category ? 'selected' : ''} disabled>Selecciona una categoría</option><option value="Redes" ${category === 'Redes' ? 'selected' : ''}>Redes</option><option value="Dispositivos" ${category === 'Dispositivos' ? 'selected' : ''}>Dispositivos</option><option value="Bases de Datos" ${category === 'Bases de Datos' ? 'selected' : ''}>Bases de Datos</option><option value="Programas" ${category === 'Programas' ? 'selected' : ''}>Programas</option></select></div><div class="form-group"><label>Paso a Paso</label><div id="manual-solution-editor" style="height: 400px;"></div></div><div style="text-align: right; margin-top: 20px;"><button type="submit" class="primary">${isEditing ? 'Guardar Cambios' : 'Guardar Manual'}</button></div></form>`; const solutionEditor = new Quill('#manual-solution-editor', { theme: 'snow' }); solutionEditor.root.innerHTML = solution; formModal.classList.remove('hidden'); document.getElementById('manual-form').addEventListener('submit', async (e) => { e.preventDefault(); const formData = { title: document.getElementById('manual-title').value, category: document.getElementById('manual-category').value, solution: solutionEditor.root.innerHTML, problem: '', updatedAt: firebase.firestore.FieldValue.serverTimestamp(), type: 'manual' }; try { if (isEditing) { await db.collection('knowledge_base').doc(docId).update(formData); } else { formData.createdAt = firebase.firestore.FieldValue.serverTimestamp(); await db.collection('knowledge_base').add(formData); } formModal.classList.add('hidden'); if (window.location.hash === '#knowledge-base') { renderKnowledgeBase(document.getElementById('app-content')); } } catch (error) { console.error("Error guardando manual:", error); alert("No se pudo guardar el manual."); } }); }
     async function showKnowledgeBaseArticleModal(docId) { const actionModal = document.getElementById('action-modal'); const modalBody = actionModal.querySelector('#action-modal-body'); actionModal.classList.remove('hidden'); modalBody.innerHTML = '<p>Cargando...</p>'; try { const docSnap = await db.collection('knowledge_base').doc(docId).get(); if (!docSnap.exists) { modalBody.innerHTML = '<p>Error: No encontrado.</p>'; return; } const article = docSnap.data(); const isManual = article.type === 'manual'; let contentHTML = ''; if (isManual) { contentHTML = `<h3>Paso a Paso</h3><div class="card">${article.solution}</div>`; } else { contentHTML = `<h3>Problema</h3><div class="card">${article.problem}</div><h3>Solución</h3><div class="card">${article.solution}</div>`; } modalBody.innerHTML = `<h2>${article.title}</h2><p><span class="kb-category">${article.category}</span></p><div class="kb-article-content">${contentHTML}</div><div style="text-align: right; margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;"><button id="edit-kb-btn" class="btn-secondary">✏️ Editar</button><button id="delete-kb-btn" class="danger">🗑️ Eliminar</button></div>`; document.getElementById('edit-kb-btn').addEventListener('click', () => { actionModal.classList.add('hidden'); if (isManual) { showManualFormModal(docId); } else { showKnowledgeBaseFormModal(docId); } }); document.getElementById('delete-kb-btn').addEventListener('click', async () => { if (confirm(`¿Estás seguro de que quieres eliminar est${isManual ? 'e manual' : 'e artículo'}?`)) { await db.collection('knowledge_base').doc(docId).delete(); actionModal.classList.add('hidden'); renderKnowledgeBase(document.getElementById('app-content')); } }); } catch (error) { console.error("Error cargando:", error); modalBody.innerHTML = '<p>Error al cargar.</p>'; } }
