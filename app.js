@@ -16,8 +16,8 @@
     window.jsPDF = window.jspdf.jsPDF;
 
     // --- 3. TEMPLATES HTML ---
-    const dashboardHTML = `<h1>📊 Dashboard</h1><div class="dashboard-stats" id="dashboard-cards"></div><div class="card" style="margin-top: 30px; border-top: 4px solid #D32F2F;"><h2>Tickets por Día (Últimos 7 días)</h2><div class="chart-container"><canvas id="ticketsChart"></canvas></div></div>`;
-   const newTITicketFormHTML = `
+    const dashboardHTML = `
+    const newTITicketFormHTML = `
 <section class="support-page">
 
   <div class="support-header">
@@ -628,9 +628,414 @@
 
     // --- 5. FUNCIONES DE RENDERIZADO ---
     function handleFirestoreError(error, element) { element.innerHTML = `<div class="card" style="padding: 20px; border-left: 5px solid red;">Error al cargar datos: ${error.message}</div>`; }
-    
-    async function renderDashboard(container) { container.innerHTML = dashboardHTML; const cardsContainer = document.getElementById('dashboard-cards'); cardsContainer.innerHTML = 'Cargando estadísticas...'; const ticketsSnapshot = await db.collection('tickets').get(); const tickets = ticketsSnapshot.docs.map(doc => doc.data()); const openCount = tickets.filter(t => t.status === 'abierto').length; const closedCount = tickets.filter(t => t.status === 'cerrado').length; const totalCount = tickets.length; cardsContainer.innerHTML = `<a href="#tickets?status=abierto" class="stat-card open"><div class="stat-number">${openCount}</div><div class="stat-label">Tickets Abiertos</div></a><a href="#tickets?status=cerrado" class="stat-card closed"><div class="stat-number">${closedCount}</div><div class="stat-label">Tickets Cerrados</div></a><a href="#tickets" class="stat-card all"><div class="stat-number">${totalCount}</div><div class="stat-label">Todos los Tickets</div></a>`; const last7Days = Array(7).fill(0).reduce((acc, _, i) => { const d = new Date(); d.setDate(d.getDate() - i); acc[d.toISOString().split('T')[0]] = 0; return acc; }, {}); tickets.forEach(ticket => { if (ticket.createdAt) { const ticketDate = ticket.createdAt.toDate().toISOString().split('T')[0]; if (last7Days.hasOwnProperty(ticketDate)) { last7Days[ticketDate]++; } } }); const ctx = document.getElementById('ticketsChart').getContext('2d'); if(window.myChart) window.myChart.destroy(); window.myChart = new Chart(ctx, { type: 'bar', data: { labels: Object.keys(last7Days).map(d => new Date(d + 'T00:00:00').toLocaleDateString('es-ES', {day:'numeric', month:'short'})).reverse(), datasets: [{ label: '# de Tickets Creados', data: Object.values(last7Days).reverse(), backgroundColor: '#D32F2F', borderColor: '#B71C1C', borderWidth: 1 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } } }); }
-    
+    async function renderDashboard(container) {
+    container.innerHTML = dashboardHTML;
+
+    const dateFilter = document.getElementById('dashboard-date-filter');
+    const requesterFilter = document.getElementById('dashboard-requester-filter');
+    const rangeFilter = document.getElementById('dashboard-range-filter');
+
+    const now = new Date();
+    const localNow = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+    dateFilter.value = localNow.toISOString().split('T')[0];
+
+    function formatMinutes(totalMinutes) {
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = totalMinutes % 60;
+        return `${hours}h ${minutes}m`;
+    }
+
+    function getTicketDate(ticket) {
+        if (ticket.createdAt && ticket.createdAt.toDate) return ticket.createdAt.toDate();
+        if (ticket.registeredAt && ticket.registeredAt.toDate) return ticket.registeredAt.toDate();
+        return null;
+    }
+
+    function getMonthRange(baseDate) {
+        const start = new Date(baseDate.getFullYear(), baseDate.getMonth(), 1);
+        const end = new Date(baseDate.getFullYear(), baseDate.getMonth() + 1, 0, 23, 59, 59, 999);
+        return { start, end };
+    }
+
+    function sameRange(date, start, end) {
+        return date && date >= start && date <= end;
+    }
+
+    function getStatusLabel(status) {
+        const labels = {
+            'cerrado': 'Cerrado',
+            'en-curso': 'En seguimiento',
+            'abierto': 'Abierto',
+            'pendiente': 'Pendiente',
+            'convertida': 'Convertida'
+        };
+
+        return labels[status] || capitalizar(status || 'Sin estado');
+    }
+
+    function getTypeLabel(type) {
+        const labels = {
+            ti: 'Soporte TI',
+            velocity: 'Velocity',
+            siigo: 'Siigo',
+            nota: 'Nota rápida'
+        };
+
+        return labels[type] || capitalizar(type || 'Soporte');
+    }
+
+    async function loadDashboardData() {
+        try {
+            const selectedDate = dateFilter.value ? new Date(dateFilter.value + 'T12:00:00') : new Date();
+            const { start, end } = getMonthRange(selectedDate);
+
+            const [ticketsSnapshot, requestersSnapshot] = await Promise.all([
+                db.collection('tickets').get(),
+                db.collection('requesters').orderBy('name').get()
+            ]);
+
+            const requestersMap = {};
+            requesterFilter.innerHTML = '<option value="">Todos los solicitantes</option>';
+
+            requestersSnapshot.forEach(doc => {
+                requestersMap[doc.id] = doc.data().name;
+                requesterFilter.innerHTML += `<option value="${doc.id}">${doc.data().name}</option>`;
+            });
+
+            const selectedRequester = requesterFilter.dataset.selected || '';
+
+            if (selectedRequester) {
+                requesterFilter.value = selectedRequester;
+            }
+
+            let tickets = ticketsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+            if (requesterFilter.value) {
+                tickets = tickets.filter(t => t.requesterId === requesterFilter.value);
+            }
+
+            const monthTickets = tickets.filter(ticket => {
+                const ticketDate = getTicketDate(ticket);
+                return sameRange(ticketDate, start, end);
+            });
+
+            const closedMonthTickets = monthTickets.filter(t => t.status === 'cerrado');
+            const followupMonthTickets = monthTickets.filter(t =>
+                t.status === 'en-curso' ||
+                t.status === 'pendiente' ||
+                t.ticketType === 'velocity' ||
+                t.ticketType === 'siigo'
+            );
+
+            const totalMinutes = monthTickets.reduce((sum, ticket) => {
+                return sum + (Number(ticket.timeSpentMinutes) || 0);
+            }, 0);
+
+            const totalMonth = monthTickets.length;
+            const closedMonth = closedMonthTickets.length;
+            const followupMonth = followupMonthTickets.length;
+            const formattedTime = formatMinutes(totalMinutes);
+
+            document.getElementById('dash-total-month').textContent = totalMonth;
+            document.getElementById('dash-time-month').textContent = formattedTime;
+            document.getElementById('dash-closed-month').textContent = closedMonth;
+            document.getElementById('dash-followup-month').textContent = followupMonth;
+
+            document.getElementById('kpi-total-month').textContent = totalMonth;
+            document.getElementById('kpi-time-month').textContent = formattedTime;
+            document.getElementById('kpi-closed-month').textContent = closedMonth;
+            document.getElementById('kpi-followup-month').textContent = followupMonth;
+
+            document.getElementById('dashboard-month-label').textContent = selectedDate.toLocaleDateString('es-ES', {
+                month: 'long',
+                year: 'numeric'
+            });
+
+            renderTrendChart(tickets);
+            renderMonthlyHeatmap(monthTickets, selectedDate);
+            renderTopRequesters(monthTickets, requestersMap);
+            renderCategoryChart(monthTickets);
+            renderRecentActivity(tickets, requestersMap);
+
+        } catch (error) {
+            console.error('Error cargando dashboard:', error);
+            container.innerHTML = '<div class="card"><h2>Error cargando dashboard</h2><p>Revisa la consola para más detalles.</p></div>';
+        }
+    }
+
+    function renderTrendChart(tickets) {
+        const days = Number(rangeFilter.value || 7);
+        const labels = [];
+        const createdData = [];
+        const closedData = [];
+
+        for (let i = days - 1; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            d.setHours(0, 0, 0, 0);
+
+            const next = new Date(d);
+            next.setDate(next.getDate() + 1);
+
+            labels.push(d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }));
+
+            const createdCount = tickets.filter(ticket => {
+                const ticketDate = getTicketDate(ticket);
+                return ticketDate && ticketDate >= d && ticketDate < next;
+            }).length;
+
+            const closedCount = tickets.filter(ticket => {
+                if (!ticket.closedAt || !ticket.closedAt.toDate) return false;
+                const closedDate = ticket.closedAt.toDate();
+                return closedDate >= d && closedDate < next;
+            }).length;
+
+            createdData.push(createdCount);
+            closedData.push(closedCount);
+        }
+
+        const ctx = document.getElementById('supportTrendChart').getContext('2d');
+
+        if (window.supportTrendChartInstance) {
+            window.supportTrendChartInstance.destroy();
+        }
+
+        window.supportTrendChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [
+                    {
+                        label: 'Creados',
+                        data: createdData,
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(37, 99, 235, 0.10)',
+                        fill: true,
+                        tension: 0.35,
+                        pointRadius: 4
+                    },
+                    {
+                        label: 'Cerrados',
+                        data: closedData,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.10)',
+                        fill: true,
+                        tension: 0.35,
+                        pointRadius: 4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        align: 'start'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function renderMonthlyHeatmap(monthTickets, selectedDate) {
+        const grid = document.getElementById('monthly-activity-grid');
+        const year = selectedDate.getFullYear();
+        const month = selectedDate.getMonth();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+        const dayCounts = {};
+
+        monthTickets.forEach(ticket => {
+            const ticketDate = getTicketDate(ticket);
+            if (!ticketDate) return;
+
+            const day = ticketDate.getDate();
+            dayCounts[day] = (dayCounts[day] || 0) + 1;
+        });
+
+        const weekDays = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+
+        let html = weekDays.map(day => `<div class="pb-month-day-name">${day}</div>`).join('');
+
+        const firstDay = new Date(year, month, 1).getDay();
+        const emptyBefore = firstDay === 0 ? 6 : firstDay - 1;
+
+        for (let i = 0; i < emptyBefore; i++) {
+            html += `<div class="pb-month-cell empty"></div>`;
+        }
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const count = dayCounts[day] || 0;
+
+            let level = 0;
+            if (count >= 1 && count <= 5) level = 1;
+            if (count >= 6 && count <= 10) level = 2;
+            if (count >= 11 && count <= 20) level = 3;
+            if (count > 20) level = 4;
+
+            html += `
+                <div class="pb-month-cell level-${level}">
+                    <strong>${day}</strong>
+                    <span>${count}</span>
+                </div>
+            `;
+        }
+
+        grid.innerHTML = html;
+    }
+
+    function renderTopRequesters(monthTickets, requestersMap) {
+        const container = document.getElementById('top-requesters-dashboard');
+
+        const counts = {};
+
+        monthTickets.forEach(ticket => {
+            if (!ticket.requesterId) return;
+            counts[ticket.requesterId] = (counts[ticket.requesterId] || 0) + 1;
+        });
+
+        const top = Object.entries(counts)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 5);
+
+        if (top.length === 0) {
+            container.innerHTML = '<p class="pb-empty">Aún no hay solicitantes en este periodo.</p>';
+            return;
+        }
+
+        const max = Math.max(...top.map(item => item[1]));
+
+        container.innerHTML = top.map(([id, count]) => {
+            const percent = Math.round((count / max) * 100);
+
+            return `
+                <div class="pb-requester-row">
+                    <span>${requestersMap[id] || id}</span>
+                    <strong>${count}</strong>
+                    <div class="pb-mini-bar">
+                        <i style="width:${percent}%"></i>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function renderCategoryChart(monthTickets) {
+        const listContainer = document.getElementById('category-dashboard-list');
+        const counts = {};
+
+        monthTickets.forEach(ticket => {
+            const type = ticket.ticketType || ticket.supportType || 'otro';
+            counts[type] = (counts[type] || 0) + 1;
+        });
+
+        const labelsMap = {
+            ti: 'Soporte TI',
+            velocity: 'Velocity',
+            siigo: 'Siigo',
+            nota: 'Nota rápida',
+            otro: 'Otro'
+        };
+
+        const labels = Object.keys(counts).map(key => labelsMap[key] || capitalizar(key));
+        const values = Object.values(counts);
+
+        if (window.categoryDashboardChartInstance) {
+            window.categoryDashboardChartInstance.destroy();
+        }
+
+        const ctx = document.getElementById('categoryDashboardChart').getContext('2d');
+
+        window.categoryDashboardChartInstance = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels,
+                datasets: [{
+                    data: values,
+                    backgroundColor: ['#2563eb', '#f97316', '#14b8a6', '#8b5cf6', '#ef4444'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '65%',
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+
+        const total = values.reduce((a, b) => a + b, 0);
+
+        listContainer.innerHTML = Object.entries(counts).map(([key, value], index) => {
+            const percent = total ? Math.round((value / total) * 100) : 0;
+            const colors = ['#2563eb', '#f97316', '#14b8a6', '#8b5cf6', '#ef4444'];
+
+            return `
+                <div class="pb-category-row">
+                    <span><i style="background:${colors[index % colors.length]}"></i>${labelsMap[key] || capitalizar(key)}</span>
+                    <strong>${value} (${percent}%)</strong>
+                </div>
+            `;
+        }).join('') || '<p class="pb-empty">No hay datos.</p>';
+    }
+
+    function renderRecentActivity(tickets, requestersMap) {
+        const container = document.getElementById('recent-activity-dashboard');
+
+        const recent = [...tickets]
+            .filter(ticket => getTicketDate(ticket))
+            .sort((a, b) => getTicketDate(b) - getTicketDate(a))
+            .slice(0, 5);
+
+        if (recent.length === 0) {
+            container.innerHTML = '<p class="pb-empty">Aún no hay actividad reciente.</p>';
+            return;
+        }
+
+        container.innerHTML = recent.map(ticket => {
+            const ticketDate = getTicketDate(ticket);
+            const requester = requestersMap[ticket.requesterId] || 'Sin solicitante';
+
+            return `
+                <div class="pb-activity-row">
+                    <div class="pb-activity-icon ${ticket.status || 'abierto'}">•</div>
+                    <div>
+                        <strong>${ticket.id} - ${ticket.title || getTypeLabel(ticket.ticketType)}</strong>
+                        <span>${requester} · ${getTypeLabel(ticket.ticketType)}</span>
+                    </div>
+                    <div class="pb-activity-meta">
+                        <small>${ticketDate.toLocaleDateString('es-ES')}</small>
+                        <em class="status status-${ticket.status || 'abierto'}">${getStatusLabel(ticket.status)}</em>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    requesterFilter.addEventListener('change', () => {
+        requesterFilter.dataset.selected = requesterFilter.value;
+        loadDashboardData();
+    });
+
+    dateFilter.addEventListener('change', loadDashboardData);
+    rangeFilter.addEventListener('change', loadDashboardData);
+
+    loadDashboardData();
+}
+   
     async function renderNewTITicketForm(container) {
     container.innerHTML = newTITicketFormHTML;
 
