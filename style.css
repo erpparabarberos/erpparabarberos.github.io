@@ -4135,3 +4135,88 @@ tr:hover td { background-color: #f8fafc; }
     text-transform: uppercase;
     white-space: nowrap;
 }
+/* =========================
+   AJUSTE PANEL DERECHO
+========================= */
+
+.computer-edit-layout {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 320px !important;
+    align-items: stretch !important;
+}
+
+.computer-edit-sidebar {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+}
+
+.computer-sidebar-card {
+    min-width: 0 !important;
+}
+
+.computer-tickets-card {
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.computer-related-list {
+    max-height: 260px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding-right: 6px !important;
+}
+
+.computer-related-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.computer-related-list::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 999px;
+}
+
+.computer-related-list::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+.computer-related-ticket {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    gap: 10px !important;
+    align-items: start !important;
+    padding: 12px 0 !important;
+    border-bottom: 1px solid #eef2f7 !important;
+}
+
+.computer-related-ticket > div:first-child {
+    min-width: 0 !important;
+}
+
+.computer-ticket-text {
+    margin: 4px 0 6px 0 !important;
+    color: #334155 !important;
+    font-size: 12px !important;
+    line-height: 1.35 !important;
+    word-break: break-word !important;
+}
+
+.computer-ticket-date {
+    display: block !important;
+    font-size: 11px !important;
+    color: #64748b !important;
+}
+
+.computer-related-ticket span {
+    align-self: start !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+}
+
+.computer-see-all {
+    display: inline-block !important;
+    margin-top: 12px !important;
+    flex-shrink: 0 !important;
+}
