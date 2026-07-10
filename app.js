@@ -2951,7 +2951,12 @@ if (quickNoteRawAfterSave) {
             renderFlowChart(tickets, start, end);
             renderTimeByCategoryChart(tickets);
             renderTopLists(tickets, requestersMap, devicesMap);
-            renderInventoryCharts(devicesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+            let inventoryDevices = devicesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            if (inventoryDevices.length === 0) {
+                inventoryDevices = buildInventoryFromTicketDevices(tickets);
+            }
+
+            renderInventoryCharts(inventoryDevices);
 
         } catch (error) {
             console.error('Error generando reporte:', error);
@@ -3186,6 +3191,49 @@ if (quickNoteRawAfterSave) {
 
         renderRanking('reports-top-devices-list', sortEntries(deviceCounts, 5), 'Sin dispositivo');
     }
+       function buildInventoryFromTicketDevices(tickets) {
+    const deviceMap = new Map();
+
+    function inferCategoryFromId(deviceId) {
+        const id = String(deviceId || '').toUpperCase();
+
+        if (id.startsWith('PC-')) return 'computers';
+        if (id.startsWith('TEL-')) return 'phones';
+        if (id.startsWith('CAM-')) return 'cameras';
+        if (id.startsWith('MOD-')) return 'modems';
+        if (id.startsWith('COM-')) return 'communicators';
+        if (id.startsWith('NET-')) return 'network';
+        if (id.startsWith('IMP-')) return 'printers';
+
+        return 'Sin categoría';
+    }
+
+    tickets.forEach(ticket => {
+        const deviceIds = [];
+
+        if (Array.isArray(ticket.deviceIds)) deviceIds.push(...ticket.deviceIds);
+        if (Array.isArray(ticket.devices)) deviceIds.push(...ticket.devices);
+        if (Array.isArray(ticket.associatedDevices)) deviceIds.push(...ticket.associatedDevices);
+        if (ticket.deviceId) deviceIds.push(ticket.deviceId);
+
+        deviceIds.forEach(deviceId => {
+            if (!deviceId) return;
+
+            const cleanId = String(deviceId).trim();
+
+            if (!deviceMap.has(cleanId)) {
+                deviceMap.set(cleanId, {
+                    id: cleanId,
+                    category: inferCategoryFromId(cleanId),
+                    os: null,
+                    source: 'tickets'
+                });
+            }
+        });
+    });
+
+    return Array.from(deviceMap.values());
+}
        function renderInventoryCharts(devices) {
     const totalDevices = devices.length;
     setText('reports-total-devices', `Total de dispositivos: ${totalDevices}`);
