@@ -4182,12 +4182,16 @@ if (quickNoteRawAfterSave) {
                                     <strong>${item.sede || 'N/A'}</strong>
                                 </div>
                             </div>
+                            <div class="computer-sidebar-card computer-tickets-card">
+    <h3>Últimos Tickets Asociados</h3>
 
-                            <div class="computer-sidebar-card">
-                                <h3>Últimos Tickets Asociados</h3>
-                                ${ticketsHTML}
-                                <a class="computer-see-all" href="#" id="computer-see-all-tickets">Ver todos los tickets (${relatedTickets.length}) →</a>
-                            </div>
+    <div class="computer-related-list">
+        ${ticketsHTML}
+    </div>
+
+    <a class="computer-see-all" href="#" id="computer-see-all-tickets">Ver todos los tickets (${relatedTickets.length}) →</a>
+</div>
+                            
                         </aside>
 
                     </div>
