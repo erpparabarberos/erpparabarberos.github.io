@@ -4048,3 +4048,60 @@ tr:hover td { background-color: #f8fafc; }
         align-items: stretch !important;
     }
 }
+/* quitar conflicto visual del header del modal */
+.computer-edit-header {
+    justify-content: flex-start !important;
+}
+
+/* link del ticket sin estilo rojo global */
+.computer-ticket-link {
+    display: inline-block !important;
+    margin-bottom: 6px !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    color: #2563eb !important;
+    font-weight: 900 !important;
+    font-size: 13px !important;
+    text-decoration: none !important;
+    line-height: 1.2 !important;
+    box-shadow: none !important;
+    text-transform: none !important;
+}
+
+.computer-ticket-link:hover {
+    text-decoration: underline !important;
+    background: transparent !important;
+    color: #1d4ed8 !important;
+}
+
+.computer-ticket-text {
+    margin: 0 0 6px 0 !important;
+    font-size: 13px !important;
+    line-height: 1.35 !important;
+    color: #334155 !important;
+}
+
+.computer-ticket-date {
+    display: block !important;
+    color: #64748b !important;
+    font-size: 11px !important;
+}
+
+.computer-related-ticket {
+    display: grid !important;
+    grid-template-columns: 1fr auto !important;
+    gap: 10px !important;
+    align-items: start !important;
+    padding: 12px 0 !important;
+    border-bottom: 1px solid #eef2f7 !important;
+}
+
+.computer-related-ticket > div:first-child {
+    min-width: 0 !important;
+}
+
+.computer-related-ticket span {
+    align-self: start !important;
+    white-space: nowrap !important;
+}
