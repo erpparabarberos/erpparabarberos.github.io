@@ -2544,10 +2544,6 @@ tr:hover td { background-color: #f8fafc; }
         align-items: flex-start;
     }
 }
-/* =========================
-   KB MÁS CUADRADA / ESTILO HISTORIAL
-========================= */
-
 .kb-main-icon,
 .kb-action-btn,
 .kb-search-box,
@@ -2557,54 +2553,5 @@ tr:hover td { background-color: #f8fafc; }
 .kb-card-icon,
 .kb-card-category,
 .kb-empty-state {
-    border-radius: 4px !important;
-}
-
-.kb-modern-card {
-    border-radius: 4px !important;
-    box-shadow: 0 10px 26px rgba(15, 23, 42, 0.05) !important;
-}
-
-.kb-search-box {
-    border-radius: 4px !important;
-}
-
-.kb-action-btn.primary,
-.kb-action-btn.secondary {
-    border-radius: 4px !important;
-}
-
-.kb-chip {
-    border-radius: 4px !important;
-}
-
-.kb-card-icon {
-    border-radius: 4px !important;
-}
-
-.kb-card-category {
-    border-radius: 4px !important;
-}
-
-.kb-empty-state {
-    border-radius: 4px !important;
-}
-
-/* Si quieres todavía más recto, puedes dejar 0px */
-.kb-modern-grid .kb-modern-card,
-.kb-modern-header,
-.kb-search-box,
-.kb-category-chips {
-    box-shadow: none;
-}
-
-/* Mantener el estilo limpio como historial */
-.kb-modern-card {
-    border: 1px solid #dbe3ef !important;
-}
-
-.kb-modern-card:hover {
-    transform: translateY(-2px);
-    border-color: #bfdbfe !important;
-    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05) !important;
+    border-radius: 0 !important;
 }
