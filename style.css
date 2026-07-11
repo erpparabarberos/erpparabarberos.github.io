@@ -4220,3 +4220,97 @@ tr:hover td { background-color: #f8fafc; }
     margin-top: 12px !important;
     flex-shrink: 0 !important;
 }
+/* =========================
+   FIX SCROLL PANEL DERECHO COMPUTADOR
+========================= */
+
+#form-modal .modal-content {
+    max-height: 92vh !important;
+    overflow: hidden !important;
+}
+
+#form-modal-body {
+    height: 92vh !important;
+    max-height: 92vh !important;
+    overflow: hidden !important;
+}
+
+.computer-edit-modern {
+    height: 92vh !important;
+    max-height: 92vh !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.computer-edit-header {
+    flex-shrink: 0 !important;
+}
+
+.computer-edit-layout {
+    flex: 1 !important;
+    min-height: 0 !important;
+    height: calc(92vh - 95px) !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 330px !important;
+    overflow: hidden !important;
+}
+
+.computer-edit-main {
+    min-height: 0 !important;
+    overflow-y: auto !important;
+}
+
+.computer-edit-sidebar {
+    height: 100% !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+}
+
+.computer-sidebar-card {
+    flex-shrink: 0 !important;
+}
+
+.computer-tickets-card {
+    flex: 1 !important;
+    min-height: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+}
+
+.computer-tickets-card h3 {
+    flex-shrink: 0 !important;
+}
+
+.computer-related-list {
+    flex: 1 !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding-right: 6px !important;
+}
+
+.computer-see-all {
+    flex-shrink: 0 !important;
+    margin-top: 12px !important;
+}
+
+.computer-related-list::-webkit-scrollbar,
+.computer-edit-main::-webkit-scrollbar {
+    width: 8px !important;
+}
+
+.computer-related-list::-webkit-scrollbar-thumb,
+.computer-edit-main::-webkit-scrollbar-thumb {
+    background: #cbd5e1 !important;
+    border-radius: 999px !important;
+}
+
+.computer-related-list::-webkit-scrollbar-track,
+.computer-edit-main::-webkit-scrollbar-track {
+    background: #f1f5f9 !important;
+}
