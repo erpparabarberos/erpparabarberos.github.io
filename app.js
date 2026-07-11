@@ -3914,30 +3914,167 @@ if (quickNoteRawAfterSave) {
         el.addEventListener('change', renderTable);
     });
 }
-    async function showDeviceHistoryModal(deviceId) { 
-        const historyModal = document.getElementById('history-modal'); 
-        const modalBody = historyModal.querySelector('#history-modal-body'); 
-        modalBody.innerHTML = `<h2>Historial de Tickets para ${deviceId}</h2><p>Cargando historial...</p>`; 
-        historyModal.classList.remove('hidden'); 
-        try { 
-            const snapshot = await db.collection('tickets').where('deviceIds', 'array-contains', deviceId).get(); 
-            if (snapshot.empty) { modalBody.innerHTML = `<h2>Historial de Tickets para ${deviceId}</h2><p>No hay tickets asociados a este dispositivo.</p>`; return; } 
-            
-            let ticketsData = [];
-            snapshot.forEach(doc => ticketsData.push({ id: doc.id, ...doc.data() }));
-            ticketsData.sort((a,b) => (b.createdAt?.toMillis()||0) - (a.createdAt?.toMillis()||0));
+    async function showDeviceHistoryModal(deviceId) {
+    const historyModal = document.getElementById('history-modal');
+    const modalBody = historyModal.querySelector('#history-modal-body');
 
-            let historyHTML = `<h2>Historial de Tickets para ${deviceId}</h2><ul class="simple-list" style="list-style-type: none; padding-left: 0;">`; 
-            ticketsData.forEach(ticket => { 
-                const ticketDate = ticket.createdAt ? ticket.createdAt.toDate().toLocaleDateString('es-ES') : 'Fecha N/A'; 
-                historyHTML += `<li style="display:flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee;"><div style="display:flex; flex-direction:column; gap:4px; max-width: 75%;"><div style="font-weight: 600; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><a href="#" class="view-ticket-btn" data-id="${ticket.id}" style="color: #2563eb !important; background: transparent !important; padding: 0 !important; border: none !important; box-shadow: none !important; text-decoration: underline !important; font-size:14px;">#${ticket.id}</a><span style="color: #475569; font-weight: normal; font-size:14px;"> - ${ticket.title || 'Sin título'}</span></div><div style="font-size: 12px; color: #64748b;">📅 ${ticketDate}</div></div><div><span class="status status-${ticket.status}">${capitalizar(ticket.status)}</span></div></li>`; 
-            }); 
-            historyHTML += '</ul>'; modalBody.innerHTML = historyHTML; 
-        } catch (error) { 
-            console.error("Error al cargar historial de tickets:", error); 
-            modalBody.innerHTML = `<h2>Historial de Tickets para ${deviceId}</h2><p style="color:red;">Error al cargar el historial.</p>`; 
-        } 
+    historyModal.classList.remove('hidden');
+
+    modalBody.innerHTML = `
+        <div class="device-history-modern">
+            <div class="device-history-header">
+                <div>
+                    <span class="device-history-eyebrow">Historial del activo</span>
+                    <h2>${deviceId}</h2>
+                    <p>Cargando tickets asociados...</p>
+                </div>
+            </div>
+        </div>
+    `;
+
+    try {
+        const snapshot = await db.collection('tickets')
+            .where('deviceIds', 'array-contains', deviceId)
+            .get();
+
+        let tickets = [];
+
+        snapshot.forEach(doc => {
+            tickets.push({
+                id: doc.id,
+                ...doc.data()
+            });
+        });
+
+        tickets.sort((a, b) => {
+            const dateA = a.createdAt?.toMillis?.() || 0;
+            const dateB = b.createdAt?.toMillis?.() || 0;
+            return dateB - dateA;
+        });
+
+        const formatDate = (ticket) => {
+            if (ticket.createdAt && ticket.createdAt.toDate) {
+                return ticket.createdAt.toDate().toLocaleDateString('es-ES');
+            }
+
+            return 'Fecha N/A';
+        };
+
+        const getTicketTitle = (ticket) => {
+            return ticket.title ||
+                ticket.description ||
+                ticket.descripcionDeLaNovedad ||
+                ticket.novelty ||
+                'Sin título';
+        };
+
+        const getStatusLabel = (status) => {
+            const labels = {
+                cerrado: 'Cerrado',
+                abierto: 'Abierto',
+                'en-curso': 'En curso',
+                pendiente: 'Pendiente',
+                convertida: 'Convertida'
+            };
+
+            return labels[status] || status || 'Sin estado';
+        };
+
+        if (tickets.length === 0) {
+            modalBody.innerHTML = `
+                <div class="device-history-modern">
+                    <div class="device-history-header">
+                        <div class="device-history-icon">👁</div>
+                        <div>
+                            <span class="device-history-eyebrow">Historial del activo</span>
+                            <h2>${deviceId}</h2>
+                            <p>No hay tickets asociados a este activo.</p>
+                        </div>
+                    </div>
+
+                    <div class="device-history-empty">
+                        No se encontraron registros relacionados.
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        const ticketsHTML = tickets.map(ticket => `
+            <div class="device-history-item">
+                <div class="device-history-left">
+                    <div class="device-history-dot ${ticket.status || 'cerrado'}"></div>
+
+                    <div class="device-history-info">
+                        <a href="#" class="device-history-ticket-link" data-id="${ticket.id}">
+                            #${ticket.id}
+                        </a>
+                        <p>${getTicketTitle(ticket)}</p>
+                        <small>📅 ${formatDate(ticket)}</small>
+                    </div>
+                </div>
+
+                <span class="device-history-status ${ticket.status || 'cerrado'}">
+                    ${getStatusLabel(ticket.status)}
+                </span>
+            </div>
+        `).join('');
+
+        modalBody.innerHTML = `
+            <div class="device-history-modern">
+                <div class="device-history-header">
+                    <div class="device-history-icon">👁</div>
+                    <div>
+                        <span class="device-history-eyebrow">Historial del activo</span>
+                        <h2>${deviceId}</h2>
+                        <p>${tickets.length} ticket${tickets.length === 1 ? '' : 's'} asociado${tickets.length === 1 ? '' : 's'} a este equipo.</p>
+                    </div>
+                </div>
+
+                <div class="device-history-summary">
+                    <div>
+                        <strong>${tickets.length}</strong>
+                        <span>Total tickets</span>
+                    </div>
+
+                    <div>
+                        <strong>${tickets.filter(t => t.status === 'cerrado').length}</strong>
+                        <span>Cerrados</span>
+                    </div>
+
+                    <div>
+                        <strong>${tickets.filter(t => t.status === 'abierto' || t.status === 'en-curso').length}</strong>
+                        <span>En seguimiento</span>
+                    </div>
+                </div>
+
+                <div class="device-history-list">
+                    ${ticketsHTML}
+                </div>
+
+                <div class="device-history-help">
+                    Haz clic sobre el número del ticket para abrir el detalle completo.
+                </div>
+            </div>
+        `;
+
+    } catch (error) {
+        console.error("Error al cargar historial de tickets:", error);
+
+        modalBody.innerHTML = `
+            <div class="device-history-modern">
+                <div class="device-history-header">
+                    <div class="device-history-icon error">!</div>
+                    <div>
+                        <span class="device-history-eyebrow">Historial del activo</span>
+                        <h2>${deviceId}</h2>
+                        <p style="color:#dc2626;">Error al cargar el historial.</p>
+                    </div>
+                </div>
+            </div>
+        `;
     }
+}
     
     function renderMaintenanceCalendar(container) { container.innerHTML = maintenanceCalendarHTML; const calendarEl = document.getElementById('maintenance-calendar'); const dataTable = document.getElementById('data-table'); db.collection('maintenance').where('status', 'in', ['planificada', 'completada']).onSnapshot(snapshot => { const eventColors = { 'Mantenimiento Preventivo': '#dc3545', 'Mantenimiento Correctivo': '#ffc107', 'Mantenimiento Lógico': '#6f42c1', 'Backup': '#fd7e14', 'Tarea': '#007bff', 'Recordatorio': '#17a2b8' }; const events = snapshot.docs.map(doc => { const data = doc.data(); let color = eventColors[data.type] || '#6c757d'; if (data.status === 'completada') color = '#28a745'; return { id: doc.id, title: data.task, start: data.date, color: color, extendedProps: { status: data.status, ...data } }; }); const calendar = new FullCalendar.Calendar(calendarEl, { headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek' }, initialView: 'dayGridMonth', locale: 'es', buttonText: { today: 'hoy', month: 'mes', week: 'semana', day: 'día', list: 'agenda' }, events: events, eventClick: function(info) { showEventActionChoiceModal(info.event.id, info.event.title, info.event.extendedProps); } }); calendar.render(); const tableHeaders = ['Tarea', 'Fecha Programada', 'Tipo', 'Estado']; const tableRows = snapshot.docs.map(doc => { const data = doc.data(); return [data.task, data.date, data.type, data.status]; }); dataTable.innerHTML = `<thead><tr>${tableHeaders.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${tableRows.map(row => `<tr>${row.map(cell => `<td>${cell}</td>`).join('')}</tr>`).join('')}</tbody>`; }, error => handleFirestoreError(error, calendarEl)); }
     
@@ -5183,41 +5320,56 @@ let devicesHTML = ''; if (ticket.deviceIds && ticket.deviceIds.length > 0) { dev
                     db.collection(btnBorrar.dataset.collection).doc(btnBorrar.dataset.id).delete();
                 }
             }
-                        const btnEditar = target.closest('.action-icon-edit') || target.closest('.edit-btn');
-            if (btnEditar) {
-                const collection = btnEditar.dataset.collection;
-                const category = btnEditar.dataset.category;
-                const id = btnEditar.dataset.id;
 
-                if (collection === 'inventory') {
-                    showInventoryEditModernModal(id, category);
-                } else {
-                    showItemFormModal(collection, category, id);
-                }
-            }
+            const btnEditar = target.closest('.action-icon-edit') || target.closest('.edit-btn');
+if (btnEditar) {
+    const collection = btnEditar.dataset.collection;
+    const category = btnEditar.dataset.category;
+    const id = btnEditar.dataset.id;
 
-            const btnVer = target.closest('.action-icon-view') || target.closest('.history-btn');
-            if (btnVer) {
-                showDeviceHistoryModal(btnVer.dataset.id);
-            }
-            
-            const viewTicketBtn = target.closest('.view-ticket-btn') || target.closest('.btn-accion-ticket');
-            if (viewTicketBtn) {
-                e.preventDefault();
-                showTicketModal(viewTicketBtn.dataset.id);
-            }
-            
-            const formBtn = target.closest('.open-form-modal-btn');
-            if (formBtn) showItemFormModal(formBtn.dataset.type, formBtn.dataset.category, null);
-            
-            const exportBtn = target.closest('.export-btn');
-            if (exportBtn) {
-                exportBtn.dataset.format === 'pdf'
-                    ? exportToPDF('data-table', 'reporte')
-                    : exportToCSV('data-table', 'reporte');
-            }
-        });
+    if (collection === 'inventory') {
+        showInventoryEditModernModal(id, category);
+    } else {
+        showItemFormModal(collection, category, id);
+    }
 
+    return;
+}
+
+const btnVer = target.closest('.action-icon-view') || target.closest('.history-btn');
+if (btnVer) {
+    showDeviceHistoryModal(btnVer.dataset.id);
+    return;
+}
+
+const viewTicketBtn = target.closest('.view-ticket-btn') 
+    || target.closest('.btn-accion-ticket')
+    || target.closest('.device-history-ticket-link')
+    || target.closest('.computer-ticket-link');
+
+if (viewTicketBtn) {
+    e.preventDefault();
+
+    const historyModal = document.getElementById('history-modal');
+    if (historyModal) historyModal.classList.add('hidden');
+
+    showTicketModal(viewTicketBtn.dataset.id);
+    return;
+}
+
+const formBtn = target.closest('.open-form-modal-btn');
+if (formBtn) {
+    showItemFormModal(formBtn.dataset.type, formBtn.dataset.category, null);
+    return;
+}
+
+const exportBtn = target.closest('.export-btn');
+if (exportBtn) {
+    exportBtn.dataset.format === 'pdf'
+        ? exportToPDF('data-table', 'reporte')
+        : exportToCSV('data-table', 'reporte');
+    return;
+}
         auth.onAuthStateChanged(user => {
             if (user) {
                 window.addEventListener('hashchange', router); 
