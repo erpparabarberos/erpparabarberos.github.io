@@ -5073,8 +5073,335 @@ if (isProviderCase) {
 
     return;
 }
-let devicesHTML = ''; if (ticket.deviceIds && ticket.deviceIds.length > 0) { devicesHTML = `<div class="ticket-detail-item"><strong>Dispositivos:</strong><ul style="margin-top: 5px; padding-left: 20px;">${ticket.deviceIds.map(id => `<li>${id}</li>`).join('')}</ul></div>`; } let mainContentHTML = ''; if (ticket.ticketType === 'velocity' || ticket.ticketType === 'siigo') { mainContentHTML = `<h4>Detalles del Reporte</h4><div class="ticket-details-grid"><div><strong>Fecha de Reporte:</strong> ${ticket.fechaDeReporte || 'N/A'}</div><div><strong>Hora de Reporte:</strong> ${ticket.horaDeReporte || 'N/A'}</div><div><strong>Medio de Solicitud:</strong> ${ticket.medioDeSolicitud || 'N/A'}</div><div><strong>Asesor de Soporte:</strong> ${ticket.asesorDeSoporte || 'N/A'}</div><div><strong>Ticket del Caso:</strong> ${ticket.ticketDelCaso || 'N/A'}</div></div><hr><h4>Descripción de la Novedad</h4><div class="card">${ticket.descripcionDeLaNovedad}</div>`; } else { mainContentHTML = `<h3>Descripción</h3><div class="card">${ticket.description}</div>`; } let historyHTML = '<h3>Historial de Avances</h3>'; if (ticket.history && ticket.history.length > 0) { historyHTML += '<ul class="ticket-history-log">'; ticket.history.sort((a, b) => b.timestamp.toMillis() - a.timestamp.toMillis()); ticket.history.forEach(entry => { historyHTML += `<li><div class="history-meta">Registrado el: ${entry.timestamp.toDate().toLocaleString('es-ES')}</div><div class="history-text">${entry.text}</div></li>`; }); historyHTML += '</ul>'; } else { historyHTML += '<p>No hay avances registrados.</p>'; } let actionsHTML = ''; if (ticket.status === 'abierto' || ticket.status === 'en-curso') { actionsHTML = `<hr><h3>Añadir Avance</h3><form id="progress-form"><div class="form-group"><textarea id="progress-text" rows="3" placeholder="Describe el avance realizado..." required></textarea></div><button type="submit" class="btn-warning">Guardar Avance y Poner "En Curso"</button></form><hr><h3>Añadir Solución Final y Cerrar Ticket</h3><form id="solution-form"><div class="form-group"><div id="solution-editor"></div></div><button type="submit" class="primary">Guardar Solución y Cerrar</button></form>`; } else if (ticket.status === 'cerrado') { actionsHTML = `<hr><h3>Solución Aplicada</h3><div class="card">${ticket.solution || 'No se especificó solución.'}</div>`; if (ticket.solution) { actionsHTML += `<div style="text-align: right; margin-top: 15px;"><button id="create-kb-from-ticket-btn" class="btn-blue">📝 Crear Artículo de Conocimiento</button></div>`; } } let modalActions = `<div class="ticket-modal-actions">`; if ((ticket.status === 'abierto' || ticket.status === 'en-curso') && ticket.ticketType === 'ti') { modalActions += `<button id="edit-ticket-btn" class="btn-secondary">✏️ Editar Ticket</button>`; } if (ticket.status === 'cerrado') { modalActions += `<button id="reopen-ticket-btn" class="btn-warning">↩️ Reabrir Ticket</button>`; } if (ticket.closedAt) { modalActions += `<button id="edit-closed-at-date-btn" class="btn-secondary" style="margin-left:10px;">🗓️ Editar Fecha Cierre</button>`; } modalActions += `</div>`; modalBody.innerHTML = `<div class="ticket-modal-layout"><div class="ticket-modal-main"><h2>Ticket ${ticket.id} (${capitalizar(ticket.ticketType || 'TI')})</h2>${modalActions}<hr>${mainContentHTML}${historyHTML}${actionsHTML}</div><div class="ticket-modal-sidebar"><h3>Detalles del Ticket</h3><div class="ticket-detail-item"><strong>Estado:</strong> <span class="status status-${ticket.status}">${capitalizar(ticket.status.replace('-', ' '))}</span></div>${ticket.priority ? `<div class="ticket-detail-item"><strong>Prioridad:</strong> ${capitalizar(ticket.priority)}</div>` : ''}<div class="ticket-detail-item"><strong>Solicitante:</strong> ${requesterName}</div>${ticket.locationId ? `<div class="ticket-detail-item"><strong>Ubicación:</strong> ${ticket.locationId}</div>` : ''}<div class="ticket-detail-item"><strong>Creado:</strong> ${ticket.createdAt.toDate().toLocaleString('es-ES')}</div>${ticket.closedAt ? `<div class="ticket-detail-item"><strong>Cerrado:</strong> ${ticket.closedAt.toDate().toLocaleString('es-ES')}</div>` : ''}${devicesHTML}</div></div>`; if ((ticket.status === 'abierto' || ticket.status === 'en-curso') && ticket.ticketType === 'ti') { document.getElementById('edit-ticket-btn').addEventListener('click', () => { ticketModal.classList.add('hidden'); showEditTicketModal(ticket.id); }); } if (document.getElementById('edit-closed-at-date-btn')) { document.getElementById('edit-closed-at-date-btn').addEventListener('click', () => { ticketModal.classList.add('hidden'); showEditClosedAtModal(ticket.id, ticket.closedAt); }); } if (ticket.status === 'abierto' || ticket.status === 'en-curso') { document.getElementById('progress-form').addEventListener('submit', async (e) => { e.preventDefault(); const text = document.getElementById('progress-text').value; if (!text.trim()) return; const newHistoryEntry = { text: text, timestamp: firebase.firestore.FieldValue.serverTimestamp() }; await db.collection('tickets').doc(ticket.id).update({ status: 'en-curso', history: firebase.firestore.FieldValue.arrayUnion(newHistoryEntry) }); showTicketModal(ticket.id); }); const solutionEditor = new Quill('#solution-editor', { theme: 'snow', placeholder: 'Describe la solución final aplicada...' }); document.getElementById('solution-form').addEventListener('submit', e => { e.preventDefault(); db.collection('tickets').doc(ticket.id).update({ solution: solutionEditor.root.innerHTML, status: 'cerrado', closedAt: firebase.firestore.FieldValue.serverTimestamp() }).then(() => showTicketModal(ticket.id)); }); } if (ticket.status === 'cerrado') { document.getElementById('reopen-ticket-btn').addEventListener('click', async () => { if (confirm('¿Estás seguro de que quieres reabrir este ticket?')) { const reopeningHistoryEntry = { text: `<strong>Ticket reabierto</strong> por el usuario.`, timestamp: firebase.firestore.Timestamp.fromDate(new Date()) }; try { await db.collection('tickets').doc(ticket.id).update({ status: 'abierto', closedAt: null, solution: null, history: firebase.firestore.FieldValue.arrayUnion(reopeningHistoryEntry) }); showTicketModal(ticket.id); } catch (error) { console.error("Error al reabrir el ticket:", error); alert("No se pudo reabrir el ticket."); } } }); const createKbBtn = document.getElementById('create-kb-from-ticket-btn'); if (createKbBtn) { createKbBtn.addEventListener('click', () => { const prefillData = { title: ticket.title, problem: ticket.description, solution: ticket.solution, type: 'article' }; ticketModal.classList.add('hidden'); showKnowledgeBaseFormModal(null, prefillData); }); } } }
-    
+const formatModalDate = (value) => {
+    if (!value) return 'N/A';
+
+    if (value.toDate) {
+        return value.toDate().toLocaleString('es-ES');
+    }
+
+    if (value instanceof Date) {
+        return value.toLocaleString('es-ES');
+    }
+
+    return value;
+};
+
+const formatOnlyDate = (value) => {
+    if (!value) return 'N/A';
+
+    if (value.toDate) {
+        return value.toDate().toLocaleDateString('es-ES');
+    }
+
+    if (value instanceof Date) {
+        return value.toLocaleDateString('es-ES');
+    }
+
+    return value;
+};
+
+const getStatusLabel = (status) => {
+    switch (status) {
+        case 'cerrado': return 'CERRADO';
+        case 'en-curso': return 'EN CURSO';
+        case 'abierto': return 'ABIERTO';
+        default: return (status || 'N/A').toUpperCase();
+    }
+};
+
+const getPriorityLabel = (priority) => {
+    if (!priority) return 'N/A';
+    return priority.charAt(0).toUpperCase() + priority.slice(1);
+};
+
+const getHistoryArray = () => {
+    if (!Array.isArray(ticket.history) || ticket.history.length === 0) {
+        return [];
+    }
+
+    return [...ticket.history].sort((a, b) => {
+        const dateA = a.timestamp?.toDate ? a.timestamp.toDate() : new Date(a.timestamp || 0);
+        const dateB = b.timestamp?.toDate ? b.timestamp.toDate() : new Date(b.timestamp || 0);
+        return dateA - dateB;
+    });
+};
+
+const historyEntries = getHistoryArray();
+
+const historyHTML = historyEntries.length > 0
+    ? historyEntries.map((entry, index) => {
+        const entryText = entry.text || 'Sin detalle registrado';
+        const entryDate = entry.timestamp?.toDate
+            ? entry.timestamp.toDate().toLocaleString('es-ES')
+            : 'Sin fecha';
+
+        let extraClass = '';
+        if (index === 0) extraClass = 'created';
+        if (index === historyEntries.length - 1 && ticket.status === 'cerrado') extraClass = 'closed';
+
+        return `
+            <div class="ticket-v2-timeline-item ${extraClass}">
+                <div class="ticket-v2-timeline-line">
+                    <span class="ticket-v2-timeline-dot"></span>
+                    ${index !== historyEntries.length - 1 ? '<span class="ticket-v2-timeline-stick"></span>' : ''}
+                </div>
+                <div class="ticket-v2-timeline-content">
+                    <div class="ticket-v2-timeline-date">${entryDate}</div>
+                    <div class="ticket-v2-timeline-text">${entryText}</div>
+                </div>
+            </div>
+        `;
+    }).join('')
+    : `
+        <div class="ticket-v2-empty-history">
+            No hay avances registrados.
+        </div>
+    `;
+
+const devicesHTML = Array.isArray(ticket.deviceIds) && ticket.deviceIds.length > 0
+    ? `
+        <ul class="ticket-v2-device-list">
+            ${ticket.deviceIds.map(device => `<li>${device}</li>`).join('')}
+        </ul>
+    `
+    : `<span class="ticket-v2-no-devices">Sin dispositivos asociadas</span>`;
+
+const topButtonsHTML = `
+    <div class="ticket-v2-top-actions">
+        ${ticket.status === 'cerrado' ? `
+            <button id="reopen-ticket-btn" class="ticket-v2-btn primary">
+                ↺ Reabrir ticket
+            </button>
+        ` : ''}
+
+        ${ticket.closedAt ? `
+            <button id="edit-closed-at-date-btn" class="ticket-v2-btn secondary">
+                🗓 Editar fecha cierre
+            </button>
+        ` : ''}
+
+        ${ticket.solution ? `
+            <button id="create-kb-from-ticket-btn" class="ticket-v2-btn secondary">
+                📘 Crear artículo de conocimiento
+            </button>
+        ` : ''}
+    </div>
+`;
+
+const openTicketActionsHTML = ticket.status !== 'cerrado'
+    ? `
+        <div class="ticket-v2-card">
+            <div class="ticket-v2-card-title">Añadir avance</div>
+            <form id="progress-form">
+                <div class="form-group">
+                    <textarea id="progress-text" rows="5" placeholder="Describe el avance realizado..." required></textarea>
+                </div>
+                <button type="submit" class="ticket-v2-btn primary full">
+                    Guardar avance y poner “EN CURSO”
+                </button>
+            </form>
+        </div>
+
+        <div class="ticket-v2-card">
+            <div class="ticket-v2-card-title">Cerrar ticket con solución final</div>
+            <form id="solution-form">
+                <div class="form-group">
+                    <div id="solution-editor"></div>
+                </div>
+                <button type="submit" class="ticket-v2-btn success full">
+                    Cerrar ticket
+                </button>
+            </form>
+        </div>
+    `
+    : '';
+
+const solutionCardHTML = ticket.status === 'cerrado'
+    ? `
+        <div class="ticket-v2-card">
+            <div class="ticket-v2-card-title">Solución Aplicada</div>
+            <div class="ticket-v2-solution-box">
+                ${ticket.solution || 'No se registró solución.'}
+            </div>
+        </div>
+    `
+    : '';
+
+modalBody.innerHTML = `
+    <div class="ticket-v2-modal">
+        <div class="ticket-v2-header">
+            <div class="ticket-v2-header-left">
+                <div class="ticket-v2-icon">🎫</div>
+                <div>
+                    <h2>TICKET ${ticket.id} (${capitalizar(ticket.ticketType || 'ti')})</h2>
+                    <div class="ticket-v2-status-row">
+                        <span class="ticket-v2-status ${ticket.status === 'cerrado' ? 'closed' : (ticket.status === 'en-curso' ? 'progress' : 'open')}">
+                            ${getStatusLabel(ticket.status)}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            ${topButtonsHTML}
+        </div>
+
+        <div class="ticket-v2-layout">
+            <div class="ticket-v2-main">
+                <div class="ticket-v2-card">
+                    <div class="ticket-v2-card-title">Descripción</div>
+                    <div class="ticket-v2-description-box">
+                        ${ticket.description || 'Sin descripción registrada.'}
+                    </div>
+                </div>
+
+                <div class="ticket-v2-card">
+                    <div class="ticket-v2-card-title">Historial de Avances</div>
+                    <div class="ticket-v2-timeline">
+                        ${historyHTML}
+                    </div>
+                </div>
+
+                ${solutionCardHTML}
+            </div>
+
+            <div class="ticket-v2-sidebar">
+                <div class="ticket-v2-card">
+                    <div class="ticket-v2-card-title">Resumen del Ticket</div>
+
+                    <div class="ticket-v2-summary-item">
+                        <span>Estado</span>
+                        <strong class="${ticket.status === 'cerrado' ? 'text-success' : 'text-warning'}">${getStatusLabel(ticket.status)}</strong>
+                    </div>
+
+                    <div class="ticket-v2-summary-item">
+                        <span>Prioridad</span>
+                        <strong>${getPriorityLabel(ticket.priority)}</strong>
+                    </div>
+
+                    <div class="ticket-v2-summary-item">
+                        <span>Solicitante</span>
+                        <strong>${requesterName}</strong>
+                    </div>
+
+                    <div class="ticket-v2-summary-item">
+                        <span>Ubicación</span>
+                        <strong>${ticket.locationId || 'N/A'}</strong>
+                    </div>
+
+                    <div class="ticket-v2-summary-item">
+                        <span>Creado</span>
+                        <strong>${formatModalDate(ticket.createdAt)}</strong>
+                    </div>
+
+                    <div class="ticket-v2-summary-item">
+                        <span>Cerrado</span>
+                        <strong>${formatModalDate(ticket.closedAt)}</strong>
+                    </div>
+
+                    <div class="ticket-v2-summary-item devices">
+                        <span>Dispositivos asociadas</span>
+                        <div>${devicesHTML}</div>
+                    </div>
+                </div>
+
+                ${openTicketActionsHTML}
+            </div>
+        </div>
+    </div>
+`;
+
+if (ticket.status !== 'cerrado') {
+    const solutionEditor = new Quill('#solution-editor', {
+        theme: 'snow',
+        placeholder: 'Describe la solución final aplicada...'
+    });
+
+    document.getElementById('progress-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const text = document.getElementById('progress-text').value.trim();
+        if (!text) return;
+
+        const newHistoryEntry = {
+            text,
+            timestamp: firebase.firestore.Timestamp.fromDate(new Date())
+        };
+
+        await db.collection('tickets').doc(ticket.id).update({
+            status: 'en-curso',
+            history: firebase.firestore.FieldValue.arrayUnion(newHistoryEntry)
+        });
+
+        showTicketModal(ticket.id);
+    });
+
+    document.getElementById('solution-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const finalSolution = solutionEditor.root.innerHTML;
+        if (!finalSolution || finalSolution === '<p><br></p>') return;
+
+        const closeHistoryEntry = {
+            text: `<strong>Ticket cerrado</strong><br>Se registró solución final.`,
+            timestamp: firebase.firestore.Timestamp.fromDate(new Date())
+        };
+
+        await db.collection('tickets').doc(ticket.id).update({
+            solution: finalSolution,
+            status: 'cerrado',
+            closedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            history: firebase.firestore.FieldValue.arrayUnion(closeHistoryEntry)
+        });
+
+        showTicketModal(ticket.id);
+    });
+}
+
+const reopenBtn = document.getElementById('reopen-ticket-btn');
+if (reopenBtn) {
+    reopenBtn.addEventListener('click', async () => {
+        if (!confirm('¿Estás seguro de que quieres reabrir este ticket?')) return;
+
+        const reopeningHistoryEntry = {
+            text: `<strong>Ticket reabierto</strong> por el usuario.`,
+            timestamp: firebase.firestore.Timestamp.fromDate(new Date())
+        };
+
+        await db.collection('tickets').doc(ticket.id).update({
+            status: 'abierto',
+            closedAt: null,
+            solution: null,
+            history: firebase.firestore.FieldValue.arrayUnion(reopeningHistoryEntry)
+        });
+
+        showTicketModal(ticket.id);
+    });
+}
+
+const editClosedBtn = document.getElementById('edit-closed-at-date-btn');
+if (editClosedBtn) {
+    editClosedBtn.addEventListener('click', () => {
+        ticketModal.classList.add('hidden');
+        showEditClosedAtModal(ticket.id, ticket.closedAt);
+    });
+}
+
+const createKbBtn = document.getElementById('create-kb-from-ticket-btn');
+if (createKbBtn) {
+    createKbBtn.addEventListener('click', () => {
+        const prefillData = {
+            title: ticket.title || `Solución ${ticket.id}`,
+            problem: ticket.description || '',
+            solution: ticket.solution || '',
+            type: 'article'
+        };
+
+        ticketModal.classList.add('hidden');
+        showKnowledgeBaseFormModal(null, prefillData);
+    });
+}
+}
     async function renderKnowledgeBase(container) {
     container.innerHTML = knowledgeBaseHTML;
 
@@ -5351,7 +5678,14 @@ if (viewTicketBtn) {
     e.preventDefault();
 
     const historyModal = document.getElementById('history-modal');
-    if (historyModal) historyModal.classList.add('hidden');
+    if (historyModal) {
+        historyModal.classList.add('hidden');
+    }
+
+    const formModal = document.getElementById('form-modal');
+    if (formModal) {
+        formModal.classList.add('hidden');
+    }
 
     showTicketModal(viewTicketBtn.dataset.id);
     return;
