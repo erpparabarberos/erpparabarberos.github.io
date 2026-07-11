@@ -5183,17 +5183,18 @@ let devicesHTML = ''; if (ticket.deviceIds && ticket.deviceIds.length > 0) { dev
                     db.collection(btnBorrar.dataset.collection).doc(btnBorrar.dataset.id).delete();
                 }
             }
-            const btnEditar = target.closest('.action-icon-edit') || target.closest('.edit-btn');
-if (btnEditar) {
-    const collection = btnEditar.dataset.collection;
-    const category = btnEditar.dataset.category;
-    const id = btnEditar.dataset.id;
+                        const btnEditar = target.closest('.action-icon-edit') || target.closest('.edit-btn');
+            if (btnEditar) {
+                const collection = btnEditar.dataset.collection;
+                const category = btnEditar.dataset.category;
+                const id = btnEditar.dataset.id;
 
-    if (collection === 'inventory') {
-    showInventoryEditModernModal(id, category);
-    } else {
-    showItemFormModal(collection, category, id);
-    }
+                if (collection === 'inventory') {
+                    showInventoryEditModernModal(id, category);
+                } else {
+                    showItemFormModal(collection, category, id);
+                }
+            }
 
             const btnVer = target.closest('.action-icon-view') || target.closest('.history-btn');
             if (btnVer) {
@@ -5211,7 +5212,9 @@ if (btnEditar) {
             
             const exportBtn = target.closest('.export-btn');
             if (exportBtn) {
-                exportBtn.dataset.format === 'pdf' ? exportToPDF('data-table', 'reporte') : exportToCSV('data-table', 'reporte');
+                exportBtn.dataset.format === 'pdf'
+                    ? exportToPDF('data-table', 'reporte')
+                    : exportToCSV('data-table', 'reporte');
             }
         });
 
