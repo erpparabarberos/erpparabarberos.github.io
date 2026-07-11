@@ -5234,7 +5234,7 @@ modalBody.innerHTML = `
             <div class="ticket-v2-header-left">
                 <div class="ticket-v2-icon">🎫</div>
                 <div>
-                    <h2>TICKET ${ticket.id} (${capitalizar(ticket.ticketType || 'ti')})</h2>
+                    <h2>${ticket.id} (${capitalizar(ticket.ticketType || 'ti')})</h2>
                     <div class="ticket-v2-status-row">
                         <span class="ticket-v2-status ${ticket.status === 'cerrado' ? 'closed' : (ticket.status === 'en-curso' ? 'progress' : 'open')}">
                             ${getStatusLabel(ticket.status)}
