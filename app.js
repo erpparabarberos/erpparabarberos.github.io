@@ -5704,6 +5704,9 @@ if (exportBtn) {
         : exportToCSV('data-table', 'reporte');
     return;
 }
+
+        });
+
         auth.onAuthStateChanged(user => {
             if (user) {
                 window.addEventListener('hashchange', router); 
