@@ -4454,57 +4454,6 @@ const saveExecutions = (executions) => {
         startMonth: 4
     }
 ];
-        const getFrequencyInterval = (frequency) => {
-    const value = normalize(frequency);
-
-    if (value.includes('mensual')) return 1;
-    if (value.includes('bimestral')) return 2;
-    if (value.includes('trimestral')) return 3;
-    if (value.includes('semestral')) return 6;
-    if (value.includes('anual')) return 12;
-
-    return 1;
-};
-
-const shouldTaskRunInMonth = (task, selectedMonth) => {
-    const [, month] = selectedMonth.split('-');
-    const monthNumber = Number(month);
-
-    const interval = getFrequencyInterval(task.frequency);
-    const startMonth = Number(task.startMonth || 1);
-
-    return (monthNumber - startMonth) % interval === 0;
-};
-    const getMonthLabel = (monthValue) => {
-        const [year, month] = monthValue.split('-');
-        const date = new Date(Number(year), Number(month) - 1, 1);
-
-        return date.toLocaleDateString('es-ES', {
-            month: 'long',
-            year: 'numeric'
-        });
-    };
-        const getFrequencyInterval = (frequency) => {
-    const value = normalize(frequency);
-
-    if (value.includes('mensual')) return 1;
-    if (value.includes('bimestral')) return 2;
-    if (value.includes('trimestral')) return 3;
-    if (value.includes('semestral')) return 6;
-    if (value.includes('anual')) return 12;
-
-    return 1;
-};
-
-const shouldTaskRunInMonth = (task, selectedMonth) => {
-    const [, month] = selectedMonth.split('-');
-    const monthNumber = Number(month);
-
-    const interval = getFrequencyInterval(task.frequency);
-    const startMonth = Number(task.startMonth || 1);
-
-    return (monthNumber - startMonth) % interval === 0;
-};
     const normalize = (value) => String(value || '').toLowerCase().trim();
         const getTaskStatus = (task) => {
     if (task.supportId || task.executedAt) return 'ejecutado';
