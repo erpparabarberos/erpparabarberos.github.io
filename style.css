@@ -6380,3 +6380,27 @@ tr:hover td { background-color: #f8fafc; }
     box-shadow: none !important;
     transform: none !important;
 }
+/* ==============================
+   MODAL NUEVA TAREA PLANIFICACIÓN
+============================== */
+
+.planning-execution-icon.blue {
+    background: #eef4ff !important;
+    color: #2563eb !important;
+}
+
+#planning-new-task-modal .planning-execution-modal {
+    width: min(92vw, 860px);
+}
+
+#planning-new-task-modal select {
+    width: 100%;
+    min-height: 48px;
+    border: 1px solid #dbe4f0;
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 15px;
+    color: #0f172a;
+    background: #ffffff;
+    box-sizing: border-box;
+}
