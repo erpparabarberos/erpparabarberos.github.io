@@ -4169,128 +4169,312 @@ const saveExecutions = (executions) => {
     localStorage.setItem(getExecutionStorageKey(), JSON.stringify(executions));
 };
     const defaultTasks = [
-        {
-            item: 1,
-            task: 'Mantenimiento preventivo equipos de cómputo',
-            location: 'Principal - Administrativo',
-            frequency: 'Semestral',
-            margin: 3,
-            months: ['2026-02', '2026-08']
-        },
-        {
-            item: 1,
-            task: 'Mantenimiento preventivo equipos de cómputo',
-            location: 'Principal - Bodega',
-            frequency: 'Semestral',
-            margin: 3,
-            months: ['2026-02', '2026-08']
-        },
-        {
-            item: 1,
-            task: 'Mantenimiento preventivo equipos de cómputo',
-            location: 'PDV - Cali',
-            frequency: 'Semestral',
-            margin: 3,
-            months: ['2026-02', '2026-08']
-        },
-        {
-            item: 2,
-            task: 'Mantenimiento lógico equipos de cómputo',
-            location: 'Principal - Administrativo',
-            frequency: 'Bimestral',
-            margin: 2,
-            months: ['2026-01', '2026-03', '2026-05', '2026-07', '2026-09', '2026-11']
-        },
-        {
-            item: 2,
-            task: 'Mantenimiento lógico equipos de cómputo',
-            location: 'Principal - Bodega',
-            frequency: 'Bimestral',
-            margin: 2,
-            months: ['2026-01', '2026-03', '2026-05', '2026-07', '2026-09', '2026-11']
-        },
-        {
-            item: 2,
-            task: 'Mantenimiento lógico equipos de cómputo',
-            location: 'PDV - Cali',
-            frequency: 'Bimestral',
-            margin: 2,
-            months: ['2026-01', '2026-03', '2026-05', '2026-07', '2026-09', '2026-11']
-        },
-        {
-            item: 2,
-            task: 'Mantenimiento lógico equipos de cómputo',
-            location: 'PDV - Medellín / Tuluá / Pasto / Bogotá',
-            frequency: 'Bimestral',
-            margin: 2,
-            months: ['2026-01', '2026-03', '2026-05', '2026-07', '2026-09', '2026-11']
-        },
-        {
-            item: 3,
-            task: 'Mantenimiento preventivo impresoras',
-            location: 'Principal - Administrativo',
-            frequency: 'Bimestral',
-            margin: 2,
-            months: ['2026-01', '2026-03', '2026-05', '2026-07', '2026-09', '2026-11']
-        },
-        {
-            item: 3,
-            task: 'Mantenimiento preventivo impresoras',
-            location: 'Principal - Bodega',
-            frequency: 'Bimestral',
-            margin: 2,
-            months: ['2026-02', '2026-04', '2026-06', '2026-08', '2026-10']
-        },
-        {
-            item: 3,
-            task: 'Mantenimiento preventivo impresoras',
-            location: 'PDV - Cali',
-            frequency: 'Semestral',
-            margin: 2,
-            months: ['2026-02', '2026-08']
-        },
-        {
-            item: 4,
-            task: 'Mantenimiento puntos de red',
-            location: 'Principal - Administrativo',
-            frequency: 'Trimestral',
-            margin: 3,
-            months: ['2026-02', '2026-04', '2026-06', '2026-08', '2026-10']
-        },
-        {
-            item: 4,
-            task: 'Mantenimiento puntos de red',
-            location: 'Principal - Bodega',
-            frequency: 'Trimestral',
-            margin: 3,
-            months: ['2026-02', '2026-04', '2026-06', '2026-08', '2026-10']
-        },
-        {
-            item: 5,
-            task: 'Mantenimiento y backup teléfonos celulares',
-            location: 'Principal - Administrativo',
-            frequency: 'Mensual',
-            margin: 1,
-            months: ['2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06', '2026-07', '2026-08', '2026-09', '2026-10', '2026-11']
-        },
-        {
-            item: 5,
-            task: 'Mantenimiento y backup teléfonos celulares',
-            location: 'Principal - Bodega',
-            frequency: 'Mensual',
-            margin: 2,
-            months: ['2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06', '2026-07', '2026-08', '2026-09', '2026-10', '2026-11']
-        },
-        {
-            item: 5,
-            task: 'Mantenimiento y backup teléfonos celulares',
-            location: 'PDV - Cali',
-            frequency: 'Semestral',
-            margin: 2,
-            months: ['2026-04', '2026-10']
-        }
-    ];
+    {
+        item: 1,
+        task: 'Mantenimiento preventivo equipos de cómputo',
+        location: 'Principal - Administrativo',
+        frequency: 'Semestral',
+        margin: 3,
+        startMonth: 2
+    },
+    {
+        item: 1,
+        task: 'Mantenimiento preventivo equipos de cómputo',
+        location: 'Principal - Bodega',
+        frequency: 'Semestral',
+        margin: 3,
+        startMonth: 2
+    },
+    {
+        item: 1,
+        task: 'Mantenimiento preventivo equipos de cómputo',
+        location: 'PDV - Cali',
+        frequency: 'Semestral',
+        margin: 3,
+        startMonth: 2
+    },
+    {
+        item: 1,
+        task: 'Mantenimiento preventivo equipos de cómputo',
+        location: 'PDV - Medellín',
+        frequency: 'Semestral',
+        margin: 3,
+        startMonth: 2
+    },
+    {
+        item: 1,
+        task: 'Mantenimiento preventivo equipos de cómputo',
+        location: 'PDV - Tuluá',
+        frequency: 'Semestral',
+        margin: 3,
+        startMonth: 2
+    },
+    {
+        item: 1,
+        task: 'Mantenimiento preventivo equipos de cómputo',
+        location: 'PDV - Pasto',
+        frequency: 'Semestral',
+        margin: 3,
+        startMonth: 2
+    },
+    {
+        item: 1,
+        task: 'Mantenimiento preventivo equipos de cómputo',
+        location: 'PDV - Bogotá',
+        frequency: 'Semestral',
+        margin: 3,
+        startMonth: 2
+    },
 
+    {
+        item: 2,
+        task: 'Mantenimiento lógico equipos de cómputo',
+        location: 'Principal - Administrativo',
+        frequency: 'Bimestral',
+        margin: 2,
+        startMonth: 1
+    },
+    {
+        item: 2,
+        task: 'Mantenimiento lógico equipos de cómputo',
+        location: 'Principal - Bodega',
+        frequency: 'Bimestral',
+        margin: 2,
+        startMonth: 1
+    },
+    {
+        item: 2,
+        task: 'Mantenimiento lógico equipos de cómputo',
+        location: 'PDV - Cali',
+        frequency: 'Bimestral',
+        margin: 2,
+        startMonth: 1
+    },
+    {
+        item: 2,
+        task: 'Mantenimiento lógico equipos de cómputo',
+        location: 'PDV - Medellín',
+        frequency: 'Bimestral',
+        margin: 2,
+        startMonth: 1
+    },
+    {
+        item: 2,
+        task: 'Mantenimiento lógico equipos de cómputo',
+        location: 'PDV - Tuluá',
+        frequency: 'Bimestral',
+        margin: 2,
+        startMonth: 1
+    },
+    {
+        item: 2,
+        task: 'Mantenimiento lógico equipos de cómputo',
+        location: 'PDV - Pasto',
+        frequency: 'Bimestral',
+        margin: 2,
+        startMonth: 1
+    },
+    {
+        item: 2,
+        task: 'Mantenimiento lógico equipos de cómputo',
+        location: 'PDV - Bogotá',
+        frequency: 'Bimestral',
+        margin: 2,
+        startMonth: 1
+    },
+
+    {
+        item: 3,
+        task: 'Mantenimiento preventivo impresoras',
+        location: 'Principal - Administrativo',
+        frequency: 'Bimestral',
+        margin: 2,
+        startMonth: 1
+    },
+    {
+        item: 3,
+        task: 'Mantenimiento preventivo impresoras',
+        location: 'Principal - Bodega',
+        frequency: 'Bimestral',
+        margin: 2,
+        startMonth: 2
+    },
+    {
+        item: 3,
+        task: 'Mantenimiento preventivo impresoras',
+        location: 'PDV - Cali',
+        frequency: 'Semestral',
+        margin: 2,
+        startMonth: 2
+    },
+    {
+        item: 3,
+        task: 'Mantenimiento preventivo impresoras',
+        location: 'PDV - Medellín',
+        frequency: 'Semestral',
+        margin: 2,
+        startMonth: 2
+    },
+    {
+        item: 3,
+        task: 'Mantenimiento preventivo impresoras',
+        location: 'PDV - Tuluá',
+        frequency: 'Semestral',
+        margin: 2,
+        startMonth: 2
+    },
+    {
+        item: 3,
+        task: 'Mantenimiento preventivo impresoras',
+        location: 'PDV - Pasto',
+        frequency: 'Semestral',
+        margin: 2,
+        startMonth: 2
+    },
+    {
+        item: 3,
+        task: 'Mantenimiento preventivo impresoras',
+        location: 'PDV - Bogotá',
+        frequency: 'Semestral',
+        margin: 2,
+        startMonth: 2
+    },
+
+    {
+        item: 4,
+        task: 'Mantenimiento puntos de red',
+        location: 'Principal - Administrativo',
+        frequency: 'Trimestral',
+        margin: 3,
+        startMonth: 2
+    },
+    {
+        item: 4,
+        task: 'Mantenimiento puntos de red',
+        location: 'Principal - Bodega',
+        frequency: 'Trimestral',
+        margin: 3,
+        startMonth: 2
+    },
+    {
+        item: 4,
+        task: 'Mantenimiento puntos de red',
+        location: 'PDV - Cali',
+        frequency: 'Trimestral',
+        margin: 3,
+        startMonth: 2
+    },
+    {
+        item: 4,
+        task: 'Mantenimiento puntos de red',
+        location: 'PDV - Medellín',
+        frequency: 'Trimestral',
+        margin: 3,
+        startMonth: 2
+    },
+    {
+        item: 4,
+        task: 'Mantenimiento puntos de red',
+        location: 'PDV - Tuluá',
+        frequency: 'Trimestral',
+        margin: 3,
+        startMonth: 2
+    },
+    {
+        item: 4,
+        task: 'Mantenimiento puntos de red',
+        location: 'PDV - Pasto',
+        frequency: 'Trimestral',
+        margin: 3,
+        startMonth: 2
+    },
+    {
+        item: 4,
+        task: 'Mantenimiento puntos de red',
+        location: 'PDV - Bogotá',
+        frequency: 'Trimestral',
+        margin: 3,
+        startMonth: 2
+    },
+
+    {
+        item: 5,
+        task: 'Mantenimiento y backup teléfonos celulares',
+        location: 'Principal - Administrativo',
+        frequency: 'Mensual',
+        margin: 1,
+        startMonth: 1
+    },
+    {
+        item: 5,
+        task: 'Mantenimiento y backup teléfonos celulares',
+        location: 'Principal - Bodega',
+        frequency: 'Mensual',
+        margin: 1,
+        startMonth: 1
+    },
+    {
+        item: 5,
+        task: 'Mantenimiento y backup teléfonos celulares',
+        location: 'PDV - Cali',
+        frequency: 'Semestral',
+        margin: 2,
+        startMonth: 4
+    },
+    {
+        item: 5,
+        task: 'Mantenimiento y backup teléfonos celulares',
+        location: 'PDV - Medellín',
+        frequency: 'Semestral',
+        margin: 2,
+        startMonth: 4
+    },
+    {
+        item: 5,
+        task: 'Mantenimiento y backup teléfonos celulares',
+        location: 'PDV - Tuluá',
+        frequency: 'Semestral',
+        margin: 2,
+        startMonth: 4
+    },
+    {
+        item: 5,
+        task: 'Mantenimiento y backup teléfonos celulares',
+        location: 'PDV - Pasto',
+        frequency: 'Semestral',
+        margin: 2,
+        startMonth: 4
+    },
+    {
+        item: 5,
+        task: 'Mantenimiento y backup teléfonos celulares',
+        location: 'PDV - Bogotá',
+        frequency: 'Semestral',
+        margin: 2,
+        startMonth: 4
+    }
+];
+        const getFrequencyInterval = (frequency) => {
+    const value = normalize(frequency);
+
+    if (value.includes('mensual')) return 1;
+    if (value.includes('bimestral')) return 2;
+    if (value.includes('trimestral')) return 3;
+    if (value.includes('semestral')) return 6;
+    if (value.includes('anual')) return 12;
+
+    return 1;
+};
+
+const shouldTaskRunInMonth = (task, selectedMonth) => {
+    const [, month] = selectedMonth.split('-');
+    const monthNumber = Number(month);
+
+    const interval = getFrequencyInterval(task.frequency);
+    const startMonth = Number(task.startMonth || 1);
+
+    return (monthNumber - startMonth) % interval === 0;
+};
     const getMonthLabel = (monthValue) => {
         const [year, month] = monthValue.split('-');
         const date = new Date(Number(year), Number(month) - 1, 1);
@@ -4300,7 +4484,27 @@ const saveExecutions = (executions) => {
             year: 'numeric'
         });
     };
+        const getFrequencyInterval = (frequency) => {
+    const value = normalize(frequency);
 
+    if (value.includes('mensual')) return 1;
+    if (value.includes('bimestral')) return 2;
+    if (value.includes('trimestral')) return 3;
+    if (value.includes('semestral')) return 6;
+    if (value.includes('anual')) return 12;
+
+    return 1;
+};
+
+const shouldTaskRunInMonth = (task, selectedMonth) => {
+    const [, month] = selectedMonth.split('-');
+    const monthNumber = Number(month);
+
+    const interval = getFrequencyInterval(task.frequency);
+    const startMonth = Number(task.startMonth || 1);
+
+    return (monthNumber - startMonth) % interval === 0;
+};
     const normalize = (value) => String(value || '').toLowerCase().trim();
         const getTaskStatus = (task) => {
     if (task.supportId || task.executedAt) return 'ejecutado';
@@ -4337,14 +4541,35 @@ const saveExecutions = (executions) => {
             locationFilter.innerHTML += `<option value="${location}">${location}</option>`;
         });
     };
-        const buildTasksForMonth = () => {
+        const getFrequencyInterval = (frequency) => {
+    const value = normalize(frequency);
+
+    if (value.includes('mensual')) return 1;
+    if (value.includes('bimestral')) return 2;
+    if (value.includes('trimestral')) return 3;
+    if (value.includes('semestral')) return 6;
+    if (value.includes('anual')) return 12;
+
+    return 1;
+};
+
+const shouldTaskRunInMonth = (task, selectedMonth) => {
+    const [, month] = selectedMonth.split('-');
+    const monthNumber = Number(month);
+
+    const interval = getFrequencyInterval(task.frequency);
+    const startMonth = Number(task.startMonth || 1);
+
+    return (monthNumber - startMonth) % interval === 0;
+};
+const buildTasksForMonth = () => {
     const selectedMonth = monthInput.value;
     const executions = loadExecutions();
 
     planningTasks = defaultTasks
-        .filter(task => task.months.includes(selectedMonth))
+        .filter(task => shouldTaskRunInMonth(task, selectedMonth))
         .map((task, index) => {
-            const id = `PLAN-${selectedMonth}-${index + 1}`;
+            const id = `PLAN-${selectedMonth}-${task.item}-${index + 1}`;
             const execution = executions[id] || {};
 
             return {
@@ -4359,7 +4584,6 @@ const saveExecutions = (executions) => {
             };
         });
 };
-
     const updateKPIs = (tasks) => {
         const total = tasks.length;
         const executed = tasks.filter(task => getTaskStatus(task) === 'ejecutado').length;
