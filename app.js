@@ -1324,6 +1324,198 @@ const newTITicketFormHTML = `
 </section>
 `;
     const genericListPageHTML = `<h1 id="page-title"></h1><div class="add-new-button-container"><button class="export-btn csv" data-format="csv">Exportar a Excel (CSV)</button><button class="export-btn pdf" data-format="pdf">Exportar a PDF</button><button id="add-item-btn" class="btn-blue open-form-modal-btn">Añadir Nuevo</button></div><div class="card"><div class="table-search-container"><input type="text" id="table-search-input" placeholder="🔍 Buscar en la tabla..."></div><h2 id="item-list-title"></h2><div class="table-wrapper"><table id="data-table"><thead id="item-table-head"></thead><tbody id="item-table-body"></tbody></table></div></div>`;
+    const credentialsEmailsModernPageHTML = `
+<section class="credentials-modern-page">
+
+    <div class="credentials-modern-header">
+        <div class="credentials-title-wrap">
+            <div class="credentials-main-icon">
+                <svg viewBox="0 0 24 24" width="34" height="34" fill="none">
+                    <path d="M4 6.5h16v11H4v-11Z" stroke="#2563eb" stroke-width="2" rx="2"/>
+                    <path d="M4.8 7.3 12 13l7.2-5.7" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <div>
+                <h1>Correos electrónicos</h1>
+                <div class="credentials-breadcrumb">
+                    <span>Accesos</span>
+                    <strong>/</strong>
+                    <span>Correos electrónicos</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="credentials-header-actions">
+            <button class="credentials-export-btn export-btn csv" data-format="csv">Exportar a Excel (CSV)</button>
+            <button class="credentials-export-btn export-btn pdf" data-format="pdf">Exportar a PDF</button>
+            <button id="add-item-btn" class="credentials-add-btn open-form-modal-btn">+ Añadir credencial de correo</button>
+        </div>
+    </div>
+
+    <div class="credentials-kpi-grid">
+        <div class="credentials-kpi-card">
+            <div class="credentials-kpi-icon blue">✉</div>
+            <div>
+                <span>Total correos</span>
+                <strong id="cred-kpi-total">0</strong>
+                <small>Registros en total</small>
+            </div>
+        </div>
+
+        <div class="credentials-kpi-card">
+            <div class="credentials-kpi-icon green">✓</div>
+            <div>
+                <span>Activos</span>
+                <strong id="cred-kpi-active">0</strong>
+                <small id="cred-kpi-active-percent">0% del total</small>
+            </div>
+        </div>
+
+        <div class="credentials-kpi-card">
+            <div class="credentials-kpi-icon orange">Ⅱ</div>
+            <div>
+                <span>Inactivos</span>
+                <strong id="cred-kpi-inactive">0</strong>
+                <small id="cred-kpi-inactive-percent">0% del total</small>
+            </div>
+        </div>
+
+        <div class="credentials-kpi-card">
+            <div class="credentials-kpi-icon purple">👥</div>
+            <div>
+                <span>Usuarios asignados</span>
+                <strong id="cred-kpi-users">0</strong>
+                <small>Usuarios únicos</small>
+            </div>
+        </div>
+
+        <div class="credentials-kpi-card">
+            <div class="credentials-kpi-icon blue-soft">▥</div>
+            <div>
+                <span>Áreas</span>
+                <strong id="cred-kpi-areas">0</strong>
+                <small>Áreas diferentes</small>
+            </div>
+        </div>
+
+        <div class="credentials-kpi-card">
+            <div class="credentials-kpi-icon cyan">↻</div>
+            <div>
+                <span>Última actualización</span>
+                <strong id="cred-kpi-last-update">N/A</strong>
+                <small>Actualización más reciente</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="credentials-filter-card">
+        <div class="credentials-search-row">
+            <div class="credentials-search-box">
+                <span>🔍</span>
+                <input type="text" id="credentials-search-input" placeholder="Buscar por correo, usuario, código o servicio...">
+            </div>
+
+            <button type="button" class="credentials-advanced-btn" id="credentials-toggle-filters">
+                Filtros avanzados ˄
+            </button>
+        </div>
+
+        <div class="credentials-filter-grid" id="credentials-filter-grid">
+            <div class="credentials-filter-item">
+                <label>Servicio</label>
+                <select id="credentials-filter-service">
+                    <option value="">Todos los servicios</option>
+                </select>
+            </div>
+
+            <div class="credentials-filter-item">
+                <label>Área</label>
+                <select id="credentials-filter-area">
+                    <option value="">Todas las áreas</option>
+                </select>
+            </div>
+
+            <div class="credentials-filter-item">
+                <label>Estado</label>
+                <select id="credentials-filter-status">
+                    <option value="">Todos los estados</option>
+                </select>
+            </div>
+
+            <div class="credentials-filter-item">
+                <label>Usuario asignado</label>
+                <select id="credentials-filter-user">
+                    <option value="">Todos los usuarios</option>
+                </select>
+            </div>
+
+            <div class="credentials-filter-item">
+                <label>Actualizado desde</label>
+                <input type="date" id="credentials-filter-date-from">
+            </div>
+
+            <div class="credentials-filter-item">
+                <label>Actualizado hasta</label>
+                <input type="date" id="credentials-filter-date-to">
+            </div>
+
+            <div class="credentials-filter-buttons">
+                <button type="button" id="credentials-clear-filters" class="credentials-clear-btn">Limpiar</button>
+                <button type="button" id="credentials-apply-filters" class="credentials-apply-btn">Aplicar filtros</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="credentials-selection-bar hidden" id="credentials-selection-bar">
+        <label class="credentials-selected-info">
+            <input type="checkbox" id="credentials-select-all">
+            <span id="credentials-selected-count">0 seleccionados</span>
+        </label>
+
+        <button type="button" id="credentials-delete-selected" class="credentials-selected-delete">Eliminar seleccionados</button>
+        <button type="button" id="credentials-export-selected" class="credentials-selected-export">Exportar seleccionados</button>
+    </div>
+
+    <div class="credentials-table-card">
+        <div class="credentials-table-wrapper">
+            <table class="credentials-modern-table" id="data-table">
+                <thead>
+                    <tr>
+                        <th class="credentials-check-col">
+                            <input type="checkbox" id="credentials-head-check">
+                        </th>
+                        <th>Código</th>
+                        <th>Servicio</th>
+                        <th>Correo</th>
+                        <th>Recuperación</th>
+                        <th>Usuario</th>
+                        <th>Área</th>
+                        <th>Estado</th>
+                        <th>Última actualización</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="credentials-table-body"></tbody>
+            </table>
+        </div>
+
+        <div class="credentials-table-footer">
+            <span id="credentials-results-text">Mostrando 0 registros</span>
+
+            <div class="credentials-footer-right">
+                <select id="credentials-page-size">
+                    <option value="8">8</option>
+                    <option value="10" selected>10</option>
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                </select>
+                <span>por página</span>
+            </div>
+        </div>
+    </div>
+
+</section>
+`;
     const inventoryModernPageHTML = `
 <section class="inventory-modern-page">
     <div class="inventory-modern-header">
@@ -5080,6 +5272,419 @@ const buildTasksForMonth = () => {
             }); 
         }, error => handleFirestoreError(error, tableBody)); 
     }
+    function renderCredentialsEmailsModernPage(container) {
+    container.innerHTML = credentialsEmailsModernPageHTML;
+
+    const addButton = document.getElementById('add-item-btn');
+    const searchInput = document.getElementById('credentials-search-input');
+    const serviceFilter = document.getElementById('credentials-filter-service');
+    const areaFilter = document.getElementById('credentials-filter-area');
+    const statusFilter = document.getElementById('credentials-filter-status');
+    const userFilter = document.getElementById('credentials-filter-user');
+    const dateFromFilter = document.getElementById('credentials-filter-date-from');
+    const dateToFilter = document.getElementById('credentials-filter-date-to');
+    const tableBody = document.getElementById('credentials-table-body');
+    const resultsText = document.getElementById('credentials-results-text');
+    const pageSizeSelect = document.getElementById('credentials-page-size');
+    const selectionBar = document.getElementById('credentials-selection-bar');
+    const selectedCount = document.getElementById('credentials-selected-count');
+    const headCheck = document.getElementById('credentials-head-check');
+    const selectAllCheck = document.getElementById('credentials-select-all');
+
+    addButton.dataset.type = 'credentials';
+    addButton.dataset.category = 'emails';
+
+    const iconEdit = `<svg style="pointer-events:none; width:18px; height:18px; fill:#2563eb;" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>`;
+    const iconView = `<svg style="pointer-events:none; width:18px; height:18px; fill:#475569;" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>`;
+    const iconDelete = `<svg style="pointer-events:none; width:18px; height:18px; fill:#dc2626;" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>`;
+
+    let allCredentials = [];
+    let filteredCredentials = [];
+    let selectedIds = new Set();
+
+    const normalizeText = (value) => String(value || '').toLowerCase().trim();
+
+    const formatDateTime = (value) => {
+        if (!value) return 'N/A';
+
+        try {
+            let date;
+
+            if (value.toDate) {
+                date = value.toDate();
+            } else if (value.seconds) {
+                date = new Date(value.seconds * 1000);
+            } else {
+                date = new Date(value);
+            }
+
+            if (isNaN(date.getTime())) return 'N/A';
+
+            return date.toLocaleString('es-CO', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        } catch (error) {
+            return 'N/A';
+        }
+    };
+
+    const getComparableDate = (item) => {
+        const value = item.updatedAt || item.createdAt;
+
+        if (!value) return null;
+
+        if (value.toDate) return value.toDate();
+
+        if (value.seconds) return new Date(value.seconds * 1000);
+
+        const date = new Date(value);
+
+        return isNaN(date.getTime()) ? null : date;
+    };
+
+    const getStatusBadge = (status) => {
+        const value = status || 'N/A';
+        const normalized = normalizeText(value);
+
+        if (normalized === 'activo') {
+            return `<span class="credentials-status active">Activo</span>`;
+        }
+
+        if (normalized === 'inactivo') {
+            return `<span class="credentials-status inactive">Inactivo</span>`;
+        }
+
+        return `<span class="credentials-status neutral">${value}</span>`;
+    };
+
+    const getServiceLogo = (service) => {
+        const value = normalizeText(service);
+
+        if (value.includes('google')) {
+            return `<span class="credentials-service-logo google">G</span>`;
+        }
+
+        if (value.includes('365') || value.includes('office') || value.includes('microsoft')) {
+            return `<span class="credentials-service-logo microsoft">M</span>`;
+        }
+
+        return `<span class="credentials-service-logo other">✉</span>`;
+    };
+
+    const getInitials = (name) => {
+        const parts = String(name || 'NA').trim().split(/\s+/).filter(Boolean);
+
+        if (parts.length === 0) return 'NA';
+
+        if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+
+        return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    };
+
+    const fillSelect = (select, values, placeholder) => {
+        const currentValue = select.value;
+
+        select.innerHTML = `<option value="">${placeholder}</option>`;
+
+        [...new Set(values.filter(Boolean))].sort().forEach(value => {
+            select.innerHTML += `<option value="${value}">${value}</option>`;
+        });
+
+        select.value = currentValue;
+    };
+
+    const updateKPIs = (items) => {
+        const total = items.length;
+        const active = items.filter(item => normalizeText(item.status) === 'activo').length;
+        const inactive = items.filter(item => normalizeText(item.status) === 'inactivo').length;
+        const users = new Set(items.map(item => item.assignedUser).filter(Boolean)).size;
+        const areas = new Set(items.map(item => item.area).filter(Boolean)).size;
+
+        const sortedByDate = [...items]
+            .map(item => ({ item, date: getComparableDate(item) }))
+            .filter(row => row.date)
+            .sort((a, b) => b.date - a.date);
+
+        const lastDate = sortedByDate.length ? sortedByDate[0].date : null;
+
+        document.getElementById('cred-kpi-total').textContent = total;
+        document.getElementById('cred-kpi-active').textContent = active;
+        document.getElementById('cred-kpi-inactive').textContent = inactive;
+        document.getElementById('cred-kpi-users').textContent = users;
+        document.getElementById('cred-kpi-areas').textContent = areas;
+
+        document.getElementById('cred-kpi-active-percent').textContent = total ? `${Math.round((active / total) * 100)}% del total` : '0% del total';
+        document.getElementById('cred-kpi-inactive-percent').textContent = total ? `${Math.round((inactive / total) * 100)}% del total` : '0% del total';
+
+        document.getElementById('cred-kpi-last-update').textContent = lastDate
+            ? lastDate.toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' })
+            : 'N/A';
+    };
+
+    const updateSelectionBar = () => {
+        const count = selectedIds.size;
+
+        selectedCount.textContent = `${count} seleccionados`;
+        selectionBar.classList.toggle('hidden', count === 0);
+
+        headCheck.checked = count > 0 && filteredCredentials.length > 0 && filteredCredentials.every(item => selectedIds.has(item.id));
+        selectAllCheck.checked = headCheck.checked;
+    };
+
+    const applyFilters = () => {
+        const searchValue = normalizeText(searchInput.value);
+        const serviceValue = serviceFilter.value;
+        const areaValue = areaFilter.value;
+        const statusValue = statusFilter.value;
+        const userValue = userFilter.value;
+        const dateFrom = dateFromFilter.value ? new Date(dateFromFilter.value + 'T00:00:00') : null;
+        const dateTo = dateToFilter.value ? new Date(dateToFilter.value + 'T23:59:59') : null;
+
+        filteredCredentials = allCredentials.filter(item => {
+            const text = normalizeText([
+                item.id,
+                item.service,
+                item.email,
+                item.recoveryEmail,
+                item.assignedUser,
+                item.area,
+                item.status
+            ].join(' '));
+
+            const itemDate = getComparableDate(item);
+
+            const searchMatch = !searchValue || text.includes(searchValue);
+            const serviceMatch = !serviceValue || item.service === serviceValue;
+            const areaMatch = !areaValue || item.area === areaValue;
+            const statusMatch = !statusValue || item.status === statusValue;
+            const userMatch = !userValue || item.assignedUser === userValue;
+            const fromMatch = !dateFrom || (itemDate && itemDate >= dateFrom);
+            const toMatch = !dateTo || (itemDate && itemDate <= dateTo);
+
+            return searchMatch && serviceMatch && areaMatch && statusMatch && userMatch && fromMatch && toMatch;
+        });
+
+        renderTable();
+    };
+
+    const renderTable = () => {
+        const pageSize = Number(pageSizeSelect.value || 10);
+        const visibleItems = filteredCredentials.slice(0, pageSize);
+
+        if (visibleItems.length === 0) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="10" class="credentials-empty">No hay correos electrónicos para mostrar.</td>
+                </tr>
+            `;
+            resultsText.textContent = 'Mostrando 0 registros';
+            updateKPIs(filteredCredentials);
+            updateSelectionBar();
+            return;
+        }
+
+        tableBody.innerHTML = visibleItems.map(item => {
+            const lastUpdate = item.updatedAt || item.createdAt;
+
+            return `
+                <tr data-id="${item.id}">
+                    <td class="credentials-check-col">
+                        <input type="checkbox" class="credentials-row-check" data-id="${item.id}" ${selectedIds.has(item.id) ? 'checked' : ''}>
+                    </td>
+
+                    <td><strong>${item.id}</strong></td>
+
+                    <td>
+                        <div class="credentials-service-cell">
+                            ${getServiceLogo(item.service)}
+                            <span>${item.service || 'N/A'}</span>
+                        </div>
+                    </td>
+
+                    <td class="credentials-email-cell">${item.email || 'N/A'}</td>
+
+                    <td>${item.recoveryEmail || 'N/A'}</td>
+
+                    <td>
+                        <div class="credentials-user-cell">
+                            <span class="credentials-avatar">${getInitials(item.assignedUser)}</span>
+                            <span>${item.assignedUser || 'N/A'}</span>
+                        </div>
+                    </td>
+
+                    <td>${item.area || 'N/A'}</td>
+
+                    <td>${getStatusBadge(item.status)}</td>
+
+                    <td>
+                        <div class="credentials-date-cell">
+                            <strong>${formatDateTime(lastUpdate)}</strong>
+                            <small>${item.updatedBy || item.assignedUser || ''}</small>
+                        </div>
+                    </td>
+
+                    <td>
+                        <div class="credentials-actions-cell">
+                            <button type="button" class="action-icon-edit" title="Editar" data-id="${item.id}" data-collection="credentials" data-category="emails">${iconEdit}</button>
+                            <button type="button" class="action-icon-view" title="Ver detalles" data-id="${item.id}">${iconView}</button>
+                            <button type="button" class="action-icon-delete" title="Eliminar" data-id="${item.id}" data-collection="credentials">${iconDelete}</button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        resultsText.textContent = `Mostrando 1 a ${visibleItems.length} de ${filteredCredentials.length} registros`;
+
+        updateKPIs(filteredCredentials);
+        updateSelectionBar();
+    };
+
+    const refreshFilters = () => {
+        fillSelect(serviceFilter, allCredentials.map(item => item.service), 'Todos los servicios');
+        fillSelect(areaFilter, allCredentials.map(item => item.area), 'Todas las áreas');
+        fillSelect(statusFilter, allCredentials.map(item => item.status), 'Todos los estados');
+        fillSelect(userFilter, allCredentials.map(item => item.assignedUser), 'Todos los usuarios');
+    };
+
+    db.collection('credentials')
+        .where('category', '==', 'emails')
+        .onSnapshot(snapshot => {
+            allCredentials = [];
+
+            snapshot.forEach(doc => {
+                allCredentials.push({
+                    id: doc.id,
+                    ...doc.data()
+                });
+            });
+
+            allCredentials.sort((a, b) => (a.numericId || 0) - (b.numericId || 0));
+
+            refreshFilters();
+            applyFilters();
+
+        }, error => {
+            console.error('Error cargando correos:', error);
+            tableBody.innerHTML = `<tr><td colspan="10">Error al cargar correos electrónicos.</td></tr>`;
+        });
+
+    searchInput.addEventListener('input', applyFilters);
+    serviceFilter.addEventListener('change', applyFilters);
+    areaFilter.addEventListener('change', applyFilters);
+    statusFilter.addEventListener('change', applyFilters);
+    userFilter.addEventListener('change', applyFilters);
+    pageSizeSelect.addEventListener('change', renderTable);
+
+    document.getElementById('credentials-apply-filters').addEventListener('click', applyFilters);
+
+    document.getElementById('credentials-clear-filters').addEventListener('click', () => {
+        searchInput.value = '';
+        serviceFilter.value = '';
+        areaFilter.value = '';
+        statusFilter.value = '';
+        userFilter.value = '';
+        dateFromFilter.value = '';
+        dateToFilter.value = '';
+        applyFilters();
+    });
+
+    document.getElementById('credentials-toggle-filters').addEventListener('click', () => {
+        document.getElementById('credentials-filter-grid').classList.toggle('hidden');
+    });
+
+    tableBody.addEventListener('change', (e) => {
+        const check = e.target.closest('.credentials-row-check');
+
+        if (!check) return;
+
+        if (check.checked) {
+            selectedIds.add(check.dataset.id);
+        } else {
+            selectedIds.delete(check.dataset.id);
+        }
+
+        updateSelectionBar();
+    });
+
+    const toggleAllRows = (checked) => {
+        filteredCredentials.forEach(item => {
+            if (checked) {
+                selectedIds.add(item.id);
+            } else {
+                selectedIds.delete(item.id);
+            }
+        });
+
+        renderTable();
+    };
+
+    headCheck.addEventListener('change', () => toggleAllRows(headCheck.checked));
+    selectAllCheck.addEventListener('change', () => toggleAllRows(selectAllCheck.checked));
+
+    document.getElementById('credentials-delete-selected').addEventListener('click', async () => {
+        if (selectedIds.size === 0) return;
+
+        if (!confirm(`¿Eliminar ${selectedIds.size} credenciales seleccionadas?`)) return;
+
+        try {
+            const batch = db.batch();
+
+            selectedIds.forEach(id => {
+                batch.delete(db.collection('credentials').doc(id));
+            });
+
+            await batch.commit();
+
+            selectedIds.clear();
+            updateSelectionBar();
+
+        } catch (error) {
+            console.error('Error eliminando seleccionados:', error);
+            alert('No se pudieron eliminar las credenciales seleccionadas.');
+        }
+    });
+
+    document.getElementById('credentials-export-selected').addEventListener('click', () => {
+        const selectedItems = allCredentials.filter(item => selectedIds.has(item.id));
+
+        if (selectedItems.length === 0) {
+            alert('No hay registros seleccionados para exportar.');
+            return;
+        }
+
+        const rows = [
+            ['Código', 'Servicio', 'Correo', 'Recuperación', 'Usuario', 'Área', 'Estado']
+        ];
+
+        selectedItems.forEach(item => {
+            rows.push([
+                item.id,
+                item.service || '',
+                item.email || '',
+                item.recoveryEmail || '',
+                item.assignedUser || '',
+                item.area || '',
+                item.status || ''
+            ]);
+        });
+
+        const csv = rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'correos-electronicos-seleccionados.csv';
+        link.click();
+
+        URL.revokeObjectURL(url);
+    });
+}
     function renderInventoryModernPage(container, params) {
     container.innerHTML = inventoryModernPageHTML;
 
@@ -7267,7 +7872,13 @@ if (createKbBtn) {
             document.querySelectorAll('.nav-item-with-submenu').forEach(el => el.classList.remove('open'));
             
             if (path.startsWith('#inventory-')) renderInventoryModernPage(appContent, {category: path.replace('#inventory-', '')}); 
-            else if (path.startsWith('#credentials-')) renderGenericListPage(appContent, {category: path.replace('#credentials-', '')}, credentialsCategoryConfig, 'credentials', '🔑'); 
+                else if (path === '#credentials-emails') {
+    renderCredentialsEmailsModernPage(appContent);
+}
+
+else if (path.startsWith('#credentials-')) {
+    renderGenericListPage(appContent, {category: path.replace('#credentials-', '')}, credentialsCategoryConfig, 'credentials', '🔑');
+}
             else if (path.startsWith('#services-')) renderServicesModernPage(appContent, {category: path.replace('#services-', '')});
             else if (path === '#planning' || path === '#mantenimiento' || path === '#maintenance') {
                 renderMaintenancePlanningPage(appContent);}
