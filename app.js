@@ -1462,6 +1462,119 @@ const newTITicketFormHTML = `
     </div>
 </section>
 `;
+    const servicesModernPageHTML = `
+<section class="services-modern-page">
+
+    <div class="services-modern-header">
+        <div class="services-modern-title-wrap">
+            <div class="services-modern-main-icon">📡</div>
+            <div>
+                <h1 id="services-page-title">Servicios</h1>
+                <p>Gestiona los servicios tecnológicos contratados por la organización.</p>
+            </div>
+        </div>
+
+        <div class="services-modern-actions-top">
+            <button id="add-service-btn" class="services-action-btn blue open-form-modal-btn">+ Añadir servicio</button>
+            <button class="services-action-btn light export-btn csv" data-format="csv">⬇ Exportar</button>
+        </div>
+    </div>
+
+    <div class="services-modern-tabs" id="services-modern-tabs">
+        <a href="#services-internet" class="services-modern-tab" data-category="internet">📡 Internet</a>
+        <a href="#services-telefonia" class="services-modern-tab" data-category="telefonia">☎ Telefonía</a>
+        <a href="#services-otros" class="services-modern-tab" data-category="otros">▦ Otros</a>
+    </div>
+
+    <div class="services-filter-card">
+        <div class="services-search-wrap">
+            <input type="text" id="services-search-input" placeholder="Buscar por código, proveedor, plan, contrato o ubicación...">
+        </div>
+
+        <div class="services-filter-item">
+            <label>Estado</label>
+            <select id="services-filter-status">
+                <option value="">Todos</option>
+            </select>
+        </div>
+
+        <div class="services-filter-item">
+            <label>Proveedor</label>
+            <select id="services-filter-provider">
+                <option value="">Todos</option>
+            </select>
+        </div>
+
+        <div class="services-filter-item">
+            <label>Ubicación</label>
+            <select id="services-filter-location">
+                <option value="">Todas</option>
+            </select>
+        </div>
+
+        <button type="button" id="services-clear-filters" class="services-clear-btn">Limpiar filtros</button>
+    </div>
+
+    <div class="services-kpi-grid">
+        <div class="services-kpi-card">
+            <div class="services-kpi-icon blue">📶</div>
+            <div>
+                <strong id="services-kpi-total">0</strong>
+                <span>Servicios totales</span>
+                <small>Todos los servicios registrados</small>
+            </div>
+        </div>
+
+        <div class="services-kpi-card">
+            <div class="services-kpi-icon green">✓</div>
+            <div>
+                <strong id="services-kpi-active">0</strong>
+                <span>Servicios activos</span>
+                <small id="services-kpi-active-percent">0% del total</small>
+            </div>
+        </div>
+
+        <div class="services-kpi-card">
+            <div class="services-kpi-icon orange">◷</div>
+            <div>
+                <strong id="services-kpi-speed">0</strong>
+                <span>Velocidad total contratada</span>
+                <small>Suma de velocidades</small>
+            </div>
+        </div>
+
+        <div class="services-kpi-card">
+            <div class="services-kpi-icon purple">$</div>
+            <div>
+                <strong id="services-kpi-cost">$ 0</strong>
+                <span>Costo mensual total</span>
+                <small>Costo mensual de servicios activos</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="services-table-card">
+        <div class="services-table-wrapper">
+            <table id="data-table" class="services-modern-table">
+                <thead id="services-table-head"></thead>
+                <tbody id="services-table-body"></tbody>
+            </table>
+        </div>
+
+        <div class="services-table-footer">
+            <span id="services-results-text">Mostrando 0 registros</span>
+
+            <div class="services-pagination-mock">
+                <button type="button">‹</button>
+                <button type="button" class="active">1</button>
+                <button type="button">2</button>
+                <button type="button">›</button>
+            </div>
+        </div>
+    </div>
+
+</section>
+`;
     const maintenanceCalendarHTML = `<h1>📅 Planificación</h1><div class="add-new-button-container"><button class="export-btn csv" data-format="csv">Exportar a Excel (CSV)</button><button class="export-btn pdf" data-format="pdf">Exportar a PDF</button><button class="primary open-form-modal-btn" data-type="maintenance">Programar Tarea</button></div><div class="card"><div id="maintenance-calendar"></div><table id="data-table" style="display:none;"></table></div>`;
     const configHTML = `<h1>⚙️ Configuración</h1><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;"><div class="card"><h2>Gestionar Solicitantes</h2><form id="add-requester-form" style="display:flex; gap:10px; margin-bottom: 20px;"><input type="text" id="requester-name" placeholder="Nombre del solicitante" required style="flex-grow:1;"><button type="submit" class="primary">Añadir</button></form><ul id="requesters-list" class="config-list"></ul></div><div class="card"><h2>Gestionar Ubicaciones</h2><form id="add-location-form" style="display:flex; gap:10px; margin-bottom: 20px;"><input type="text" id="location-name" placeholder="Nombre de la ubicación" required style="flex-grow:1;"><button type="submit" class="primary">Añadir</button></form><ul id="locations-list" class="config-list"></ul></div></div>`;
 
@@ -3661,6 +3774,251 @@ if (quickNoteRawAfterSave) {
 
     loadReport();
 }
+    function renderServicesModernPage(container, params) {
+    container.innerHTML = servicesModernPageHTML;
+
+    const category = params.category;
+    const config = servicesCategoryConfig[category];
+
+    if (!config) {
+        container.innerHTML = `<div class="card"><h2>Error: categoría de servicio no encontrada.</h2></div>`;
+        return;
+    }
+
+    const pageTitle = document.getElementById('services-page-title');
+    const addButton = document.getElementById('add-service-btn');
+    const searchInput = document.getElementById('services-search-input');
+    const statusFilter = document.getElementById('services-filter-status');
+    const providerFilter = document.getElementById('services-filter-provider');
+    const locationFilter = document.getElementById('services-filter-location');
+    const clearBtn = document.getElementById('services-clear-filters');
+    const tableHead = document.getElementById('services-table-head');
+    const tableBody = document.getElementById('services-table-body');
+    const resultsText = document.getElementById('services-results-text');
+
+    pageTitle.textContent = config.title;
+    addButton.textContent = `+ Añadir ${config.titleSingular}`;
+    addButton.dataset.type = 'services';
+    addButton.dataset.category = category;
+
+    document.querySelectorAll('.services-modern-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.category === category);
+    });
+
+    const iconEdit = `<svg style="pointer-events:none; width:18px; height:18px; fill:#2563eb;" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>`;
+    const iconView = `<svg style="pointer-events:none; width:18px; height:18px; fill:#475569;" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>`;
+    const iconDelete = `<svg style="pointer-events:none; width:18px; height:18px; fill:#dc2626;" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>`;
+
+    const fieldKeys = Object.keys(config.fields);
+    const tableHeaders = Object.values(config.fields).map(field => field.label);
+
+    tableHead.innerHTML = `
+        <tr>
+            <th></th>
+            ${tableHeaders.map(label => `<th>${label}</th>`).join('')}
+            <th>Acciones</th>
+        </tr>
+    `;
+
+    let allItems = [];
+
+    const fillSelectOptions = (selectEl, values, placeholder) => {
+        const currentValue = selectEl.value;
+
+        selectEl.innerHTML = `<option value="">${placeholder}</option>`;
+
+        [...new Set(values.filter(Boolean))].sort().forEach(value => {
+            selectEl.innerHTML += `<option value="${value}">${value}</option>`;
+        });
+
+        selectEl.value = currentValue;
+    };
+
+    const normalizeText = (value) => {
+        return String(value || '').toLowerCase().trim();
+    };
+
+    const parseMoney = (value) => {
+        const clean = String(value || '0').replace(/[^\d]/g, '');
+        return Number(clean || 0);
+    };
+
+    const parseSpeedToMbps = (value) => {
+        const text = String(value || '').toLowerCase();
+        const number = parseFloat(text.replace(',', '.'));
+
+        if (!number) return 0;
+
+        if (text.includes('gb')) return number * 1000;
+        return number;
+    };
+
+    const formatCurrency = (value) => {
+        return new Intl.NumberFormat('es-CO', {
+            style: 'currency',
+            currency: 'COP',
+            maximumFractionDigits: 0
+        }).format(value || 0);
+    };
+
+    const formatSpeed = (mbps) => {
+        if (mbps >= 1000) {
+            return `${(mbps / 1000).toFixed(2)} Gbps`;
+        }
+
+        return `${mbps} Mbps`;
+    };
+
+    const getStatusBadge = (status) => {
+        const normalized = normalizeText(status);
+
+        let cls = 'neutral';
+
+        if (normalized.includes('activo')) cls = 'active';
+        else if (normalized.includes('suspendido')) cls = 'suspended';
+        else if (normalized.includes('inactivo')) cls = 'inactive';
+
+        return `<span class="services-status-badge ${cls}">${status || 'N/A'}</span>`;
+    };
+
+    const updateKPIs = (items) => {
+        const total = items.length;
+
+        const active = items.filter(item => {
+            const st = normalizeText(item.status);
+            return st.includes('activo');
+        }).length;
+
+        const totalCost = items
+            .filter(item => normalizeText(item.status).includes('activo'))
+            .reduce((sum, item) => sum + parseMoney(item.monthlyCost), 0);
+
+        const totalSpeed = items.reduce((sum, item) => {
+            return sum + parseSpeedToMbps(item.speed);
+        }, 0);
+
+        const activePercent = total > 0 ? ((active / total) * 100).toFixed(1) : '0.0';
+
+        document.getElementById('services-kpi-total').textContent = total;
+        document.getElementById('services-kpi-active').textContent = active;
+        document.getElementById('services-kpi-active-percent').textContent = `${activePercent}% del total`;
+        document.getElementById('services-kpi-speed').textContent = formatSpeed(totalSpeed);
+        document.getElementById('services-kpi-cost').textContent = formatCurrency(totalCost);
+    };
+
+    const renderTable = () => {
+        const searchValue = normalizeText(searchInput.value);
+        const statusValue = statusFilter.value;
+        const providerValue = providerFilter.value;
+        const locationValue = locationFilter.value;
+
+        const filteredItems = allItems.filter(item => {
+            const textMatch = fieldKeys.some(key => {
+                const value = key === 'id' ? item.id : item[key];
+                return normalizeText(value).includes(searchValue);
+            });
+
+            const statusMatch = !statusValue || item.status === statusValue;
+            const providerMatch = !providerValue || item.provider === providerValue;
+            const locationMatch = !locationValue || item.location === locationValue;
+
+            return textMatch && statusMatch && providerMatch && locationMatch;
+        });
+
+        updateKPIs(filteredItems);
+
+        if (filteredItems.length === 0) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="${fieldKeys.length + 2}" style="text-align:center; padding:28px;">
+                        No hay servicios registrados.
+                    </td>
+                </tr>
+            `;
+
+            resultsText.textContent = `Mostrando 0 de ${allItems.length} servicios`;
+            return;
+        }
+
+        tableBody.innerHTML = filteredItems.map(item => {
+            const cellsHTML = fieldKeys.map(key => {
+                let value = key === 'id' ? item.id : item[key];
+
+                if (key === 'status') {
+                    value = getStatusBadge(value);
+                } else if (key === 'monthlyCost') {
+                    value = formatCurrency(parseMoney(value));
+                } else {
+                    value = value || 'N/A';
+                }
+
+                return `<td>${value}</td>`;
+            }).join('');
+
+            return `
+                <tr>
+                    <td><input type="checkbox" class="services-row-check"></td>
+                    ${cellsHTML}
+                    <td>
+                        <div class="services-actions-cell">
+                            <button type="button" class="action-icon-view" data-id="${item.id}" title="Ver historial">${iconView}</button>
+                            <button type="button" class="action-icon-edit" data-id="${item.id}" data-collection="services" data-category="${category}" title="Editar">${iconEdit}</button>
+                            <button type="button" class="action-icon-delete" data-id="${item.id}" data-collection="services" title="Eliminar">${iconDelete}</button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        resultsText.textContent = `Mostrando ${filteredItems.length} de ${allItems.length} servicios`;
+    };
+
+    db.collection('services').where('category', '==', category).onSnapshot(snapshot => {
+        allItems = [];
+
+        snapshot.forEach(doc => {
+            allItems.push({
+                id: doc.id,
+                ...doc.data()
+            });
+        });
+
+        allItems.sort((a, b) => {
+            const numA = a.numericId || 0;
+            const numB = b.numericId || 0;
+            return numA - numB;
+        });
+
+        fillSelectOptions(statusFilter, allItems.map(item => item.status), 'Todos');
+        fillSelectOptions(providerFilter, allItems.map(item => item.provider), 'Todos');
+        fillSelectOptions(locationFilter, allItems.map(item => item.location), 'Todas');
+
+        renderTable();
+    }, error => {
+        console.error('Error cargando servicios:', error);
+
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="${fieldKeys.length + 2}" style="text-align:center; padding:28px; color:#dc2626;">
+                    Error cargando servicios.
+                </td>
+            </tr>
+        `;
+    });
+
+    [searchInput, statusFilter, providerFilter, locationFilter].forEach(element => {
+        element.addEventListener('input', renderTable);
+        element.addEventListener('change', renderTable);
+    });
+
+    clearBtn.addEventListener('click', () => {
+        searchInput.value = '';
+        statusFilter.value = '';
+        providerFilter.value = '';
+        locationFilter.value = '';
+        renderTable();
+    });
+}
     function renderGenericListPage(container, params, configObject, collectionName, icon) { 
         container.innerHTML = genericListPageHTML; 
         setupTableSearch('table-search-input', 'data-table'); 
@@ -5613,7 +5971,7 @@ if (createKbBtn) {
             
             if (path.startsWith('#inventory-')) renderInventoryModernPage(appContent, {category: path.replace('#inventory-', '')}); 
             else if (path.startsWith('#credentials-')) renderGenericListPage(appContent, {category: path.replace('#credentials-', '')}, credentialsCategoryConfig, 'credentials', '🔑'); 
-            else if (path.startsWith('#services-')) renderGenericListPage(appContent, {category: path.replace('#services-', '')}, servicesCategoryConfig, 'services', '📡'); 
+            else if (path.startsWith('#services-')) renderServicesModernPage(appContent, {category: path.replace('#services-', '')});
             else if (routes[path]) routes[path](appContent, Object.fromEntries(params)); 
             else appContent.innerHTML = '<div class="card"><h1>404 - Página no encontrada</h1></div>';
             
