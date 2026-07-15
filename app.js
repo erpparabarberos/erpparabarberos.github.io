@@ -4153,6 +4153,21 @@ if (quickNoteRawAfterSave) {
 
     let planningTasks = [];
 
+    const getExecutionStorageKey = () => {
+    return `maintenance-executions-${monthInput.value}`;
+};
+
+const loadExecutions = () => {
+    try {
+        return JSON.parse(localStorage.getItem(getExecutionStorageKey())) || {};
+    } catch (error) {
+        return {};
+    }
+};
+
+const saveExecutions = (executions) => {
+    localStorage.setItem(getExecutionStorageKey(), JSON.stringify(executions));
+};
     const defaultTasks = [
         {
             item: 1,
@@ -4287,26 +4302,20 @@ if (quickNoteRawAfterSave) {
     };
 
     const normalize = (value) => String(value || '').toLowerCase().trim();
+        const getTaskStatus = (task) => {
+    if (task.supportId || task.executedAt) return 'ejecutado';
 
-    const getTaskStatus = (task) => {
-        if (task.supportId) return 'ejecutado';
+    const selectedMonth = monthInput.value;
+    const today = new Date();
 
-        const selectedMonth = monthInput.value;
-        const today = new Date();
-        const [year, month] = selectedMonth.split('-');
-        const plannedDate = new Date(Number(year), Number(month) - 1, 15);
+    if (selectedMonth < currentMonth) return 'vencido';
 
-        if (selectedMonth < currentMonth) return 'vencido';
+    if (selectedMonth === currentMonth && today.getDate() > 20) {
+        return 'vencido';
+    }
 
-        if (
-            selectedMonth === currentMonth &&
-            today.getDate() > 20
-        ) {
-            return 'vencido';
-        }
-
-        return 'pendiente';
-    };
+    return 'pendiente';
+};
 
     const getStatusBadge = (status) => {
         const labels = {
@@ -4328,23 +4337,28 @@ if (quickNoteRawAfterSave) {
             locationFilter.innerHTML += `<option value="${location}">${location}</option>`;
         });
     };
+        const buildTasksForMonth = () => {
+    const selectedMonth = monthInput.value;
+    const executions = loadExecutions();
 
-    const buildTasksForMonth = () => {
-        const selectedMonth = monthInput.value;
+    planningTasks = defaultTasks
+        .filter(task => task.months.includes(selectedMonth))
+        .map((task, index) => {
+            const id = `PLAN-${selectedMonth}-${index + 1}`;
+            const execution = executions[id] || {};
 
-        planningTasks = defaultTasks
-            .filter(task => task.months.includes(selectedMonth))
-            .map((task, index) => {
-                return {
-                    id: `PLAN-${selectedMonth}-${index + 1}`,
-                    ...task,
-                    plannedMonth: selectedMonth,
-                    plannedLabel: getMonthLabel(selectedMonth),
-                    executedAt: '',
-                    supportId: ''
-                };
-            });
-    };
+            return {
+                id,
+                ...task,
+                plannedMonth: selectedMonth,
+                plannedLabel: getMonthLabel(selectedMonth),
+                executedAt: execution.executedAt || '',
+                supportId: execution.supportId || '',
+                executionNote: execution.note || '',
+                executedBy: execution.executedBy || ''
+            };
+        });
+};
 
     const updateKPIs = (tasks) => {
         const total = tasks.length;
@@ -4467,6 +4481,160 @@ if (quickNoteRawAfterSave) {
         URL.revokeObjectURL(url);
     };
 
+        const openExecutionModal = (task) => {
+    const existingModal = document.getElementById('planning-execution-modal');
+    if (existingModal) existingModal.remove();
+
+    const today = new Date().toISOString().split('T')[0];
+
+    const modal = document.createElement('div');
+    modal.id = 'planning-execution-modal';
+    modal.className = 'planning-execution-overlay';
+
+    modal.innerHTML = `
+        <div class="planning-execution-modal">
+            <button type="button" class="planning-execution-close" id="close-execution-modal">×</button>
+
+            <div class="planning-execution-header">
+                <div class="planning-execution-icon">✓</div>
+                <div>
+                    <h2>Registrar ejecución</h2>
+                    <p>Marca esta tarea como ejecutada y crea el soporte asociado.</p>
+                </div>
+            </div>
+
+            <div class="planning-execution-summary">
+                <div>
+                    <small>Tarea</small>
+                    <strong>${task.task}</strong>
+                </div>
+
+                <div>
+                    <small>Sede</small>
+                    <strong>${task.location}</strong>
+                </div>
+
+                <div>
+                    <small>Frecuencia</small>
+                    <strong>${task.frequency}</strong>
+                </div>
+
+                <div>
+                    <small>Programado para</small>
+                    <strong>${task.plannedLabel}</strong>
+                </div>
+            </div>
+
+            <form id="planning-execution-form">
+                <div class="planning-execution-grid">
+                    <div class="planning-execution-field">
+                        <label>Fecha de ejecución</label>
+                        <input type="date" id="execution-date" value="${today}" required>
+                    </div>
+
+                    <div class="planning-execution-field">
+                        <label>Ejecutado por</label>
+                        <input type="text" id="execution-user" placeholder="Nombre de quien realizó la tarea" value="Área de Tecnología">
+                    </div>
+                </div>
+
+                <div class="planning-execution-field full">
+                    <label>Observación / actividad realizada</label>
+                    <textarea id="execution-note" rows="5" placeholder="Describe qué se realizó durante el mantenimiento..." required></textarea>
+                </div>
+
+                <label class="planning-execution-check">
+                    <input type="checkbox" id="create-support-ticket" checked>
+                    <span>Crear soporte asociado automáticamente</span>
+                </label>
+
+                <div class="planning-execution-footer">
+                    <button type="button" class="planning-execution-cancel" id="cancel-execution-modal">Cancelar</button>
+                    <button type="submit" class="planning-execution-save">Guardar ejecución</button>
+                </div>
+            </form>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    const closeModal = () => modal.remove();
+
+    document.getElementById('close-execution-modal').addEventListener('click', closeModal);
+    document.getElementById('cancel-execution-modal').addEventListener('click', closeModal);
+
+    document.getElementById('planning-execution-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const executionDate = document.getElementById('execution-date').value;
+        const executionUser = document.getElementById('execution-user').value.trim() || 'Área de Tecnología';
+        const executionNote = document.getElementById('execution-note').value.trim();
+        const shouldCreateTicket = document.getElementById('create-support-ticket').checked;
+
+        if (!executionNote) {
+            alert('Debes escribir una observación de la ejecución.');
+            return;
+        }
+
+        let supportId = '';
+
+        try {
+            if (shouldCreateTicket) {
+                const nowDate = new Date();
+
+                const ticketData = {
+                    title: `${task.task} - ${task.location}`,
+                    description: `Ejecución programada desde Planeación TI.\n\nTarea: ${task.task}\nSede: ${task.location}\nFrecuencia: ${task.frequency}\nMes programado: ${task.plannedLabel}\n\nObservación:\n${executionNote}`,
+                    solution: executionNote,
+                    status: 'cerrado',
+                    priority: 'media',
+                    ticketType: 'ti',
+                    type: 'ti',
+                    category: 'Mantenimiento',
+                    locationId: task.location,
+                    requesterName: 'Planeación TI',
+                    createdAt: firebase.firestore.Timestamp.fromDate(nowDate),
+                    closedAt: firebase.firestore.Timestamp.fromDate(new Date(executionDate + 'T12:00:00')),
+                    deviceIds: [],
+                    serviceIds: [],
+                    history: [
+                        {
+                            text: 'Soporte creado desde Planeación TI.',
+                            timestamp: firebase.firestore.Timestamp.fromDate(nowDate)
+                        },
+                        {
+                            text: `<strong>Ejecución registrada</strong><br>${executionNote}`,
+                            timestamp: firebase.firestore.Timestamp.fromDate(new Date(executionDate + 'T12:00:00'))
+                        }
+                    ]
+                };
+
+                const docRef = await db.collection('tickets').add(ticketData);
+                supportId = docRef.id;
+            }
+
+            const executions = loadExecutions();
+
+            executions[task.id] = {
+                executedAt: executionDate,
+                executedBy: executionUser,
+                note: executionNote,
+                supportId: supportId
+            };
+
+            saveExecutions(executions);
+
+            buildTasksForMonth();
+            renderPlanningTable();
+
+            closeModal();
+
+        } catch (error) {
+            console.error('Error registrando ejecución:', error);
+            alert('No se pudo registrar la ejecución.');
+        }
+    });
+};
     fillLocationFilter();
     buildTasksForMonth();
     renderPlanningTable();
@@ -4491,15 +4659,14 @@ if (quickNoteRawAfterSave) {
 
     tableBody.addEventListener('click', (e) => {
         const registerBtn = e.target.closest('.planning-register-execution');
-
         if (registerBtn) {
-            const taskId = registerBtn.dataset.task;
-            const task = planningTasks.find(t => t.id === taskId);
+    const taskId = registerBtn.dataset.task;
+    const task = planningTasks.find(t => t.id === taskId);
 
-            if (!task) return;
+    if (!task) return;
 
-            alert(`Aquí abriremos el formulario de soporte con esta tarea precargada:\n\n${task.task}\n${task.location}`);
-        }
+    openExecutionModal(task);
+}
 
         const supportBtn = e.target.closest('.planning-support-link');
 
