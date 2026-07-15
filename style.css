@@ -6404,3 +6404,98 @@ tr:hover td { background-color: #f8fafc; }
     background: #ffffff;
     box-sizing: border-box;
 }
+/* ==============================
+   FIX MODAL NUEVA TAREA
+============================== */
+
+#planning-new-task-modal {
+    padding: 32px !important;
+}
+
+#planning-new-task-modal .planning-execution-modal {
+    width: min(92vw, 920px) !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+    border-radius: 14px !important;
+}
+
+#planning-new-task-modal .planning-execution-header {
+    padding: 28px 36px 22px !important;
+}
+
+#planning-new-task-modal #planning-new-task-form {
+    padding: 26px 36px 0 !important;
+}
+
+#planning-new-task-modal .planning-execution-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 20px 24px !important;
+}
+
+#planning-new-task-modal .planning-execution-field {
+    min-width: 0 !important;
+}
+
+#planning-new-task-modal .planning-execution-field label {
+    display: block !important;
+    margin-bottom: 8px !important;
+    color: #526b8a !important;
+    font-size: 12px !important;
+    font-weight: 900 !important;
+    text-transform: uppercase !important;
+}
+
+#planning-new-task-modal .planning-execution-field input,
+#planning-new-task-modal .planning-execution-field select,
+#planning-new-task-modal .planning-execution-field textarea {
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+#planning-new-task-modal .planning-execution-field.full {
+    margin-top: 22px !important;
+}
+
+#planning-new-task-modal .planning-execution-footer {
+    margin-left: -36px !important;
+    margin-right: -36px !important;
+    padding: 22px 36px !important;
+    background: #ffffff !important;
+    border-top: 1px solid #e2e8f0 !important;
+    position: sticky !important;
+    bottom: 0 !important;
+}
+
+#planning-new-task-modal .planning-execution-close {
+    top: 22px !important;
+    right: 28px !important;
+    color: #94a3b8 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    font-weight: 300 !important;
+}
+
+@media (max-width: 760px) {
+    #planning-new-task-modal .planning-execution-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    #planning-new-task-modal {
+        padding: 16px !important;
+    }
+
+    #planning-new-task-modal .planning-execution-header,
+    #planning-new-task-modal #planning-new-task-form {
+        padding-left: 22px !important;
+        padding-right: 22px !important;
+    }
+
+    #planning-new-task-modal .planning-execution-footer {
+        margin-left: -22px !important;
+        margin-right: -22px !important;
+        padding-left: 22px !important;
+        padding-right: 22px !important;
+    }
+}
