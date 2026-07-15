@@ -1,5 +1,4 @@
 (() => {
-    // --- 1. CONFIGURACIÓN DE FIREBASE (TU ERP PRINCIPAL) ---
     const firebaseConfig = {
       apiKey: "AIzaSyDkH2_E7t07SWWH1SZr77BFlNp6RQTDDDY",
       authDomain: "erpparabarberos-12de9.firebaseapp.com",
@@ -4454,43 +4453,19 @@ const saveExecutions = (executions) => {
         startMonth: 4
     }
 ];
-    const normalize = (value) => String(value || '').toLowerCase().trim();
-        const getTaskStatus = (task) => {
-    if (task.supportId || task.executedAt) return 'ejecutado';
+        const normalize = (value) => String(value || '').toLowerCase().trim();
 
-    const selectedMonth = monthInput.value;
-    const today = new Date();
+const getMonthLabel = (monthValue) => {
+    const [year, month] = monthValue.split('-');
+    const date = new Date(Number(year), Number(month) - 1, 1);
 
-    if (selectedMonth < currentMonth) return 'vencido';
-
-    if (selectedMonth === currentMonth && today.getDate() > 20) {
-        return 'vencido';
-    }
-
-    return 'pendiente';
+    return date.toLocaleDateString('es-ES', {
+        month: 'long',
+        year: 'numeric'
+    });
 };
 
-    const getStatusBadge = (status) => {
-        const labels = {
-            programado: 'Programado',
-            ejecutado: 'Ejecutado',
-            pendiente: 'Pendiente',
-            vencido: 'Vencido'
-        };
-
-        return `<span class="planning-status-badge ${status}">${labels[status] || status}</span>`;
-    };
-
-    const fillLocationFilter = () => {
-        const locations = [...new Set(defaultTasks.map(task => task.location))].sort();
-
-        locationFilter.innerHTML = `<option value="">Todas las sedes</option>`;
-
-        locations.forEach(location => {
-            locationFilter.innerHTML += `<option value="${location}">${location}</option>`;
-        });
-    };
-        const getFrequencyInterval = (frequency) => {
+const getFrequencyInterval = (frequency) => {
     const value = normalize(frequency);
 
     if (value.includes('mensual')) return 1;
@@ -4509,8 +4484,47 @@ const shouldTaskRunInMonth = (task, selectedMonth) => {
     const interval = getFrequencyInterval(task.frequency);
     const startMonth = Number(task.startMonth || 1);
 
-    return (monthNumber - startMonth) % interval === 0;
+    const difference = monthNumber - startMonth;
+
+    return difference >= 0 && difference % interval === 0;
 };
+
+const getTaskStatus = (task) => {
+    if (task.supportId || task.executedAt) return 'ejecutado';
+
+    const selectedMonth = monthInput.value;
+    const today = new Date();
+
+    if (selectedMonth < currentMonth) return 'vencido';
+
+    if (selectedMonth === currentMonth && today.getDate() > 20) {
+        return 'vencido';
+    }
+
+    return 'pendiente';
+};
+
+const getStatusBadge = (status) => {
+    const labels = {
+        programado: 'Programado',
+        ejecutado: 'Ejecutado',
+        pendiente: 'Pendiente',
+        vencido: 'Vencido'
+    };
+
+    return `<span class="planning-status-badge ${status}">${labels[status] || status}</span>`;
+};
+
+const fillLocationFilter = () => {
+    const locations = [...new Set(defaultTasks.map(task => task.location))].sort();
+
+    locationFilter.innerHTML = `<option value="">Todas las sedes</option>`;
+
+    locations.forEach(location => {
+        locationFilter.innerHTML += `<option value="${location}">${location}</option>`;
+    });
+};
+
 const buildTasksForMonth = () => {
     const selectedMonth = monthInput.value;
     const executions = loadExecutions();
