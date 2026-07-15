@@ -4151,7 +4151,25 @@ if (quickNoteRawAfterSave) {
     monthInput.value = currentMonth;
 
     let planningTasks = [];
+        const getCustomTasksStorageKey = () => {
+    return 'maintenance-custom-tasks';
+};
 
+const loadCustomTasks = () => {
+    try {
+        return JSON.parse(localStorage.getItem(getCustomTasksStorageKey())) || [];
+    } catch (error) {
+        return [];
+    }
+};
+
+const saveCustomTasks = (tasks) => {
+    localStorage.setItem(getCustomTasksStorageKey(), JSON.stringify(tasks));
+};
+
+const getAllPlanningTasks = () => {
+    return [...defaultTasks, ...loadCustomTasks()];
+};
     const getExecutionStorageKey = () => {
     return `maintenance-executions-${monthInput.value}`;
 };
@@ -4516,7 +4534,7 @@ const getStatusBadge = (status) => {
 };
 
 const fillLocationFilter = () => {
-    const locations = [...new Set(defaultTasks.map(task => task.location))].sort();
+    const locations = [...new Set(getAllPlanningTasks().map(task => task.location))].sort();
 
     locationFilter.innerHTML = `<option value="">Todas las sedes</option>`;
 
@@ -4529,10 +4547,13 @@ const buildTasksForMonth = () => {
     const selectedMonth = monthInput.value;
     const executions = loadExecutions();
 
-    planningTasks = defaultTasks
+    planningTasks = getAllPlanningTasks()
         .filter(task => shouldTaskRunInMonth(task, selectedMonth))
         .map((task, index) => {
-            const id = `PLAN-${selectedMonth}-${task.item}-${index + 1}`;
+            const id = task.customId
+                ? `PLAN-${selectedMonth}-${task.customId}`
+                : `PLAN-${selectedMonth}-${task.item}-${index + 1}`;
+
             const execution = executions[id] || {};
 
             return {
@@ -4822,6 +4843,141 @@ const buildTasksForMonth = () => {
         }
     });
 };
+        const openNewPlanningTaskModal = () => {
+    const existingModal = document.getElementById('planning-new-task-modal');
+    if (existingModal) existingModal.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'planning-new-task-modal';
+    modal.className = 'planning-execution-overlay';
+
+    modal.innerHTML = `
+        <div class="planning-execution-modal">
+            <button type="button" class="planning-execution-close" id="close-new-task-modal">×</button>
+
+            <div class="planning-execution-header">
+                <div class="planning-execution-icon blue">+</div>
+                <div>
+                    <h2>Nueva tarea</h2>
+                    <p>Agrega una tarea al cronograma mensual de mantenimiento.</p>
+                </div>
+            </div>
+
+            <form id="planning-new-task-form">
+                <div class="planning-execution-grid">
+                    <div class="planning-execution-field">
+                        <label>Tarea</label>
+                        <input type="text" id="new-planning-task-name" placeholder="Ej: Mantenimiento de cámaras" required>
+                    </div>
+
+                    <div class="planning-execution-field">
+                        <label>Sede</label>
+                        <input type="text" id="new-planning-task-location" placeholder="Ej: Principal - Bodega" required>
+                    </div>
+
+                    <div class="planning-execution-field">
+                        <label>Frecuencia</label>
+                        <select id="new-planning-task-frequency" required>
+                            <option value="">Selecciona una frecuencia</option>
+                            <option value="Mensual">Mensual</option>
+                            <option value="Bimestral">Bimestral</option>
+                            <option value="Trimestral">Trimestral</option>
+                            <option value="Semestral">Semestral</option>
+                            <option value="Anual">Anual</option>
+                        </select>
+                    </div>
+
+                    <div class="planning-execution-field">
+                        <label>Margen de ejecución</label>
+                        <input type="number" id="new-planning-task-margin" min="1" max="12" value="1" required>
+                    </div>
+
+                    <div class="planning-execution-field">
+                        <label>Mes de inicio</label>
+                        <select id="new-planning-task-start-month" required>
+                            <option value="1">Enero</option>
+                            <option value="2">Febrero</option>
+                            <option value="3">Marzo</option>
+                            <option value="4">Abril</option>
+                            <option value="5">Mayo</option>
+                            <option value="6">Junio</option>
+                            <option value="7">Julio</option>
+                            <option value="8">Agosto</option>
+                            <option value="9">Septiembre</option>
+                            <option value="10">Octubre</option>
+                            <option value="11">Noviembre</option>
+                            <option value="12">Diciembre</option>
+                        </select>
+                    </div>
+
+                    <div class="planning-execution-field">
+                        <label>Item</label>
+                        <input type="number" id="new-planning-task-item" min="1" value="6" required>
+                    </div>
+                </div>
+
+                <div class="planning-execution-field full">
+                    <label>Observación</label>
+                    <textarea id="new-planning-task-note" rows="4" placeholder="Escribe una observación opcional sobre esta tarea..."></textarea>
+                </div>
+
+                <div class="planning-execution-footer">
+                    <button type="button" class="planning-execution-cancel" id="cancel-new-task-modal">Cancelar</button>
+                    <button type="submit" class="planning-execution-save">Guardar tarea</button>
+                </div>
+            </form>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    const selectedMonth = monthInput.value;
+    const [, selectedMonthNumber] = selectedMonth.split('-');
+    document.getElementById('new-planning-task-start-month').value = String(Number(selectedMonthNumber));
+
+    const closeModal = () => modal.remove();
+
+    document.getElementById('close-new-task-modal').addEventListener('click', closeModal);
+    document.getElementById('cancel-new-task-modal').addEventListener('click', closeModal);
+
+    document.getElementById('planning-new-task-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const taskName = document.getElementById('new-planning-task-name').value.trim();
+        const location = document.getElementById('new-planning-task-location').value.trim();
+        const frequency = document.getElementById('new-planning-task-frequency').value;
+        const margin = Number(document.getElementById('new-planning-task-margin').value || 1);
+        const startMonth = Number(document.getElementById('new-planning-task-start-month').value || 1);
+        const item = Number(document.getElementById('new-planning-task-item').value || 6);
+        const note = document.getElementById('new-planning-task-note').value.trim();
+
+        if (!taskName || !location || !frequency) {
+            alert('Debes completar tarea, sede y frecuencia.');
+            return;
+        }
+
+        const customTasks = loadCustomTasks();
+
+        customTasks.push({
+            customId: `CUSTOM-${Date.now()}`,
+            item,
+            task: taskName,
+            location,
+            frequency,
+            margin,
+            startMonth,
+            note
+        });
+
+        saveCustomTasks(customTasks);
+
+        fillLocationFilter();
+        buildTasksForMonth();
+        renderPlanningTable();
+
+        closeModal();
+    });
+};
     fillLocationFilter();
     buildTasksForMonth();
     renderPlanningTable();
@@ -4841,8 +4997,8 @@ const buildTasksForMonth = () => {
     });
 
     document.getElementById('planning-new-task-btn').addEventListener('click', () => {
-        alert('Aquí después podemos crear el formulario para agregar una nueva tarea al cronograma.');
-    });
+    openNewPlanningTaskModal();
+});
 
     tableBody.addEventListener('click', (e) => {
         const registerBtn = e.target.closest('.planning-register-execution');
