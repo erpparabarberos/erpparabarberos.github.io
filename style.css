@@ -5293,3 +5293,61 @@ tr:hover td { background-color: #f8fafc; }
         grid-template-columns: 1fr;
     }
 }
+/* ==============================
+   FIX ACCIONES SERVICIOS
+   Igual a Inventario
+============================== */
+
+.services-actions-cell {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 14px !important;
+}
+
+.services-actions-cell button,
+.services-actions-cell .action-icon-edit,
+.services-actions-cell .action-icon-view,
+.services-actions-cell .action-icon-delete {
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px !important;
+    min-height: 28px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+}
+
+.services-actions-cell button:hover,
+.services-actions-cell .action-icon-edit:hover,
+.services-actions-cell .action-icon-view:hover,
+.services-actions-cell .action-icon-delete:hover {
+    background: transparent !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.services-actions-cell svg {
+    width: 18px !important;
+    height: 18px !important;
+    pointer-events: none !important;
+}
+
+.services-actions-cell .action-icon-edit svg {
+    fill: #2563eb !important;
+}
+
+.services-actions-cell .action-icon-view svg {
+    fill: #475569 !important;
+}
+
+.services-actions-cell .action-icon-delete svg {
+    fill: #dc2626 !important;
+}
