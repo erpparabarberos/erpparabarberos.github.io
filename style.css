@@ -5351,3 +5351,31 @@ tr:hover td { background-color: #f8fafc; }
 .services-actions-cell .action-icon-delete svg {
     fill: #dc2626 !important;
 }
+/* Orden y alineación final acciones servicios */
+.services-actions-cell {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 14px !important;
+    min-width: 110px !important;
+}
+
+.services-modern-table th:last-child,
+.services-modern-table td:last-child {
+    text-align: center !important;
+}
+
+.services-actions-cell button {
+    width: 24px !important;
+    height: 24px !important;
+    min-width: 24px !important;
+    min-height: 24px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
