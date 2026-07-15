@@ -1575,6 +1575,125 @@ const newTITicketFormHTML = `
 
 </section>
 `;
+    const maintenancePlanningPageHTML = `
+<section class="planning-modern-page">
+
+    <div class="planning-header">
+        <div class="planning-title-wrap">
+            <div class="planning-main-icon">🗓️</div>
+            <div>
+                <h1>Planificación TI</h1>
+                <p>Cronograma mensual de mantenimientos y calibraciones</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="planning-filter-card">
+        <div class="planning-filter-item">
+            <label>Mes</label>
+            <input type="month" id="planning-month-filter">
+        </div>
+
+        <div class="planning-filter-item">
+            <label>Sede</label>
+            <select id="planning-location-filter">
+                <option value="">Todas las sedes</option>
+            </select>
+        </div>
+
+        <div class="planning-filter-item">
+            <label>Estado</label>
+            <select id="planning-status-filter">
+                <option value="">Todos los estados</option>
+                <option value="programado">Programado</option>
+                <option value="ejecutado">Ejecutado</option>
+                <option value="pendiente">Pendiente</option>
+                <option value="vencido">Vencido</option>
+            </select>
+        </div>
+
+        <div class="planning-actions">
+            <button class="planning-btn light" id="planning-export-excel">Exportar a Excel (CSV)</button>
+            <button class="planning-btn light" id="planning-export-pdf">Exportar a PDF</button>
+            <button class="planning-btn blue" id="planning-new-task-btn">+ Nueva tarea</button>
+        </div>
+    </div>
+
+    <div class="planning-kpi-grid">
+        <div class="planning-kpi-card blue">
+            <div class="planning-kpi-icon">📋</div>
+            <div>
+                <span>Total de tareas</span>
+                <strong id="planning-total-tasks">0</strong>
+                <small>Programadas para el mes</small>
+            </div>
+        </div>
+
+        <div class="planning-kpi-card green">
+            <div class="planning-kpi-icon">✓</div>
+            <div>
+                <span>Ejecutadas</span>
+                <strong id="planning-executed-tasks">0</strong>
+                <small id="planning-executed-percent">0% del total</small>
+            </div>
+        </div>
+
+        <div class="planning-kpi-card orange">
+            <div class="planning-kpi-icon">◷</div>
+            <div>
+                <span>Pendientes</span>
+                <strong id="planning-pending-tasks">0</strong>
+                <small id="planning-pending-percent">0% del total</small>
+            </div>
+        </div>
+
+        <div class="planning-kpi-card red">
+            <div class="planning-kpi-icon">!</div>
+            <div>
+                <span>Vencidas</span>
+                <strong id="planning-expired-tasks">0</strong>
+                <small id="planning-expired-percent">0% del total</small>
+            </div>
+        </div>
+
+        <div class="planning-kpi-card purple">
+            <div class="planning-kpi-icon">📅</div>
+            <div>
+                <span>Próxima tarea</span>
+                <strong id="planning-next-task-date">N/A</strong>
+                <small id="planning-next-task-name">Sin tarea próxima</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="planning-table-card">
+        <div class="planning-table-wrapper">
+            <table class="planning-table" id="planning-table">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Tarea</th>
+                        <th>Sede</th>
+                        <th>Frecuencia</th>
+                        <th>Margen ejecución</th>
+                        <th>Programado para</th>
+                        <th>Ejecutado el</th>
+                        <th>Estado</th>
+                        <th>Soporte asociado</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody id="planning-table-body"></tbody>
+            </table>
+        </div>
+
+        <div class="planning-table-footer">
+            <span id="planning-results-text">Mostrando 0 tareas</span>
+        </div>
+    </div>
+
+</section>
+`;
     const maintenanceCalendarHTML = `<h1>📅 Planificación</h1><div class="add-new-button-container"><button class="export-btn csv" data-format="csv">Exportar a Excel (CSV)</button><button class="export-btn pdf" data-format="pdf">Exportar a PDF</button><button class="primary open-form-modal-btn" data-type="maintenance">Programar Tarea</button></div><div class="card"><div id="maintenance-calendar"></div><table id="data-table" style="display:none;"></table></div>`;
     const configHTML = `<h1>⚙️ Configuración</h1><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;"><div class="card"><h2>Gestionar Solicitantes</h2><form id="add-requester-form" style="display:flex; gap:10px; margin-bottom: 20px;"><input type="text" id="requester-name" placeholder="Nombre del solicitante" required style="flex-grow:1;"><button type="submit" class="primary">Añadir</button></form><ul id="requesters-list" class="config-list"></ul></div><div class="card"><h2>Gestionar Ubicaciones</h2><form id="add-location-form" style="display:flex; gap:10px; margin-bottom: 20px;"><input type="text" id="location-name" placeholder="Nombre de la ubicación" required style="flex-grow:1;"><button type="submit" class="primary">Añadir</button></form><ul id="locations-list" class="config-list"></ul></div></div>`;
 
@@ -4019,6 +4138,380 @@ if (quickNoteRawAfterSave) {
         renderTable();
     });
 }
+    function renderMaintenancePlanningPage(container) {
+    container.innerHTML = maintenancePlanningPageHTML;
+
+    const monthInput = document.getElementById('planning-month-filter');
+    const locationFilter = document.getElementById('planning-location-filter');
+    const statusFilter = document.getElementById('planning-status-filter');
+    const tableBody = document.getElementById('planning-table-body');
+    const resultsText = document.getElementById('planning-results-text');
+
+    const now = new Date();
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    monthInput.value = currentMonth;
+
+    let planningTasks = [];
+
+    const defaultTasks = [
+        {
+            item: 1,
+            task: 'Mantenimiento preventivo equipos de cómputo',
+            location: 'Principal - Administrativo',
+            frequency: 'Semestral',
+            margin: 3,
+            months: ['2026-02', '2026-08']
+        },
+        {
+            item: 1,
+            task: 'Mantenimiento preventivo equipos de cómputo',
+            location: 'Principal - Bodega',
+            frequency: 'Semestral',
+            margin: 3,
+            months: ['2026-02', '2026-08']
+        },
+        {
+            item: 1,
+            task: 'Mantenimiento preventivo equipos de cómputo',
+            location: 'PDV - Cali',
+            frequency: 'Semestral',
+            margin: 3,
+            months: ['2026-02', '2026-08']
+        },
+        {
+            item: 2,
+            task: 'Mantenimiento lógico equipos de cómputo',
+            location: 'Principal - Administrativo',
+            frequency: 'Bimestral',
+            margin: 2,
+            months: ['2026-01', '2026-03', '2026-05', '2026-07', '2026-09', '2026-11']
+        },
+        {
+            item: 2,
+            task: 'Mantenimiento lógico equipos de cómputo',
+            location: 'Principal - Bodega',
+            frequency: 'Bimestral',
+            margin: 2,
+            months: ['2026-01', '2026-03', '2026-05', '2026-07', '2026-09', '2026-11']
+        },
+        {
+            item: 2,
+            task: 'Mantenimiento lógico equipos de cómputo',
+            location: 'PDV - Cali',
+            frequency: 'Bimestral',
+            margin: 2,
+            months: ['2026-01', '2026-03', '2026-05', '2026-07', '2026-09', '2026-11']
+        },
+        {
+            item: 2,
+            task: 'Mantenimiento lógico equipos de cómputo',
+            location: 'PDV - Medellín / Tuluá / Pasto / Bogotá',
+            frequency: 'Bimestral',
+            margin: 2,
+            months: ['2026-01', '2026-03', '2026-05', '2026-07', '2026-09', '2026-11']
+        },
+        {
+            item: 3,
+            task: 'Mantenimiento preventivo impresoras',
+            location: 'Principal - Administrativo',
+            frequency: 'Bimestral',
+            margin: 2,
+            months: ['2026-01', '2026-03', '2026-05', '2026-07', '2026-09', '2026-11']
+        },
+        {
+            item: 3,
+            task: 'Mantenimiento preventivo impresoras',
+            location: 'Principal - Bodega',
+            frequency: 'Bimestral',
+            margin: 2,
+            months: ['2026-02', '2026-04', '2026-06', '2026-08', '2026-10']
+        },
+        {
+            item: 3,
+            task: 'Mantenimiento preventivo impresoras',
+            location: 'PDV - Cali',
+            frequency: 'Semestral',
+            margin: 2,
+            months: ['2026-02', '2026-08']
+        },
+        {
+            item: 4,
+            task: 'Mantenimiento puntos de red',
+            location: 'Principal - Administrativo',
+            frequency: 'Trimestral',
+            margin: 3,
+            months: ['2026-02', '2026-04', '2026-06', '2026-08', '2026-10']
+        },
+        {
+            item: 4,
+            task: 'Mantenimiento puntos de red',
+            location: 'Principal - Bodega',
+            frequency: 'Trimestral',
+            margin: 3,
+            months: ['2026-02', '2026-04', '2026-06', '2026-08', '2026-10']
+        },
+        {
+            item: 5,
+            task: 'Mantenimiento y backup teléfonos celulares',
+            location: 'Principal - Administrativo',
+            frequency: 'Mensual',
+            margin: 1,
+            months: ['2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06', '2026-07', '2026-08', '2026-09', '2026-10', '2026-11']
+        },
+        {
+            item: 5,
+            task: 'Mantenimiento y backup teléfonos celulares',
+            location: 'Principal - Bodega',
+            frequency: 'Mensual',
+            margin: 2,
+            months: ['2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06', '2026-07', '2026-08', '2026-09', '2026-10', '2026-11']
+        },
+        {
+            item: 5,
+            task: 'Mantenimiento y backup teléfonos celulares',
+            location: 'PDV - Cali',
+            frequency: 'Semestral',
+            margin: 2,
+            months: ['2026-04', '2026-10']
+        }
+    ];
+
+    const getMonthLabel = (monthValue) => {
+        const [year, month] = monthValue.split('-');
+        const date = new Date(Number(year), Number(month) - 1, 1);
+
+        return date.toLocaleDateString('es-ES', {
+            month: 'long',
+            year: 'numeric'
+        });
+    };
+
+    const normalize = (value) => String(value || '').toLowerCase().trim();
+
+    const getTaskStatus = (task) => {
+        if (task.supportId) return 'ejecutado';
+
+        const selectedMonth = monthInput.value;
+        const today = new Date();
+        const [year, month] = selectedMonth.split('-');
+        const plannedDate = new Date(Number(year), Number(month) - 1, 15);
+
+        if (selectedMonth < currentMonth) return 'vencido';
+
+        if (
+            selectedMonth === currentMonth &&
+            today.getDate() > 20
+        ) {
+            return 'vencido';
+        }
+
+        return 'pendiente';
+    };
+
+    const getStatusBadge = (status) => {
+        const labels = {
+            programado: 'Programado',
+            ejecutado: 'Ejecutado',
+            pendiente: 'Pendiente',
+            vencido: 'Vencido'
+        };
+
+        return `<span class="planning-status-badge ${status}">${labels[status] || status}</span>`;
+    };
+
+    const fillLocationFilter = () => {
+        const locations = [...new Set(defaultTasks.map(task => task.location))].sort();
+
+        locationFilter.innerHTML = `<option value="">Todas las sedes</option>`;
+
+        locations.forEach(location => {
+            locationFilter.innerHTML += `<option value="${location}">${location}</option>`;
+        });
+    };
+
+    const buildTasksForMonth = () => {
+        const selectedMonth = monthInput.value;
+
+        planningTasks = defaultTasks
+            .filter(task => task.months.includes(selectedMonth))
+            .map((task, index) => {
+                return {
+                    id: `PLAN-${selectedMonth}-${index + 1}`,
+                    ...task,
+                    plannedMonth: selectedMonth,
+                    plannedLabel: getMonthLabel(selectedMonth),
+                    executedAt: '',
+                    supportId: ''
+                };
+            });
+    };
+
+    const updateKPIs = (tasks) => {
+        const total = tasks.length;
+        const executed = tasks.filter(task => getTaskStatus(task) === 'ejecutado').length;
+        const pending = tasks.filter(task => getTaskStatus(task) === 'pendiente').length;
+        const expired = tasks.filter(task => getTaskStatus(task) === 'vencido').length;
+
+        const percent = (value) => {
+            if (!total) return '0%';
+            return `${((value / total) * 100).toFixed(1)}% del total`;
+        };
+
+        document.getElementById('planning-total-tasks').textContent = total;
+        document.getElementById('planning-executed-tasks').textContent = executed;
+        document.getElementById('planning-pending-tasks').textContent = pending;
+        document.getElementById('planning-expired-tasks').textContent = expired;
+
+        document.getElementById('planning-executed-percent').textContent = percent(executed);
+        document.getElementById('planning-pending-percent').textContent = percent(pending);
+        document.getElementById('planning-expired-percent').textContent = percent(expired);
+
+        const nextTask = tasks.find(task => getTaskStatus(task) === 'pendiente');
+
+        if (nextTask) {
+            document.getElementById('planning-next-task-date').textContent = '15/' + monthInput.value.split('-')[1] + '/' + monthInput.value.split('-')[0];
+            document.getElementById('planning-next-task-name').textContent = nextTask.task;
+        } else {
+            document.getElementById('planning-next-task-date').textContent = 'N/A';
+            document.getElementById('planning-next-task-name').textContent = 'Sin tarea próxima';
+        }
+    };
+
+    const renderPlanningTable = () => {
+        const locationValue = locationFilter.value;
+        const statusValue = statusFilter.value;
+
+        let filteredTasks = planningTasks.filter(task => {
+            const status = getTaskStatus(task);
+
+            const locationMatch = !locationValue || task.location === locationValue;
+            const statusMatch = !statusValue || status === statusValue;
+
+            return locationMatch && statusMatch;
+        });
+
+        updateKPIs(filteredTasks);
+
+        if (filteredTasks.length === 0) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="10" class="planning-empty">
+                        No hay tareas programadas para este mes.
+                    </td>
+                </tr>
+            `;
+            resultsText.textContent = `Mostrando 0 tareas`;
+            return;
+        }
+
+        tableBody.innerHTML = filteredTasks.map(task => {
+            const status = getTaskStatus(task);
+
+            const supportHTML = task.supportId
+                ? `<a href="#" class="planning-support-link" data-id="${task.supportId}">#${task.supportId}</a>`
+                : '—';
+
+            const actionHTML = status === 'ejecutado'
+                ? `<button type="button" class="planning-action-btn light planning-support-link" data-id="${task.supportId}">👁 Ver soporte</button>`
+                : `<button type="button" class="planning-action-btn blue planning-register-execution" data-task="${task.id}">+ Registrar ejecución</button>`;
+
+            return `
+                <tr>
+                    <td>${task.item}</td>
+                    <td><strong>${task.task}</strong></td>
+                    <td>${task.location}</td>
+                    <td>${task.frequency}</td>
+                    <td>${task.margin} meses</td>
+                    <td>${task.plannedLabel}</td>
+                    <td>${task.executedAt || '—'}</td>
+                    <td>${getStatusBadge(status)}</td>
+                    <td>${supportHTML}</td>
+                    <td>${actionHTML}</td>
+                </tr>
+            `;
+        }).join('');
+
+        resultsText.textContent = `Mostrando ${filteredTasks.length} de ${planningTasks.length} tareas`;
+    };
+
+    const exportPlanningCSV = () => {
+        const rows = [
+            ['Item', 'Tarea', 'Sede', 'Frecuencia', 'Margen ejecución', 'Programado para', 'Ejecutado el', 'Estado', 'Soporte asociado']
+        ];
+
+        planningTasks.forEach(task => {
+            const status = getTaskStatus(task);
+
+            rows.push([
+                task.item,
+                task.task,
+                task.location,
+                task.frequency,
+                task.margin,
+                task.plannedLabel,
+                task.executedAt || '',
+                status,
+                task.supportId || ''
+            ]);
+        });
+
+        const csv = rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `planificacion-ti-${monthInput.value}.csv`;
+        link.click();
+
+        URL.revokeObjectURL(url);
+    };
+
+    fillLocationFilter();
+    buildTasksForMonth();
+    renderPlanningTable();
+
+    monthInput.addEventListener('change', () => {
+        buildTasksForMonth();
+        renderPlanningTable();
+    });
+
+    locationFilter.addEventListener('change', renderPlanningTable);
+    statusFilter.addEventListener('change', renderPlanningTable);
+
+    document.getElementById('planning-export-excel').addEventListener('click', exportPlanningCSV);
+
+    document.getElementById('planning-export-pdf').addEventListener('click', () => {
+        window.print();
+    });
+
+    document.getElementById('planning-new-task-btn').addEventListener('click', () => {
+        alert('Aquí después podemos crear el formulario para agregar una nueva tarea al cronograma.');
+    });
+
+    tableBody.addEventListener('click', (e) => {
+        const registerBtn = e.target.closest('.planning-register-execution');
+
+        if (registerBtn) {
+            const taskId = registerBtn.dataset.task;
+            const task = planningTasks.find(t => t.id === taskId);
+
+            if (!task) return;
+
+            alert(`Aquí abriremos el formulario de soporte con esta tarea precargada:\n\n${task.task}\n${task.location}`);
+        }
+
+        const supportBtn = e.target.closest('.planning-support-link');
+
+        if (supportBtn && supportBtn.dataset.id) {
+            e.preventDefault();
+
+            if (typeof showTicketModal === 'function') {
+                showTicketModal(supportBtn.dataset.id);
+            }
+        }
+    });
+}
     function renderGenericListPage(container, params, configObject, collectionName, icon) { 
         container.innerHTML = genericListPageHTML; 
         setupTableSearch('table-search-input', 'data-table'); 
@@ -6266,6 +6759,8 @@ if (createKbBtn) {
             if (path.startsWith('#inventory-')) renderInventoryModernPage(appContent, {category: path.replace('#inventory-', '')}); 
             else if (path.startsWith('#credentials-')) renderGenericListPage(appContent, {category: path.replace('#credentials-', '')}, credentialsCategoryConfig, 'credentials', '🔑'); 
             else if (path.startsWith('#services-')) renderServicesModernPage(appContent, {category: path.replace('#services-', '')});
+            else if (path === '#planning' || path === '#mantenimiento' || path === '#maintenance') {
+                renderMaintenancePlanningPage(appContent);}
             else if (routes[path]) routes[path](appContent, Object.fromEntries(params)); 
             else appContent.innerHTML = '<div class="card"><h1>404 - Página no encontrada</h1></div>';
             
