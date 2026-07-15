@@ -5727,3 +5727,39 @@ tr:hover td { background-color: #f8fafc; }
         align-items: stretch;
     }
 }
+/* ==============================
+   OCULTAR PAGINACIÓN INNECESARIA
+   INVENTARIOS Y SERVICIOS
+============================== */
+
+/* Servicios */
+.services-pagination-mock,
+.services-table-footer .services-pagination-mock {
+    display: none !important;
+}
+
+/* Inventario */
+.inventory-pagination,
+.inventory-modern-pagination,
+.inventory-table-pagination,
+.inventory-page-controls,
+.inventory-table-footer .pagination,
+.inventory-modern-page .pagination,
+.inventory-modern-page .table-pagination,
+.inventory-modern-page .pagination-controls {
+    display: none !important;
+}
+
+/* Si la paginación viene como botones sueltos dentro del footer */
+.inventory-modern-page .table-footer button,
+.inventory-modern-page .inventory-table-footer button,
+.services-table-footer button {
+    display: none !important;
+}
+
+/* Mantener visible solo el texto tipo “Mostrando...” */
+.services-table-footer,
+.inventory-table-footer,
+.table-footer {
+    justify-content: flex-start !important;
+}
