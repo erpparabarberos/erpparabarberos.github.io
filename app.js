@@ -1348,8 +1348,7 @@ const newTITicketFormHTML = `
         <div class="credentials-header-actions">
             <button class="credentials-export-btn export-btn csv" data-format="csv">Exportar a Excel (CSV)</button>
             <button class="credentials-export-btn export-btn pdf" data-format="pdf">Exportar a PDF</button>
-            <button id="add-item-btn" class="credentials-add-btn open-form-modal-btn">+ Añadir credencial de correo</button>
-        </div>
+            <button id="add-item-btn" class="credentials-add-btn open-form-modal-btn">+ Añadir credencial</button>        </div>
     </div>
 
     <div class="credentials-kpi-grid">
@@ -1503,12 +1502,13 @@ const newTITicketFormHTML = `
             <span id="credentials-results-text">Mostrando 0 registros</span>
 
             <div class="credentials-footer-right">
-                <select id="credentials-page-size">
-                    <option value="8">8</option>
-                    <option value="10" selected>10</option>
-                    <option value="20">20</option>
-                    <option value="50">50</option>
-                </select>
+            <select id="credentials-page-size">
+            <option value="8">8</option>
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+            <option value="all" selected>Todos</option>
+            </select>
                 <span>por página</span>
             </div>
         </div>
@@ -5272,7 +5272,15 @@ const buildTasksForMonth = () => {
             }); 
         }, error => handleFirestoreError(error, tableBody)); 
     }
-    function renderCredentialsEmailsModernPage(container) {
+   function renderCredentialsModernPage(container, params) {
+    const category = params.category || 'emails';
+    const config = credentialsCategoryConfig[category];
+
+    if (!config) {
+        container.innerHTML = `<h1>Error: categoría de accesos no encontrada.</h1>`;
+        return;
+    }
+
     container.innerHTML = credentialsEmailsModernPageHTML;
 
     const addButton = document.getElementById('add-item-btn');
@@ -5291,8 +5299,14 @@ const buildTasksForMonth = () => {
     const headCheck = document.getElementById('credentials-head-check');
     const selectAllCheck = document.getElementById('credentials-select-all');
 
-    addButton.dataset.type = 'credentials';
-    addButton.dataset.category = 'emails';
+       addButton.dataset.type = 'credentials';
+       addButton.dataset.category = category;
+       addButton.textContent = `+ Añadir ${config.titleSingular}`;
+
+       const titleEl = document.querySelector('.credentials-title-wrap h1');
+       const breadcrumbLast = document.querySelector('.credentials-breadcrumb span:last-child');
+       if (titleEl) titleEl.textContent = config.title;
+       if (breadcrumbLast) breadcrumbLast.textContent = config.title;
 
     const iconEdit = `<svg style="pointer-events:none; width:18px; height:18px; fill:#2563eb;" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>`;
     const iconView = `<svg style="pointer-events:none; width:18px; height:18px; fill:#475569;" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>`;
@@ -5472,8 +5486,10 @@ const buildTasksForMonth = () => {
     };
 
     const renderTable = () => {
-        const pageSize = Number(pageSizeSelect.value || 10);
-        const visibleItems = filteredCredentials.slice(0, pageSize);
+        const pageSizeValue = pageSizeSelect.value;
+        const visibleItems = pageSizeValue === 'all'
+            ? filteredCredentials
+            : filteredCredentials.slice(0, Number(pageSizeValue || 10));
 
         if (visibleItems.length === 0) {
             tableBody.innerHTML = `
@@ -5538,7 +5554,9 @@ const buildTasksForMonth = () => {
             `;
         }).join('');
 
-        resultsText.textContent = `Mostrando 1 a ${visibleItems.length} de ${filteredCredentials.length} registros`;
+        resultsText.textContent = visibleItems.length
+    ? `Mostrando 1 a ${visibleItems.length} de ${filteredCredentials.length} registros`
+    : `Mostrando 0 registros`;
 
         updateKPIs(filteredCredentials);
         updateSelectionBar();
@@ -5552,7 +5570,7 @@ const buildTasksForMonth = () => {
     };
 
     db.collection('credentials')
-        .where('category', '==', 'emails')
+    .where('category', '==', category)
         .onSnapshot(snapshot => {
             allCredentials = [];
 
@@ -7872,13 +7890,11 @@ if (createKbBtn) {
             document.querySelectorAll('.nav-item-with-submenu').forEach(el => el.classList.remove('open'));
             
             if (path.startsWith('#inventory-')) renderInventoryModernPage(appContent, {category: path.replace('#inventory-', '')}); 
-                else if (path === '#credentials-emails') {
-    renderCredentialsEmailsModernPage(appContent);
-}
-
-else if (path.startsWith('#credentials-')) {
-    renderGenericListPage(appContent, {category: path.replace('#credentials-', '')}, credentialsCategoryConfig, 'credentials', '🔑');
-}
+                else if (path.startsWith('#credentials-')) {
+                    renderCredentialsModernPage(appContent, {
+                        category: path.replace('#credentials-', '')
+                    });
+                }
             else if (path.startsWith('#services-')) renderServicesModernPage(appContent, {category: path.replace('#services-', '')});
             else if (path === '#planning' || path === '#mantenimiento' || path === '#maintenance') {
                 renderMaintenancePlanningPage(appContent);}
