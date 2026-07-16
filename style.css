@@ -7570,3 +7570,10 @@ tr:hover td { background-color: #f8fafc; }
     background: #eef4ff !important;
     color: #2563eb !important;
 }
+/* ==============================
+   OCULTAR PAGINACIÓN AJUSTES
+============================== */
+
+.settings-pagination button {
+    display: none !important;
+}
