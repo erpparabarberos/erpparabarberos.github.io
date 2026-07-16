@@ -1872,8 +1872,142 @@ const newTITicketFormHTML = `
 </section>
 `;
     const maintenanceCalendarHTML = `<h1>📅 Planificación</h1><div class="add-new-button-container"><button class="export-btn csv" data-format="csv">Exportar a Excel (CSV)</button><button class="export-btn pdf" data-format="pdf">Exportar a PDF</button><button class="primary open-form-modal-btn" data-type="maintenance">Programar Tarea</button></div><div class="card"><div id="maintenance-calendar"></div><table id="data-table" style="display:none;"></table></div>`;
-    const configHTML = `<h1>⚙️ Configuración</h1><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;"><div class="card"><h2>Gestionar Solicitantes</h2><form id="add-requester-form" style="display:flex; gap:10px; margin-bottom: 20px;"><input type="text" id="requester-name" placeholder="Nombre del solicitante" required style="flex-grow:1;"><button type="submit" class="primary">Añadir</button></form><ul id="requesters-list" class="config-list"></ul></div><div class="card"><h2>Gestionar Ubicaciones</h2><form id="add-location-form" style="display:flex; gap:10px; margin-bottom: 20px;"><input type="text" id="location-name" placeholder="Nombre de la ubicación" required style="flex-grow:1;"><button type="submit" class="primary">Añadir</button></form><ul id="locations-list" class="config-list"></ul></div></div>`;
+    const configHTML = `
+<section class="settings-modern-page">
 
+    <div class="settings-modern-header">
+        <div>
+            <div class="settings-breadcrumb">Inicio <span>›</span> Configuración <span>›</span> Centro de configuración</div>
+            <h1>Centro de configuración</h1>
+            <p>Administra solicitantes y ubicaciones de la organización.</p>
+        </div>
+
+        <div class="settings-header-actions">
+            <button type="button" id="settings-export-btn" class="settings-light-btn">Exportar</button>
+            <button type="button" id="settings-import-btn" class="settings-light-btn">Importar</button>
+            <button type="button" id="settings-add-main-btn" class="settings-red-btn">+ Agregar nuevo</button>
+        </div>
+    </div>
+
+    <div class="settings-kpi-grid">
+        <div class="settings-kpi-card">
+            <div class="settings-kpi-icon blue">👥</div>
+            <div>
+                <span>Solicitantes activos</span>
+                <strong id="settings-kpi-requesters">0</strong>
+                <small id="settings-kpi-requesters-sub">De 0 registrados</small>
+            </div>
+            <em>↑ 8%</em>
+        </div>
+
+        <div class="settings-kpi-card">
+            <div class="settings-kpi-icon blue">📍</div>
+            <div>
+                <span>Ubicaciones activas</span>
+                <strong id="settings-kpi-locations">0</strong>
+                <small id="settings-kpi-locations-sub">De 0 registradas</small>
+            </div>
+            <em>↑ 0%</em>
+        </div>
+
+        <div class="settings-kpi-card">
+            <div class="settings-kpi-icon orange">👤+</div>
+            <div>
+                <span>Nuevos solicitantes</span>
+                <strong id="settings-kpi-new">0</strong>
+                <small>Este mes</small>
+            </div>
+            <em>↑ 50%</em>
+        </div>
+
+        <div class="settings-kpi-card">
+            <div class="settings-kpi-icon purple">🏢</div>
+            <div>
+                <span>Solicitudes asociadas</span>
+                <strong id="settings-kpi-tickets">0</strong>
+                <small>Historial total</small>
+            </div>
+            <em>↑ 12%</em>
+        </div>
+    </div>
+
+    <div class="settings-main-card">
+
+        <div class="settings-tabs">
+            <button type="button" class="settings-tab active" data-tab="requesters">👥 Solicitantes</button>
+            <button type="button" class="settings-tab" data-tab="locations">📍 Ubicaciones</button>
+
+            <button type="button" id="settings-reset-filters" class="settings-reset-btn">↻ Restablecer filtros</button>
+        </div>
+
+        <div class="settings-filter-grid">
+            <div class="settings-search-box">
+                <span>🔍</span>
+                <input type="text" id="settings-search-input" placeholder="Buscar solicitante...">
+            </div>
+
+            <div class="settings-filter-item">
+                <label>Estado</label>
+                <select id="settings-filter-status">
+                    <option value="">Todos</option>
+                    <option value="Activo">Activo</option>
+                    <option value="Inactivo">Inactivo</option>
+                </select>
+            </div>
+
+            <div class="settings-filter-item">
+                <label>Rol / Área</label>
+                <select id="settings-filter-area">
+                    <option value="">Todos</option>
+                    <option value="Administrativo">Administrativo</option>
+                    <option value="Ventas">Ventas</option>
+                    <option value="TI">TI</option>
+                    <option value="Operaciones">Operaciones</option>
+                    <option value="Bodega">Bodega</option>
+                </select>
+            </div>
+
+            <div class="settings-filter-item">
+                <label>Ubicación</label>
+                <select id="settings-filter-location">
+                    <option value="">Todas</option>
+                </select>
+            </div>
+
+            <div class="settings-filter-item">
+                <label>Fecha de registro</label>
+                <input type="date" id="settings-filter-date">
+            </div>
+        </div>
+
+        <div class="settings-table-wrapper">
+            <table class="settings-table" id="data-table">
+                <thead id="settings-table-head"></thead>
+                <tbody id="settings-table-body"></tbody>
+            </table>
+        </div>
+
+        <div class="settings-table-footer">
+            <span id="settings-results-text">Mostrando 0 resultados</span>
+
+            <div class="settings-pagination">
+                <select id="settings-page-size">
+                    <option value="10">10 por página</option>
+                    <option value="20">20 por página</option>
+                    <option value="all">Todos</option>
+                </select>
+                <button type="button">‹</button>
+                <button type="button" class="active">1</button>
+                <button type="button">2</button>
+                <button type="button">3</button>
+                <button type="button">›</button>
+            </div>
+        </div>
+
+    </div>
+
+</section>
+`;
     // --- 4. CONFIGURACIONES DE TABLAS ---
     function capitalizar(str) { if (!str) return str; return str.charAt(0).toUpperCase() + str.slice(1); }
     function exportToCSV(tableId, filename) { const table = document.getElementById(tableId); if (!table) return; let data = []; const headers = Array.from(table.querySelectorAll('thead th')).map(header => header.innerText).slice(0, -1); const rows = table.querySelectorAll('tbody tr'); rows.forEach(row => { const rowData = Array.from(row.querySelectorAll('td')).map(cell => cell.innerText).slice(0, -1); data.push(rowData); }); const csv = Papa.unparse({ fields: headers, data }, { delimiter: ";" }); const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a"); if (link.download !== undefined) { const url = URL.createObjectURL(blob); link.setAttribute("href", url); link.setAttribute("download", `${filename}.csv`); link.style.visibility = 'hidden'; document.body.appendChild(link); link.click(); document.body.removeChild(link); } }
@@ -6142,55 +6276,457 @@ const buildTasksForMonth = () => {
 }
     
     function renderMaintenanceCalendar(container) { container.innerHTML = maintenanceCalendarHTML; const calendarEl = document.getElementById('maintenance-calendar'); const dataTable = document.getElementById('data-table'); db.collection('maintenance').where('status', 'in', ['planificada', 'completada']).onSnapshot(snapshot => { const eventColors = { 'Mantenimiento Preventivo': '#dc3545', 'Mantenimiento Correctivo': '#ffc107', 'Mantenimiento Lógico': '#6f42c1', 'Backup': '#fd7e14', 'Tarea': '#007bff', 'Recordatorio': '#17a2b8' }; const events = snapshot.docs.map(doc => { const data = doc.data(); let color = eventColors[data.type] || '#6c757d'; if (data.status === 'completada') color = '#28a745'; return { id: doc.id, title: data.task, start: data.date, color: color, extendedProps: { status: data.status, ...data } }; }); const calendar = new FullCalendar.Calendar(calendarEl, { headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek' }, initialView: 'dayGridMonth', locale: 'es', buttonText: { today: 'hoy', month: 'mes', week: 'semana', day: 'día', list: 'agenda' }, events: events, eventClick: function(info) { showEventActionChoiceModal(info.event.id, info.event.title, info.event.extendedProps); } }); calendar.render(); const tableHeaders = ['Tarea', 'Fecha Programada', 'Tipo', 'Estado']; const tableRows = snapshot.docs.map(doc => { const data = doc.data(); return [data.task, data.date, data.type, data.status]; }); dataTable.innerHTML = `<thead><tr>${tableHeaders.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${tableRows.map(row => `<tr>${row.map(cell => `<td>${cell}</td>`).join('')}</tr>`).join('')}</tbody>`; }, error => handleFirestoreError(error, calendarEl)); }
+    function renderConfiguracion(container) {
+    container.innerHTML = configHTML;
+
+    const searchInput = document.getElementById('settings-search-input');
+    const statusFilter = document.getElementById('settings-filter-status');
+    const areaFilter = document.getElementById('settings-filter-area');
+    const locationFilter = document.getElementById('settings-filter-location');
+    const dateFilter = document.getElementById('settings-filter-date');
+    const tableHead = document.getElementById('settings-table-head');
+    const tableBody = document.getElementById('settings-table-body');
+    const resultsText = document.getElementById('settings-results-text');
+    const pageSizeSelect = document.getElementById('settings-page-size');
+    const addMainBtn = document.getElementById('settings-add-main-btn');
+
+    let activeTab = 'requesters';
+    let requestersData = [];
+    let locationsData = [];
+    let ticketsData = [];
+
+    const iconEdit = `<svg style="pointer-events:none; width:18px; height:18px; fill:#2563eb;" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>`;
+
+    const iconDelete = `<svg style="pointer-events:none; width:18px; height:18px; fill:#dc2626;" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>`;
+
+    const normalize = (value) => String(value || '').toLowerCase().trim();
+
+    const escapeHTML = (value) => {
+        return String(value ?? 'N/A')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    };
+
+    const getStatusBadge = (status) => {
+        const value = status || 'Activo';
+        const normalized = normalize(value);
+
+        if (normalized === 'activo') {
+            return `<span class="settings-status active">Activo</span>`;
+        }
+
+        if (normalized === 'inactivo') {
+            return `<span class="settings-status inactive">Inactivo</span>`;
+        }
+
+        return `<span class="settings-status active">Activo</span>`;
+    };
+
+    const formatDate = (value) => {
+        if (!value) return 'N/A';
+
+        try {
+            let date;
+
+            if (value.toDate) {
+                date = value.toDate();
+            } else if (value.seconds) {
+                date = new Date(value.seconds * 1000);
+            } else {
+                date = new Date(value);
+            }
+
+            if (isNaN(date.getTime())) return 'N/A';
+
+            return date.toLocaleDateString('es-CO');
+        } catch (error) {
+            return 'N/A';
+        }
+    };
+
+    const fillLocationFilter = () => {
+        const currentValue = locationFilter.value;
+
+        locationFilter.innerHTML = `<option value="">Todas</option>`;
+
+        locationsData.forEach(location => {
+            locationFilter.innerHTML += `<option value="${location.name}">${location.name}</option>`;
+        });
+
+        locationFilter.value = currentValue;
+    };
+
+    const updateKPIs = () => {
+        const activeRequesters = requestersData.filter(item => normalize(item.status || 'Activo') === 'activo').length;
+        const activeLocations = locationsData.filter(item => normalize(item.status || 'Activo') === 'activo').length;
+
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+
+        const newThisMonth = requestersData.filter(item => {
+            const dateValue = item.createdAt || item.registerDate;
+
+            if (!dateValue) return false;
+
+            let date;
+
+            if (dateValue.toDate) date = dateValue.toDate();
+            else if (dateValue.seconds) date = new Date(dateValue.seconds * 1000);
+            else date = new Date(dateValue);
+
+            return !isNaN(date.getTime()) && date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+        }).length;
+
+        document.getElementById('settings-kpi-requesters').textContent = activeRequesters;
+        document.getElementById('settings-kpi-requesters-sub').textContent = `De ${requestersData.length} registrados`;
+
+        document.getElementById('settings-kpi-locations').textContent = activeLocations;
+        document.getElementById('settings-kpi-locations-sub').textContent = `De ${locationsData.length} registradas`;
+
+        document.getElementById('settings-kpi-new').textContent = newThisMonth;
+        document.getElementById('settings-kpi-tickets').textContent = ticketsData.length;
+    };
+
+    const getRequesterLocationName = (item) => {
+        return item.locationName || item.location || item.sede || 'Administrativo';
+    };
+
+    const getRequesterArea = (item) => {
+        return item.area || item.role || item.department || 'Administrativo';
+    };
+
+    const getLocationType = (item) => {
+        const name = normalize(item.name);
+
+        if (name.includes('bodega')) return 'Bodega';
+        if (name.includes('servicio')) return 'Servicio técnico';
+        if (name.includes('punto de venta')) return 'Punto de venta';
+        if (name.includes('administrativo')) return 'Administrativo';
+
+        return item.type || 'Ubicación';
+    };
+
+    const renderTable = () => {
+        const search = normalize(searchInput.value);
+        const status = statusFilter.value;
+        const area = areaFilter.value;
+        const location = locationFilter.value;
+        const date = dateFilter.value;
+        const pageSize = pageSizeSelect.value;
+
+        if (activeTab === 'requesters') {
+            tableHead.innerHTML = `
+                <tr>
+                    <th>Código</th>
+                    <th>Nombre completo</th>
+                    <th>Correo electrónico</th>
+                    <th>Rol / Área</th>
+                    <th>Ubicación principal</th>
+                    <th>Estado</th>
+                    <th>Fecha de registro</th>
+                    <th>Acciones</th>
+                </tr>
+            `;
+
+            let filtered = requestersData.filter(item => {
+                const itemStatus = item.status || 'Activo';
+                const itemArea = getRequesterArea(item);
+                const itemLocation = getRequesterLocationName(item);
+
+                const text = normalize([
+                    item.id,
+                    item.name,
+                    item.email,
+                    itemArea,
+                    itemLocation,
+                    itemStatus
+                ].join(' '));
+
+                const itemDate = item.createdAt || item.registerDate;
+                const formattedDate = formatDate(itemDate);
+
+                return (!search || text.includes(search)) &&
+                    (!status || itemStatus === status) &&
+                    (!area || itemArea === area) &&
+                    (!location || itemLocation === location) &&
+                    (!date || formattedDate.includes(date));
+            });
+
+            const visible = pageSize === 'all'
+                ? filtered
+                : filtered.slice(0, Number(pageSize || 10));
+
+            if (visible.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="8" class="settings-empty">No hay solicitantes para mostrar.</td></tr>`;
+            } else {
+                tableBody.innerHTML = visible.map(item => `
+                    <tr>
+                        <td><strong class="settings-code">${escapeHTML(item.id)}</strong></td>
+                        <td>${escapeHTML(item.name)}</td>
+                        <td>${escapeHTML(item.email || 'N/A')}</td>
+                        <td>${escapeHTML(getRequesterArea(item))}</td>
+                        <td><span class="settings-location-dot">📍</span> ${escapeHTML(getRequesterLocationName(item))}</td>
+                        <td>${getStatusBadge(item.status || 'Activo')}</td>
+                        <td>${formatDate(item.createdAt || item.registerDate)}</td>
+                        <td>
+                            <div class="settings-actions-cell">
+                                <button type="button" class="action-icon-edit" title="Editar" data-id="${item.id}" data-collection="config" data-category="requesters">${iconEdit}</button>
+                                <button type="button" class="action-icon-delete" title="Eliminar" data-id="${item.id}" data-collection="requesters">${iconDelete}</button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            resultsText.textContent = filtered.length
+                ? `Mostrando 1 a ${visible.length} de ${filtered.length} resultados`
+                : `Mostrando 0 resultados`;
+
+            addMainBtn.textContent = '+ Agregar solicitante';
+            searchInput.placeholder = 'Buscar solicitante...';
+        }
+
+        if (activeTab === 'locations') {
+            tableHead.innerHTML = `
+                <tr>
+                    <th>Código</th>
+                    <th>Nombre de la ubicación</th>
+                    <th>Tipo</th>
+                    <th>Ciudad</th>
+                    <th>Estado</th>
+                    <th>Fecha de registro</th>
+                    <th>Acciones</th>
+                </tr>
+            `;
+
+            let filtered = locationsData.filter(item => {
+                const itemStatus = item.status || 'Activo';
+                const itemType = getLocationType(item);
+                const itemCity = item.city || 'Cali';
+
+                const text = normalize([
+                    item.id,
+                    item.name,
+                    itemType,
+                    itemCity,
+                    itemStatus
+                ].join(' '));
+
+                const itemDate = item.createdAt || item.registerDate;
+                const formattedDate = formatDate(itemDate);
+
+                return (!search || text.includes(search)) &&
+                    (!status || itemStatus === status) &&
+                    (!area || itemType === area) &&
+                    (!location || item.name === location) &&
+                    (!date || formattedDate.includes(date));
+            });
+
+            const visible = pageSize === 'all'
+                ? filtered
+                : filtered.slice(0, Number(pageSize || 10));
+
+            if (visible.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="7" class="settings-empty">No hay ubicaciones para mostrar.</td></tr>`;
+            } else {
+                tableBody.innerHTML = visible.map(item => `
+                    <tr>
+                        <td><strong class="settings-code">${escapeHTML(item.id)}</strong></td>
+                        <td>${escapeHTML(item.name)}</td>
+                        <td>${escapeHTML(getLocationType(item))}</td>
+                        <td>${escapeHTML(item.city || 'Cali')}</td>
+                        <td>${getStatusBadge(item.status || 'Activo')}</td>
+                        <td>${formatDate(item.createdAt || item.registerDate)}</td>
+                        <td>
+                            <div class="settings-actions-cell">
+                                <button type="button" class="action-icon-edit" title="Editar" data-id="${item.id}" data-collection="config" data-category="locations">${iconEdit}</button>
+                                <button type="button" class="action-icon-delete" title="Eliminar" data-id="${item.id}" data-collection="locations">${iconDelete}</button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            resultsText.textContent = filtered.length
+                ? `Mostrando 1 a ${visible.length} de ${filtered.length} resultados`
+                : `Mostrando 0 resultados`;
+
+            addMainBtn.textContent = '+ Agregar ubicación';
+            searchInput.placeholder = 'Buscar ubicación...';
+        }
+    };
+
+    const createConfigItem = async () => {
+        const isRequester = activeTab === 'requesters';
+
+        const collectionName = isRequester ? 'requesters' : 'locations';
+        const prefix = isRequester ? 'REQ-' : 'LOC-';
+        const counterName = isRequester ? 'requesterCounter' : 'locationCounter';
+        const label = isRequester ? 'solicitante' : 'ubicación';
+
+        const name = prompt(`Nombre del ${label}:`);
+
+        if (!name || !name.trim()) return;
+
+        try {
+            const counterRef = db.collection('counters').doc(counterName);
+
+            let newId;
+            let newNumber;
+
+            await db.runTransaction(async (transaction) => {
+                const counterDoc = await transaction.get(counterRef);
+
+                if (!counterDoc.exists) {
+                    throw new Error(`El contador '${counterName}' no existe.`);
+                }
+
+                newNumber = counterDoc.data().currentNumber + 1;
+                newId = `${prefix}${newNumber}`;
+
+                transaction.update(counterRef, {
+                    currentNumber: newNumber
+                });
+            });
+
+            await db.collection(collectionName).doc(newId).set({
+                name: name.trim(),
+                numericId: newNumber,
+                status: 'Activo',
+                createdAt: firebase.firestore.Timestamp.now()
+            });
+
+        } catch (error) {
+            console.error('Error creando registro:', error);
+            alert('No se pudo crear el registro.');
+        }
+    };
+
+    const exportCurrentData = () => {
+        const data = activeTab === 'requesters' ? requestersData : locationsData;
+
+        const rows = activeTab === 'requesters'
+            ? [
+                ['Código', 'Nombre', 'Correo', 'Área', 'Ubicación', 'Estado'],
+                ...data.map(item => [
+                    item.id,
+                    item.name || '',
+                    item.email || '',
+                    getRequesterArea(item),
+                    getRequesterLocationName(item),
+                    item.status || 'Activo'
+                ])
+            ]
+            : [
+                ['Código', 'Nombre', 'Tipo', 'Ciudad', 'Estado'],
+                ...data.map(item => [
+                    item.id,
+                    item.name || '',
+                    getLocationType(item),
+                    item.city || 'Cali',
+                    item.status || 'Activo'
+                ])
+            ];
+
+        const csv = rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = activeTab === 'requesters' ? 'solicitantes.csv' : 'ubicaciones.csv';
+        link.click();
+
+        URL.revokeObjectURL(url);
+    };
+
+    db.collection('requesters').orderBy('numericId', 'asc').onSnapshot(snapshot => {
+        requestersData = [];
+
+        snapshot.forEach(doc => {
+            requestersData.push({
+                id: doc.id,
+                ...doc.data()
+            });
+        });
+
+        updateKPIs();
+        renderTable();
+    });
+
+    db.collection('locations').orderBy('numericId', 'asc').onSnapshot(snapshot => {
+        locationsData = [];
+
+        snapshot.forEach(doc => {
+            locationsData.push({
+                id: doc.id,
+                ...doc.data()
+            });
+        });
+
+        fillLocationFilter();
+        updateKPIs();
+        renderTable();
+    });
+
+    db.collection('tickets').onSnapshot(snapshot => {
+        ticketsData = [];
+
+        snapshot.forEach(doc => {
+            ticketsData.push({
+                id: doc.id,
+                ...doc.data()
+            });
+        });
+
+        updateKPIs();
+    });
+
+    document.querySelectorAll('.settings-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.settings-tab').forEach(btn => btn.classList.remove('active'));
+            tab.classList.add('active');
+
+            activeTab = tab.dataset.tab;
+            searchInput.value = '';
+            statusFilter.value = '';
+            areaFilter.value = '';
+            locationFilter.value = '';
+            dateFilter.value = '';
+
+            renderTable();
+        });
+    });
+
+    searchInput.addEventListener('input', renderTable);
+    statusFilter.addEventListener('change', renderTable);
+    areaFilter.addEventListener('change', renderTable);
+    locationFilter.addEventListener('change', renderTable);
+    dateFilter.addEventListener('change', renderTable);
+    pageSizeSelect.addEventListener('change', renderTable);
+
+    document.getElementById('settings-reset-filters').addEventListener('click', () => {
+        searchInput.value = '';
+        statusFilter.value = '';
+        areaFilter.value = '';
+        locationFilter.value = '';
+        dateFilter.value = '';
+        renderTable();
+    });
+
+    addMainBtn.addEventListener('click', createConfigItem);
+
+    document.getElementById('settings-export-btn').addEventListener('click', exportCurrentData);
+
+    document.getElementById('settings-import-btn').addEventListener('click', () => {
+        alert('Más adelante podemos crear importación desde Excel/CSV.');
+    });
+}
     
-    function renderConfiguracion(container) { 
-        container.innerHTML = configHTML; 
-        const setupConfigSection = (type, collectionName, prefix, counterName) => { 
-            const form = document.getElementById(`add-${type}-form`); 
-            if(!form) return; 
-            const input = document.getElementById(`${type}-name`); 
-            const list = document.getElementById(`${type}s-list`); 
-            
-            const iconEdit = `<svg style="pointer-events:none; width:20px; height:20px; fill:#2563eb;" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>`; 
-            const iconDelete = `<svg style="pointer-events:none; width:20px; height:20px; fill:#dc2626;" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>`; 
-            
-            form.addEventListener('submit', async (e) => { 
-                e.preventDefault(); 
-                const name = input.value.trim(); 
-                if (!name) return; 
-                const counterRef = db.collection('counters').doc(counterName); 
-                try { 
-                    let newId; let newNumber; 
-                    await db.runTransaction(async (transaction) => { 
-                        const counterDoc = await transaction.get(counterRef); 
-                        if (!counterDoc.exists) { throw `El contador '${counterName}' no existe en Firebase.`; } 
-                        newNumber = counterDoc.data().currentNumber + 1; 
-                        transaction.update(counterRef, { currentNumber: newNumber }); 
-                        newId = `${prefix}${newNumber}`; 
-                    }); 
-                    await db.collection(collectionName).doc(newId).set({ name: name, numericId: newNumber }); 
-                    form.reset(); 
-                } catch (error) { 
-                    console.error("Error al crear item:", error); alert("No se pudo crear el nuevo ítem."); 
-                } 
-            }); 
-            
-            db.collection(collectionName).orderBy("numericId", "asc").onSnapshot(snapshot => { 
-                list.innerHTML = ''; 
-                snapshot.forEach(doc => { 
-                    const item = { id: doc.id, ...doc.data() }; 
-                    const li = document.createElement('li'); 
-                    li.className = 'config-list-item'; 
-                    li.innerHTML = `<div><strong style="margin-right: 10px;">${item.id}</strong><span class="config-item-name">${item.name}</span></div><div style="display:flex; align-items:center;"><div class="action-icon-edit" style="cursor:pointer; display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; background:transparent !important; border:none; margin:0 4px; box-shadow:none; padding:0;" data-collection="${collectionName}" data-id="${item.id}" data-type="config">${iconEdit}</div><div class="action-icon-delete" style="cursor:pointer; display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; background:transparent !important; border:none; margin:0 4px; box-shadow:none; padding:0;" data-id="${item.id}" data-collection="${collectionName}">${iconDelete}</div></div>`; 
-                    list.appendChild(li); 
-                }); 
-            }, error => handleFirestoreError(error, list)); 
-        }; 
-        
-        setupConfigSection('requester', 'requesters', 'REQ-', 'requesterCounter'); 
-        setupConfigSection('location', 'locations', 'LOC-', 'locationCounter'); 
-        setupConfigSection('atencion', 'credentials', 'CRED-APPAT-', 'atencionCounter'); 
-    }
     async function showComputerEditModernModal(docId) {
     const formModal = document.getElementById('form-modal');
     const modalBody = formModal.querySelector('#form-modal-body');
