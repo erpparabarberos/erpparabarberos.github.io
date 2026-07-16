@@ -7061,17 +7061,36 @@ tr:hover td { background-color: #f8fafc; }
     align-items: center;
     gap: 8px;
 }
-
 .credentials-show-password {
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
-    color: #475569 !important;
+    outline: none !important;
+    color: #475569 !important;   /* color fijo del ojo */
     cursor: pointer !important;
     padding: 0 !important;
     font-size: 13px !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
+.credentials-show-password:hover,
+.credentials-show-password:focus,
+.credentials-show-password:active,
+.credentials-show-password:visited {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    color: #475569 !important;   /* que NO cambie a rojo */
+}
+
+.credentials-show-password svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor !important;
+}
 .credentials-note-cell {
     display: inline-block;
     max-width: 220px;
