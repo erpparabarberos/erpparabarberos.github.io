@@ -7577,3 +7577,50 @@ tr:hover td { background-color: #f8fafc; }
 .settings-pagination button {
     display: none !important;
 }
+/* ==============================
+   FIX DEFINITIVO TABS AJUSTES
+   QUITAR ROJO DE UBICACIONES
+============================== */
+
+.settings-main-card .settings-tabs button.settings-tab,
+.settings-main-card .settings-tabs .settings-tab,
+button.settings-tab[data-tab="requesters"],
+button.settings-tab[data-tab="locations"] {
+    background: #ffffff !important;
+    color: #334155 !important;
+    border: 1px solid #dbe4f0 !important;
+    border-bottom: 1px solid #dbe4f0 !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+}
+
+.settings-main-card .settings-tabs button.settings-tab:hover,
+.settings-main-card .settings-tabs .settings-tab:hover,
+button.settings-tab[data-tab="requesters"]:hover,
+button.settings-tab[data-tab="locations"]:hover {
+    background: #f8fbff !important;
+    color: #2563eb !important;
+    border-color: #dbe4f0 !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.settings-main-card .settings-tabs button.settings-tab.active,
+.settings-main-card .settings-tabs .settings-tab.active,
+button.settings-tab.active[data-tab="requesters"],
+button.settings-tab.active[data-tab="locations"] {
+    background: #eef4ff !important;
+    color: #2563eb !important;
+    border: 1px solid #d8e4ff !important;
+    border-bottom: 3px solid #2563eb !important;
+    box-shadow: none !important;
+}
+
+/* Evita que el botón rojo global afecte estos tabs */
+.settings-main-card .settings-tabs button.settings-tab:not(.settings-red-btn) {
+    background-color: #ffffff !important;
+}
+
+.settings-main-card .settings-tabs button.settings-tab.active:not(.settings-red-btn) {
+    background-color: #eef4ff !important;
+}
