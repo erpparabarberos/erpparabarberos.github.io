@@ -1478,23 +1478,9 @@ const newTITicketFormHTML = `
     <div class="credentials-table-card">
         <div class="credentials-table-wrapper">
             <table class="credentials-modern-table" id="data-table">
-                <thead>
-                    <tr>
-                        <th class="credentials-check-col">
-                            <input type="checkbox" id="credentials-head-check">
-                        </th>
-                        <th>Código</th>
-                        <th>Servicio</th>
-                        <th>Correo</th>
-                        <th>Recuperación</th>
-                        <th>Usuario</th>
-                        <th>Área</th>
-                        <th>Estado</th>
-                        <th>Última actualización</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="credentials-table-body"></tbody>
+
+            <thead id="credentials-table-head"></thead>
+            <tbody id="credentials-table-body"></tbody>
             </table>
         </div>
 
@@ -5272,7 +5258,8 @@ const buildTasksForMonth = () => {
             }); 
         }, error => handleFirestoreError(error, tableBody)); 
     }
-   function renderCredentialsModernPage(container, params) {
+
+    function renderCredentialsModernPage(container, params) {
     const category = params.category || 'emails';
     const config = credentialsCategoryConfig[category];
 
@@ -5291,32 +5278,59 @@ const buildTasksForMonth = () => {
     const userFilter = document.getElementById('credentials-filter-user');
     const dateFromFilter = document.getElementById('credentials-filter-date-from');
     const dateToFilter = document.getElementById('credentials-filter-date-to');
+    const tableHead = document.getElementById('credentials-table-head');
     const tableBody = document.getElementById('credentials-table-body');
     const resultsText = document.getElementById('credentials-results-text');
     const pageSizeSelect = document.getElementById('credentials-page-size');
     const selectionBar = document.getElementById('credentials-selection-bar');
     const selectedCount = document.getElementById('credentials-selected-count');
-    const headCheck = document.getElementById('credentials-head-check');
-    const selectAllCheck = document.getElementById('credentials-select-all');
 
-       addButton.dataset.type = 'credentials';
-       addButton.dataset.category = category;
-       addButton.textContent = `+ Añadir ${config.titleSingular}`;
+    const titleEl = document.querySelector('.credentials-title-wrap h1');
+    const breadcrumbLast = document.querySelector('.credentials-breadcrumb span:last-child');
 
-       const titleEl = document.querySelector('.credentials-title-wrap h1');
-       const breadcrumbLast = document.querySelector('.credentials-breadcrumb span:last-child');
-       if (titleEl) titleEl.textContent = config.title;
-       if (breadcrumbLast) breadcrumbLast.textContent = config.title;
+    if (titleEl) titleEl.textContent = config.title;
+    if (breadcrumbLast) breadcrumbLast.textContent = config.title;
+
+    addButton.dataset.type = 'credentials';
+    addButton.dataset.category = category;
+    addButton.textContent = `+ Añadir ${config.titleSingular}`;
 
     const iconEdit = `<svg style="pointer-events:none; width:18px; height:18px; fill:#2563eb;" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>`;
+
     const iconView = `<svg style="pointer-events:none; width:18px; height:18px; fill:#475569;" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>`;
+
     const iconDelete = `<svg style="pointer-events:none; width:18px; height:18px; fill:#dc2626;" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>`;
 
     let allCredentials = [];
     let filteredCredentials = [];
     let selectedIds = new Set();
 
+    const fieldEntries = Object.entries(config.fields);
+    const fieldKeys = fieldEntries.map(([key]) => key);
+
+    tableHead.innerHTML = `
+        <tr>
+            <th class="credentials-check-col">
+                <input type="checkbox" id="credentials-head-check">
+            </th>
+            ${fieldEntries.map(([key, field]) => `<th data-field="${key}">${field.label}</th>`).join('')}
+            <th>Acciones</th>
+        </tr>
+    `;
+
+    const headCheck = document.getElementById('credentials-head-check');
+    const selectAllCheck = document.getElementById('credentials-select-all');
+
     const normalizeText = (value) => String(value || '').toLowerCase().trim();
+
+    const escapeHTML = (value) => {
+        return String(value ?? 'N/A')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    };
 
     const formatDateTime = (value) => {
         if (!value) return 'N/A';
@@ -5350,13 +5364,10 @@ const buildTasksForMonth = () => {
         const value = item.updatedAt || item.createdAt;
 
         if (!value) return null;
-
         if (value.toDate) return value.toDate();
-
         if (value.seconds) return new Date(value.seconds * 1000);
 
         const date = new Date(value);
-
         return isNaN(date.getTime()) ? null : date;
     };
 
@@ -5364,39 +5375,92 @@ const buildTasksForMonth = () => {
         const value = status || 'N/A';
         const normalized = normalizeText(value);
 
-        if (normalized === 'activo') {
-            return `<span class="credentials-status active">Activo</span>`;
+        if (normalized === 'activo' || normalized === 'sí' || normalized === 'si') {
+            return `<span class="credentials-status active">${escapeHTML(value)}</span>`;
         }
 
-        if (normalized === 'inactivo') {
-            return `<span class="credentials-status inactive">Inactivo</span>`;
+        if (normalized === 'inactivo' || normalized === 'no') {
+            return `<span class="credentials-status inactive">${escapeHTML(value)}</span>`;
         }
 
-        return `<span class="credentials-status neutral">${value}</span>`;
+        return `<span class="credentials-status neutral">${escapeHTML(value)}</span>`;
     };
 
-    const getServiceLogo = (service) => {
-        const value = normalizeText(service);
+    const getServiceLogo = (value) => {
+        const text = normalizeText(value);
 
-        if (value.includes('google')) {
+        if (text.includes('google')) {
             return `<span class="credentials-service-logo google">G</span>`;
         }
 
-        if (value.includes('365') || value.includes('office') || value.includes('microsoft')) {
+        if (text.includes('365') || text.includes('office') || text.includes('microsoft')) {
             return `<span class="credentials-service-logo microsoft">M</span>`;
         }
 
-        return `<span class="credentials-service-logo other">✉</span>`;
+        return `<span class="credentials-service-logo other">▣</span>`;
     };
 
     const getInitials = (name) => {
         const parts = String(name || 'NA').trim().split(/\s+/).filter(Boolean);
 
         if (parts.length === 0) return 'NA';
-
         if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
 
         return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    };
+
+    const maskSensitiveValue = (value) => {
+        if (!value) return 'N/A';
+        return '••••••••••';
+    };
+
+    const renderCellContent = (key, item) => {
+        const value = key === 'id' ? item.id : item[key];
+
+        if (key === 'id') {
+            return `<strong>${escapeHTML(item.id)}</strong>`;
+        }
+
+        if (key === 'password' || key === 'pin' || key === 'licenseKey') {
+            return `
+                <span class="credentials-password-cell">
+                    <span>${maskSensitiveValue(value)}</span>
+                    <button type="button" class="credentials-show-password" data-value="${escapeHTML(value || '')}" title="Mostrar / ocultar">👁</button>
+                </span>
+            `;
+        }
+
+        if (key === 'status' || key === 'isAdmin') {
+            return getStatusBadge(value);
+        }
+
+        if (key === 'service' || key === 'provider' || key === 'softwareName' || key === 'system') {
+            return `
+                <div class="credentials-service-cell">
+                    ${getServiceLogo(value)}
+                    <span>${escapeHTML(value || 'N/A')}</span>
+                </div>
+            `;
+        }
+
+        if (key === 'assignedUser' || key === 'user' || key === 'assignedTo' || key === 'username') {
+            return `
+                <div class="credentials-user-cell">
+                    <span class="credentials-avatar">${getInitials(value)}</span>
+                    <span>${escapeHTML(value || 'N/A')}</span>
+                </div>
+            `;
+        }
+
+        if (key === 'email' || key === 'recoveryEmail' || key === 'url') {
+            return `<span class="credentials-email-cell">${escapeHTML(value || 'N/A')}</span>`;
+        }
+
+        if (key === 'notes' || key === 'nots' || key === 'description') {
+            return `<span class="credentials-note-cell">${escapeHTML(value || 'N/A')}</span>`;
+        }
+
+        return escapeHTML(value || 'N/A');
     };
 
     const fillSelect = (select, values, placeholder) => {
@@ -5405,17 +5469,25 @@ const buildTasksForMonth = () => {
         select.innerHTML = `<option value="">${placeholder}</option>`;
 
         [...new Set(values.filter(Boolean))].sort().forEach(value => {
-            select.innerHTML += `<option value="${value}">${value}</option>`;
+            select.innerHTML += `<option value="${escapeHTML(value)}">${escapeHTML(value)}</option>`;
         });
 
         select.value = currentValue;
     };
 
+    const getPrimaryServiceValue = (item) => {
+        return item.service || item.provider || item.softwareName || item.system || item.host || item.url || '';
+    };
+
+    const getPrimaryUserValue = (item) => {
+        return item.assignedUser || item.user || item.assignedTo || item.username || '';
+    };
+
     const updateKPIs = (items) => {
         const total = items.length;
-        const active = items.filter(item => normalizeText(item.status) === 'activo').length;
-        const inactive = items.filter(item => normalizeText(item.status) === 'inactivo').length;
-        const users = new Set(items.map(item => item.assignedUser).filter(Boolean)).size;
+        const active = items.filter(item => normalizeText(item.status) === 'activo' || normalizeText(item.isAdmin) === 'sí' || normalizeText(item.isAdmin) === 'si').length;
+        const inactive = items.filter(item => normalizeText(item.status) === 'inactivo' || normalizeText(item.isAdmin) === 'no').length;
+        const users = new Set(items.map(item => getPrimaryUserValue(item)).filter(Boolean)).size;
         const areas = new Set(items.map(item => item.area).filter(Boolean)).size;
 
         const sortedByDate = [...items]
@@ -5424,6 +5496,9 @@ const buildTasksForMonth = () => {
             .sort((a, b) => b.date - a.date);
 
         const lastDate = sortedByDate.length ? sortedByDate[0].date : null;
+
+        const totalLabel = document.querySelector('#cred-kpi-total')?.previousElementSibling;
+        if (totalLabel) totalLabel.textContent = `Total ${config.title}`;
 
         document.getElementById('cred-kpi-total').textContent = total;
         document.getElementById('cred-kpi-active').textContent = active;
@@ -5445,8 +5520,35 @@ const buildTasksForMonth = () => {
         selectedCount.textContent = `${count} seleccionados`;
         selectionBar.classList.toggle('hidden', count === 0);
 
-        headCheck.checked = count > 0 && filteredCredentials.length > 0 && filteredCredentials.every(item => selectedIds.has(item.id));
-        selectAllCheck.checked = headCheck.checked;
+        if (headCheck) {
+            headCheck.checked = count > 0 && filteredCredentials.length > 0 && filteredCredentials.every(item => selectedIds.has(item.id));
+        }
+
+        if (selectAllCheck) {
+            selectAllCheck.checked = headCheck ? headCheck.checked : false;
+        }
+    };
+
+    const refreshFilters = () => {
+        fillSelect(serviceFilter, allCredentials.map(item => getPrimaryServiceValue(item)), 'Todos los servicios');
+
+        if (fieldKeys.includes('area')) {
+            areaFilter.closest('.credentials-filter-item').style.display = '';
+            fillSelect(areaFilter, allCredentials.map(item => item.area), 'Todas las áreas');
+        } else {
+            areaFilter.closest('.credentials-filter-item').style.display = 'none';
+            areaFilter.value = '';
+        }
+
+        if (fieldKeys.includes('status') || fieldKeys.includes('isAdmin')) {
+            statusFilter.closest('.credentials-filter-item').style.display = '';
+            fillSelect(statusFilter, allCredentials.map(item => item.status || item.isAdmin), 'Todos los estados');
+        } else {
+            statusFilter.closest('.credentials-filter-item').style.display = 'none';
+            statusFilter.value = '';
+        }
+
+        fillSelect(userFilter, allCredentials.map(item => getPrimaryUserValue(item)), 'Todos los usuarios');
     };
 
     const applyFilters = () => {
@@ -5459,23 +5561,18 @@ const buildTasksForMonth = () => {
         const dateTo = dateToFilter.value ? new Date(dateToFilter.value + 'T23:59:59') : null;
 
         filteredCredentials = allCredentials.filter(item => {
-            const text = normalizeText([
+            const searchableText = normalizeText([
                 item.id,
-                item.service,
-                item.email,
-                item.recoveryEmail,
-                item.assignedUser,
-                item.area,
-                item.status
+                ...fieldKeys.map(key => item[key])
             ].join(' '));
 
             const itemDate = getComparableDate(item);
 
-            const searchMatch = !searchValue || text.includes(searchValue);
-            const serviceMatch = !serviceValue || item.service === serviceValue;
+            const searchMatch = !searchValue || searchableText.includes(searchValue);
+            const serviceMatch = !serviceValue || getPrimaryServiceValue(item) === serviceValue;
             const areaMatch = !areaValue || item.area === areaValue;
-            const statusMatch = !statusValue || item.status === statusValue;
-            const userMatch = !userValue || item.assignedUser === userValue;
+            const statusMatch = !statusValue || (item.status || item.isAdmin) === statusValue;
+            const userMatch = !userValue || getPrimaryUserValue(item) === userValue;
             const fromMatch = !dateFrom || (itemDate && itemDate >= dateFrom);
             const toMatch = !dateTo || (itemDate && itemDate <= dateTo);
 
@@ -5487,6 +5584,7 @@ const buildTasksForMonth = () => {
 
     const renderTable = () => {
         const pageSizeValue = pageSizeSelect.value;
+
         const visibleItems = pageSizeValue === 'all'
             ? filteredCredentials
             : filteredCredentials.slice(0, Number(pageSizeValue || 10));
@@ -5494,9 +5592,10 @@ const buildTasksForMonth = () => {
         if (visibleItems.length === 0) {
             tableBody.innerHTML = `
                 <tr>
-                    <td colspan="10" class="credentials-empty">No hay correos electrónicos para mostrar.</td>
+                    <td colspan="${fieldKeys.length + 2}" class="credentials-empty">No hay registros para mostrar.</td>
                 </tr>
             `;
+
             resultsText.textContent = 'Mostrando 0 registros';
             updateKPIs(filteredCredentials);
             updateSelectionBar();
@@ -5504,48 +5603,17 @@ const buildTasksForMonth = () => {
         }
 
         tableBody.innerHTML = visibleItems.map(item => {
-            const lastUpdate = item.updatedAt || item.createdAt;
-
             return `
                 <tr data-id="${item.id}">
                     <td class="credentials-check-col">
                         <input type="checkbox" class="credentials-row-check" data-id="${item.id}" ${selectedIds.has(item.id) ? 'checked' : ''}>
                     </td>
 
-                    <td><strong>${item.id}</strong></td>
-
-                    <td>
-                        <div class="credentials-service-cell">
-                            ${getServiceLogo(item.service)}
-                            <span>${item.service || 'N/A'}</span>
-                        </div>
-                    </td>
-
-                    <td class="credentials-email-cell">${item.email || 'N/A'}</td>
-
-                    <td>${item.recoveryEmail || 'N/A'}</td>
-
-                    <td>
-                        <div class="credentials-user-cell">
-                            <span class="credentials-avatar">${getInitials(item.assignedUser)}</span>
-                            <span>${item.assignedUser || 'N/A'}</span>
-                        </div>
-                    </td>
-
-                    <td>${item.area || 'N/A'}</td>
-
-                    <td>${getStatusBadge(item.status)}</td>
-
-                    <td>
-                        <div class="credentials-date-cell">
-                            <strong>${formatDateTime(lastUpdate)}</strong>
-                            <small>${item.updatedBy || item.assignedUser || ''}</small>
-                        </div>
-                    </td>
+                    ${fieldKeys.map(key => `<td data-field="${key}">${renderCellContent(key, item)}</td>`).join('')}
 
                     <td>
                         <div class="credentials-actions-cell">
-                            <button type="button" class="action-icon-edit" title="Editar" data-id="${item.id}" data-collection="credentials" data-category="emails">${iconEdit}</button>
+                            <button type="button" class="action-icon-edit" title="Editar" data-id="${item.id}" data-collection="credentials" data-category="${category}">${iconEdit}</button>
                             <button type="button" class="action-icon-view" title="Ver detalles" data-id="${item.id}">${iconView}</button>
                             <button type="button" class="action-icon-delete" title="Eliminar" data-id="${item.id}" data-collection="credentials">${iconDelete}</button>
                         </div>
@@ -5555,22 +5623,15 @@ const buildTasksForMonth = () => {
         }).join('');
 
         resultsText.textContent = visibleItems.length
-    ? `Mostrando 1 a ${visibleItems.length} de ${filteredCredentials.length} registros`
-    : `Mostrando 0 registros`;
+            ? `Mostrando 1 a ${visibleItems.length} de ${filteredCredentials.length} registros`
+            : `Mostrando 0 registros`;
 
         updateKPIs(filteredCredentials);
         updateSelectionBar();
     };
 
-    const refreshFilters = () => {
-        fillSelect(serviceFilter, allCredentials.map(item => item.service), 'Todos los servicios');
-        fillSelect(areaFilter, allCredentials.map(item => item.area), 'Todas las áreas');
-        fillSelect(statusFilter, allCredentials.map(item => item.status), 'Todos los estados');
-        fillSelect(userFilter, allCredentials.map(item => item.assignedUser), 'Todos los usuarios');
-    };
-
     db.collection('credentials')
-    .where('category', '==', category)
+        .where('category', '==', category)
         .onSnapshot(snapshot => {
             allCredentials = [];
 
@@ -5583,12 +5644,13 @@ const buildTasksForMonth = () => {
 
             allCredentials.sort((a, b) => (a.numericId || 0) - (b.numericId || 0));
 
+            selectedIds.clear();
             refreshFilters();
             applyFilters();
 
         }, error => {
-            console.error('Error cargando correos:', error);
-            tableBody.innerHTML = `<tr><td colspan="10">Error al cargar correos electrónicos.</td></tr>`;
+            console.error('Error cargando accesos:', error);
+            tableBody.innerHTML = `<tr><td colspan="${fieldKeys.length + 2}">Error al cargar accesos.</td></tr>`;
         });
 
     searchInput.addEventListener('input', applyFilters);
@@ -5596,6 +5658,8 @@ const buildTasksForMonth = () => {
     areaFilter.addEventListener('change', applyFilters);
     statusFilter.addEventListener('change', applyFilters);
     userFilter.addEventListener('change', applyFilters);
+    dateFromFilter.addEventListener('change', applyFilters);
+    dateToFilter.addEventListener('change', applyFilters);
     pageSizeSelect.addEventListener('change', renderTable);
 
     document.getElementById('credentials-apply-filters').addEventListener('click', applyFilters);
@@ -5629,6 +5693,25 @@ const buildTasksForMonth = () => {
         updateSelectionBar();
     });
 
+    tableBody.addEventListener('click', (e) => {
+        const passwordBtn = e.target.closest('.credentials-show-password');
+
+        if (!passwordBtn) return;
+
+        const value = passwordBtn.dataset.value || '';
+        const span = passwordBtn.parentElement.querySelector('span');
+
+        if (!span) return;
+
+        if (passwordBtn.dataset.visible === 'true') {
+            span.textContent = '••••••••••';
+            passwordBtn.dataset.visible = 'false';
+        } else {
+            span.textContent = value || 'N/A';
+            passwordBtn.dataset.visible = 'true';
+        }
+    });
+
     const toggleAllRows = (checked) => {
         filteredCredentials.forEach(item => {
             if (checked) {
@@ -5641,8 +5724,13 @@ const buildTasksForMonth = () => {
         renderTable();
     };
 
-    headCheck.addEventListener('change', () => toggleAllRows(headCheck.checked));
-    selectAllCheck.addEventListener('change', () => toggleAllRows(selectAllCheck.checked));
+    if (headCheck) {
+        headCheck.addEventListener('change', () => toggleAllRows(headCheck.checked));
+    }
+
+    if (selectAllCheck) {
+        selectAllCheck.addEventListener('change', () => toggleAllRows(selectAllCheck.checked));
+    }
 
     document.getElementById('credentials-delete-selected').addEventListener('click', async () => {
         if (selectedIds.size === 0) return;
@@ -5676,19 +5764,11 @@ const buildTasksForMonth = () => {
         }
 
         const rows = [
-            ['Código', 'Servicio', 'Correo', 'Recuperación', 'Usuario', 'Área', 'Estado']
+            fieldEntries.map(([key, field]) => field.label)
         ];
 
         selectedItems.forEach(item => {
-            rows.push([
-                item.id,
-                item.service || '',
-                item.email || '',
-                item.recoveryEmail || '',
-                item.assignedUser || '',
-                item.area || '',
-                item.status || ''
-            ]);
+            rows.push(fieldKeys.map(key => key === 'id' ? item.id : (item[key] || '')));
         });
 
         const csv = rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\\n');
@@ -5697,12 +5777,13 @@ const buildTasksForMonth = () => {
 
         const link = document.createElement('a');
         link.href = url;
-        link.download = 'correos-electronicos-seleccionados.csv';
+        link.download = `${config.title.toLowerCase().replace(/\s+/g, '-')}-seleccionados.csv`;
         link.click();
 
         URL.revokeObjectURL(url);
     });
 }
+    
     function renderInventoryModernPage(container, params) {
     container.innerHTML = inventoryModernPageHTML;
 
