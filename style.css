@@ -7056,3 +7056,45 @@ tr:hover td { background-color: #f8fafc; }
         align-items: stretch;
     }
 }
+.credentials-password-cell {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.credentials-show-password {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: #475569 !important;
+    cursor: pointer !important;
+    padding: 0 !important;
+    font-size: 13px !important;
+}
+
+.credentials-note-cell {
+    display: inline-block;
+    max-width: 220px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.credentials-modern-table td[data-field="licenseKey"],
+.credentials-modern-table td[data-field="password"],
+.credentials-modern-table td[data-field="pin"] {
+    min-width: 130px;
+}
+
+.credentials-modern-table td[data-field="url"] {
+    max-width: 260px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.credentials-modern-table td[data-field="notes"],
+.credentials-modern-table td[data-field="nots"],
+.credentials-modern-table td[data-field="description"] {
+    max-width: 260px;
+}
