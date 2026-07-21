@@ -16,20 +16,18 @@ body {
     -webkit-font-smoothing: antialiased; 
 }
 
-/* =========================
-   BARRA LATERAL FLOTANTE
-========================= */
-
 #mainSideRail {
     width: 72px !important;
     min-width: 72px !important;
-    background: transparent !important;
+
+    /* Igual al fondo general para que no se vea división */
+    background: #f8fafc !important;
+
     border-right: none !important;
     box-shadow: none !important;
     position: relative !important;
 }
 
-/* cápsula flotante */
 .main-rail-capsule {
     position: fixed !important;
     left: 12px !important;
@@ -39,8 +37,9 @@ body {
     width: 52px !important;
     padding: 12px 6px !important;
 
+    /* Mismo blanco limpio del header */
     background: #ffffff !important;
-    border: 1px solid #e2e8f0 !important;
+    border: 1px solid #eef2f7 !important;
     border-radius: 18px !important;
 
     display: flex !important;
@@ -48,7 +47,8 @@ body {
     align-items: center !important;
     gap: 12px !important;
 
-    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.10) !important;
+    /* Sombra más suave para que no se marque tanto */
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06) !important;
     z-index: 999 !important;
 }
 
