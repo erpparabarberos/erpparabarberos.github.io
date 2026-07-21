@@ -7900,3 +7900,125 @@ button.settings-tab.active[data-tab="locations"] {
         grid-template-columns: 1fr;
     }
 }
+/* ==============================
+   QUITAR BOTONES ROJOS GLOBALES
+   Cambia rojo por estilo limpio azul/blanco
+============================== */
+
+/* Botones rojos principales */
+button.primary,
+.primary,
+.btn-red,
+.danger,
+.export-btn,
+.export-btn.csv,
+.export-btn.pdf,
+.settings-red-btn,
+.settings-reset-btn,
+.credentials-export-btn,
+.credentials-add-btn,
+.credentials-apply-btn,
+.planning-btn.light,
+.planning-btn.blue,
+.planning-action-btn.blue,
+.credential-save-btn,
+.service-save-btn,
+.computer-edit-modern .btn-save,
+.support-primary-btn,
+.history-export-btn,
+.history-export-btn.excel,
+.history-export-btn.pdf,
+.reports-export-pdf,
+.reports-generate-btn {
+    background: #ffffff !important;
+    color: #2563eb !important;
+    border: 1px solid #dbe4f0 !important;
+    box-shadow: none !important;
+}
+
+/* Hover sin rojo */
+button.primary:hover,
+.primary:hover,
+.btn-red:hover,
+.danger:hover,
+.export-btn:hover,
+.export-btn.csv:hover,
+.export-btn.pdf:hover,
+.settings-red-btn:hover,
+.settings-reset-btn:hover,
+.credentials-export-btn:hover,
+.credentials-add-btn:hover,
+.credentials-apply-btn:hover,
+.planning-btn.light:hover,
+.planning-btn.blue:hover,
+.planning-action-btn.blue:hover,
+.credential-save-btn:hover,
+.service-save-btn:hover,
+.computer-edit-modern .btn-save:hover,
+.support-primary-btn:hover,
+.history-export-btn:hover,
+.history-export-btn.excel:hover,
+.history-export-btn.pdf:hover,
+.reports-export-pdf:hover,
+.reports-generate-btn:hover {
+    background: #eef4ff !important;
+    color: #2563eb !important;
+    border-color: #d8e4ff !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+/* Botones de acciones destructivas: eliminar, borrar, trash */
+.action-icon-delete,
+.delete-btn,
+.credentials-selected-delete,
+button[data-action="delete"],
+button[title="Eliminar"] {
+    background: transparent !important;
+    color: #475569 !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Ícono de eliminar ya no rojo */
+.action-icon-delete svg,
+.delete-btn svg,
+button[title="Eliminar"] svg {
+    fill: #475569 !important;
+}
+
+/* Hover de eliminar sin rojo */
+.action-icon-delete:hover,
+.delete-btn:hover,
+.credentials-selected-delete:hover,
+button[data-action="delete"]:hover,
+button[title="Eliminar"]:hover {
+    background: transparent !important;
+    color: #334155 !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.action-icon-delete:hover svg,
+.delete-btn:hover svg,
+button[title="Eliminar"]:hover svg {
+    fill: #334155 !important;
+}
+
+/* Tabs o botones que heredaban rojo */
+.settings-tab,
+.settings-tab:hover,
+.settings-tab:focus,
+.settings-tab:active {
+    background: #ffffff !important;
+    color: #334155 !important;
+    border: 1px solid #dbe4f0 !important;
+    box-shadow: none !important;
+}
+
+.settings-tab.active {
+    background: #eef4ff !important;
+    color: #2563eb !important;
+    border: 1px solid #d8e4ff !important;
+    border-bottom: 3px solid #2563eb !important;
+}
