@@ -15,19 +15,17 @@ body {
     background-color: #f8fafc; 
     -webkit-font-smoothing: antialiased; 
 }
-
 #mainSideRail {
     width: 72px !important;
     min-width: 72px !important;
 
-    /* Igual al fondo general para que no se vea división */
-    background: #f8fafc !important;
+    /* Mismo color de la barra superior */
+    background: #ffffff !important;
 
     border-right: none !important;
     box-shadow: none !important;
     position: relative !important;
 }
-
 .main-rail-capsule {
     position: fixed !important;
     left: 12px !important;
@@ -37,8 +35,10 @@ body {
     width: 52px !important;
     padding: 12px 6px !important;
 
-    /* Mismo blanco limpio del header */
+    /* Blanco igual al header */
     background: #ffffff !important;
+
+    /* Borde muy suave para que casi no se note */
     border: 1px solid #eef2f7 !important;
     border-radius: 18px !important;
 
@@ -47,12 +47,20 @@ body {
     align-items: center !important;
     gap: 12px !important;
 
-    /* Sombra más suave para que no se marque tanto */
-    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06) !important;
+    /* Sombra muy suave */
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04) !important;
     z-index: 999 !important;
 }
+    body {
+    background: #ffffff !important;
+}
 
-/* botones */
+body > aside,
+#mainSideRail,
+#mainSideRail::before,
+#mainSideRail::after {
+    background: #ffffff !important;
+}    
 .main-rail-capsule .nav-btn {
     width: 38px !important;
     height: 38px !important;
