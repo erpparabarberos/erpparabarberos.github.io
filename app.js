@@ -1413,10 +1413,6 @@ const newTITicketFormHTML = `
                 <span>🔍</span>
                 <input type="text" id="credentials-search-input" placeholder="Buscar por correo, usuario, código o servicio...">
             </div>
-
-            <button type="button" class="credentials-advanced-btn" id="credentials-toggle-filters">
-                Filtros avanzados ˄
-            </button>
         </div>
 
         <div class="credentials-filter-grid" id="credentials-filter-grid">
