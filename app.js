@@ -5411,6 +5411,8 @@ const buildTasksForMonth = () => {
     const tableHead = document.getElementById('credentials-table-head');
     const tableBody = document.getElementById('credentials-table-body');
     const resultsText = document.getElementById('credentials-results-text');
+    const tableWrapper = document.querySelector('.credentials-table-wrapper');
+        let credentialsTopScrollInner = null;
     const pageSizeSelect = document.getElementById('credentials-page-size');
     const selectionBar = document.getElementById('credentials-selection-bar');
     const selectedCount = document.getElementById('credentials-selected-count');
@@ -5711,7 +5713,39 @@ const buildTasksForMonth = () => {
 
         renderTable();
     };
+        const setupCredentialsTopScrollbar = () => {
+    if (!tableWrapper) return;
 
+    let topScrollbar = document.getElementById('credentials-top-scrollbar');
+
+    if (!topScrollbar) {
+        topScrollbar = document.createElement('div');
+        topScrollbar.id = 'credentials-top-scrollbar';
+        topScrollbar.className = 'credentials-top-scrollbar';
+
+        credentialsTopScrollInner = document.createElement('div');
+        credentialsTopScrollInner.className = 'credentials-top-scrollbar-inner';
+
+        topScrollbar.appendChild(credentialsTopScrollInner);
+        tableWrapper.parentNode.insertBefore(topScrollbar, tableWrapper);
+
+        topScrollbar.addEventListener('scroll', () => {
+            tableWrapper.scrollLeft = topScrollbar.scrollLeft;
+        });
+
+        tableWrapper.addEventListener('scroll', () => {
+            topScrollbar.scrollLeft = tableWrapper.scrollLeft;
+        });
+    } else {
+        credentialsTopScrollInner = topScrollbar.querySelector('.credentials-top-scrollbar-inner');
+    }
+
+    const table = tableWrapper.querySelector('table');
+
+    if (table && credentialsTopScrollInner) {
+        credentialsTopScrollInner.style.width = `${table.scrollWidth}px`;
+    }
+};
     const renderTable = () => {
         const pageSizeValue = pageSizeSelect.value;
 
@@ -5729,6 +5763,7 @@ const buildTasksForMonth = () => {
             resultsText.textContent = 'Mostrando 0 registros';
             updateKPIs(filteredCredentials);
             updateSelectionBar();
+            setTimeout(setupCredentialsTopScrollbar, 50);
             return;
         }
 
