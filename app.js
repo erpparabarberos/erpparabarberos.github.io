@@ -8980,3 +8980,28 @@ if (exportBtn) {
 
     iniciarAppGLPI();
 })();
+function updateTechSideRailActive() {
+    const hash = window.location.hash || '#dashboard';
+
+    document.querySelectorAll('.tech-rail-item').forEach(item => {
+        const href = item.getAttribute('href') || '';
+
+        let isActive = false;
+
+        if (href === '#dashboard' && hash === '#dashboard') isActive = true;
+        if (href === '#crear-ticket-ti' && hash.startsWith('#crear-ticket')) isActive = true;
+        if (href === '#historial' && hash === '#historial') isActive = true;
+        if (href === '#knowledge-base' && hash === '#knowledge-base') isActive = true;
+        if (href === '#estadisticas' && hash === '#estadisticas') isActive = true;
+        if (href === '#inventory-computers' && hash.startsWith('#inventory-')) isActive = true;
+        if (href === '#services-internet' && hash.startsWith('#services-')) isActive = true;
+        if (href === '#maintenance' && hash.startsWith('#maintenance')) isActive = true;
+        if (href === '#credentials-emails' && hash.startsWith('#credentials-')) isActive = true;
+        if (href === '#configuracion' && hash === '#configuracion') isActive = true;
+
+        item.classList.toggle('active', isActive);
+    });
+}
+
+window.addEventListener('hashchange', updateTechSideRailActive);
+window.addEventListener('load', updateTechSideRailActive);
