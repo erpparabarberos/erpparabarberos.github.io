@@ -8022,3 +8022,52 @@ button[title="Eliminar"]:hover svg {
     border: 1px solid #d8e4ff !important;
     border-bottom: 3px solid #2563eb !important;
 }
+/* ==============================
+   FIX FINAL BOTONES ROJOS
+   EXPORTAR / IMPORTAR / FILTROS
+============================== */
+
+/* Exportar e importar sin rojo */
+.settings-header-actions button,
+.settings-light-btn,
+#settings-export-btn,
+#settings-import-btn,
+button#settings-export-btn,
+button#settings-import-btn {
+    background: #ffffff !important;
+    color: #0f2b5b !important;
+    border: 1px solid #dbe4f0 !important;
+    box-shadow: none !important;
+}
+
+.settings-header-actions button:hover,
+.settings-light-btn:hover,
+#settings-export-btn:hover,
+#settings-import-btn:hover {
+    background: #f8fbff !important;
+    color: #2563eb !important;
+    border-color: #d8e4ff !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+/* Quitar botón filtros avanzados en accesos */
+#credentials-toggle-filters,
+.credentials-advanced-btn {
+    display: none !important;
+}
+
+/* Quitar cualquier rojo que todavía quede en botones de filtros */
+.credentials-filter-card button,
+.credentials-search-row button,
+button.credentials-advanced-btn {
+    background: #ffffff !important;
+    color: #0f2b5b !important;
+    border: 1px solid #dbe4f0 !important;
+    box-shadow: none !important;
+}
+
+/* Pero ocultamos específicamente el de filtros avanzados */
+.credentials-search-row .credentials-advanced-btn {
+    display: none !important;
+}
