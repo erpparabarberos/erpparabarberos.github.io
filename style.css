@@ -7624,3 +7624,279 @@ button.settings-tab.active[data-tab="locations"] {
 .settings-main-card .settings-tabs button.settings-tab.active:not(.settings-red-btn) {
     background-color: #eef4ff !important;
 }
+/* ==============================
+   MODAL MODERNO EDITAR ACCESOS
+============================== */
+
+.credential-edit-modern {
+    background: #ffffff;
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.credential-edit-header {
+    padding: 28px 34px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.credential-edit-title {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.credential-edit-icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 14px;
+    background: #eef4ff;
+    color: #2563eb;
+    display: grid;
+    place-items: center;
+    font-size: 25px;
+    font-weight: 900;
+    flex-shrink: 0;
+}
+
+.credential-edit-title h2 {
+    margin: 0;
+    color: #0f172a;
+    font-size: 28px;
+    font-weight: 900;
+    text-transform: uppercase;
+    line-height: 1.1;
+}
+
+.credential-edit-title p {
+    margin: 7px 0 0;
+    color: #64748b;
+    font-size: 14px;
+}
+
+.credential-edit-close {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: #94a3b8 !important;
+    font-size: 30px !important;
+    font-weight: 300 !important;
+    cursor: pointer !important;
+    padding: 0 !important;
+}
+
+.credential-edit-close:hover {
+    background: transparent !important;
+    color: #64748b !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.credential-edit-body {
+    padding: 30px 34px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 330px;
+    gap: 28px;
+}
+
+.credential-edit-main {
+    min-width: 0;
+}
+
+.credential-edit-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px 22px;
+}
+
+.credential-edit-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.credential-edit-field.full {
+    grid-column: 1 / -1;
+}
+
+.credential-edit-field label {
+    color: #526b8a;
+    font-size: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.credential-edit-field input,
+.credential-edit-field select,
+.credential-edit-field textarea {
+    width: 100%;
+    border: 1px solid #dbe4f0;
+    border-radius: 9px;
+    padding: 12px 14px;
+    font-size: 15px;
+    color: #0f172a;
+    background: #ffffff;
+    box-sizing: border-box;
+}
+
+.credential-edit-field input,
+.credential-edit-field select {
+    min-height: 48px;
+}
+
+.credential-edit-field textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.credential-sensitive-field {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.credential-sensitive-field input {
+    padding-right: 46px !important;
+}
+
+.credential-toggle-password {
+    position: absolute;
+    right: 12px;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: #475569 !important;
+    cursor: pointer !important;
+    padding: 0 !important;
+    font-size: 14px !important;
+}
+
+.credential-toggle-password:hover,
+.credential-toggle-password:focus,
+.credential-toggle-password:active {
+    background: transparent !important;
+    color: #475569 !important;
+    box-shadow: none !important;
+    outline: none !important;
+    transform: none !important;
+}
+
+.credential-edit-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.credential-sidebar-card,
+.credential-sidebar-warning {
+    background: #f8fbff;
+    border: 1px solid #dbe4f0;
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.credential-sidebar-card h3 {
+    margin: 0 0 18px;
+    color: #0f172a;
+    font-size: 17px;
+    font-weight: 900;
+}
+
+.credential-sidebar-row {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 13px 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.credential-sidebar-row:last-child {
+    border-bottom: none;
+}
+
+.credential-sidebar-row span {
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.credential-sidebar-row strong {
+    color: #0f172a;
+    font-size: 14px;
+    font-weight: 900;
+    word-break: break-word;
+}
+
+.credential-sidebar-warning {
+    background: #fff7ed;
+    border-color: #fed7aa;
+}
+
+.credential-sidebar-warning strong {
+    display: block;
+    color: #9a3412;
+    font-size: 15px;
+    font-weight: 900;
+    margin-bottom: 8px;
+}
+
+.credential-sidebar-warning p {
+    margin: 0;
+    color: #9a3412;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.credential-edit-footer {
+    padding: 22px 34px;
+    border-top: 1px solid #e2e8f0;
+    background: #ffffff;
+    display: flex;
+    justify-content: flex-end;
+    gap: 14px;
+}
+
+.credential-cancel-btn {
+    background: #ffffff !important;
+    color: #334155 !important;
+    border: 1px solid #dbe4f0 !important;
+    border-radius: 8px !important;
+    padding: 12px 22px !important;
+    font-size: 14px !important;
+    font-weight: 900 !important;
+    box-shadow: none !important;
+    cursor: pointer !important;
+}
+
+.credential-save-btn {
+    background: #dc2626 !important;
+    color: #ffffff !important;
+    border: 1px solid #dc2626 !important;
+    border-radius: 8px !important;
+    padding: 12px 24px !important;
+    font-size: 14px !important;
+    font-weight: 900 !important;
+    box-shadow: none !important;
+    cursor: pointer !important;
+}
+
+/* Controla el tamaño del modal para que no se estire */
+#form-modal .modal-content {
+    width: min(94vw, 1120px) !important;
+    max-height: 92vh !important;
+    overflow-y: auto !important;
+    border-radius: 14px !important;
+}
+
+@media (max-width: 1000px) {
+    .credential-edit-body {
+        grid-template-columns: 1fr;
+    }
+
+    .credential-edit-grid {
+        grid-template-columns: 1fr;
+    }
+}
