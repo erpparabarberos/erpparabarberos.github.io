@@ -1350,7 +1350,19 @@ const newTITicketFormHTML = `
             <button class="credentials-export-btn export-btn pdf" data-format="pdf">Exportar a PDF</button>
             <button id="add-item-btn" class="credentials-add-btn open-form-modal-btn">+ Añadir credencial</button>        </div>
     </div>
-
+    <div class="credentials-modern-tabs" id="credentials-modern-tabs">
+    <a href="#credentials-emails" class="credentials-modern-tab" data-category="emails">✉️ Correos</a>
+    <a href="#credentials-computers" class="credentials-modern-tab" data-category="computers">💻 PCs</a>
+    <a href="#credentials-phones" class="credentials-modern-tab" data-category="phones">📱 Celulares</a>
+    <a href="#credentials-internet" class="credentials-modern-tab" data-category="internet">🌐 Internet</a>
+    <a href="#credentials-servers" class="credentials-modern-tab" data-category="servers">🖥️ Servidores</a>
+    <a href="#credentials-software" class="credentials-modern-tab" data-category="software">🪪 Licencias</a>
+    <a href="#credentials-siigo" class="credentials-modern-tab" data-category="siigo">S Siigo</a>
+    <a href="#credentials-velocity" class="credentials-modern-tab" data-category="velocity">⚡ Velocity</a>
+    <a href="#credentials-traslados" class="credentials-modern-tab" data-category="traslados">🚚 Traslados</a>
+    <a href="#credentials-atencion" class="credentials-modern-tab" data-category="atencion">🎧 Atención</a>
+    <a href="#credentials-others" class="credentials-modern-tab" data-category="others">🔐 Otros</a>
+</div>
     <div class="credentials-kpi-grid">
         <div class="credentials-kpi-card">
             <div class="credentials-kpi-icon blue">✉</div>
@@ -5422,6 +5434,9 @@ const buildTasksForMonth = () => {
 
     if (titleEl) titleEl.textContent = config.title;
     if (breadcrumbLast) breadcrumbLast.textContent = config.title;
+        document.querySelectorAll('.credentials-modern-tab').forEach(tab => {
+    tab.classList.toggle('active', tab.dataset.category === category);
+});
 
     addButton.dataset.type = 'credentials';
     addButton.dataset.category = category;
