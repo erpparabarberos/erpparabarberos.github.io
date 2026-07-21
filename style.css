@@ -1,6 +1,6 @@
 :root {
-    --primary-color: #D32F2F; 
-    --primary-color-hover: #B71C1C; 
+    --primary-color: #2563eb; 
+    --primary-color-hover: #1d4ed8; 
     --blue-color: #334155; 
     --secondary-color: #64748b; 
     --bg-color: #f4f6f9; 
@@ -8312,4 +8312,548 @@ button.credentials-advanced-btn {
 .service-edit-header .service-edit-close,
 .computer-edit-header .computer-edit-close {
     display: none !important;
+}
+
+/* =====================================================
+   TECH PB - DEPURACIÓN FINAL GLOBAL
+   Objetivo: quitar botones rojos, ajustar accesos y ocultar limpiar formulario
+   Pegar como CSS completo reemplazando el anterior.
+===================================================== */
+
+/* ==============================
+   1. VARIABLES VISUALES
+============================== */
+:root {
+    --primary-color: #2563eb !important;
+    --primary-color-hover: #1d4ed8 !important;
+    --button-neutral-bg: #ffffff;
+    --button-neutral-text: #2563eb;
+    --button-neutral-border: #dbe4f0;
+}
+
+/* ==============================
+   2. BOTONES GLOBALES SIN ROJO
+============================== */
+button,
+.btn-primary,
+.export-btn,
+.view-ticket-btn,
+.edit-btn,
+.action-btn,
+.settings-light-btn,
+.settings-red-btn,
+.settings-reset-btn,
+.credentials-export-btn,
+.credentials-add-btn,
+.credentials-apply-btn,
+.credentials-clear-btn,
+.planning-btn,
+.planning-action-btn,
+.history-export-btn,
+.history-filter-btn,
+.history-clear-btn,
+.reports-export-pdf,
+.reports-generate-btn,
+.kb-action-btn,
+.support-secondary-btn,
+.credential-cancel-btn,
+.service-cancel-btn,
+.planning-execution-cancel,
+.credentials-selected-export {
+    background: #ffffff !important;
+    color: #2563eb !important;
+    border: 1px solid #dbe4f0 !important;
+    box-shadow: none !important;
+    border-radius: 8px !important;
+}
+
+button:hover,
+.btn-primary:hover,
+.export-btn:hover,
+.view-ticket-btn:hover,
+.edit-btn:hover,
+.action-btn:hover,
+.settings-light-btn:hover,
+.settings-red-btn:hover,
+.settings-reset-btn:hover,
+.credentials-export-btn:hover,
+.credentials-add-btn:hover,
+.credentials-apply-btn:hover,
+.credentials-clear-btn:hover,
+.planning-btn:hover,
+.planning-action-btn:hover,
+.history-export-btn:hover,
+.history-filter-btn:hover,
+.history-clear-btn:hover,
+.reports-export-pdf:hover,
+.reports-generate-btn:hover,
+.kb-action-btn:hover,
+.support-secondary-btn:hover,
+.credential-cancel-btn:hover,
+.service-cancel-btn:hover,
+.planning-execution-cancel:hover,
+.credentials-selected-export:hover {
+    background: #eef4ff !important;
+    color: #2563eb !important;
+    border-color: #d8e4ff !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+/* Botones que sí deben verse como acción principal, pero en azul */
+button[type="submit"],
+.support-primary-btn,
+.credential-save-btn,
+.service-save-btn,
+.planning-execution-save,
+.computer-edit-modern .btn-save,
+.kb-action-btn.primary,
+.provider-progress-btn,
+.provider-close-btn {
+    background: #2563eb !important;
+    color: #ffffff !important;
+    border: 1px solid #2563eb !important;
+    box-shadow: none !important;
+}
+
+button[type="submit"]:hover,
+.support-primary-btn:hover,
+.credential-save-btn:hover,
+.service-save-btn:hover,
+.planning-execution-save:hover,
+.computer-edit-modern .btn-save:hover,
+.kb-action-btn.primary:hover,
+.provider-progress-btn:hover,
+.provider-close-btn:hover {
+    background: #1d4ed8 !important;
+    color: #ffffff !important;
+    border-color: #1d4ed8 !important;
+    box-shadow: none !important;
+}
+
+/* ==============================
+   3. QUITAR LIMPIAR FORMULARIO EN TODOS LOS REGISTRAR SOPORTE
+============================== */
+.support-actions .support-secondary-btn,
+.support-form-card .support-secondary-btn,
+.support-form-card button[type="reset"],
+.support-page button[type="reset"],
+#ti-ticket-form button[type="reset"],
+#velocity-ticket-form button[type="reset"],
+#siigo-ticket-form button[type="reset"],
+#nota-ticket-form button[type="reset"],
+button.support-secondary-btn[type="reset"] {
+    display: none !important;
+}
+
+.support-actions {
+    grid-template-columns: 1fr !important;
+}
+
+.support-actions .support-primary-btn {
+    width: 100% !important;
+}
+
+/* ==============================
+   4. ELIMINAR / PAPELERA SIN ROJO
+============================== */
+.action-icon-delete,
+.delete-btn,
+.credentials-selected-delete,
+button[title="Eliminar"],
+button[data-action="delete"],
+.remove-backlog-row {
+    background: transparent !important;
+    color: #475569 !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.action-icon-delete svg,
+.delete-btn svg,
+.credentials-selected-delete svg,
+button[title="Eliminar"] svg,
+button[data-action="delete"] svg,
+.remove-backlog-row svg {
+    fill: #475569 !important;
+}
+
+.action-icon-delete:hover,
+.delete-btn:hover,
+.credentials-selected-delete:hover,
+button[title="Eliminar"]:hover,
+button[data-action="delete"]:hover,
+.remove-backlog-row:hover {
+    background: transparent !important;
+    color: #334155 !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.action-icon-delete:hover svg,
+.delete-btn:hover svg,
+.credentials-selected-delete:hover svg,
+button[title="Eliminar"]:hover svg,
+button[data-action="delete"]:hover svg,
+.remove-backlog-row:hover svg {
+    fill: #334155 !important;
+}
+
+/* ==============================
+   5. QUITAR FILTROS AVANZADOS QUE NO HACEN NADA
+============================== */
+#credentials-toggle-filters,
+.credentials-advanced-btn,
+.credentials-search-row .credentials-advanced-btn {
+    display: none !important;
+}
+
+/* ==============================
+   6. ACCESOS: TABLA AUTOAJUSTABLE SIN ESPACIOS GIGANTES
+============================== */
+.credentials-top-scrollbar {
+    display: none !important;
+}
+
+.credentials-table-card,
+.credentials-table-wrapper {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+.credentials-table-wrapper {
+    overflow-x: visible !important;
+}
+
+.credentials-modern-table {
+    width: 100% !important;
+    min-width: 0 !important;
+    table-layout: fixed !important;
+    border-collapse: collapse !important;
+}
+
+.credentials-modern-table thead th,
+.credentials-modern-table tbody td {
+    padding: 12px 9px !important;
+    font-size: 12px !important;
+    white-space: normal !important;
+    vertical-align: middle !important;
+    word-break: normal !important;
+    overflow-wrap: anywhere !important;
+}
+
+.credentials-modern-table th.credentials-check-col,
+.credentials-modern-table td.credentials-check-col {
+    width: 34px !important;
+    min-width: 34px !important;
+    max-width: 34px !important;
+}
+
+.credentials-modern-table th[data-field="id"],
+.credentials-modern-table td[data-field="id"] {
+    width: 78px !important;
+    min-width: 78px !important;
+    max-width: 78px !important;
+}
+
+.credentials-modern-table th[data-field="service"],
+.credentials-modern-table td[data-field="service"],
+.credentials-modern-table th[data-field="provider"],
+.credentials-modern-table td[data-field="provider"],
+.credentials-modern-table th[data-field="softwareName"],
+.credentials-modern-table td[data-field="softwareName"],
+.credentials-modern-table th[data-field="system"],
+.credentials-modern-table td[data-field="system"] {
+    width: 105px !important;
+}
+
+.credentials-modern-table th[data-field="email"],
+.credentials-modern-table td[data-field="email"],
+.credentials-modern-table th[data-field="username"],
+.credentials-modern-table td[data-field="username"],
+.credentials-modern-table th[data-field="user"],
+.credentials-modern-table td[data-field="user"] {
+    width: 135px !important;
+    max-width: 135px !important;
+}
+
+.credentials-modern-table th[data-field="password"],
+.credentials-modern-table td[data-field="password"],
+.credentials-modern-table th[data-field="pin"],
+.credentials-modern-table td[data-field="pin"],
+.credentials-modern-table th[data-field="licenseKey"],
+.credentials-modern-table td[data-field="licenseKey"] {
+    width: 112px !important;
+    max-width: 112px !important;
+}
+
+.credentials-modern-table th[data-field="recoveryEmail"],
+.credentials-modern-table td[data-field="recoveryEmail"],
+.credentials-modern-table th[data-field="recoveryPhone"],
+.credentials-modern-table td[data-field="recoveryPhone"] {
+    width: 145px !important;
+    max-width: 145px !important;
+}
+
+.credentials-modern-table th[data-field="assignedUser"],
+.credentials-modern-table td[data-field="assignedUser"],
+.credentials-modern-table th[data-field="assignedTo"],
+.credentials-modern-table td[data-field="assignedTo"] {
+    width: 145px !important;
+    max-width: 145px !important;
+}
+
+.credentials-modern-table th[data-field="url"],
+.credentials-modern-table td[data-field="url"] {
+    width: 230px !important;
+    max-width: 230px !important;
+}
+
+.credentials-modern-table td[data-field="url"] {
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+.credentials-modern-table th[data-field="area"],
+.credentials-modern-table td[data-field="area"] {
+    width: 90px !important;
+    max-width: 90px !important;
+}
+
+.credentials-modern-table th[data-field="status"],
+.credentials-modern-table td[data-field="status"],
+.credentials-modern-table th[data-field="isAdmin"],
+.credentials-modern-table td[data-field="isAdmin"] {
+    width: 88px !important;
+    max-width: 88px !important;
+}
+
+.credentials-modern-table th[data-field="notes"],
+.credentials-modern-table td[data-field="notes"],
+.credentials-modern-table th[data-field="nots"],
+.credentials-modern-table td[data-field="nots"] {
+    width: 80px !important;
+    max-width: 80px !important;
+}
+
+.credentials-modern-table th:last-child,
+.credentials-modern-table td:last-child {
+    width: 92px !important;
+    min-width: 92px !important;
+    max-width: 92px !important;
+    text-align: center !important;
+    position: sticky !important;
+    right: 0 !important;
+    background: #ffffff !important;
+    z-index: 5 !important;
+    box-shadow: -8px 0 14px rgba(15, 23, 42, 0.05) !important;
+}
+
+.credentials-modern-table thead th:last-child {
+    background: #f4f8fd !important;
+    z-index: 8 !important;
+}
+
+.credentials-actions-cell,
+.services-actions-cell,
+.settings-actions-cell {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 12px !important;
+}
+
+.credentials-actions-cell button,
+.services-actions-cell button,
+.settings-actions-cell button {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    width: 22px !important;
+    height: 22px !important;
+    min-width: 22px !important;
+    min-height: 22px !important;
+}
+
+.credentials-email-cell,
+.credentials-note-cell {
+    max-width: 100% !important;
+    overflow-wrap: anywhere !important;
+}
+
+.credentials-password-cell {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    white-space: nowrap !important;
+}
+
+/* ==============================
+   7. OJO DE CONTRASEÑA SIN ROJO
+============================== */
+.credentials-show-password,
+.credential-toggle-password {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: #475569 !important;
+    padding: 0 !important;
+}
+
+.credentials-show-password:hover,
+.credentials-show-password:focus,
+.credentials-show-password:active,
+.credential-toggle-password:hover,
+.credential-toggle-password:focus,
+.credential-toggle-password:active {
+    background: transparent !important;
+    color: #475569 !important;
+    box-shadow: none !important;
+    outline: none !important;
+    transform: none !important;
+}
+
+/* ==============================
+   8. X DE MODALES NORMAL, GRIS Y SIN DUPLICADOS
+============================== */
+.modal-close-btn,
+.modal-close-x,
+.credential-edit-close,
+.service-edit-close,
+.computer-edit-close,
+.planning-execution-close {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: #94a3b8 !important;
+    font-size: 30px !important;
+    font-weight: 300 !important;
+    line-height: 1 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    cursor: pointer !important;
+    text-transform: none !important;
+}
+
+.modal-close-btn:hover,
+.modal-close-x:hover,
+.credential-edit-close:hover,
+.service-edit-close:hover,
+.computer-edit-close:hover,
+.planning-execution-close:hover {
+    background: transparent !important;
+    color: #64748b !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.credential-edit-header .credential-edit-close,
+.service-edit-header .service-edit-close,
+.computer-edit-header .computer-edit-close {
+    display: none !important;
+}
+
+/* ==============================
+   9. OCULTAR CANCELAR ROJO EN MODALES
+============================== */
+.credential-cancel-btn,
+.service-cancel-btn,
+.computer-edit-footer .btn-cancel,
+.planning-execution-cancel,
+.modal-content button.btn-cancel,
+.modal-content button[type="button"].btn-cancel {
+    display: none !important;
+}
+
+.credential-edit-footer,
+.service-edit-footer,
+.computer-edit-footer,
+.planning-execution-footer {
+    justify-content: flex-end !important;
+}
+
+/* ==============================
+   10. TABS AJUSTES SIN ROJO
+============================== */
+.settings-main-card .settings-tabs button.settings-tab,
+.settings-main-card .settings-tabs .settings-tab,
+button.settings-tab[data-tab="requesters"],
+button.settings-tab[data-tab="locations"] {
+    background: #ffffff !important;
+    color: #334155 !important;
+    border: 1px solid #dbe4f0 !important;
+    border-bottom: 1px solid #dbe4f0 !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+}
+
+.settings-main-card .settings-tabs button.settings-tab:hover,
+.settings-main-card .settings-tabs .settings-tab:hover,
+button.settings-tab[data-tab="requesters"]:hover,
+button.settings-tab[data-tab="locations"]:hover {
+    background: #f8fbff !important;
+    color: #2563eb !important;
+    border-color: #dbe4f0 !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.settings-main-card .settings-tabs button.settings-tab.active,
+.settings-main-card .settings-tabs .settings-tab.active,
+button.settings-tab.active[data-tab="requesters"],
+button.settings-tab.active[data-tab="locations"] {
+    background: #eef4ff !important;
+    color: #2563eb !important;
+    border: 1px solid #d8e4ff !important;
+    border-bottom: 3px solid #2563eb !important;
+    box-shadow: none !important;
+}
+
+/* ==============================
+   11. PAGINACIONES MOCK QUE NO FUNCIONAN
+============================== */
+.settings-pagination button,
+.services-pagination-mock,
+.inventory-pagination,
+.inventory-modern-pagination,
+.inventory-table-pagination,
+.inventory-page-controls,
+.inventory-table-footer .pagination,
+.inventory-modern-page .pagination,
+.inventory-modern-page .table-pagination,
+.inventory-modern-page .pagination-controls {
+    display: none !important;
+}
+
+.settings-table-footer,
+.services-table-footer,
+.inventory-table-footer,
+.table-footer {
+    justify-content: flex-start !important;
+}
+
+/* ==============================
+   12. FOCUS AZUL, NO ROJO
+============================== */
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: #2563eb !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.10) !important;
+}
+
+/* ==============================
+   13. SUBMENÚ SIN ROJO EN HOVER
+============================== */
+.submenu.dropdown li a:hover {
+    background-color: #2563eb !important;
+    color: #ffffff !important;
+}
+
+.horizontal-list a.nav-link:hover,
+.horizontal-list > li.open > a,
+.horizontal-list > li > a.active {
+    border-bottom-color: #2563eb !important;
 }
