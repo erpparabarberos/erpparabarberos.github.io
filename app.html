@@ -10,41 +10,49 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-        body { 
+body { 
     font-family: 'Inter', sans-serif; 
     background-color: #f8fafc; 
     -webkit-font-smoothing: antialiased; 
 }
 
-/* ==============================
-   BARRA LATERAL PRINCIPAL APP
-   Cápsula blanca real
-============================== */
+/* =========================
+   BARRA LATERAL FLOTANTE
+========================= */
 
 #mainSideRail {
-    width: 78px !important;
-    background: #f8fafc !important;
-    border-right: 1px solid #e2e8f0 !important;
+    width: 72px !important;
+    min-width: 72px !important;
+    background: transparent !important;
+    border-right: none !important;
     box-shadow: none !important;
+    position: relative !important;
 }
 
+/* cápsula flotante */
 .main-rail-capsule {
-    margin-top: 28px;
-    width: 54px;
-    padding: 12px 8px;
+    position: fixed !important;
+    left: 12px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
 
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 18px;
+    width: 52px !important;
+    padding: 12px 6px !important;
 
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 18px !important;
 
-    box-shadow: 0 14px 34px rgba(15, 23, 42, 0.10);
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 12px !important;
+
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.10) !important;
+    z-index: 999 !important;
 }
 
+/* botones */
 .main-rail-capsule .nav-btn {
     width: 38px !important;
     height: 38px !important;
@@ -53,40 +61,65 @@
 
     padding: 0 !important;
     margin: 0 !important;
-
+    border: none !important;
     border-radius: 12px !important;
+
     background: transparent !important;
-    color: #526b8a !important;
+    color: #5b6f8d !important;
+    box-shadow: none !important;
 
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
 
-    border: none !important;
-    box-shadow: none !important;
     transition: all 0.2s ease !important;
 }
 
+/* hover */
 .main-rail-capsule .nav-btn:hover {
     background: #eef4ff !important;
     color: #2563eb !important;
 }
 
+/* activo */
 .main-rail-capsule .nav-btn.active {
-    background: #eef4ff !important;
+    background: #e8f0ff !important;
     color: #2563eb !important;
-    box-shadow: inset 0 0 0 1px #d8e4ff !important;
+    box-shadow: inset 0 0 0 1px #d6e4ff !important;
 }
 
+/* iconos */
 .main-rail-capsule .nav-btn svg {
-    width: 20px !important;
-    height: 20px !important;
+    width: 19px !important;
+    height: 19px !important;
+}
+
+/* opcional: para que no se vea raro en móvil */
+@media (max-width: 768px) {
+    #mainSideRail {
+        width: 60px !important;
+        min-width: 60px !important;
+    }
+
+    .main-rail-capsule {
+        left: 8px !important;
+        width: 46px !important;
+        padding: 10px 5px !important;
+        border-radius: 16px !important;
+    }
+
+    .main-rail-capsule .nav-btn {
+        width: 34px !important;
+        height: 34px !important;
+        min-width: 34px !important;
+        min-height: 34px !important;
+    }
 }
     </style>
 </head>
 <body class="flex h-screen overflow-hidden text-slate-900 bg-[#f8fafc]">
 
-    <aside id="mainSideRail" class="w-20 bg-transparent flex flex-col items-center py-6 shrink-0 z-20 relative">
+    <aside id="mainSideRail" class="shrink-0 z-20 relative">
         <nav class="main-rail-capsule" id="mainNav">
             <button id="btn-garantias" onclick="loadModule('modulo-garantias.html', this)" class="hidden nav-btn p-3 hover:bg-slate-800 hover:text-white rounded-xl w-full flex justify-center transition-all" title="Garantías"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg></button>
             <button id="btn-traslados" onclick="loadModule('modulo-traslados.html', this)" class="hidden nav-btn p-3 hover:bg-slate-800 hover:text-white rounded-xl w-full flex justify-center transition-all" title="Traslados de Bodega"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg></button>
