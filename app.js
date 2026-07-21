@@ -8980,3 +8980,42 @@ if (exportBtn) {
 
     iniciarAppGLPI();
 })();
+function convertirBarraLateralExistente() {
+    const candidatos = Array.from(document.querySelectorAll('aside, nav, div'));
+
+    let barraEncontrada = null;
+
+    for (const el of candidatos) {
+        const style = window.getComputedStyle(el);
+        const rect = el.getBoundingClientRect();
+
+        const estaALaIzquierda = rect.left <= 90;
+        const esAngosta = rect.width > 35 && rect.width <= 95;
+        const esAlta = rect.height > 180;
+        const tieneIconos = el.querySelectorAll('svg, i').length >= 3;
+        const noEsNavbarSuperior = rect.height > 120;
+
+        if (estaALaIzquierda && esAngosta && esAlta && tieneIconos && noEsNavbarSuperior) {
+            barraEncontrada = el;
+            break;
+        }
+    }
+
+    if (!barraEncontrada) return;
+
+    barraEncontrada.classList.add('native-side-rail');
+
+    // Limpia estilos inline que puedan estar dejando la barra negra gigante
+    barraEncontrada.style.background = '';
+    barraEncontrada.style.width = '';
+    barraEncontrada.style.minWidth = '';
+    barraEncontrada.style.maxWidth = '';
+    barraEncontrada.style.height = '';
+    barraEncontrada.style.minHeight = '';
+}
+
+window.addEventListener('load', convertirBarraLateralExistente);
+window.addEventListener('hashchange', convertirBarraLateralExistente);
+
+setTimeout(convertirBarraLateralExistente, 300);
+setTimeout(convertirBarraLateralExistente, 1000);
