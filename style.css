@@ -8857,3 +8857,201 @@ textarea:focus {
 .horizontal-list > li > a.active {
     border-bottom-color: #2563eb !important;
 }
+/* =====================================================
+   FIX REAL TABLAS DE ACCESOS
+   Columnas limpias por categoría, sin espacios gigantes
+===================================================== */
+
+.credentials-table-wrapper {
+    width: 100% !important;
+    overflow-x: visible !important;
+}
+
+.credentials-modern-table {
+    width: 100% !important;
+    min-width: 0 !important;
+    table-layout: auto !important;
+    border-collapse: collapse !important;
+}
+
+.credentials-modern-table thead th,
+.credentials-modern-table tbody td {
+    padding: 14px 12px !important;
+    font-size: 12px !important;
+    vertical-align: middle !important;
+    white-space: normal !important;
+    word-break: normal !important;
+    overflow-wrap: anywhere !important;
+}
+
+/* Checkbox */
+.credentials-modern-table th.credentials-check-col,
+.credentials-modern-table td.credentials-check-col {
+    width: 34px !important;
+    min-width: 34px !important;
+    max-width: 34px !important;
+}
+
+/* Código */
+.credentials-modern-table th[data-field="id"],
+.credentials-modern-table td[data-field="id"] {
+    width: 90px !important;
+    min-width: 80px !important;
+    max-width: 100px !important;
+    font-weight: 900 !important;
+}
+
+/* Software / sistema / servicio */
+.credentials-modern-table th[data-field="softwareName"],
+.credentials-modern-table td[data-field="softwareName"],
+.credentials-modern-table th[data-field="system"],
+.credentials-modern-table td[data-field="system"],
+.credentials-modern-table th[data-field="service"],
+.credentials-modern-table td[data-field="service"],
+.credentials-modern-table th[data-field="provider"],
+.credentials-modern-table td[data-field="provider"] {
+    width: 210px !important;
+    max-width: 230px !important;
+}
+
+/* Equipo asignado */
+.credentials-modern-table th[data-field="computerId"],
+.credentials-modern-table td[data-field="computerId"],
+.credentials-modern-table th[data-field="assignedTo"],
+.credentials-modern-table td[data-field="assignedTo"],
+.credentials-modern-table th[data-field="phoneId"],
+.credentials-modern-table td[data-field="phoneId"] {
+    width: 130px !important;
+    max-width: 150px !important;
+}
+
+/* Usuario */
+.credentials-modern-table th[data-field="username"],
+.credentials-modern-table td[data-field="username"],
+.credentials-modern-table th[data-field="user"],
+.credentials-modern-table td[data-field="user"],
+.credentials-modern-table th[data-field="email"],
+.credentials-modern-table td[data-field="email"] {
+    width: 190px !important;
+    max-width: 210px !important;
+}
+
+/* Contraseña */
+.credentials-modern-table th[data-field="password"],
+.credentials-modern-table td[data-field="password"],
+.credentials-modern-table th[data-field="pin"],
+.credentials-modern-table td[data-field="pin"],
+.credentials-modern-table th[data-field="licenseKey"],
+.credentials-modern-table td[data-field="licenseKey"] {
+    width: 115px !important;
+    min-width: 105px !important;
+    max-width: 125px !important;
+}
+
+/* Usuario asignado */
+.credentials-modern-table th[data-field="assignedUser"],
+.credentials-modern-table td[data-field="assignedUser"] {
+    width: 180px !important;
+    max-width: 200px !important;
+}
+
+/* URL */
+.credentials-modern-table th[data-field="url"],
+.credentials-modern-table td[data-field="url"] {
+    width: 260px !important;
+    max-width: 280px !important;
+}
+
+.credentials-url-cell {
+    display: inline-block !important;
+    max-width: 260px !important;
+    color: #0f2b5b !important;
+    font-weight: 800 !important;
+    text-decoration: none !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+.credentials-url-cell:hover {
+    color: #2563eb !important;
+    text-decoration: underline !important;
+}
+
+/* Versión */
+.credentials-modern-table th[data-field="version"],
+.credentials-modern-table td[data-field="version"] {
+    width: 130px !important;
+    max-width: 150px !important;
+}
+
+/* Estado / Admin */
+.credentials-modern-table th[data-field="status"],
+.credentials-modern-table td[data-field="status"],
+.credentials-modern-table th[data-field="isAdmin"],
+.credentials-modern-table td[data-field="isAdmin"] {
+    width: 105px !important;
+    max-width: 115px !important;
+    text-align: left !important;
+}
+
+/* Área */
+.credentials-modern-table th[data-field="area"],
+.credentials-modern-table td[data-field="area"] {
+    width: 120px !important;
+    max-width: 130px !important;
+}
+
+/* Notas no deben abrir espacio */
+.credentials-modern-table th[data-field="notes"],
+.credentials-modern-table td[data-field="notes"],
+.credentials-modern-table th[data-field="nots"],
+.credentials-modern-table td[data-field="nots"] {
+    width: 90px !important;
+    max-width: 100px !important;
+}
+
+/* Acciones siempre visibles */
+.credentials-modern-table th:last-child,
+.credentials-modern-table td:last-child {
+    width: 96px !important;
+    min-width: 96px !important;
+    max-width: 96px !important;
+    text-align: center !important;
+    background: #ffffff !important;
+}
+
+.credentials-modern-table thead th:last-child {
+    background: #f4f8fd !important;
+}
+
+.credentials-actions-cell {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 12px !important;
+}
+
+.credentials-actions-cell button {
+    width: 22px !important;
+    height: 22px !important;
+    min-width: 22px !important;
+    min-height: 22px !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Quitar scrollbar horizontal anterior */
+.credentials-top-scrollbar {
+    display: none !important;
+}
+
+.credentials-table-wrapper::-webkit-scrollbar {
+    display: none !important;
+}
+
+.credentials-table-wrapper {
+    scrollbar-width: none !important;
+}
