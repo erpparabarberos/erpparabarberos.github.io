@@ -8303,3 +8303,13 @@ button.credentials-advanced-btn {
 .credentials-table-wrapper {
     scrollbar-width: none !important;
 }
+/* ==============================
+   FIX X DOBLE EN MODALES
+   Dejar solo la X original
+============================== */
+
+.credential-edit-header .credential-edit-close,
+.service-edit-header .service-edit-close,
+.computer-edit-header .computer-edit-close {
+    display: none !important;
+}
