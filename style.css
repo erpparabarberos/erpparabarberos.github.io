@@ -8166,3 +8166,140 @@ button.credentials-advanced-btn {
 .credentials-table-wrapper::-webkit-scrollbar-thumb:hover {
     background: #64748b;
 }
+/* ==============================
+   ACCESOS SIN BARRA HORIZONTAL
+   ACCIONES FIJAS A LA DERECHA
+============================== */
+
+/* Quitar barra horizontal superior si la agregamos */
+.credentials-top-scrollbar {
+    display: none !important;
+}
+
+/* Evitar scroll horizontal en accesos */
+.credentials-table-wrapper {
+    overflow-x: visible !important;
+}
+
+/* La tabla se ajusta al ancho disponible */
+.credentials-modern-table {
+    width: 100% !important;
+    min-width: 0 !important;
+    table-layout: fixed !important;
+}
+
+/* Reducir espacios para que quepa mejor */
+.credentials-modern-table thead th,
+.credentials-modern-table tbody td {
+    padding: 12px 10px !important;
+    font-size: 12px !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    overflow-wrap: anywhere !important;
+}
+
+/* Código más compacto */
+.credentials-modern-table th[data-field="id"],
+.credentials-modern-table td[data-field="id"] {
+    width: 78px !important;
+}
+
+/* Servicio compacto */
+.credentials-modern-table th[data-field="service"],
+.credentials-modern-table td[data-field="service"] {
+    width: 90px !important;
+}
+
+/* Correo un poco más amplio */
+.credentials-modern-table th[data-field="email"],
+.credentials-modern-table td[data-field="email"] {
+    width: 190px !important;
+}
+
+/* Contraseña compacta */
+.credentials-modern-table th[data-field="password"],
+.credentials-modern-table td[data-field="password"],
+.credentials-modern-table th[data-field="pin"],
+.credentials-modern-table td[data-field="pin"],
+.credentials-modern-table th[data-field="licenseKey"],
+.credentials-modern-table td[data-field="licenseKey"] {
+    width: 110px !important;
+}
+
+/* Recuperación compacta */
+.credentials-modern-table th[data-field="recoveryEmail"],
+.credentials-modern-table td[data-field="recoveryEmail"],
+.credentials-modern-table th[data-field="recoveryPhone"],
+.credentials-modern-table td[data-field="recoveryPhone"] {
+    width: 155px !important;
+}
+
+/* Usuario asignado */
+.credentials-modern-table th[data-field="assignedUser"],
+.credentials-modern-table td[data-field="assignedUser"],
+.credentials-modern-table th[data-field="user"],
+.credentials-modern-table td[data-field="user"],
+.credentials-modern-table th[data-field="username"],
+.credentials-modern-table td[data-field="username"],
+.credentials-modern-table th[data-field="assignedTo"],
+.credentials-modern-table td[data-field="assignedTo"] {
+    width: 135px !important;
+}
+
+/* Área y estado más pequeños */
+.credentials-modern-table th[data-field="area"],
+.credentials-modern-table td[data-field="area"] {
+    width: 95px !important;
+}
+
+.credentials-modern-table th[data-field="status"],
+.credentials-modern-table td[data-field="status"],
+.credentials-modern-table th[data-field="isAdmin"],
+.credentials-modern-table td[data-field="isAdmin"] {
+    width: 90px !important;
+}
+
+/* Notas compactas */
+.credentials-modern-table th[data-field="notes"],
+.credentials-modern-table td[data-field="notes"],
+.credentials-modern-table th[data-field="nots"],
+.credentials-modern-table td[data-field="nots"] {
+    width: 90px !important;
+}
+
+/* Acciones siempre visibles a la derecha */
+.credentials-modern-table th:last-child,
+.credentials-modern-table td:last-child {
+    width: 100px !important;
+    min-width: 100px !important;
+    max-width: 100px !important;
+    text-align: center !important;
+    position: sticky !important;
+    right: 0 !important;
+    background: #ffffff !important;
+    z-index: 5 !important;
+    box-shadow: -8px 0 12px rgba(15, 23, 42, 0.04) !important;
+}
+
+/* Encabezado de acciones */
+.credentials-modern-table thead th:last-child {
+    background: #f4f8fd !important;
+    z-index: 8 !important;
+}
+
+/* Acciones más juntas */
+.credentials-actions-cell {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 12px !important;
+}
+
+/* Quitar barra inferior horizontal */
+.credentials-table-wrapper::-webkit-scrollbar {
+    display: none !important;
+}
+
+.credentials-table-wrapper {
+    scrollbar-width: none !important;
+}
