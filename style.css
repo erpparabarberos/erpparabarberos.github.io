@@ -8127,3 +8127,42 @@ button.credentials-advanced-btn {
 .planning-execution-footer {
     justify-content: flex-end !important;
 }
+/* ==============================
+   BARRA HORIZONTAL ARRIBA TABLA ACCESOS
+============================== */
+
+.credentials-top-scrollbar {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    height: 18px;
+    background: #ffffff;
+    border-bottom: 1px solid #edf2f7;
+    border-top: 1px solid #edf2f7;
+}
+
+.credentials-top-scrollbar-inner {
+    height: 1px;
+}
+
+.credentials-top-scrollbar::-webkit-scrollbar,
+.credentials-table-wrapper::-webkit-scrollbar {
+    height: 12px;
+}
+
+.credentials-top-scrollbar::-webkit-scrollbar-track,
+.credentials-table-wrapper::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 999px;
+}
+
+.credentials-top-scrollbar::-webkit-scrollbar-thumb,
+.credentials-table-wrapper::-webkit-scrollbar-thumb {
+    background: #94a3b8;
+    border-radius: 999px;
+}
+
+.credentials-top-scrollbar::-webkit-scrollbar-thumb:hover,
+.credentials-table-wrapper::-webkit-scrollbar-thumb:hover {
+    background: #64748b;
+}
