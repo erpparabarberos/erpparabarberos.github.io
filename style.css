@@ -8120,3 +8120,10 @@ button.credentials-advanced-btn {
     box-shadow: none !important;
     transform: none !important;
 }
+/* Footer de modales sin botón cancelar */
+.credential-edit-footer,
+.service-edit-footer,
+.computer-edit-footer,
+.planning-execution-footer {
+    justify-content: flex-end !important;
+}
