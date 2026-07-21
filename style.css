@@ -9055,3 +9055,76 @@ textarea:focus {
 .credentials-table-wrapper {
     scrollbar-width: none !important;
 }
+/* =====================================================
+   NAVBAR HORIZONTAL LIMPIA
+   Quitar negro sin perder los menús
+===================================================== */
+
+.top-navbar {
+    display: flex !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04) !important;
+    height: 58px !important;
+    padding: 0 28px !important;
+}
+
+/* Marca TECH PB */
+.nav-brand {
+    color: #0f2b5b !important;
+    font-weight: 900 !important;
+}
+
+/* Links principales */
+.horizontal-list a.nav-link,
+.horizontal-list > li > a {
+    color: #475569 !important;
+    background: transparent !important;
+    border-bottom: 3px solid transparent !important;
+    font-size: 12px !important;
+    font-weight: 800 !important;
+}
+
+/* Hover */
+.horizontal-list a.nav-link:hover,
+.horizontal-list > li > a:hover {
+    color: #2563eb !important;
+    background: #f8fbff !important;
+    border-bottom: 3px solid #2563eb !important;
+}
+
+/* Activo */
+.horizontal-list a.nav-link.active,
+.horizontal-list > li > a.active,
+.horizontal-list > li.open > a {
+    color: #2563eb !important;
+    background: #ffffff !important;
+    border-bottom: 3px solid #2563eb !important;
+}
+
+/* Flecha de desplegable */
+.nav-item-with-submenu > a::after {
+    color: #64748b !important;
+}
+
+/* Dropdown limpio */
+.submenu.dropdown {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 14px 34px rgba(15, 23, 42, 0.10) !important;
+    border-radius: 0 0 12px 12px !important;
+}
+
+/* Links del dropdown */
+.submenu.dropdown li a {
+    color: #334155 !important;
+    background: #ffffff !important;
+}
+
+/* Hover dropdown */
+.submenu.dropdown li a:hover {
+    background: #eef4ff !important;
+    color: #2563eb !important;
+    padding-left: 25px !important;
+}
