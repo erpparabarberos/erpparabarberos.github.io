@@ -5437,8 +5437,27 @@ const buildTasksForMonth = () => {
     let filteredCredentials = [];
     let selectedIds = new Set();
 
-    const fieldEntries = Object.entries(config.fields);
-    const fieldKeys = fieldEntries.map(([key]) => key);
+   const allFieldEntries = Object.entries(config.fields);
+const allFieldKeys = allFieldEntries.map(([key]) => key);
+
+const credentialsTableColumns = {
+    emails: ['id', 'service', 'email', 'password', 'recoveryEmail', 'assignedUser', 'area', 'status'],
+    computers: ['id', 'computerId', 'username', 'password', 'isAdmin'],
+    phones: ['id', 'phoneId', 'user', 'pin'],
+    internet: ['id', 'provider', 'username', 'password', 'url', 'status'],
+    servers: ['id', 'serverName', 'username', 'password', 'url', 'status'],
+    software: ['id', 'softwareName', 'version', 'assignedTo'],
+    siigo: ['id', 'username', 'password', 'assignedUser', 'url', 'status'],
+    velocity: ['id', 'username', 'password', 'assignedUser', 'url', 'status'],
+    traslados: ['id', 'username', 'password', 'assignedUser', 'url', 'status'],
+    atencion: ['id', 'username', 'password', 'assignedUser', 'url', 'status'],
+    others: ['id', 'system', 'username', 'password', 'url', 'status']
+};
+
+const visibleFieldKeys = credentialsTableColumns[category] || allFieldKeys;
+
+const fieldEntries = allFieldEntries.filter(([key]) => visibleFieldKeys.includes(key));
+const fieldKeys = fieldEntries.map(([key]) => key);
 
     tableHead.innerHTML = `
         <tr>
@@ -5583,10 +5602,20 @@ const buildTasksForMonth = () => {
                 </div>
             `;
         }
+        if (key === 'url') {
+    return `
+        <a href="${escapeHTML(value || '#')}" 
+           class="credentials-url-cell" 
+           title="${escapeHTML(value || 'N/A')}" 
+           target="_blank">
+            ${escapeHTML(value || 'N/A')}
+        </a>
+    `;
+}
 
-        if (key === 'email' || key === 'recoveryEmail' || key === 'url') {
-            return `<span class="credentials-email-cell">${escapeHTML(value || 'N/A')}</span>`;
-        }
+if (key === 'email' || key === 'recoveryEmail') {
+    return `<span class="credentials-email-cell">${escapeHTML(value || 'N/A')}</span>`;
+}
 
         if (key === 'notes' || key === 'nots' || key === 'description') {
             return `<span class="credentials-note-cell">${escapeHTML(value || 'N/A')}</span>`;
@@ -5695,7 +5724,7 @@ const buildTasksForMonth = () => {
         filteredCredentials = allCredentials.filter(item => {
             const searchableText = normalizeText([
                 item.id,
-                ...fieldKeys.map(key => item[key])
+                ...allFieldKeys.map(key => item[key])
             ].join(' '));
 
             const itemDate = getComparableDate(item);
