@@ -9235,3 +9235,185 @@ textarea:focus {
     border-bottom-color: #2563eb;
     background: #f8fbff;
 }
+/* =====================================================
+   REGISTRAR SOPORTE REALIZADO
+   Pestañas compactas + quitar panel derecho
+===================================================== */
+
+/* Contenedor general más limpio */
+.support-page {
+    max-width: 100% !important;
+    padding: 28px 32px 44px !important;
+}
+
+/* Título más alineado con el resto del sistema */
+.support-header {
+    margin-bottom: 18px !important;
+}
+
+.support-header h1 {
+    font-size: 30px !important;
+    color: #0f2b5b !important;
+    font-weight: 900 !important;
+    text-transform: uppercase !important;
+}
+
+.support-header p {
+    color: #64748b !important;
+    font-size: 14px !important;
+}
+
+/* Convertir tarjetas grandes en tabs compactas */
+.support-type-cards {
+    background: #ffffff !important;
+    border: 1px solid #dbe4f0 !important;
+    border-radius: 12px !important;
+    padding: 0 18px !important;
+    margin: 18px 0 22px !important;
+
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.04) !important;
+    overflow-x: auto !important;
+}
+
+/* Cada opción como tab */
+.support-type-card {
+    min-height: 54px !important;
+    height: 54px !important;
+    width: auto !important;
+    min-width: auto !important;
+
+    padding: 0 18px !important;
+    border: none !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+
+    display: inline-flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+
+    color: #334155 !important;
+    text-decoration: none !important;
+    border-bottom: 3px solid transparent !important;
+}
+
+/* Ícono pequeño */
+.support-type-card .support-icon {
+    width: auto !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    color: inherit !important;
+    font-size: 15px !important;
+}
+
+/* Texto de la tab */
+.support-type-card strong {
+    font-size: 13px !important;
+    font-weight: 900 !important;
+    color: inherit !important;
+    white-space: nowrap !important;
+}
+
+/* Ocultar descripción para que no se vea grande */
+.support-type-card small {
+    display: none !important;
+}
+
+/* Hover */
+.support-type-card:hover {
+    transform: none !important;
+    background: #f8fbff !important;
+    color: #2563eb !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+}
+
+/* Activa */
+.support-type-card.active {
+    background: #f8fbff !important;
+    color: #2563eb !important;
+    border-bottom: 3px solid #2563eb !important;
+}
+
+/* Quitar check azul flotante de tarjeta activa */
+.support-type-card.active::after {
+    display: none !important;
+}
+
+/* Quitar panel derecho completo */
+.support-side-panel,
+.support-summary-card,
+.support-warning-card,
+.support-success-card,
+.support-tips-card {
+    display: none !important;
+}
+
+/* El formulario ocupa todo el ancho */
+.support-layout {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 0 !important;
+}
+
+/* Formulario más ancho y limpio */
+.support-form-card {
+    width: 100% !important;
+    padding: 24px !important;
+    border-radius: 14px !important;
+    border: 1px solid #dbe4f0 !important;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.04) !important;
+}
+
+/* Inputs compactos */
+.support-form-card input,
+.support-form-card select,
+.support-form-card textarea {
+    border-radius: 8px !important;
+    border: 1px solid #dbe4f0 !important;
+    background: #ffffff !important;
+}
+
+/* Ocultar limpiar formulario */
+.support-actions .support-secondary-btn,
+.support-form-card .support-secondary-btn,
+.support-form-card button[type="reset"],
+.support-page button[type="reset"] {
+    display: none !important;
+}
+
+/* Botón registrar soporte ocupa todo */
+.support-actions {
+    grid-template-columns: 1fr !important;
+}
+
+.support-primary-btn {
+    width: 100% !important;
+    background: #2563eb !important;
+    color: #ffffff !important;
+    border: 1px solid #2563eb !important;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .support-page {
+        padding: 20px 16px 36px !important;
+    }
+
+    .support-type-cards {
+        padding: 0 10px !important;
+    }
+
+    .support-type-card {
+        padding: 0 14px !important;
+    }
+}
