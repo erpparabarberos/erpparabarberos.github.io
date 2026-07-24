@@ -440,6 +440,137 @@
                 height: 58px;
             }
         }
+        .password-help-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+
+    background: rgba(2, 6, 23, 0.74);
+    backdrop-filter: blur(10px);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.password-help-overlay.hidden {
+    display: none !important;
+}
+
+.password-help-card {
+    position: relative;
+    width: min(100%, 460px);
+    padding: 42px 38px 34px;
+
+    background: linear-gradient(180deg, rgba(15,23,42,0.96), rgba(2,6,23,0.92));
+    border: 1px solid rgba(96,165,250,0.35);
+    border-radius: 18px;
+
+    color: #f8fafc;
+    text-align: center;
+
+    box-shadow:
+        0 24px 70px rgba(0,0,0,0.55),
+        0 0 32px rgba(59,130,246,0.18),
+        inset 0 1px 0 rgba(255,255,255,0.08);
+}
+
+.password-help-close {
+    position: absolute;
+    top: 16px;
+    right: 18px;
+
+    width: 30px;
+    height: 30px;
+
+    border: none;
+    background: transparent;
+    color: #94a3b8;
+
+    font-size: 30px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.password-help-close:hover {
+    color: #ffffff;
+}
+
+.password-help-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 20px;
+
+    border-radius: 18px;
+    background: rgba(59,130,246,0.12);
+    color: #60a5fa;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    box-shadow: inset 0 0 0 1px rgba(96,165,250,0.28);
+}
+
+.password-help-icon svg {
+    width: 32px;
+    height: 32px;
+}
+
+.password-help-card h2 {
+    margin: 0 0 12px;
+    font-size: 28px;
+    font-weight: 900;
+    color: #ffffff;
+}
+
+.password-help-card p {
+    margin: 0;
+    color: #cbd5e1;
+    font-size: 16px;
+    line-height: 1.55;
+}
+
+.password-help-card p strong {
+    color: #ffffff;
+}
+
+.password-help-note {
+    margin: 24px 0;
+    padding: 14px 16px;
+
+    border-radius: 12px;
+    background: rgba(96,165,250,0.10);
+    color: #93c5fd;
+
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.password-help-btn {
+    width: 100%;
+    height: 52px;
+
+    border: 1px solid rgba(96,165,250,0.58);
+    border-radius: 10px;
+
+    background: linear-gradient(180deg, #315bd5 0%, #1e3fae 100%);
+    color: #ffffff;
+
+    font-size: 16px;
+    font-weight: 900;
+    cursor: pointer;
+
+    box-shadow:
+        0 12px 28px rgba(37,99,235,0.25),
+        inset 0 1px 0 rgba(255,255,255,0.20);
+}
+
+.password-help-btn:hover {
+    background: linear-gradient(180deg, #3b72ff 0%, #2451d6 100%);
+}
+        
     </style>
 </head>
 
@@ -493,7 +624,7 @@
                             <span>Recordarme en este dispositivo</span>
                         </label>
 
-                        <a href="#" class="forgot-link" onclick="return false;">¿Olvidaste tu contraseña?</a>
+                        <a href="#" class="forgot-link" onclick="openPasswordHelp(); return false;">¿Olvidaste tu contraseña?</a>
                     </div>
 
                     <div id="errorMessage"></div>
@@ -512,14 +643,48 @@
             </div>
         </section>
     </main>
+<div id="passwordHelpModal" class="password-help-overlay hidden">
+    <div class="password-help-card">
+        <button type="button" class="password-help-close" onclick="closePasswordHelp()">×</button>
 
+        <div class="password-help-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M12 11c1.104 0 2-.896 2-2V7a2 2 0 10-4 0v2c0 1.104.896 2 2 2zm-6 0h12v10H6V11z"></path>
+            </svg>
+        </div>
+
+        <h2>Cambio de contraseña</h2>
+
+        <p>
+            Para realizar el cambio o recuperación de contraseña, 
+            por favor contacta al <strong>Administrador TI</strong>.
+        </p>
+
+        <div class="password-help-note">
+            El acceso solo puede ser gestionado por personal autorizado.
+        </div>
+
+        <button type="button" class="password-help-btn" onclick="closePasswordHelp()">
+            Entendido
+        </button>
+    </div>
+</div>
     <script>
         function toggleLoginPassword() {
             const input = document.getElementById('password');
             if (!input) return;
             input.type = input.type === 'password' ? 'text' : 'password';
         }
+        function openPasswordHelp() {
+    const modal = document.getElementById('passwordHelpModal');
+    if (modal) modal.classList.remove('hidden');
+}
 
+function closePasswordHelp() {
+    const modal = document.getElementById('passwordHelpModal');
+    if (modal) modal.classList.add('hidden');
+}
         document.addEventListener('DOMContentLoaded', () => {
             
             // TUS LLAVES REALES INTEGRADAS CORRECTAMENTE EN MODO "COMPAT"
