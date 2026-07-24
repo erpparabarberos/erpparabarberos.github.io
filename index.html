@@ -497,25 +497,26 @@
     color: #ffffff;
 }
 
-.password-help-icon {
-    width: 64px;
-    height: 64px;
-    margin: 0 auto 20px;
-
-    border-radius: 18px;
-    background: rgba(59,130,246,0.12);
-    color: #60a5fa;
+.password-help-logo {
+    width: 150px;
+    height: auto;
+    margin: 0 auto 22px;
 
     display: flex;
     align-items: center;
     justify-content: center;
-
-    box-shadow: inset 0 0 0 1px rgba(96,165,250,0.28);
 }
 
-.password-help-icon svg {
-    width: 32px;
-    height: 32px;
+.password-help-logo img {
+    width: 150px;
+    height: auto;
+    display: block;
+
+    filter:
+        brightness(1.55)
+        contrast(1.25)
+        drop-shadow(0 0 14px rgba(255,255,255,0.28))
+        drop-shadow(0 0 24px rgba(96,165,250,0.35));
 }
 
 .password-help-card h2 {
@@ -647,11 +648,8 @@
     <div class="password-help-card">
         <button type="button" class="password-help-close" onclick="closePasswordHelp()">×</button>
 
-        <div class="password-help-icon">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                      d="M12 11c1.104 0 2-.896 2-2V7a2 2 0 10-4 0v2c0 1.104.896 2 2 2zm-6 0h12v10H6V11z"></path>
-            </svg>
+        <div class="password-help-logo">
+            <img src="https://erpparabarberos.github.io/logo-nexus.jpg" alt="Logo Para Barberos">
         </div>
 
         <h2>Cambio de contraseña</h2>
