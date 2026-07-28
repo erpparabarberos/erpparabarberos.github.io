@@ -74,11 +74,19 @@
                 <button id="logoutBtn"></button>
             </div>
        </header>
-        <nav class="traslados-tabs-nav">
-            <a href="#requesterView" class="traslados-tab active">SOLICITANTE</a>
-            <a href="#adminView" class="traslados-tab">ADMINISTRADOR</a>
-            <a href="#managerView" class="traslados-tab">GERENCIA</a>
-        </nav>
+<nav class="traslados-tabs-nav">
+    <button type="button" class="traslados-tab active" data-view="requesterView">
+        SOLICITANTE
+    </button>
+
+    <button type="button" class="traslados-tab" data-view="adminView">
+        ADMINISTRADOR
+    </button>
+
+    <button type="button" class="traslados-tab" data-view="managerView">
+        GERENCIA
+    </button>
+</nav>
         
         <div id="requesterView" class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start" style="display: none;">
             <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-lg">
@@ -480,9 +488,15 @@ function setupUIForUser() {
                 if (dom.productManagementCard) dom.productManagementCard.style.display = 'block';
             } else if (role === 'reviewer') {
                 dom.reviewerView.style.display = 'block';
-            } else { 
-                dom.requesterView.style.display = 'grid';
-            }
+            } } else { 
+    dom.adminView.style.display = 'none';
+    dom.managerView.style.display = 'none';
+    dom.requesterView.style.display = 'grid';
+
+    setTimeout(() => {
+        mostrarModuloTraslados('requesterView');
+    }, 100);
+}
 
             if (dom.requesterName && (role === 'requester' || role === 'manager')) {
                 dom.requesterName.innerHTML = `<option value="${currentUserData.name}">${currentUserData.name}</option>`;
@@ -1667,19 +1681,27 @@ const allMyRequests = sortedRequests.filter(r =>
             if (dom.reportContainer) dom.reportContainer.style.display = 'none';
 
             // 2. ENCENDEMOS SEGÚN EL ROL TRADUCIDO
-            if (role === 'manager') { 
-                // ROL: admin (Tú) -> Ve TODO
-                dom.managerView.style.display = 'block'; 
-                dom.adminView.style.display = 'block';   
-                dom.requesterView.style.display = 'grid'; 
-                if (dom.productManagementCard) dom.productManagementCard.style.display = 'block';
+                if (role === 'manager') { 
+                    dom.managerView.style.display = 'none'; 
+                    dom.adminView.style.display = 'none';   
+                    dom.requesterView.style.display = 'grid'; 
+                    if (dom.productManagementCard) dom.productManagementCard.style.display = 'block';
+
+                    setTimeout(() => {
+                        mostrarModuloTraslados('requesterView');
+                    }, 100);
+                }
+                    } else if (role === 'admin') {
+            dom.requesterView.style.display = 'none';
+            dom.managerView.style.display = 'none';
+            dom.adminView.style.display = 'block';
+            if (dom.productManagementCard) dom.productManagementCard.style.display = 'block';
+            setTimeout(() => {
+            mostrarModuloTraslados('adminView');
+            }, 100);
+        }
                 
-            } else if (role === 'admin') {
-                // ROL: inventarios -> Ve gestión de bodega e historial
-                dom.adminView.style.display = 'block';
-                if (dom.productManagementCard) dom.productManagementCard.style.display = 'block';
-                
-            } else if (role === 'reviewer') {
+            else if (role === 'reviewer') {
                 // ROL: separador -> Ve SOLO la tabla de revisión
                 dom.reviewerView.style.display = 'block';
                 
@@ -1703,16 +1725,37 @@ const allMyRequests = sortedRequests.filter(r =>
 
     });
 </script>
-    <script>
+<script>
+function mostrarModuloTraslados(viewId) {
+    const vistas = {
+        requesterView: 'grid',
+        adminView: 'block',
+        managerView: 'block'
+    };
+
+    Object.keys(vistas).forEach(id => {
+        const section = document.getElementById(id);
+        if (section) {
+            section.style.display = 'none';
+        }
+    });
+
+    const selectedView = document.getElementById(viewId);
+    if (selectedView) {
+        selectedView.style.display = vistas[viewId];
+    }
+
+    document.querySelectorAll('.traslados-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.view === viewId);
+    });
+}
+
 document.addEventListener('click', function(e) {
     const tab = e.target.closest('.traslados-tab');
     if (!tab) return;
 
-    document.querySelectorAll('.traslados-tab').forEach(item => {
-        item.classList.remove('active');
-    });
-
-    tab.classList.add('active');
+    const viewId = tab.dataset.view;
+    mostrarModuloTraslados(viewId);
 });
 </script>
 </body>
