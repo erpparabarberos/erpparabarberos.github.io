@@ -5884,14 +5884,9 @@ if (key === 'email' || key === 'recoveryEmail') {
         applyFilters();
     });
 
-const credentialsToggleFilters = document.getElementById('credentials-toggle-filters');
-const credentialsFilterGrid = document.getElementById('credentials-filter-grid');
-
-if (credentialsToggleFilters && credentialsFilterGrid) {
-    credentialsToggleFilters.addEventListener('click', () => {
-        credentialsFilterGrid.classList.toggle('hidden');
+    document.getElementById('credentials-toggle-filters').addEventListener('click', () => {
+        document.getElementById('credentials-filter-grid').classList.toggle('hidden');
     });
-}
 
     tableBody.addEventListener('change', (e) => {
         const check = e.target.closest('.credentials-row-check');
@@ -8856,67 +8851,6 @@ if (createKbBtn) {
 
         function router() { 
             const hash = window.location.hash || '#dashboard'; 
-const currentRole = (localStorage.getItem('userRole') || '').toLowerCase();
-const allowedRoutesByRole = {
-    admin: [
-        '#dashboard',
-        '#crear-ticket-ti',
-        '#historial',
-        '#knowledge',
-        '#reports',
-        '#inventory-computers',
-        '#inventory-phones',
-        '#inventory-cameras',
-        '#inventory-modems',
-        '#inventory-radios',
-        '#inventory-network',
-        '#inventory-printers',
-        '#services-internet',
-        '#services-telefonia',
-        '#services-otros',
-        '#maintenance',
-        '#credentials-email',
-        '#credentials-pcs',
-        '#credentials-phones',
-        '#credentials-internet',
-        '#credentials-servers',
-        '#credentials-software',
-        '#credentials-siigo',
-        '#credentials-velocity',
-        '#credentials-transfers',
-        '#credentials-support',
-        '#credentials-others',
-        '#settings',
-        '#traslados',
-        '#garantias',
-        '#calificaciones'
-    ],
-
-    separador: [
-        '#traslados'
-    ],
-
-    bodega: [
-        '#traslados'
-    ],
-
-    gerente: [
-        '#traslados',
-        '#garantias',
-        '#calificaciones'
-    ],
-
-    requester: [
-        '#traslados'
-    ]
-};
-
-const allowedRoutes = allowedRoutesByRole[currentRole];
-
-if (allowedRoutes && !allowedRoutes.some(route => path.startsWith(route))) {
-    window.location.hash = allowedRoutes[0];
-    return;
-}
             const [path, qs] = hash.split('?'); 
             const params = new URLSearchParams(qs); 
             
@@ -8944,10 +8878,6 @@ if (allowedRoutes && !allowedRoutes.some(route => path.startsWith(route))) {
                     if(topLink) topLink.classList.add('active');
                 }
             });
-        setTimeout(() => {
-    applyRoleMenuVisibility();
-}, 100);
-applyRoleAccessPB();
         }
 
         document.addEventListener('click', (e) => { 
@@ -9036,7 +8966,6 @@ if (exportBtn) {
             if (user) {
                 window.addEventListener('hashchange', router); 
                 router(); 
-                applyRoleAccessPB();
             } else {
                 appContent.innerHTML = `
                     <div style="padding: 40px; width: 100%;">
@@ -9048,242 +8977,6 @@ if (exportBtn) {
             }
         });
     }
-document.addEventListener('click', function(e) {
-    const eyeBtn = e.target.closest('.credential-password-toggle, .password-eye-btn, .toggle-password-btn, .credential-eye-btn');
 
-    if (!eyeBtn) return;
-
-    e.preventDefault();
-    e.stopPropagation();
-
-    const password = eyeBtn.dataset.password;
-    const row = eyeBtn.closest('tr');
-
-    if (!row || !password) return;
-
-    const passwordText = row.querySelector('.credential-password-text');
-
-    if (!passwordText) return;
-
-    const isVisible = passwordText.dataset.visible === 'true';
-
-    if (isVisible) {
-        passwordText.textContent = '••••••••••';
-        passwordText.dataset.visible = 'false';
-    } else {
-        passwordText.textContent = password;
-        passwordText.dataset.visible = 'true';
-    }
-});
-    function applyRoleMenuVisibility() {
-    const currentRole = (localStorage.getItem('userRole') || '').toLowerCase();
-
-    if (currentRole !== 'separador') return;
-
-    const allowedTexts = ['TRASLADOS'];
-
-    document.querySelectorAll('a, button').forEach(item => {
-        const text = (item.textContent || '').trim().toUpperCase();
-
-        const isMainMenuItem =
-            text.includes('DASHBOARD') ||
-            text.includes('REGISTRAR SOPORTE') ||
-            text.includes('HISTORIAL') ||
-            text.includes('CONOCIMIENTO') ||
-            text.includes('REPORTES') ||
-            text.includes('INVENTARIO') ||
-            text.includes('SERVICIOS') ||
-            text.includes('MANTENIMIENTO') ||
-            text.includes('ACCESOS') ||
-            text.includes('AJUSTES') ||
-            text.includes('GARANTÍAS') ||
-            text.includes('CALIFICACIONES');
-
-        const isAllowed = allowedTexts.some(allowed => text.includes(allowed));
-
-        if (isMainMenuItem && !isAllowed) {
-            item.style.display = 'none';
-        }
-    });
-}
-    /* =====================================================
-   CONTROL REAL DE MENÚS Y RUTAS POR ROL
-   NEXUS PB
-===================================================== */
-
-function getCurrentUserRolePB() {
-    return (localStorage.getItem('userRole') || '').toLowerCase().trim();
-}
-
-function userCanSeeEverythingPB(role) {
-    return [
-        'admin',
-        'administrador',
-        'gerencia',
-        'gerente'
-    ].includes(role);
-}
-
-const roleAccessPB = {
-    // ADMIN Y GERENCIA VEN TODO
-    admin: ['*'],
-    administrador: ['*'],
-    gerencia: ['*'],
-    gerente: ['*'],
-
-    // TRASLADOS
-    separador: [
-        '#traslados'
-    ],
-
-    bodega: [
-        '#traslados'
-    ],
-
-    // Puedes ajustar estos después si necesitas
-    garantias: [
-        '#garantias'
-    ],
-
-    atencion: [
-        '#calificaciones'
-    ],
-
-    tecnologia: [
-        '#dashboard',
-        '#crear-ticket-ti',
-        '#historial',
-        '#knowledge',
-        '#reports',
-        '#inventory',
-        '#services',
-        '#maintenance',
-        '#credentials',
-        '#settings'
-    ]
-};
-
-function getAllowedRoutesPB(role) {
-    if (userCanSeeEverythingPB(role)) return ['*'];
-
-    return roleAccessPB[role] || ['#traslados'];
-}
-
-function normalizeRoutePB(route) {
-    if (!route) return '';
-
-    if (route.includes('#')) {
-        return route.substring(route.indexOf('#'));
-    }
-
-    return route;
-}
-
-function isRouteAllowedPB(route, allowedRoutes) {
-    if (allowedRoutes.includes('*')) return true;
-
-    const normalizedRoute = normalizeRoutePB(route);
-
-    return allowedRoutes.some(allowed => {
-        return normalizedRoute === allowed || normalizedRoute.startsWith(allowed);
-    });
-}
-
-function hideUnauthorizedMenusPB() {
-    const role = getCurrentUserRolePB();
-    const allowedRoutes = getAllowedRoutesPB(role);
-
-    if (allowedRoutes.includes('*')) {
-        document.querySelectorAll('[data-role-hidden="true"]').forEach(el => {
-            el.style.display = '';
-            el.removeAttribute('data-role-hidden');
-        });
-        return;
-    }
-
-    document.querySelectorAll('a[href], button[data-route], [data-href], [onclick]').forEach(el => {
-        const href = el.getAttribute('href') || '';
-        const dataRoute = el.getAttribute('data-route') || '';
-        const dataHref = el.getAttribute('data-href') || '';
-        const onclick = el.getAttribute('onclick') || '';
-
-        const possibleRoute = href || dataRoute || dataHref || onclick;
-
-        const isMenuElement =
-            possibleRoute.includes('#dashboard') ||
-            possibleRoute.includes('#crear-ticket') ||
-            possibleRoute.includes('#historial') ||
-            possibleRoute.includes('#knowledge') ||
-            possibleRoute.includes('#reports') ||
-            possibleRoute.includes('#inventory') ||
-            possibleRoute.includes('#services') ||
-            possibleRoute.includes('#maintenance') ||
-            possibleRoute.includes('#credentials') ||
-            possibleRoute.includes('#settings') ||
-            possibleRoute.includes('#traslados') ||
-            possibleRoute.includes('#garantias') ||
-            possibleRoute.includes('#calificaciones') ||
-            possibleRoute.includes('modulo-ti') ||
-            possibleRoute.includes('modulo-traslados') ||
-            possibleRoute.includes('modulo-garantias') ||
-            possibleRoute.includes('modulo-calificaciones');
-
-        if (!isMenuElement) return;
-
-        const routeAllowed = isRouteAllowedPB(possibleRoute, allowedRoutes);
-
-        if (!routeAllowed) {
-            el.style.display = 'none';
-            el.setAttribute('data-role-hidden', 'true');
-
-            const parentLi = el.closest('li');
-            if (parentLi) {
-                parentLi.style.display = 'none';
-                parentLi.setAttribute('data-role-hidden', 'true');
-            }
-        }
-    });
-
-    // También limpia contenedores de menú vacíos
-    document.querySelectorAll('.dropdown-menu, .submenu, .nav-dropdown').forEach(menu => {
-        const visibleItems = Array.from(menu.children).filter(child => {
-            return getComputedStyle(child).display !== 'none';
-        });
-
-        if (visibleItems.length === 0) {
-            menu.style.display = 'none';
-            menu.setAttribute('data-role-hidden', 'true');
-        }
-    });
-}
-
-function protectUnauthorizedRoutePB() {
-    const role = getCurrentUserRolePB();
-    const allowedRoutes = getAllowedRoutesPB(role);
-
-    if (allowedRoutes.includes('*')) return;
-
-    const currentHash = window.location.hash || '#dashboard';
-
-    if (!isRouteAllowedPB(currentHash, allowedRoutes)) {
-        window.location.hash = allowedRoutes[0];
-    }
-}
-
-function applyRoleAccessPB() {
-    protectUnauthorizedRoutePB();
-
-    setTimeout(() => {
-        hideUnauthorizedMenusPB();
-    }, 100);
-
-    setTimeout(() => {
-        hideUnauthorizedMenusPB();
-    }, 600);
-
-    setTimeout(() => {
-        hideUnauthorizedMenusPB();
-    }, 1200);
-}
     iniciarAppGLPI();
 })();
