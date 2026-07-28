@@ -13,6 +13,57 @@
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+    <style>
+/* ==============================
+   MENÚ INTERNO TRASLADOS
+============================== */
+
+.traslados-tabs-nav {
+    width: 100%;
+    height: 54px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    background: #ffffff;
+    border-bottom: 1px solid #dbe4f0;
+    margin-bottom: 28px;
+    padding: 0 8px;
+}
+
+.traslados-tab {
+    height: 54px;
+    padding: 0 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #475569;
+    font-size: 13px;
+    font-weight: 900;
+    text-decoration: none;
+    text-transform: uppercase;
+
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.traslados-tab:hover {
+    color: #2563eb;
+    background: #f8fbff;
+}
+
+.traslados-tab.active {
+    color: #2563eb;
+    border-bottom-color: #2563eb;
+    background: #ffffff;
+}
+
+#requesterView,
+#adminView,
+#managerView {
+    scroll-margin-top: 90px;
+}
+</style>
 </head>
 <body class="bg-gray-100 font-sans">
     <div class="container mx-auto p-4 md:p-8 space-y-16">
@@ -22,8 +73,13 @@
                 <span id="userEmailDisplay"></span>
                 <button id="logoutBtn"></button>
             </div>
-        </header>
-
+       </header>
+        <nav class="traslados-tabs-nav">
+            <a href="#requesterView" class="traslados-tab active">SOLICITANTE</a>
+            <a href="#adminView" class="traslados-tab">ADMINISTRADOR</a>
+            <a href="#managerView" class="traslados-tab">GERENCIA</a>
+        </nav>
+        
         <div id="requesterView" class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start" style="display: none;">
             <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-lg">
                 <h2 class="text-2xl font-semibold mb-4 text-gray-800 border-b pb-3">Nueva solicitud de traslado</h2>
@@ -1646,6 +1702,18 @@ const allMyRequests = sortedRequests.filter(r =>
         };
 
     });
+</script>
+    <script>
+document.addEventListener('click', function(e) {
+    const tab = e.target.closest('.traslados-tab');
+    if (!tab) return;
+
+    document.querySelectorAll('.traslados-tab').forEach(item => {
+        item.classList.remove('active');
+    });
+
+    tab.classList.add('active');
+});
 </script>
 </body>
 </html>
