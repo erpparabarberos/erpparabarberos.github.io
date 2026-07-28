@@ -8947,6 +8947,7 @@ if (allowedRoutes && !allowedRoutes.some(route => path.startsWith(route))) {
         setTimeout(() => {
     applyRoleMenuVisibility();
 }, 100);
+applyRoleAccessPB();
         }
 
         document.addEventListener('click', (e) => { 
@@ -9035,6 +9036,7 @@ if (exportBtn) {
             if (user) {
                 window.addEventListener('hashchange', router); 
                 router(); 
+                applyRoleAccessPB();
             } else {
                 appContent.innerHTML = `
                     <div style="padding: 40px; width: 100%;">
@@ -9104,6 +9106,184 @@ document.addEventListener('click', function(e) {
         }
     });
 }
-    
+    /* =====================================================
+   CONTROL REAL DE MENÚS Y RUTAS POR ROL
+   NEXUS PB
+===================================================== */
+
+function getCurrentUserRolePB() {
+    return (localStorage.getItem('userRole') || '').toLowerCase().trim();
+}
+
+function userCanSeeEverythingPB(role) {
+    return [
+        'admin',
+        'administrador',
+        'gerencia',
+        'gerente'
+    ].includes(role);
+}
+
+const roleAccessPB = {
+    // ADMIN Y GERENCIA VEN TODO
+    admin: ['*'],
+    administrador: ['*'],
+    gerencia: ['*'],
+    gerente: ['*'],
+
+    // TRASLADOS
+    separador: [
+        '#traslados'
+    ],
+
+    bodega: [
+        '#traslados'
+    ],
+
+    // Puedes ajustar estos después si necesitas
+    garantias: [
+        '#garantias'
+    ],
+
+    atencion: [
+        '#calificaciones'
+    ],
+
+    tecnologia: [
+        '#dashboard',
+        '#crear-ticket-ti',
+        '#historial',
+        '#knowledge',
+        '#reports',
+        '#inventory',
+        '#services',
+        '#maintenance',
+        '#credentials',
+        '#settings'
+    ]
+};
+
+function getAllowedRoutesPB(role) {
+    if (userCanSeeEverythingPB(role)) return ['*'];
+
+    return roleAccessPB[role] || ['#traslados'];
+}
+
+function normalizeRoutePB(route) {
+    if (!route) return '';
+
+    if (route.includes('#')) {
+        return route.substring(route.indexOf('#'));
+    }
+
+    return route;
+}
+
+function isRouteAllowedPB(route, allowedRoutes) {
+    if (allowedRoutes.includes('*')) return true;
+
+    const normalizedRoute = normalizeRoutePB(route);
+
+    return allowedRoutes.some(allowed => {
+        return normalizedRoute === allowed || normalizedRoute.startsWith(allowed);
+    });
+}
+
+function hideUnauthorizedMenusPB() {
+    const role = getCurrentUserRolePB();
+    const allowedRoutes = getAllowedRoutesPB(role);
+
+    if (allowedRoutes.includes('*')) {
+        document.querySelectorAll('[data-role-hidden="true"]').forEach(el => {
+            el.style.display = '';
+            el.removeAttribute('data-role-hidden');
+        });
+        return;
+    }
+
+    document.querySelectorAll('a[href], button[data-route], [data-href], [onclick]').forEach(el => {
+        const href = el.getAttribute('href') || '';
+        const dataRoute = el.getAttribute('data-route') || '';
+        const dataHref = el.getAttribute('data-href') || '';
+        const onclick = el.getAttribute('onclick') || '';
+
+        const possibleRoute = href || dataRoute || dataHref || onclick;
+
+        const isMenuElement =
+            possibleRoute.includes('#dashboard') ||
+            possibleRoute.includes('#crear-ticket') ||
+            possibleRoute.includes('#historial') ||
+            possibleRoute.includes('#knowledge') ||
+            possibleRoute.includes('#reports') ||
+            possibleRoute.includes('#inventory') ||
+            possibleRoute.includes('#services') ||
+            possibleRoute.includes('#maintenance') ||
+            possibleRoute.includes('#credentials') ||
+            possibleRoute.includes('#settings') ||
+            possibleRoute.includes('#traslados') ||
+            possibleRoute.includes('#garantias') ||
+            possibleRoute.includes('#calificaciones') ||
+            possibleRoute.includes('modulo-ti') ||
+            possibleRoute.includes('modulo-traslados') ||
+            possibleRoute.includes('modulo-garantias') ||
+            possibleRoute.includes('modulo-calificaciones');
+
+        if (!isMenuElement) return;
+
+        const routeAllowed = isRouteAllowedPB(possibleRoute, allowedRoutes);
+
+        if (!routeAllowed) {
+            el.style.display = 'none';
+            el.setAttribute('data-role-hidden', 'true');
+
+            const parentLi = el.closest('li');
+            if (parentLi) {
+                parentLi.style.display = 'none';
+                parentLi.setAttribute('data-role-hidden', 'true');
+            }
+        }
+    });
+
+    // También limpia contenedores de menú vacíos
+    document.querySelectorAll('.dropdown-menu, .submenu, .nav-dropdown').forEach(menu => {
+        const visibleItems = Array.from(menu.children).filter(child => {
+            return getComputedStyle(child).display !== 'none';
+        });
+
+        if (visibleItems.length === 0) {
+            menu.style.display = 'none';
+            menu.setAttribute('data-role-hidden', 'true');
+        }
+    });
+}
+
+function protectUnauthorizedRoutePB() {
+    const role = getCurrentUserRolePB();
+    const allowedRoutes = getAllowedRoutesPB(role);
+
+    if (allowedRoutes.includes('*')) return;
+
+    const currentHash = window.location.hash || '#dashboard';
+
+    if (!isRouteAllowedPB(currentHash, allowedRoutes)) {
+        window.location.hash = allowedRoutes[0];
+    }
+}
+
+function applyRoleAccessPB() {
+    protectUnauthorizedRoutePB();
+
+    setTimeout(() => {
+        hideUnauthorizedMenusPB();
+    }, 100);
+
+    setTimeout(() => {
+        hideUnauthorizedMenusPB();
+    }, 600);
+
+    setTimeout(() => {
+        hideUnauthorizedMenusPB();
+    }, 1200);
+}
     iniciarAppGLPI();
 })();
