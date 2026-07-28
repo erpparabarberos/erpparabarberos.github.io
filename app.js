@@ -8856,6 +8856,67 @@ if (createKbBtn) {
 
         function router() { 
             const hash = window.location.hash || '#dashboard'; 
+const currentRole = (localStorage.getItem('userRole') || '').toLowerCase();
+const allowedRoutesByRole = {
+    admin: [
+        '#dashboard',
+        '#crear-ticket-ti',
+        '#historial',
+        '#knowledge',
+        '#reports',
+        '#inventory-computers',
+        '#inventory-phones',
+        '#inventory-cameras',
+        '#inventory-modems',
+        '#inventory-radios',
+        '#inventory-network',
+        '#inventory-printers',
+        '#services-internet',
+        '#services-telefonia',
+        '#services-otros',
+        '#maintenance',
+        '#credentials-email',
+        '#credentials-pcs',
+        '#credentials-phones',
+        '#credentials-internet',
+        '#credentials-servers',
+        '#credentials-software',
+        '#credentials-siigo',
+        '#credentials-velocity',
+        '#credentials-transfers',
+        '#credentials-support',
+        '#credentials-others',
+        '#settings',
+        '#traslados',
+        '#garantias',
+        '#calificaciones'
+    ],
+
+    separador: [
+        '#traslados'
+    ],
+
+    bodega: [
+        '#traslados'
+    ],
+
+    gerente: [
+        '#traslados',
+        '#garantias',
+        '#calificaciones'
+    ],
+
+    requester: [
+        '#traslados'
+    ]
+};
+
+const allowedRoutes = allowedRoutesByRole[currentRole];
+
+if (allowedRoutes && !allowedRoutes.some(route => path.startsWith(route))) {
+    window.location.hash = allowedRoutes[0];
+    return;
+}
             const [path, qs] = hash.split('?'); 
             const params = new URLSearchParams(qs); 
             
@@ -8883,6 +8944,9 @@ if (createKbBtn) {
                     if(topLink) topLink.classList.add('active');
                 }
             });
+        setTimeout(() => {
+    applyRoleMenuVisibility();
+}, 100);
         }
 
         document.addEventListener('click', (e) => { 
@@ -9009,5 +9073,37 @@ document.addEventListener('click', function(e) {
         passwordText.dataset.visible = 'true';
     }
 });
+    function applyRoleMenuVisibility() {
+    const currentRole = (localStorage.getItem('userRole') || '').toLowerCase();
+
+    if (currentRole !== 'separador') return;
+
+    const allowedTexts = ['TRASLADOS'];
+
+    document.querySelectorAll('a, button').forEach(item => {
+        const text = (item.textContent || '').trim().toUpperCase();
+
+        const isMainMenuItem =
+            text.includes('DASHBOARD') ||
+            text.includes('REGISTRAR SOPORTE') ||
+            text.includes('HISTORIAL') ||
+            text.includes('CONOCIMIENTO') ||
+            text.includes('REPORTES') ||
+            text.includes('INVENTARIO') ||
+            text.includes('SERVICIOS') ||
+            text.includes('MANTENIMIENTO') ||
+            text.includes('ACCESOS') ||
+            text.includes('AJUSTES') ||
+            text.includes('GARANTÍAS') ||
+            text.includes('CALIFICACIONES');
+
+        const isAllowed = allowedTexts.some(allowed => text.includes(allowed));
+
+        if (isMainMenuItem && !isAllowed) {
+            item.style.display = 'none';
+        }
+    });
+}
+    
     iniciarAppGLPI();
 })();
