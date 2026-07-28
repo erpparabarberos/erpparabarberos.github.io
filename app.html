@@ -165,118 +165,230 @@ body > aside,
             <iframe id="mainFrame" class="w-full h-full border-none" src="about:blank"></iframe>
         </main>
     </div>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const firebaseConfig = {
+        apiKey: "AIzaSyDkH2_E7t07SWWH1SZr77BFlNp6RQTDDDY",
+        authDomain: "erpparabarberos-12de9.firebaseapp.com",
+        projectId: "erpparabarberos-12de9",
+        storageBucket: "erpparabarberos-12de9.firebasestorage.app",
+        messagingSenderId: "722745790519",
+        appId: "1:722745790519:web:7bf1dbe172433898a56fb2"
+    };
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // TUS LLAVES REALES INTEGRADAS CORRECTAMENTE EN MODO "COMPAT"
-            const firebaseConfig = {
-                apiKey: "AIzaSyDkH2_E7t07SWWH1SZr77BFlNp6RQTDDDY",
-                authDomain: "erpparabarberos-12de9.firebaseapp.com",
-                projectId: "erpparabarberos-12de9",
-                storageBucket: "erpparabarberos-12de9.firebasestorage.app",
-                messagingSenderId: "722745790519",
-                appId: "1:722745790519:web:7bf1dbe172433898a56fb2"
-            };
-            
-            firebase.initializeApp(firebaseConfig);
-            const auth = firebase.auth();
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
 
-            // Interfaz de Usuario
-            const userMenuBtn = document.getElementById('userMenuBtn');
-            const userDropdown = document.getElementById('userDropdown');
-            userMenuBtn.addEventListener('click', (e) => { e.stopPropagation(); userDropdown.classList.toggle('hidden'); });
-            document.addEventListener('click', (e) => { if (!userMenuBtn.contains(e.target) && !userDropdown.contains(e.target)) userDropdown.classList.add('hidden'); });
-            document.getElementById('dropdownLogoutBtn').onclick = () => { localStorage.removeItem('userRole'); auth.signOut(); };
+    const auth = firebase.auth();
 
-            // Control de Roles
-            auth.onAuthStateChanged(user => {
-                if (!user) {
-                    window.location.href = 'index.html';
-                } else {
-                    document.getElementById('userInitial').textContent = user.email.charAt(0).toUpperCase();
-                    document.getElementById('dropdownUserEmail').textContent = user.email;
-                    
-                    const rol = localStorage.getItem('userRole');
-                    if(!rol) { auth.signOut(); return; }
-                    
-                    document.getElementById('roleBadge').textContent = "Rol: " + rol;
-                    configurarMenuPorRol(rol);
-                }
-            });
-
-            // Lógica de Permisos
-            function configurarMenuPorRol(rol) {
-    rol = (rol || '').toLowerCase().trim();
+    const userMenuBtn = document.getElementById('userMenuBtn');
+    const userDropdown = document.getElementById('userDropdown');
+    const dropdownLogoutBtn = document.getElementById('dropdownLogoutBtn');
 
     const btnGar = document.getElementById('btn-garantias');
     const btnTra = document.getElementById('btn-traslados');
     const btnTI = document.getElementById('btn-ti');
     const btnAte = document.getElementById('btn-atencion');
+    const mainFrame = document.getElementById('mainFrame');
 
-    // Ocultar todos los módulos primero
-    [btnGar, btnTra, btnTI, btnAte].forEach(btn => {
-        if (btn) {
-            btn.style.display = 'none';
-            btn.classList.remove('active');
-        }
-    });
+    let currentRol = '';
 
-    // ADMIN / GERENCIA: ven todo
-    if (rol === 'admin' || rol === 'gerencia' || rol === 'gerente') {
-        btnGar.style.display = 'flex';
-        btnTra.style.display = 'flex';
-        btnTI.style.display = 'flex';
-        btnAte.style.display = 'flex';
-
-        loadModule('modulo-ti.html', btnTI);
-        return;
-    }
-
-    // INVENTARIOS / BODEGA / SEPARADOR / SOLICITANTE: solo traslados
-    if (
-        rol === 'inventarios' ||
-        rol === 'bodega' ||
-        rol === 'separador' ||
-        rol === 'solicitante'
-    ) {
-        btnTra.style.display = 'flex';
-        loadModule('modulo-traslados.html', btnTra);
-        return;
-    }
-
-    // VENTAS / ATENCIÓN: solo atención al cliente
-    if (rol === 'ventas' || rol === 'atencion' || rol === 'atención') {
-        btnAte.style.display = 'flex';
-        loadModule('modulo-calificaciones.html', btnAte);
-        return;
-    }
-
-    // GARANTÍAS: solo garantías
-    if (rol === 'garantias' || rol === 'garantías') {
-        btnGar.style.display = 'flex';
-        loadModule('modulo-garantias.html', btnGar);
-        return;
-    }
-
-    // TECNOLOGÍA / TI: solo módulo TI
-    if (rol === 'tecnologia' || rol === 'tecnología' || rol === 'ti') {
-        btnTI.style.display = 'flex';
-        loadModule('modulo-ti.html', btnTI);
-        return;
-    }
-
-    // Rol no reconocido: cerrar sesión por seguridad
-    auth.signOut();
-}
-
-            // Función para cargar los submódulos en el IFRAME
-            window.loadModule = (url, btnElement) => {
-                document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
-                if(btnElement) btnElement.classList.add('active');
-                document.getElementById('mainFrame').src = url;
-            };
+    if (userMenuBtn && userDropdown) {
+        userMenuBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            userDropdown.classList.toggle('hidden');
         });
-    </script>
+
+        document.addEventListener('click', (e) => {
+            if (!userMenuBtn.contains(e.target) && !userDropdown.contains(e.target)) {
+                userDropdown.classList.add('hidden');
+            }
+        });
+    }
+
+    if (dropdownLogoutBtn) {
+        dropdownLogoutBtn.onclick = () => {
+            localStorage.removeItem('userRole');
+            auth.signOut();
+        };
+    }
+
+    function ocultarBoton(btn) {
+        if (!btn) return;
+        btn.classList.remove('active');
+        btn.classList.add('hidden');
+        btn.style.setProperty('display', 'none', 'important');
+    }
+
+    function mostrarBoton(btn) {
+        if (!btn) return;
+        btn.classList.remove('hidden');
+        btn.style.setProperty('display', 'flex', 'important');
+    }
+
+    function obtenerModuloPermitidoPorRol(rol) {
+        rol = (rol || '').toLowerCase().trim();
+
+        const permisos = {
+            admin: ['modulo-garantias.html', 'modulo-traslados.html', 'modulo-ti.html', 'modulo-calificaciones.html'],
+
+            separador: ['modulo-traslados.html'],
+            solicitante: ['modulo-traslados.html'],
+            inventarios: ['modulo-traslados.html'],
+            bodega: ['modulo-traslados.html'],
+
+            ventas: ['modulo-calificaciones.html'],
+            atencion: ['modulo-calificaciones.html'],
+            atención: ['modulo-calificaciones.html'],
+
+            garantias: ['modulo-garantias.html'],
+            garantías: ['modulo-garantias.html'],
+
+            tecnologia: ['modulo-ti.html'],
+            tecnología: ['modulo-ti.html'],
+            ti: ['modulo-ti.html']
+        };
+
+        return permisos[rol] || [];
+    }
+
+    function puedeAbrirModulo(url) {
+        const permisos = obtenerModuloPermitidoPorRol(currentRol);
+
+        if (permisos.includes('modulo-garantias.html') && permisos.includes('modulo-traslados.html') && permisos.includes('modulo-ti.html') && permisos.includes('modulo-calificaciones.html')) {
+            return true;
+        }
+
+        return permisos.some(modulo => url.includes(modulo));
+    }
+
+    window.loadModule = (url, btnElement) => {
+        if (!puedeAbrirModulo(url)) {
+            const permisos = obtenerModuloPermitidoPorRol(currentRol);
+            const moduloInicial = permisos[0] || 'modulo-traslados.html';
+
+            if (mainFrame) {
+                mainFrame.src = moduloInicial;
+            }
+
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+
+            if (moduloInicial.includes('traslados') && btnTra) btnTra.classList.add('active');
+            if (moduloInicial.includes('garantias') && btnGar) btnGar.classList.add('active');
+            if (moduloInicial.includes('calificaciones') && btnAte) btnAte.classList.add('active');
+            if (moduloInicial.includes('ti') && btnTI) btnTI.classList.add('active');
+
+            return;
+        }
+
+        document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+
+        if (btnElement) {
+            btnElement.classList.add('active');
+        }
+
+        if (mainFrame) {
+            mainFrame.src = url;
+        }
+    };
+
+    function configurarMenuPorRol(rol) {
+        currentRol = (rol || '').toLowerCase().trim();
+
+        ocultarBoton(btnGar);
+        ocultarBoton(btnTra);
+        ocultarBoton(btnTI);
+        ocultarBoton(btnAte);
+
+        if (currentRol === 'admin') {
+            mostrarBoton(btnGar);
+            mostrarBoton(btnTra);
+            mostrarBoton(btnTI);
+            mostrarBoton(btnAte);
+
+            loadModule('modulo-ti.html', btnTI);
+            return;
+        }
+
+        if (
+            currentRol === 'separador' ||
+            currentRol === 'solicitante' ||
+            currentRol === 'inventarios' ||
+            currentRol === 'bodega'
+        ) {
+            mostrarBoton(btnTra);
+            loadModule('modulo-traslados.html', btnTra);
+            return;
+        }
+
+        if (
+            currentRol === 'ventas' ||
+            currentRol === 'atencion' ||
+            currentRol === 'atención'
+        ) {
+            mostrarBoton(btnAte);
+            loadModule('modulo-calificaciones.html', btnAte);
+            return;
+        }
+
+        if (
+            currentRol === 'garantias' ||
+            currentRol === 'garantías'
+        ) {
+            mostrarBoton(btnGar);
+            loadModule('modulo-garantias.html', btnGar);
+            return;
+        }
+
+        if (
+            currentRol === 'tecnologia' ||
+            currentRol === 'tecnología' ||
+            currentRol === 'ti'
+        ) {
+            mostrarBoton(btnTI);
+            loadModule('modulo-ti.html', btnTI);
+            return;
+        }
+
+        localStorage.removeItem('userRole');
+        auth.signOut();
+    }
+
+    auth.onAuthStateChanged(user => {
+        if (!user) {
+            window.location.href = 'index.html';
+            return;
+        }
+
+        const rol = (localStorage.getItem('userRole') || '').toLowerCase().trim();
+
+        if (!rol) {
+            auth.signOut();
+            return;
+        }
+
+        const userInitial = document.getElementById('userInitial');
+        const dropdownUserEmail = document.getElementById('dropdownUserEmail');
+        const roleBadge = document.getElementById('roleBadge');
+
+        if (userInitial) {
+            userInitial.textContent = user.email.charAt(0).toUpperCase();
+        }
+
+        if (dropdownUserEmail) {
+            dropdownUserEmail.textContent = user.email;
+        }
+
+        if (roleBadge) {
+            roleBadge.textContent = 'Rol: ' + rol;
+        }
+
+        configurarMenuPorRol(rol);
+    });
+});
+</script>
+
 </body>
 </html>
 
