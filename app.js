@@ -5884,9 +5884,14 @@ if (key === 'email' || key === 'recoveryEmail') {
         applyFilters();
     });
 
-    document.getElementById('credentials-toggle-filters').addEventListener('click', () => {
-        document.getElementById('credentials-filter-grid').classList.toggle('hidden');
+const credentialsToggleFilters = document.getElementById('credentials-toggle-filters');
+const credentialsFilterGrid = document.getElementById('credentials-filter-grid');
+
+if (credentialsToggleFilters && credentialsFilterGrid) {
+    credentialsToggleFilters.addEventListener('click', () => {
+        credentialsFilterGrid.classList.toggle('hidden');
     });
+}
 
     tableBody.addEventListener('change', (e) => {
         const check = e.target.closest('.credentials-row-check');
@@ -8977,6 +8982,32 @@ if (exportBtn) {
             }
         });
     }
+document.addEventListener('click', function(e) {
+    const eyeBtn = e.target.closest('.credential-password-toggle, .password-eye-btn, .toggle-password-btn, .credential-eye-btn');
 
+    if (!eyeBtn) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    const password = eyeBtn.dataset.password;
+    const row = eyeBtn.closest('tr');
+
+    if (!row || !password) return;
+
+    const passwordText = row.querySelector('.credential-password-text');
+
+    if (!passwordText) return;
+
+    const isVisible = passwordText.dataset.visible === 'true';
+
+    if (isVisible) {
+        passwordText.textContent = '••••••••••';
+        passwordText.dataset.visible = 'false';
+    } else {
+        passwordText.textContent = password;
+        passwordText.dataset.visible = 'true';
+    }
+});
     iniciarAppGLPI();
 })();
