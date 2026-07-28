@@ -5884,9 +5884,14 @@ if (key === 'email' || key === 'recoveryEmail') {
         applyFilters();
     });
 
-    document.getElementById('credentials-toggle-filters').addEventListener('click', () => {
-        document.getElementById('credentials-filter-grid').classList.toggle('hidden');
+const credentialsToggleFilters = document.getElementById('credentials-toggle-filters');
+const credentialsFilterGrid = document.getElementById('credentials-filter-grid');
+
+if (credentialsToggleFilters && credentialsFilterGrid) {
+    credentialsToggleFilters.addEventListener('click', () => {
+        credentialsFilterGrid.classList.toggle('hidden');
     });
+}
 
     tableBody.addEventListener('change', (e) => {
         const check = e.target.closest('.credentials-row-check');
@@ -5902,24 +5907,32 @@ if (key === 'email' || key === 'recoveryEmail') {
         updateSelectionBar();
     });
 
-    tableBody.addEventListener('click', (e) => {
-        const passwordBtn = e.target.closest('.credentials-show-password');
+tableBody.addEventListener('click', (e) => {
+    const passwordBtn = e.target.closest('.credentials-show-password');
 
-        if (!passwordBtn) return;
+    if (!passwordBtn) return;
 
-        const value = passwordBtn.dataset.value || '';
-        const span = passwordBtn.parentElement.querySelector('span');
+    e.preventDefault();
+    e.stopPropagation();
 
-        if (!span) return;
+    const value = passwordBtn.dataset.value || passwordBtn.getAttribute('data-value') || '';
+    const passwordWrap = passwordBtn.closest('.credentials-password-cell') || passwordBtn.parentElement;
+    const span = passwordWrap ? passwordWrap.querySelector('span') : null;
 
-        if (passwordBtn.dataset.visible === 'true') {
-            span.textContent = '••••••••••';
-            passwordBtn.dataset.visible = 'false';
-        } else {
-            span.textContent = value || 'N/A';
-            passwordBtn.dataset.visible = 'true';
-        }
-    });
+    if (!span) return;
+
+    const isVisible = passwordBtn.dataset.visible === 'true';
+
+    if (isVisible) {
+        span.textContent = '••••••••••';
+        passwordBtn.dataset.visible = 'false';
+        passwordBtn.classList.remove('active');
+    } else {
+        span.textContent = value || 'N/A';
+        passwordBtn.dataset.visible = 'true';
+        passwordBtn.classList.add('active');
+    }
+});
 
     const toggleAllRows = (checked) => {
         filteredCredentials.forEach(item => {
