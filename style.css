@@ -9862,3 +9862,19 @@ textarea:focus {
         margin-left: 66px !important;
     }
 }
+.credentials-show-password,
+.credentials-show-password:hover,
+.credentials-show-password:focus,
+.credentials-show-password.active {
+    color: #475569 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.credentials-show-password svg,
+.credentials-show-password:hover svg,
+.credentials-show-password.active svg {
+    fill: #475569 !important;
+    stroke: #475569 !important;
+}
