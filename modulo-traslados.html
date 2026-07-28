@@ -465,46 +465,47 @@
                 window.parent.location.href = 'index.html';
             });
         };
-function setupUIForUser() {
-            if (!currentUserData) return;
-            const { role } = currentUserData;
-            
-            dom.requesterView.style.display = 'none';
-            dom.adminView.style.display = 'none';
-            dom.reviewerView.style.display = 'none';
-            dom.managerView.style.display = 'none';
-            
-            if (dom.productManagementCard) dom.productManagementCard.style.display = 'none';
-            if (dom.reportContainer) dom.reportContainer.style.display = 'none';
+        function setupUIForUser() {
+    if (!currentUserData) return;
 
-            if (role === 'manager') { 
-                // MODO DIOS: Enciende las 3 pantallas principales
-                dom.managerView.style.display = 'block'; 
-                dom.adminView.style.display = 'block';   
-                dom.requesterView.style.display = 'grid'; 
-                if (dom.productManagementCard) dom.productManagementCard.style.display = 'block';
-            } else if (role === 'admin') {
-                dom.adminView.style.display = 'block';
-                if (dom.productManagementCard) dom.productManagementCard.style.display = 'block';
-            } else if (role === 'reviewer') {
-                dom.reviewerView.style.display = 'block';
-            } } else { 
+    const { role } = currentUserData;
+
+    dom.requesterView.style.display = 'none';
     dom.adminView.style.display = 'none';
+    dom.reviewerView.style.display = 'none';
     dom.managerView.style.display = 'none';
-    dom.requesterView.style.display = 'grid';
 
-    setTimeout(() => {
-        mostrarModuloTraslados('requesterView');
-    }, 100);
+    if (dom.productManagementCard) dom.productManagementCard.style.display = 'none';
+    if (dom.reportContainer) dom.reportContainer.style.display = 'none';
+
+    if (role === 'manager') {
+        if (dom.productManagementCard) dom.productManagementCard.style.display = 'block';
+
+        setTimeout(() => {
+            mostrarModuloTraslados('requesterView');
+        }, 100);
+
+    } else if (role === 'admin') {
+        if (dom.productManagementCard) dom.productManagementCard.style.display = 'block';
+
+        setTimeout(() => {
+            mostrarModuloTraslados('adminView');
+        }, 100);
+
+    } else if (role === 'reviewer') {
+        dom.reviewerView.style.display = 'block';
+
+    } else {
+        setTimeout(() => {
+            mostrarModuloTraslados('requesterView');
+        }, 100);
+    }
+
+    if (dom.requesterName && (role === 'requester' || role === 'manager')) {
+        dom.requesterName.innerHTML = `<option value="${currentUserData.name}">${currentUserData.name}</option>`;
+        dom.requesterName.value = currentUserData.name;
+    }
 }
-
-            if (dom.requesterName && (role === 'requester' || role === 'manager')) {
-                dom.requesterName.innerHTML = `<option value="${currentUserData.name}">${currentUserData.name}</option>`;
-                dom.requesterName.value = currentUserData.name;
-            }
-        }
-
-        
         function applyFilters(requests, searchInput, dateFromInput, dateToInput) {
              if (!requests || !searchInput || !dateFromInput || !dateToInput) return [];
              const searchTerm = searchInput.value.toLowerCase().trim();
@@ -1665,33 +1666,8 @@ const allMyRequests = sortedRequests.filter(r =>
                 window.parent.location.href = 'index.html'; 
             }
         });
-
-        // REEMPLAZAMOS LA FUNCIÓN setupUIForUser PARA BLINDAR LAS VISTAS
-        function setupUIForUser() {
-            if (!currentUserData) return;
-            const { role } = currentUserData;
-            
-            // 1. APAGAMOS TODO POR DEFECTO
-            dom.requesterView.style.display = 'none';
-            dom.adminView.style.display = 'none';
-            dom.reviewerView.style.display = 'none';
-            dom.managerView.style.display = 'none';
-            
-            if (dom.productManagementCard) dom.productManagementCard.style.display = 'none';
-            if (dom.reportContainer) dom.reportContainer.style.display = 'none';
-
-            // 2. ENCENDEMOS SEGÚN EL ROL TRADUCIDO
-                if (role === 'manager') { 
-                    dom.managerView.style.display = 'none'; 
-                    dom.adminView.style.display = 'none';   
-                    dom.requesterView.style.display = 'grid'; 
-                    if (dom.productManagementCard) dom.productManagementCard.style.display = 'block';
-
-                    setTimeout(() => {
-                        mostrarModuloTraslados('requesterView');
-                    }, 100);
-                }
-                    } else if (role === 'admin') {
+        
+ else if (role === 'admin') {
             dom.requesterView.style.display = 'none';
             dom.managerView.style.display = 'none';
             dom.adminView.style.display = 'block';
