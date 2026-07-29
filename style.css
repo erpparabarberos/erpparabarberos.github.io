@@ -10565,3 +10565,63 @@ planning-filter-card,
 .inventory-modern-title-wrap {
     align-items: center !important;
 }
+/* =====================================================
+   SUBIR TÍTULOS PRINCIPALES - MÓDULO TI
+   Reduce espacio superior en todas las vistas
+===================================================== */
+
+.pb-dashboard,
+.support-page,
+.history-modern-page,
+.kb-modern-page,
+.reports-modern-page,
+.inventory-modern-page,
+.services-modern-page,
+.planning-modern-page,
+.credentials-modern-page,
+.settings-modern-page,
+.config-modern-page {
+    padding-top: 18px !important;
+}
+
+/* Encabezados más arriba y compactos */
+.pb-dashboard-header,
+.support-header,
+.history-modern-header,
+.kb-modern-header,
+.reports-modern-header,
+.inventory-modern-header,
+.services-modern-header,
+.planning-header,
+.credentials-modern-header {
+    margin-top: 0 !important;
+    margin-bottom: 16px !important;
+    padding-top: 0 !important;
+}
+
+/* Quitar espacio extra antes del título */
+.inventory-modern-header,
+.services-modern-header,
+.credentials-modern-header,
+.planning-header {
+    transform: translateY(-18px) !important;
+    margin-bottom: 0 !important;
+}
+
+/* Acercar lo que sigue después del título */
+.inventory-modern-tabs,
+.services-modern-tabs,
+.credentials-modern-tabs,
+.planning-filter-card,
+.support-type-cards {
+    margin-top: -8px !important;
+}
+
+/* En caso de que el contenedor principal tenga demasiado aire */
+#app-content,
+.app-content,
+.main-content,
+.content,
+.page-content {
+    padding-top: 14px !important;
+}
