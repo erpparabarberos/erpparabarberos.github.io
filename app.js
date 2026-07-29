@@ -20,8 +20,7 @@
 
     <div class="pb-dashboard-header">
         <div>
-            <h1>Panel de control</h1>
-            <p>Resumen general de la gestión de soportes y actividad del módulo.</p>
+            <h1>PANEL DE CONTROL</h1>
         </div>
 
         <div class="pb-dashboard-filters">
@@ -169,8 +168,8 @@ const newTITicketFormHTML = `
 
   <div class="support-header">
     <div>
-      <h1>Registrar soporte realizado</h1>
-      <p>Registra rápidamente los soportes que ya fueron resueltos.</p>
+      <h1>Registrar soporte</h1>
+
     </div>
   </div>
 
@@ -928,8 +927,7 @@ const newTITicketFormHTML = `
         <div class="history-modern-title">
             <div class="history-title-icon">🔎</div>
             <div>
-                <h1>Historial de soportes</h1>
-                <p>Resumen de actividad y casos registrados.</p>
+                <h1>HISTORIAL DE SOPORTES</h1>
             </div>
         </div>
 
@@ -1082,8 +1080,7 @@ const newTITicketFormHTML = `
         <div class="kb-header-left">
             <div class="kb-main-icon">📘</div>
             <div>
-                <h1>Base de conocimiento</h1>
-                <p>Encuentra guías, manuales y artículos para resolver incidencias de forma rápida.</p>
+                <h1>BASE DE CONOCIMIENTO</h1>
             </div>
         </div>
 
@@ -1131,8 +1128,7 @@ const newTITicketFormHTML = `
         <div class="reports-title-wrap">
             <div class="reports-main-icon">📈</div>
             <div>
-                <h1>Centro de análisis</h1>
-                <p>Resumen ejecutivo y análisis de la actividad de soporte técnico.</p>
+                <h1>CENTRO DE ANÁLISIS</h1>
             </div>
         </div>
 
@@ -1338,9 +1334,6 @@ const newTITicketFormHTML = `
             <div>
                 <h1>Correos electrónicos</h1>
                 <div class="credentials-breadcrumb">
-                    <span>Accesos</span>
-                    <strong>/</strong>
-                    <span>Correos electrónicos</span>
                 </div>
             </div>
         </div>
@@ -1655,7 +1648,6 @@ const newTITicketFormHTML = `
             <div class="services-modern-main-icon">📡</div>
             <div>
                 <h1 id="services-page-title">Servicios</h1>
-                <p>Gestiona los servicios tecnológicos contratados por la organización.</p>
             </div>
         </div>
 
@@ -1768,7 +1760,6 @@ const newTITicketFormHTML = `
             <div class="planning-main-icon">🗓️</div>
             <div>
                 <h1>Planificación TI</h1>
-                <p>Cronograma mensual de mantenimientos y calibraciones</p>
             </div>
         </div>
     </div>
@@ -1885,9 +1876,7 @@ const newTITicketFormHTML = `
 
     <div class="settings-modern-header">
         <div>
-            <div class="settings-breadcrumb">Inicio <span>›</span> Configuración <span>›</span> Centro de configuración</div>
-            <h1>Centro de configuración</h1>
-            <p>Administra solicitantes y ubicaciones de la organización.</p>
+            <h1>Centro de configuración</h1
         </div>
 
         <div class="settings-header-actions">
