@@ -10158,23 +10158,36 @@ textarea:focus {
     color: #64748b !important;
 }
 /* =====================================================
-   REDUCIR ESPACIOS LATERALES DEL MÓDULO TI
-   Aplica desde Dashboard hasta Ajustes
+   AJUSTE REAL DE ANCHO - MÓDULO TI
+   Sin barra horizontal y centrado correctamente
 ===================================================== */
 
-/* Contenedor principal de cada vista */
+/* Evita scroll horizontal en toda la app */
+html,
+body {
+    overflow-x: hidden !important;
+}
+
+/* Contenedor principal */
 #app-content,
 .app-content,
 .main-content,
 .content,
 .page-content {
-    padding-left: 24px !important;
-    padding-right: 24px !important;
-    max-width: none !important;
     width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+
+    padding-left: 18px !important;
+    padding-right: 18px !important;
+
+    margin-left: auto !important;
+    margin-right: auto !important;
+
+    overflow-x: hidden !important;
 }
 
-/* Secciones modernas que hemos creado */
+/* Todas las páginas internas del módulo TI */
 .pb-dashboard,
 .support-page,
 .history-modern-page,
@@ -10187,80 +10200,121 @@ textarea:focus {
 .settings-modern-page,
 .config-modern-page {
     width: 100% !important;
-    max-width: none !important;
+    max-width: 1520px !important;
 
-    margin-left: 0 !important;
-    margin-right: 0 !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
 
-    padding-left: 18px !important;
-    padding-right: 18px !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+
+    box-sizing: border-box !important;
 }
 
-/* Si alguna vista está centrada con margin auto */
-.pb-dashboard > *,
-.support-page > *,
-.history-modern-page > *,
-.kb-modern-page > *,
-.reports-modern-page > *,
-.inventory-modern-page > *,
-.services-modern-page > *,
-.planning-modern-page > *,
-.credentials-modern-page > *,
-.settings-modern-page > *,
-.config-modern-page > * {
-    max-width: none !important;
+/* Evita que tarjetas y tablas se salgan del ancho */
+.pb-dashboard *,
+.support-page *,
+.history-modern-page *,
+.kb-modern-page *,
+.reports-modern-page *,
+inventory-modern-page *,
+.inventory-modern-page *,
+.services-modern-page *,
+.planning-modern-page *,
+.credentials-modern-page *,
+.settings-modern-page *,
+.config-modern-page * {
+    box-sizing: border-box !important;
 }
 
-/* Tablas, paneles y tarjetas deben usar todo el ancho disponible */
-.card,
-.pb-card,
-.inventory-modern-panel,
-.services-table-card,
-credentials-table-card,
-.credentials-table-card,
-planning-table-card,
-.planning-filter-card,
-.planning-kpi-grid,
-.inventory-table-card,
-services-filter-card,
-.services-kpi-grid,
+/* Paneles principales */
+.support-form-card,
+.support-layout,
 .history-filter-card,
 .history-timeline-card,
+.inventory-modern-panel,
+.services-table-card,
+.services-filter-card,
+planning-filter-card,
+.planning-filter-card,
+.planning-kpi-grid,
+.planning-table-card,
+.credentials-filter-card,
+.credentials-table-card,
 .reports-filter-card,
 .kb-search-box {
+    max-width: 100% !important;
     width: 100% !important;
-    max-width: none !important;
 }
 
-/* Ajuste especial para Planificación TI */
-.planning-modern-page {
-    padding-left: 18px !important;
-    padding-right: 18px !important;
+/* Registrar soporte: evitar que se desborde */
+.support-page {
+    overflow-x: hidden !important;
 }
 
-/* En pantallas pequeñas, que no quede pegado */
-@media (max-width: 768px) {
+.support-layout {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 24px !important;
+}
+
+.support-form-card {
+    overflow: hidden !important;
+}
+
+/* Formularios internos */
+.support-grid,
+.support-grid.two {
+    width: 100% !important;
+    max-width: 100% !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+/* Inputs y selects no deben empujar el ancho */
+.support-page input,
+.support-page select,
+.support-page textarea,
+.inventory-modern-page input,
+.inventory-modern-page select,
+.credentials-modern-page input,
+.credentials-modern-page select,
+.services-modern-page input,
+.services-modern-page select,
+.planning-modern-page input,
+.planning-modern-page select {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* Quitar scroll horizontal de wrappers que no lo necesitan */
+.support-page .table-wrapper,
+.support-page .support-form-card,
+.support-page .support-layout {
+    overflow-x: hidden !important;
+}
+
+/* Tablas sí pueden manejar ancho interno, pero sin sacar toda la página */
+.inventory-table-wrapper,
+.credentials-table-wrapper,
+.services-table-wrapper,
+.planning-table-wrapper {
+    max-width: 100% !important;
+    overflow-x: auto !important;
+}
+
+/* Ajuste responsive */
+@media (max-width: 900px) {
     #app-content,
     .app-content,
     .main-content,
     .content,
     .page-content {
-        padding-left: 14px !important;
-        padding-right: 14px !important;
+        padding-left: 12px !important;
+        padding-right: 12px !important;
     }
 
-    .pb-dashboard,
-    .support-page,
-    .history-modern-page,
-    .kb-modern-page,
-    .reports-modern-page,
-    .inventory-modern-page,
-    .services-modern-page,
-    .planning-modern-page,
-    .credentials-modern-page,
-    .settings-modern-page,
-    .config-modern-page {
-        padding-left: 10px !important;
-        padding-right: 10px !important;
+    .support-grid,
+    .support-grid.two {
+        grid-template-columns: 1fr !important;
     }
 }
