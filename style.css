@@ -10318,3 +10318,141 @@ planning-filter-card,
         grid-template-columns: 1fr !important;
     }
 }
+/* =====================================================
+   REDUCIR TÍTULOS E ÍCONOS PRINCIPALES - MÓDULO TI
+===================================================== */
+
+/* Títulos principales de todas las vistas */
+.pb-dashboard-header h1,
+.support-header h1,
+.history-modern-header h1,
+.kb-modern-header h1,
+.reports-modern-header h1,
+.inventory-modern-header h1,
+.services-modern-header h1,
+.planning-header h1,
+.credentials-modern-header h1,
+.settings-modern-page h1,
+.config-modern-page h1,
+.credentials-title-wrap h1,
+.inventory-modern-title-wrap h1,
+.services-modern-title-wrap h1,
+.planning-title-wrap h1,
+.reports-title-wrap h1,
+.kb-header-left h1 {
+    font-size: 30px !important;
+    line-height: 1.12 !important;
+    font-weight: 900 !important;
+    letter-spacing: -0.03em !important;
+}
+
+/* Subtítulos debajo de los títulos */
+.pb-dashboard-header p,
+.support-header p,
+.history-modern-header p,
+.kb-modern-header p,
+.reports-modern-header p,
+.inventory-modern-header p,
+.services-modern-header p,
+.planning-header p,
+.credentials-modern-header p,
+.credentials-breadcrumb,
+.settings-modern-page p,
+.config-modern-page p {
+    font-size: 14px !important;
+    line-height: 1.35 !important;
+}
+
+/* Íconos grandes de encabezado */
+.credentials-main-icon,
+.inventory-modern-main-icon,
+.services-modern-main-icon,
+.planning-main-icon,
+.reports-main-icon,
+.kb-main-icon,
+.history-title-icon {
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px !important;
+    min-height: 48px !important;
+
+    font-size: 22px !important;
+    border-radius: 12px !important;
+}
+
+/* SVG dentro de los íconos */
+.credentials-main-icon svg,
+.inventory-modern-main-icon svg,
+.services-modern-main-icon svg,
+.planning-main-icon svg,
+.reports-main-icon svg,
+.kb-main-icon svg,
+.history-title-icon svg {
+    width: 24px !important;
+    height: 24px !important;
+}
+
+/* Separación entre ícono y título */
+.credentials-title-wrap,
+.inventory-modern-title-wrap,
+.services-modern-title-wrap,
+.planning-title-wrap,
+.reports-title-wrap,
+.kb-header-left,
+.history-modern-title {
+    gap: 16px !important;
+}
+
+/* Encabezados: menos espacio vertical */
+.pb-dashboard-header,
+.support-header,
+.history-modern-header,
+.kb-modern-header,
+.reports-modern-header,
+.inventory-modern-header,
+.services-modern-header,
+.planning-header,
+.credentials-modern-header {
+    margin-bottom: 22px !important;
+}
+
+/* Ajuste extra para Registrar soporte */
+.support-header h1 {
+    font-size: 30px !important;
+}
+
+/* Ajuste extra para Accesos */
+.credentials-title-wrap h1 {
+    font-size: 30px !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .pb-dashboard-header h1,
+    .support-header h1,
+    .history-modern-header h1,
+    .kb-modern-header h1,
+    .reports-modern-header h1,
+    .inventory-modern-header h1,
+    .services-modern-header h1,
+    .planning-header h1,
+    .credentials-modern-header h1,
+    .settings-modern-page h1,
+    .config-modern-page h1 {
+        font-size: 24px !important;
+    }
+
+    .credentials-main-icon,
+    .inventory-modern-main-icon,
+    .services-modern-main-icon,
+    .planning-main-icon,
+    .reports-main-icon,
+    .kb-main-icon,
+    .history-title-icon {
+        width: 42px !important;
+        height: 42px !important;
+        min-width: 42px !important;
+        min-height: 42px !important;
+        font-size: 20px !important;
+    }
+}
