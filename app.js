@@ -8082,10 +8082,9 @@ if (seeAllTicketsBtn) {
             ${formHTML}
 
             <div class="pb-generic-form-footer">
-                <button type="button" class="pb-generic-cancel modal-close-btn">Cancelar</button>
-                <button type="submit" class="pb-generic-save">
-                    ${isEditing ? 'Guardar cambios' : 'Guardar'}
-                </button>
+            <button type="submit" class="pb-generic-save">
+            ${isEditing ? 'Guardar cambios' : 'Guardar'}
+            </button>
             </div>
         </form>
     </div>
