@@ -10157,3 +10157,110 @@ textarea:focus {
     background: transparent !important;
     color: #64748b !important;
 }
+/* =====================================================
+   REDUCIR ESPACIOS LATERALES DEL MÓDULO TI
+   Aplica desde Dashboard hasta Ajustes
+===================================================== */
+
+/* Contenedor principal de cada vista */
+#app-content,
+.app-content,
+.main-content,
+.content,
+.page-content {
+    padding-left: 24px !important;
+    padding-right: 24px !important;
+    max-width: none !important;
+    width: 100% !important;
+}
+
+/* Secciones modernas que hemos creado */
+.pb-dashboard,
+.support-page,
+.history-modern-page,
+.kb-modern-page,
+.reports-modern-page,
+.inventory-modern-page,
+.services-modern-page,
+.planning-modern-page,
+.credentials-modern-page,
+.settings-modern-page,
+.config-modern-page {
+    width: 100% !important;
+    max-width: none !important;
+
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+
+    padding-left: 18px !important;
+    padding-right: 18px !important;
+}
+
+/* Si alguna vista está centrada con margin auto */
+.pb-dashboard > *,
+.support-page > *,
+.history-modern-page > *,
+.kb-modern-page > *,
+.reports-modern-page > *,
+.inventory-modern-page > *,
+.services-modern-page > *,
+.planning-modern-page > *,
+.credentials-modern-page > *,
+.settings-modern-page > *,
+.config-modern-page > * {
+    max-width: none !important;
+}
+
+/* Tablas, paneles y tarjetas deben usar todo el ancho disponible */
+.card,
+.pb-card,
+.inventory-modern-panel,
+.services-table-card,
+credentials-table-card,
+.credentials-table-card,
+planning-table-card,
+.planning-filter-card,
+.planning-kpi-grid,
+.inventory-table-card,
+services-filter-card,
+.services-kpi-grid,
+.history-filter-card,
+.history-timeline-card,
+.reports-filter-card,
+.kb-search-box {
+    width: 100% !important;
+    max-width: none !important;
+}
+
+/* Ajuste especial para Planificación TI */
+.planning-modern-page {
+    padding-left: 18px !important;
+    padding-right: 18px !important;
+}
+
+/* En pantallas pequeñas, que no quede pegado */
+@media (max-width: 768px) {
+    #app-content,
+    .app-content,
+    .main-content,
+    .content,
+    .page-content {
+        padding-left: 14px !important;
+        padding-right: 14px !important;
+    }
+
+    .pb-dashboard,
+    .support-page,
+    .history-modern-page,
+    .kb-modern-page,
+    .reports-modern-page,
+    .inventory-modern-page,
+    .services-modern-page,
+    .planning-modern-page,
+    .credentials-modern-page,
+    .settings-modern-page,
+    .config-modern-page {
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+    }
+}
