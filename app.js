@@ -8279,17 +8279,21 @@ modalForm.addEventListener('submit', async (e) => {
 
         formModal.classList.add('hidden');
 
-    } catch (error) {
-        console.error("Error al guardar:", error);
-        alert("Hubo un error al guardar.");
+} catch (error) {
+    console.error("Error al guardar:", error);
 
-        form.dataset.saving = 'false';
+    alert(
+        "Hubo un error al guardar.\n\n" +
+        "Detalle: " + (error.message || error)
+    );
 
-        if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.textContent = submitBtn.dataset.originalText || (isEditing ? 'Guardar cambios' : 'Guardar');
-        }
+    form.dataset.saving = 'false';
+
+    if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = submitBtn.dataset.originalText || (isEditing ? 'Guardar cambios' : 'Guardar');
     }
+}
 });
 
 } catch (error) {
