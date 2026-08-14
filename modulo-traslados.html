@@ -74,6 +74,100 @@
 }
 
 </style>
+   <style>
+/* =====================================================
+   SCROLL INTERNO PRODUCTOS - TRASLADOS
+   Forzado para equipos donde Tailwind falla o pisa estilos
+===================================================== */
+
+#productList,
+div#productList,
+[id="productList"] {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 16px !important;
+
+    height: 420px !important;
+    max-height: 420px !important;
+    min-height: 420px !important;
+
+    overflow-y: scroll !important;
+    overflow-x: hidden !important;
+
+    padding: 14px !important;
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+
+    box-sizing: border-box !important;
+}
+
+/* Productos seleccionados */
+#currentTransferRequest,
+div#currentTransferRequest,
+[id="currentTransferRequest"] {
+    height: 260px !important;
+    max-height: 260px !important;
+    min-height: 260px !important;
+
+    overflow-y: scroll !important;
+    overflow-x: hidden !important;
+
+    padding: 14px !important;
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+
+    box-sizing: border-box !important;
+}
+
+/* Cada producto no debe romper el grid */
+#productList > * {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* Barra de scroll visible */
+#productList::-webkit-scrollbar,
+#currentTransferRequest::-webkit-scrollbar {
+    width: 10px !important;
+}
+
+#productList::-webkit-scrollbar-track,
+#currentTransferRequest::-webkit-scrollbar-track {
+    background: #f1f5f9 !important;
+    border-radius: 999px !important;
+}
+
+#productList::-webkit-scrollbar-thumb,
+#currentTransferRequest::-webkit-scrollbar-thumb {
+    background: #94a3b8 !important;
+    border-radius: 999px !important;
+}
+
+#productList::-webkit-scrollbar-thumb:hover,
+#currentTransferRequest::-webkit-scrollbar-thumb:hover {
+    background: #64748b !important;
+}
+
+/* Responsive */
+@media (max-width: 1100px) {
+    #productList,
+    div#productList,
+    [id="productList"] {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+}
+
+@media (max-width: 700px) {
+    #productList,
+    div#productList,
+    [id="productList"] {
+        grid-template-columns: 1fr !important;
+    }
+}
+</style>
 </head>
 <body class="bg-gray-100 font-sans">
     <div class="container mx-auto p-4 md:p-8 space-y-16">
@@ -102,7 +196,7 @@
             <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-lg">
                 <h2 class="text-2xl font-semibold mb-4 text-gray-800 border-b pb-3">Nueva solicitud de traslado</h2>
                 <div class="mb-4"><input type="search" id="searchInput" placeholder="Buscar producto..." class="w-full px-4 py-2 border border-gray-300 rounded-lg"></div>
-                <div id="productList" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mb-6 min-h-[140px] max-h-[50vh] overflow-y-auto p-4 bg-gray-50 rounded-lg"></div>
+                <div id="productList" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mb-6 min-h-[140px] max-h-[50vh] overflow-y-auto p-4 bg-gray-50 rounded-lg">
                 <h3 class="text-xl font-semibold mb-3 text-gray-800"> Productos seleccionados</h3>
                 <div id="currentTransferRequest" class="space-y-3 mb-6 min-h-[140px] max-h-[40vh] overflow-y-auto p-4 bg-gray-50 rounded-lg"></div>
                 <form id="transferForm" class="space-y-4 border-t pt-6">
