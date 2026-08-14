@@ -6,6 +6,7 @@
     <title>NEXUS PB</title>
     <link rel="icon" type="image/jpeg" href="https://erpparabarberos.github.io/logo-nexus.jpg">
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
     <style>
@@ -182,6 +183,132 @@ main {
 }
 
 /* Botones de la barra lateral */
+#mainSideRail button,
+#mainSideRail a {
+    box-sizing: border-box !important;
+}
+</style>
+    <style>
+/* =====================================================
+   FALLBACK GENERAL APP.HTML
+   Evita que NEXUS PB se dañe si Tailwind no carga
+===================================================== */
+
+html,
+body {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    background: #f8fafc !important;
+    font-family: Arial, sans-serif !important;
+}
+
+/* Estructura principal */
+body {
+    display: flex !important;
+    flex-direction: row !important;
+}
+
+/* Barra lateral flotante */
+#mainSideRail {
+    width: 72px !important;
+    min-width: 72px !important;
+    max-width: 72px !important;
+    height: 100vh !important;
+    background: #f8fafc !important;
+    position: relative !important;
+    z-index: 50 !important;
+    flex-shrink: 0 !important;
+}
+
+/* Evita que cualquier logo se agrande */
+img {
+    max-width: 100% !important;
+    height: auto !important;
+}
+
+#mainSideRail img,
+header img,
+.logo,
+.logo-img,
+img[src*="logo"] {
+    width: 58px !important;
+    max-width: 58px !important;
+    height: auto !important;
+    object-fit: contain !important;
+}
+
+/* Contenedor principal */
+main {
+    flex: 1 1 auto !important;
+    width: calc(100vw - 72px) !important;
+    max-width: calc(100vw - 72px) !important;
+    height: 100vh !important;
+    min-height: 100vh !important;
+    overflow: hidden !important;
+    background: #f8fafc !important;
+    position: relative !important;
+}
+
+/* Header superior */
+header {
+    height: 88px !important;
+    min-height: 88px !important;
+    max-height: 88px !important;
+    width: 100% !important;
+    background: #ffffff !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 0 34px !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+}
+
+/* Badge de rol */
+#roleBadge {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 28px !important;
+    padding: 0 16px !important;
+    border-radius: 999px !important;
+    background: #f1f5f9 !important;
+    color: #64748b !important;
+    font-size: 12px !important;
+    font-weight: 900 !important;
+    letter-spacing: .08em !important;
+    text-transform: uppercase !important;
+}
+
+/* Avatar usuario */
+#userMenuBtn,
+#userInitial {
+    width: 46px !important;
+    height: 46px !important;
+    min-width: 46px !important;
+    min-height: 46px !important;
+    border-radius: 50% !important;
+}
+
+/* Iframe */
+#mainFrame,
+.nexus-main-frame {
+    display: block !important;
+    width: 100% !important;
+    height: calc(100vh - 88px) !important;
+    min-height: calc(100vh - 88px) !important;
+    max-height: calc(100vh - 88px) !important;
+    border: none !important;
+    outline: none !important;
+    background: #f8fafc !important;
+}
+
+/* Botones de barra lateral */
 #mainSideRail button,
 #mainSideRail a {
     box-sizing: border-box !important;
