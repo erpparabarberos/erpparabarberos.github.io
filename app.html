@@ -294,6 +294,51 @@ header {
     min-height: 46px !important;
     border-radius: 50% !important;
 }
+/* Header siempre por encima del iframe */
+header {
+    position: relative !important;
+    z-index: 9999 !important;
+    overflow: visible !important;
+}
+
+/* Contenedor del botón de perfil */
+#userMenuBtn {
+    position: relative !important;
+    z-index: 10001 !important;
+}
+
+/* Menú desplegable del perfil */
+#userDropdown {
+    position: absolute !important;
+    top: 52px !important;
+    right: 0 !important;
+
+    width: 260px !important;
+    min-width: 260px !important;
+
+    z-index: 100000 !important;
+
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 16px !important;
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.22) !important;
+
+    overflow: hidden !important;
+}
+
+/* El iframe queda por debajo del menú */
+#mainFrame,
+.nexus-main-frame {
+    position: relative !important;
+    z-index: 1 !important;
+}
+
+/* Evita que el contenedor superior corte el menú */
+.flex-1,
+header .relative,
+header .inline-block {
+    overflow: visible !important;
+}
 
 /* Iframe */
 #mainFrame,
@@ -334,7 +379,7 @@ header {
             </div>
             
             <div class="flex items-center gap-5 text-slate-400 shrink-0">
-                <div class="relative inline-block text-left ml-2">
+                <div class="relative inline-block text-left ml-2" style="z-index:100000; overflow:visible;">
                     <button id="userMenuBtn" class="w-10 h-10 bg-slate-100 hover:bg-slate-200 rounded-full flex items-center justify-center text-sm font-black text-slate-800 shadow-sm border border-slate-300 transition-colors focus:outline-none">
                         <span id="userInitial">-</span>
                     </button>
