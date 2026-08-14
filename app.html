@@ -124,6 +124,69 @@ body > aside,
     }
 }
     </style>
+    <style>
+/* =====================================================
+   FALLBACK VISUAL APP.HTML
+   Corrige el iframe aunque Tailwind no cargue
+===================================================== */
+
+html,
+body {
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    background: #f8fafc !important;
+    font-family: Arial, sans-serif !important;
+}
+
+/* Forzar estructura principal aunque Tailwind falle */
+body {
+    display: flex !important;
+    flex-direction: row !important;
+}
+
+/* Barra lateral */
+#mainSideRail {
+    width: 72px !important;
+    min-width: 72px !important;
+    max-width: 72px !important;
+    height: 100vh !important;
+    position: relative !important;
+    z-index: 50 !important;
+}
+
+/* Contenedor principal */
+main {
+    flex: 1 1 auto !important;
+    width: calc(100vw - 72px) !important;
+    height: 100vh !important;
+    min-height: 100vh !important;
+    overflow: hidden !important;
+    position: relative !important;
+    background: #f8fafc !important;
+}
+
+/* Iframe del módulo */
+#mainFrame,
+.nexus-main-frame {
+    display: block !important;
+    width: 100% !important;
+    height: 100vh !important;
+    min-height: 100vh !important;
+    max-height: 100vh !important;
+    border: none !important;
+    outline: none !important;
+    background: #f8fafc !important;
+}
+
+/* Botones de la barra lateral */
+#mainSideRail button,
+#mainSideRail a {
+    box-sizing: border-box !important;
+}
+</style>
 </head>
 <body class="flex h-screen overflow-hidden text-slate-900 bg-[#f8fafc]">
 
@@ -162,7 +225,12 @@ body > aside,
         </header>
 
         <main class="flex-1 relative bg-[#f8fafc]">
-            <iframe id="mainFrame" class="w-full h-full border-none" src="about:blank"></iframe>
+            <iframe 
+    id="mainFrame" 
+    class="nexus-main-frame" 
+    src="about:blank" 
+    frameborder="0">
+</iframe>
         </main>
     </div>
 <script>
