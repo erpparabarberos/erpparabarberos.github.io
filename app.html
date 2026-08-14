@@ -269,7 +269,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const moduloInicial = permisos[0] || 'modulo-traslados.html';
 
             if (mainFrame) {
-                mainFrame.src = moduloInicial;
+                const version = '20260814-1'; 
+                mainFrame.src = `${moduloInicial}?v=${version}`;
             }
 
             document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
@@ -289,7 +290,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (mainFrame) {
-            mainFrame.src = url;
+            const version = '20260814-1';
+            mainFrame.src = `${url}?v=${version}`;
         }
     };
 
