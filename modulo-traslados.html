@@ -74,61 +74,26 @@
 }
 
 </style>
-   <style>
+   
+<style>
 /* =====================================================
    SCROLL INTERNO PRODUCTOS - TRASLADOS
-   Forzado para equipos donde Tailwind falla o pisa estilos
 ===================================================== */
 
-#productList,
-div#productList,
-[id="productList"] {
-    display: grid !important;
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    gap: 16px !important;
-
+#productList {
     height: 420px !important;
     max-height: 420px !important;
-    min-height: 420px !important;
-
-    overflow-y: scroll !important;
+    overflow-y: auto !important;
     overflow-x: hidden !important;
-
-    padding: 14px !important;
-    background: #f8fafc !important;
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 12px !important;
-
-    box-sizing: border-box !important;
 }
 
-/* Productos seleccionados */
-#currentTransferRequest,
-div#currentTransferRequest,
-[id="currentTransferRequest"] {
+#currentTransferRequest {
     height: 260px !important;
     max-height: 260px !important;
-    min-height: 260px !important;
-
-    overflow-y: scroll !important;
+    overflow-y: auto !important;
     overflow-x: hidden !important;
-
-    padding: 14px !important;
-    background: #f8fafc !important;
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 12px !important;
-
-    box-sizing: border-box !important;
 }
 
-/* Cada producto no debe romper el grid */
-#productList > * {
-    min-width: 0 !important;
-    max-width: 100% !important;
-    box-sizing: border-box !important;
-}
-
-/* Barra de scroll visible */
 #productList::-webkit-scrollbar,
 #currentTransferRequest::-webkit-scrollbar {
     width: 10px !important;
@@ -149,108 +114,6 @@ div#currentTransferRequest,
 #productList::-webkit-scrollbar-thumb:hover,
 #currentTransferRequest::-webkit-scrollbar-thumb:hover {
     background: #64748b !important;
-}
-
-/* Responsive */
-@media (max-width: 1100px) {
-    #productList,
-    div#productList,
-    [id="productList"] {
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    }
-}
-
-@media (max-width: 700px) {
-    #productList,
-    div#productList,
-    [id="productList"] {
-        grid-template-columns: 1fr !important;
-    }
-}
-       <style>
-/* =====================================================
-   LAYOUT CORRECTO SOLICITANTE - TRASLADOS
-   Nueva solicitud izquierda / Mis solicitudes derecha
-===================================================== */
-
-#requesterView {
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr) 400px !important;
-    gap: 32px !important;
-    align-items: start !important;
-
-    width: 100% !important;
-    max-width: 1420px !important;
-
-    margin-left: auto !important;
-    margin-right: auto !important;
-
-    padding-left: 24px !important;
-    padding-right: 24px !important;
-
-    box-sizing: border-box !important;
-}
-
-/* Columna izquierda */
-#requesterView > div:first-child {
-    grid-column: 1 !important;
-    width: 100% !important;
-    min-width: 0 !important;
-    max-width: 100% !important;
-}
-
-/* Columna derecha: Mis solicitudes */
-#requesterView > div:last-child {
-    grid-column: 2 !important;
-
-    width: 400px !important;
-    min-width: 400px !important;
-    max-width: 400px !important;
-
-    position: static !important;
-    top: auto !important;
-
-    align-self: start !important;
-    box-sizing: border-box !important;
-}
-
-/* Productos con scroll interno */
-#productList {
-    height: 420px !important;
-    max-height: 420px !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-}
-
-/* Productos seleccionados con scroll interno */
-#currentTransferRequest {
-    height: 260px !important;
-    max-height: 260px !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-}
-
-/* Mis solicitudes con scroll interno */
-#myRequestsList,
-#requesterView > div:last-child .space-y-4 {
-    max-height: 620px !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-}
-
-/* En pantallas pequeñas sí baja */
-@media (max-width: 950px) {
-    #requesterView {
-        grid-template-columns: 1fr !important;
-    }
-
-    #requesterView > div:first-child,
-    #requesterView > div:last-child {
-        grid-column: 1 !important;
-        width: 100% !important;
-        min-width: 0 !important;
-        max-width: 100% !important;
-    }
 }
 </style>
 </head>
@@ -281,8 +144,8 @@ div#currentTransferRequest,
             <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-lg">
                 <h2 class="text-2xl font-semibold mb-4 text-gray-800 border-b pb-3">Nueva solicitud de traslado</h2>
                 <div class="mb-4"><input type="search" id="searchInput" placeholder="Buscar producto..." class="w-full px-4 py-2 border border-gray-300 rounded-lg"></div>
-                <div id="productList" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mb-6 min-h-[140px] max-h-[50vh] overflow-y-auto p-4 bg-gray-50 rounded-lg">
-                <h3 class="text-xl font-semibold mb-3 text-gray-800"> Productos seleccionados</h3>
+                <div id="productList" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mb-6 min-h-[140px] max-h-[50vh] overflow-y-auto p-4 bg-gray-50 rounded-lg"></div>
+       <h3 class="text-xl font-semibold mb-3 text-gray-800"> Productos seleccionados</h3>
                 <div id="currentTransferRequest" class="space-y-3 mb-6 min-h-[140px] max-h-[40vh] overflow-y-auto p-4 bg-gray-50 rounded-lg"></div>
                 <form id="transferForm" class="space-y-4 border-t pt-6">
                     <input type="hidden" id="editingRequestId">
