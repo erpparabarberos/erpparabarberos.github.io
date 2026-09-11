@@ -185,51 +185,112 @@
             font-size: 14px !important;
             border-radius: 12px !important;
         }
+        /* =====================================================
+   TABLERO KANBAN MÓVIL - CORRECCIÓN DE ALTURA
+===================================================== */
 
-        /* Tablero Kanban */
-        #view_kanban > div:nth-child(2) {
-            width: 100% !important;
-            max-width: 100% !important;
+#view_kanban {
+    height: auto !important;
+    min-height: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
 
-            padding: 18px 14px 110px !important;
+/* Parte superior: título + filtros más compactos */
+#view_kanban > div:first-child {
+    padding: 16px 14px 12px !important;
+    gap: 12px !important;
+    flex-shrink: 0 !important;
+}
 
-            overflow-x: auto !important;
-            overflow-y: hidden !important;
+#view_kanban h2 {
+    font-size: 24px !important;
+    line-height: 1.05 !important;
+}
 
-            -webkit-overflow-scrolling: touch !important;
-        }
+/* Botón Nuevo Ticket más compacto */
+#view_kanban button[onclick="abrirModalNuevoTicket()"] {
+    min-height: 48px !important;
+    padding: 10px 14px !important;
+}
 
-        #kanbanBoard {
-            display: flex !important;
-            flex-direction: row !important;
-            flex-wrap: nowrap !important;
+/* Filtros más compactos */
+#view_kanban > div:first-child > div:nth-child(2) {
+    padding: 12px !important;
+    gap: 9px !important;
+}
 
-            gap: 14px !important;
+#searchInput,
+#filtroTaller,
+#filtroSedeKanban,
+#filtroFechaKanban {
+    min-height: 42px !important;
+    height: 42px !important;
+}
 
-            min-width: max-content !important;
-            height: calc(100dvh - 360px) !important;
-            min-height: 430px !important;
+/* Contenedor del tablero */
+#view_kanban > div:nth-child(2) {
+    flex: 1 1 auto !important;
 
-            padding-bottom: 14px !important;
-        }
+    width: 100% !important;
+    max-width: 100% !important;
 
-        #kanbanBoard > div {
-            width: 82vw !important;
-            min-width: 82vw !important;
-            max-width: 82vw !important;
+    padding: 12px 12px 110px !important;
 
-            height: 100% !important;
-            max-height: 100% !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
 
-            padding: 16px !important;
-            border-radius: 20px !important;
-        }
+    -webkit-overflow-scrolling: touch !important;
+}
 
-        #kanbanBoard h3 {
-            font-size: 12px !important;
-            line-height: 1.15 !important;
-        }
+/* Board horizontal */
+#kanbanBoard {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
 
+    align-items: stretch !important;
+
+    gap: 12px !important;
+
+    min-width: max-content !important;
+
+    height: 55dvh !important;
+    min-height: 390px !important;
+    max-height: 55dvh !important;
+
+    padding-bottom: 12px !important;
+}
+
+/* Columnas */
+#kanbanBoard > div {
+    width: 84vw !important;
+    min-width: 84vw !important;
+    max-width: 84vw !important;
+
+    height: 100% !important;
+    max-height: 100% !important;
+
+    padding: 14px !important;
+    border-radius: 18px !important;
+
+    overflow: hidden !important;
+}
+
+/* Título de cada columna */
+#kanbanBoard h3 {
+    font-size: 11px !important;
+    line-height: 1.15 !important;
+}
+
+/* Área donde van los tickets */
+#kanbanBoard > div > div:last-child {
+    flex: 1 1 auto !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    max-height: calc(55dvh - 70px) !important;
+    padding-bottom: 12px !important;
+}
         /* Historial */
         #view_historial > div:first-child {
             padding: 22px 16px 16px !important;
