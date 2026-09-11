@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Módulo Garantías</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-storage-compat.js"></script>
@@ -15,14 +16,444 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; -webkit-font-smoothing: antialiased; }
-        ::-webkit-scrollbar { height: 8px; width: 8px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        .dashed-box { background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='12' ry='12' stroke='%23CBD5E1' stroke-width='2' stroke-dasharray='8%2c 8' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e"); border-radius: 12px; }
-    </style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f8fafc;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    ::-webkit-scrollbar {
+        height: 8px;
+        width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+
+    .dashed-box {
+        background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='12' ry='12' stroke='%23CBD5E1' stroke-width='2' stroke-dasharray='8%2c 8' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+        border-radius: 12px;
+    }
+
+    /* =====================================================
+       RESPONSIVE MÓVIL - MÓDULO GARANTÍAS
+    ===================================================== */
+
+    @media (max-width: 768px) {
+
+        html,
+        body {
+            width: 100% !important;
+            max-width: 100% !important;
+            height: 100dvh !important;
+            min-height: 100dvh !important;
+            overflow: hidden !important;
+            background: #f8fafc !important;
+        }
+
+        body {
+            display: flex !important;
+            flex-direction: column !important;
+        }
+
+        /* Barra superior de pestañas */
+        body > div:first-of-type {
+            width: 100% !important;
+            max-width: 100vw !important;
+
+            padding: 10px 12px !important;
+            gap: 10px !important;
+
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+
+            display: flex !important;
+            flex-wrap: nowrap !important;
+
+            -webkit-overflow-scrolling: touch !important;
+            scrollbar-width: thin !important;
+        }
+
+        body > div:first-of-type button {
+            flex: 0 0 auto !important;
+            white-space: nowrap !important;
+
+            padding: 10px 16px !important;
+            font-size: 13px !important;
+            border-radius: 12px !important;
+        }
+
+        /* Contenedor general */
+        #app-container {
+            width: 100% !important;
+            max-width: 100% !important;
+
+            height: calc(100dvh - 58px) !important;
+            min-height: calc(100dvh - 58px) !important;
+
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+
+            padding-bottom: 92px !important;
+            box-sizing: border-box !important;
+
+            -webkit-overflow-scrolling: touch !important;
+        }
+
+        .view-section {
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+
+        /* Header de Gestión de Garantías */
+        #view_kanban > div:first-child {
+            padding: 22px 16px 16px !important;
+            gap: 16px !important;
+        }
+
+        #view_kanban > div:first-child > div:first-child {
+            display: grid !important;
+            grid-template-columns: 1fr !important;
+            gap: 14px !important;
+            align-items: stretch !important;
+        }
+
+        #view_kanban h2,
+        #view_historial h2,
+        #view_analytics h2,
+        #view_directorio h2,
+        #view_inventario h2 {
+            font-size: 28px !important;
+            line-height: 1.08 !important;
+            letter-spacing: -0.04em !important;
+            margin: 0 !important;
+        }
+
+        #view_kanban button[onclick="abrirModalNuevoTicket()"] {
+            width: 100% !important;
+            min-height: 54px !important;
+            justify-content: center !important;
+            font-size: 15px !important;
+            border-radius: 16px !important;
+        }
+
+        #view_kanban button[onclick="abrirModalNuevoTicket()"] svg {
+            width: 20px !important;
+            height: 20px !important;
+        }
+
+        /* Filtros rápidos */
+        #view_kanban > div:first-child > div:nth-child(2) {
+            display: grid !important;
+            grid-template-columns: 1fr !important;
+            width: 100% !important;
+            gap: 12px !important;
+            padding: 14px !important;
+            border-radius: 18px !important;
+        }
+
+        #view_kanban > div:first-child > div:nth-child(2) span {
+            padding-left: 0 !important;
+        }
+
+        #view_kanban > div:first-child > div:nth-child(2) > div,
+        #view_kanban > div:first-child > div:nth-child(2) select,
+        #view_kanban > div:first-child > div:nth-child(2) input,
+        #view_kanban > div:first-child > div:nth-child(2) button {
+            width: 100% !important;
+            max-width: 100% !important;
+            margin-left: 0 !important;
+        }
+
+        #searchInput,
+        #filtroTaller,
+        #filtroSedeKanban,
+        #filtroFechaKanban {
+            min-height: 46px !important;
+            font-size: 14px !important;
+            border-radius: 12px !important;
+        }
+
+        /* Tablero Kanban */
+        #view_kanban > div:nth-child(2) {
+            width: 100% !important;
+            max-width: 100% !important;
+
+            padding: 18px 14px 110px !important;
+
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+
+            -webkit-overflow-scrolling: touch !important;
+        }
+
+        #kanbanBoard {
+            display: flex !important;
+            flex-direction: row !important;
+            flex-wrap: nowrap !important;
+
+            gap: 14px !important;
+
+            min-width: max-content !important;
+            height: calc(100dvh - 360px) !important;
+            min-height: 430px !important;
+
+            padding-bottom: 14px !important;
+        }
+
+        #kanbanBoard > div {
+            width: 82vw !important;
+            min-width: 82vw !important;
+            max-width: 82vw !important;
+
+            height: 100% !important;
+            max-height: 100% !important;
+
+            padding: 16px !important;
+            border-radius: 20px !important;
+        }
+
+        #kanbanBoard h3 {
+            font-size: 12px !important;
+            line-height: 1.15 !important;
+        }
+
+        /* Historial */
+        #view_historial > div:first-child {
+            padding: 22px 16px 16px !important;
+            gap: 16px !important;
+        }
+
+        #view_historial > div:first-child > div:first-child {
+            display: grid !important;
+            grid-template-columns: 1fr !important;
+            gap: 14px !important;
+        }
+
+        #view_historial > div:first-child > div:first-child > div:last-child {
+            display: grid !important;
+            grid-template-columns: 1fr !important;
+            gap: 10px !important;
+        }
+
+        #view_historial > div:first-child > div:first-child button {
+            width: 100% !important;
+            justify-content: center !important;
+            min-height: 46px !important;
+        }
+
+        #view_historial > div:nth-child(2) {
+            padding: 16px 14px 110px !important;
+            overflow-x: auto !important;
+            overflow-y: auto !important;
+        }
+
+        #view_historial table,
+        #tablaHistorialExportar {
+            min-width: 760px !important;
+            width: max-content !important;
+        }
+
+        #view_historial th,
+        #view_historial td {
+            white-space: nowrap !important;
+            font-size: 12px !important;
+            padding: 12px 10px !important;
+        }
+
+        /* Filtros historial */
+        #view_historial .grid {
+            grid-template-columns: 1fr !important;
+            gap: 12px !important;
+            padding: 14px !important;
+            border-radius: 18px !important;
+        }
+
+        #view_historial input,
+        #view_historial select {
+            min-height: 46px !important;
+            font-size: 14px !important;
+        }
+
+        /* Métricas */
+        #view_analytics,
+        #view_directorio,
+        #view_inventario {
+            padding: 22px 16px 110px !important;
+        }
+
+        #view_analytics .grid,
+        #view_directorio .grid,
+        #view_inventario .grid {
+            grid-template-columns: 1fr !important;
+            gap: 16px !important;
+        }
+
+        #view_analytics .bg-white,
+        #view_directorio .bg-white,
+        #view_inventario .bg-white {
+            padding: 18px !important;
+            border-radius: 20px !important;
+        }
+
+        #view_analytics canvas {
+            max-width: 100% !important;
+        }
+
+        /* Inventario */
+        #view_inventario table {
+            min-width: 520px !important;
+            width: max-content !important;
+        }
+
+        #view_inventario .overflow-y-auto {
+            overflow-x: auto !important;
+        }
+
+        /* Modal nuevo ticket */
+        #modalNuevoTicket {
+            align-items: flex-start !important;
+            padding: 10px !important;
+            overflow-y: auto !important;
+        }
+
+        #modalNuevoTicket > div {
+            width: 100% !important;
+            max-width: 100% !important;
+            max-height: none !important;
+            min-height: auto !important;
+            border-radius: 20px !important;
+        }
+
+        #modalNuevoTicket > div > div:first-child {
+            padding: 22px 18px 14px !important;
+        }
+
+        #modalNuevoTicket > div > div:first-child h2 {
+            font-size: 22px !important;
+            padding-right: 42px !important;
+        }
+
+        #modalNuevoTicket > div > div:first-child button {
+            top: 18px !important;
+            right: 18px !important;
+        }
+
+        #modalNuevoTicket > div > div:nth-child(2) {
+            padding: 16px !important;
+        }
+
+        #formGarantia .grid {
+            grid-template-columns: 1fr !important;
+            gap: 16px !important;
+        }
+
+        #formGarantia .bg-white {
+            padding: 18px !important;
+            border-radius: 18px !important;
+        }
+
+        #formGarantia input,
+        #formGarantia select,
+        #formGarantia textarea {
+            min-height: 46px !important;
+            font-size: 14px !important;
+        }
+
+        #formGarantia textarea {
+            min-height: 96px !important;
+        }
+
+        #formGarantia button[type="submit"] {
+            width: 100% !important;
+            min-height: 50px !important;
+            justify-content: center !important;
+        }
+
+        #formGarantia .flex.justify-end {
+            justify-content: stretch !important;
+        }
+
+        /* Modal detalle */
+        #modalDetalle {
+            align-items: flex-start !important;
+            padding: 10px !important;
+            overflow-y: auto !important;
+        }
+
+        #modalDetalle > div {
+            width: 100% !important;
+            max-width: 100% !important;
+            height: auto !important;
+            min-height: 92dvh !important;
+            max-height: none !important;
+            border-radius: 20px !important;
+        }
+
+        #modalDetalle > div > div:first-child {
+            padding: 18px !important;
+            align-items: flex-start !important;
+            gap: 12px !important;
+        }
+
+        #modalDetalle h2 {
+            font-size: 24px !important;
+        }
+
+        #modalDetalle > div > div:nth-child(2) {
+            padding: 22px 16px 110px !important;
+        }
+
+        #modalDetalle .grid {
+            grid-template-columns: 1fr !important;
+            gap: 16px !important;
+        }
+
+        #modalDetalle .p-7,
+        #modalDetalle .p-8,
+        #modalDetalle .p-10,
+        #modalDetalle .md\:p-14 {
+            padding: 18px !important;
+        }
+
+        #modalDetalle textarea {
+            min-height: 110px !important;
+            padding: 16px !important;
+        }
+
+        #btnSaveDiagDiv,
+        #form_post_reparacion .flex.justify-end,
+        #form_post_reparacion .flex {
+            display: grid !important;
+            grid-template-columns: 1fr !important;
+            gap: 10px !important;
+        }
+
+        #btnSaveDiagDiv button,
+        #form_post_reparacion button {
+            width: 100% !important;
+            justify-content: center !important;
+        }
+
+        /* Evitar íconos gigantes */
+        svg {
+            max-width: 24px !important;
+            max-height: 24px !important;
+        }
+    }
+</style>
 </head>
 <body class="flex flex-col h-screen overflow-hidden text-slate-900 bg-[#f8fafc]">
 
