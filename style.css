@@ -10625,3 +10625,226 @@ planning-filter-card,
 .page-content {
     padding-top: 14px !important;
 }
+/* =====================================================
+   RESPONSIVE INTERNO PARA MÓDULOS - NEXUS PB
+   TI / GARANTÍAS / SERVICIO AL CLIENTE / INVENTARIO
+===================================================== */
+
+@media (max-width: 768px) {
+
+  /* Base general */
+  html, body {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  body {
+    font-size: 14px !important;
+  }
+
+  /* Contenedores principales */
+  .page-container,
+  .module-container,
+  .dashboard-container,
+  .content-wrapper,
+  .main-content,
+  .section-content,
+  .panel-content,
+  .tab-content,
+  .container,
+  main {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Títulos */
+  h1, .page-title, .module-title {
+    font-size: 20px !important;
+    line-height: 1.2 !important;
+    margin-bottom: 10px !important;
+  }
+
+  h2, .section-title {
+    font-size: 17px !important;
+    line-height: 1.25 !important;
+    margin-bottom: 8px !important;
+  }
+
+  h3 {
+    font-size: 15px !important;
+    line-height: 1.25 !important;
+  }
+
+  /* Subtítulos y texto pequeño */
+  .subtitle,
+  .section-subtitle,
+  .muted,
+  small {
+    font-size: 12px !important;
+  }
+
+  /* Cards / paneles */
+  .card,
+  .panel,
+  .dashboard-card,
+  .summary-card,
+  .info-card,
+  .widget,
+  .stat-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 14px !important;
+    padding: 14px !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Grids a una sola columna */
+  .grid,
+  .cards-grid,
+  .dashboard-grid,
+  .stats-grid,
+  .summary-grid,
+  .two-columns,
+  .three-columns,
+  .four-columns {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* Formularios */
+  form,
+  .form-grid,
+  .form-row,
+  .form-columns,
+  .fields-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  label {
+    font-size: 12px !important;
+    margin-bottom: 4px !important;
+  }
+
+  input,
+  select,
+  textarea,
+  button {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 42px !important;
+    font-size: 14px !important;
+    box-sizing: border-box !important;
+  }
+
+  textarea {
+    min-height: 90px !important;
+  }
+
+  /* Filas de botones */
+  .actions,
+  .action-row,
+  .form-actions,
+  .header-actions,
+  .toolbar,
+  .toolbar-actions {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+
+  .actions button,
+  .action-row button,
+  .form-actions button,
+  .toolbar button {
+    width: auto !important;
+    min-width: 120px !important;
+    flex: 1 1 auto !important;
+  }
+
+  /* Tablas */
+  .table-wrapper,
+  .responsive-table,
+  .history-table-wrapper,
+  .tickets-table-wrapper,
+  .inventory-table-wrapper {
+    width: 100% !important;
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    -webkit-overflow-scrolling: touch !important;
+    border-radius: 12px !important;
+  }
+
+  table {
+    min-width: 700px !important;
+    width: max-content !important;
+    border-collapse: collapse !important;
+  }
+
+  th, td {
+    white-space: nowrap !important;
+    font-size: 12px !important;
+    padding: 10px 8px !important;
+  }
+
+  /* Historiales / listas laterales */
+  .history-panel,
+  .history-list,
+  .ticket-history,
+  .side-panel,
+  .aside-panel,
+  .right-panel,
+  .logs-panel {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    overflow-y: auto !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Contenedores que NO deben cortar contenido */
+  .modal-body,
+  .panel-body,
+  .content-body,
+  .tab-pane,
+  .table-container,
+  .list-container,
+  .history-container {
+    overflow-x: auto !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  /* Modales */
+  .modal,
+  .modal-content,
+  .form-modal,
+  .ticket-modal,
+  .details-modal {
+    width: calc(100vw - 20px) !important;
+    max-width: calc(100vw - 20px) !important;
+    max-height: 85vh !important;
+    margin: 10px auto !important;
+    border-radius: 16px !important;
+    overflow-y: auto !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Para que la barra inferior de la app no tape contenido */
+  body,
+  .page-container,
+  .module-container,
+  .dashboard-container,
+  .content-wrapper,
+  main {
+    padding-bottom: 90px !important;
+  }
+}
