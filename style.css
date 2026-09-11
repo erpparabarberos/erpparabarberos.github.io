@@ -10897,3 +10897,293 @@ planning-filter-card,
     overflow: visible !important;
   }
 }
+/* =====================================================
+   MÓVIL - MENÚ SUPERIOR TI CON SCROLL HORIZONTAL
+===================================================== */
+
+@media (max-width: 768px) {
+    .top-nav,
+    .main-nav,
+    .horizontal-nav,
+    .module-tabs,
+    .ti-tabs,
+    .nav-tabs,
+    header nav {
+        width: 100% !important;
+        max-width: 100vw !important;
+
+        display: flex !important;
+        flex-wrap: nowrap !important;
+
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+
+        white-space: nowrap !important;
+        -webkit-overflow-scrolling: touch !important;
+
+        padding: 0 10px !important;
+        gap: 18px !important;
+    }
+
+    .top-nav a,
+    .main-nav a,
+    .horizontal-nav a,
+    .module-tabs a,
+    .ti-tabs a,
+    .nav-tabs a,
+    header nav a {
+        flex: 0 0 auto !important;
+        white-space: nowrap !important;
+        font-size: 12px !important;
+        padding: 14px 8px !important;
+    }
+
+    .top-nav::-webkit-scrollbar,
+    .main-nav::-webkit-scrollbar,
+    .horizontal-nav::-webkit-scrollbar,
+    .module-tabs::-webkit-scrollbar,
+    .ti-tabs::-webkit-scrollbar,
+    .nav-tabs::-webkit-scrollbar,
+    header nav::-webkit-scrollbar {
+        height: 4px !important;
+    }
+
+    .top-nav::-webkit-scrollbar-thumb,
+    .main-nav::-webkit-scrollbar-thumb,
+    .horizontal-nav::-webkit-scrollbar-thumb,
+    .module-tabs::-webkit-scrollbar-thumb,
+    .ti-tabs::-webkit-scrollbar-thumb,
+    .nav-tabs::-webkit-scrollbar-thumb,
+    header nav::-webkit-scrollbar-thumb {
+        background: #cbd5e1 !important;
+        border-radius: 999px !important;
+    }
+}
+/* =====================================================
+   MÓVIL - GESTIÓN DE GARANTÍAS
+===================================================== */
+
+@media (max-width: 768px) {
+
+    body {
+        overflow-x: hidden !important;
+        background: #f8fafc !important;
+    }
+
+    .garantias-page,
+    .warranty-page,
+    .garantias-container,
+    .warranty-container,
+    .container {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 14px 14px 90px !important;
+        margin: 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    .garantias-header,
+    .warranty-header,
+    .page-header {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+        margin-bottom: 16px !important;
+    }
+
+    .garantias-header h1,
+    .warranty-header h1,
+    .page-header h1,
+    h1 {
+        font-size: 24px !important;
+        line-height: 1.1 !important;
+        margin: 0 0 10px !important;
+    }
+
+    /* Botón Nuevo Ticket */
+    #newTicketBtn,
+    .new-ticket-btn,
+    button[title*="Nuevo"],
+    button:has(svg) {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-height: 46px !important;
+        border-radius: 12px !important;
+        font-size: 14px !important;
+    }
+
+    /* Evitar íconos gigantes como la lupa */
+    svg,
+    img,
+    .icon,
+    .search-icon {
+        max-width: 24px !important;
+        max-height: 24px !important;
+    }
+
+    .filters,
+    .filters-card,
+    .quick-filters,
+    .toolbar,
+    .filter-bar {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+        width: 100% !important;
+        padding: 12px !important;
+        box-sizing: border-box !important;
+    }
+
+    input,
+    select,
+    button {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-height: 42px !important;
+        font-size: 14px !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Kanban / columnas de garantías */
+    .kanban-board,
+    .warranty-board,
+    .garantias-board,
+    .columns-board {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 14px !important;
+
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+
+        width: 100% !important;
+        max-width: 100% !important;
+
+        padding-bottom: 16px !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+
+    .kanban-column,
+    .warranty-column,
+    .garantia-column,
+    .board-column {
+        flex: 0 0 82vw !important;
+        max-width: 82vw !important;
+        min-height: 420px !important;
+        border-radius: 16px !important;
+        box-sizing: border-box !important;
+    }
+}
+/* =====================================================
+   MÓVIL - SERVICIO AL CLIENTE / CALIFICACIONES
+===================================================== */
+
+@media (max-width: 768px) {
+
+    .calificaciones-page,
+    .customer-page,
+    .service-page,
+    .atencion-page,
+    .calificaciones-container,
+    .customer-container,
+    .container {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 14px 14px 90px !important;
+        margin: 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    .calificaciones-header,
+    .customer-header,
+    .service-header,
+    .page-header {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+        margin-bottom: 16px !important;
+    }
+
+    .calificaciones-header h1,
+    .customer-header h1,
+    .service-header h1,
+    .page-header h1,
+    h1 {
+        font-size: 24px !important;
+        line-height: 1.1 !important;
+        margin: 0 !important;
+    }
+
+    .stats-grid,
+    .kpi-grid,
+    .cards-grid,
+    .dashboard-grid,
+    .summary-grid {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+        width: 100% !important;
+    }
+
+    .card,
+    .stat-card,
+    .kpi-card,
+    .summary-card,
+    .panel {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 14px !important;
+        border-radius: 14px !important;
+        box-sizing: border-box !important;
+    }
+
+    .filters,
+    .filters-card,
+    .toolbar,
+    .filter-bar {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+        width: 100% !important;
+    }
+
+    input,
+    select,
+    textarea,
+    button {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-height: 42px !important;
+        font-size: 14px !important;
+        box-sizing: border-box !important;
+    }
+
+    .table-wrapper,
+    .table-container,
+    .ratings-table-wrapper {
+        width: 100% !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+
+    table {
+        min-width: 720px !important;
+        width: max-content !important;
+    }
+
+    th,
+    td {
+        white-space: nowrap !important;
+        font-size: 12px !important;
+        padding: 10px 8px !important;
+    }
+
+    svg,
+    img,
+    .icon {
+        max-width: 24px !important;
+        max-height: 24px !important;
+    }
+}
