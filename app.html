@@ -593,7 +593,51 @@ header .inline-block {
         background: #f8fafc !important;
     }
 }
+       /* =====================================================
+   FIX CELULAR REAL - ALTURA Y SCROLL
+===================================================== */
+
+@media (max-width: 768px) {
+
+    html,
+    body {
+        width: 100% !important;
+        min-height: 100dvh !important;
+        height: 100dvh !important;
+        overflow: hidden !important;
+    }
+
+    body > .flex-1,
+    body > div.flex-1 {
+        height: 100dvh !important;
+        min-height: 100dvh !important;
+        max-height: 100dvh !important;
+    }
+
+    main {
+        height: calc(100dvh - 64px) !important;
+        min-height: calc(100dvh - 64px) !important;
+        max-height: calc(100dvh - 64px) !important;
+        overflow: hidden !important;
+        padding-bottom: 72px !important;
+        box-sizing: border-box !important;
+    }
+
+    #mainFrame,
+    .nexus-main-frame {
+        height: calc(100dvh - 64px) !important;
+        min-height: calc(100dvh - 64px) !important;
+        max-height: calc(100dvh - 64px) !important;
+        overflow: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+
+    .main-rail-capsule {
+        bottom: calc(10px + env(safe-area-inset-bottom)) !important;
+    }
+}
 </style> 
+
 </head>
 <body class="flex h-screen overflow-hidden text-slate-900 bg-[#f8fafc]">
 
