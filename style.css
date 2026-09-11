@@ -10848,3 +10848,52 @@ planning-filter-card,
     padding-bottom: 90px !important;
   }
 }
+/* =====================================================
+   FIX MÓVIL ESPECÍFICO - MÓDULO TI
+===================================================== */
+
+@media (max-width: 768px) {
+
+  /* Permitir scroll horizontal donde haya tablas o historiales */
+  #ticketHistory,
+  #historyTable,
+  #supportHistory,
+  #device-ticket-history,
+  #knowledgeList,
+  #inventoryTable,
+  #servicesTable,
+  #accessTable,
+  #maintenanceTable,
+  .history-table,
+  .ticket-history,
+  .support-history,
+  .records-table,
+  .table-scroll,
+  .history-scroll {
+    width: 100% !important;
+    overflow-x: auto !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  /* Si hay tablas internas */
+  #ticketHistory table,
+  #historyTable table,
+  #supportHistory table,
+  #device-ticket-history table,
+  .history-table table,
+  .ticket-history table,
+  .support-history table,
+  .records-table table {
+    min-width: 760px !important;
+    width: max-content !important;
+  }
+
+  /* Contenedores que quizá están bloqueando */
+  .history-card,
+  .ticket-card,
+  .details-card,
+  .panel-card {
+    overflow: visible !important;
+  }
+}
