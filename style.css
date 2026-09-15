@@ -11187,3 +11187,146 @@ planning-filter-card,
         max-height: 24px !important;
     }
 }
+/* =====================================================
+   MÓVIL - BARRA SUPERIOR TI CON SCROLL HORIZONTAL
+===================================================== */
+
+@media (max-width: 768px) {
+
+    .top-navbar {
+        width: 100% !important;
+        max-width: 100vw !important;
+        height: 74px !important;
+        min-height: 74px !important;
+
+        padding: 0 !important;
+        overflow: hidden !important;
+
+        background: #ffffff !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06) !important;
+
+        display: block !important;
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 3000 !important;
+    }
+
+    .nav-brand {
+        display: none !important;
+    }
+
+    .horizontal-list,
+    .nav-list.horizontal-list {
+        width: 100% !important;
+        max-width: 100vw !important;
+        height: 74px !important;
+
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+
+        align-items: center !important;
+        justify-content: flex-start !important;
+
+        gap: 0 !important;
+
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+
+        padding: 0 14px !important;
+        margin: 0 !important;
+
+        list-style: none !important;
+        white-space: nowrap !important;
+
+        -webkit-overflow-scrolling: touch !important;
+        scrollbar-width: thin !important;
+    }
+
+    .horizontal-list > li,
+    .nav-list.horizontal-list > li {
+        flex: 0 0 auto !important;
+        height: 100% !important;
+        display: flex !important;
+        align-items: center !important;
+        position: relative !important;
+    }
+
+    .horizontal-list a.nav-link,
+    .horizontal-list > li > a,
+    .nav-list.horizontal-list a.nav-link,
+    .nav-list.horizontal-list > li > a {
+        flex: 0 0 auto !important;
+
+        height: 100% !important;
+        min-width: max-content !important;
+
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+
+        padding: 0 18px !important;
+
+        color: #334155 !important;
+        background: transparent !important;
+
+        font-size: 13px !important;
+        font-weight: 900 !important;
+        line-height: 1 !important;
+
+        text-transform: uppercase !important;
+        text-decoration: none !important;
+        white-space: nowrap !important;
+
+        border-bottom: 3px solid transparent !important;
+    }
+
+    .horizontal-list a.nav-link.active,
+    .horizontal-list > li > a.active,
+    .nav-list.horizontal-list a.nav-link.active,
+    .nav-list.horizontal-list > li > a.active {
+        color: #2563eb !important;
+        border-bottom-color: #2563eb !important;
+        background: transparent !important;
+    }
+
+    .horizontal-list::-webkit-scrollbar,
+    .nav-list.horizontal-list::-webkit-scrollbar {
+        height: 4px !important;
+    }
+
+    .horizontal-list::-webkit-scrollbar-track,
+    .nav-list.horizontal-list::-webkit-scrollbar-track {
+        background: #eef2f7 !important;
+        border-radius: 999px !important;
+    }
+
+    .horizontal-list::-webkit-scrollbar-thumb,
+    .nav-list.horizontal-list::-webkit-scrollbar-thumb {
+        background: #94a3b8 !important;
+        border-radius: 999px !important;
+    }
+
+    /* Submenús en móvil: que no rompan la barra */
+    .submenu.dropdown {
+        position: fixed !important;
+        top: 74px !important;
+        left: 12px !important;
+        right: 12px !important;
+
+        width: auto !important;
+        min-width: 0 !important;
+
+        border-radius: 14px !important;
+        z-index: 4000 !important;
+    }
+
+    #app-content {
+        padding: 18px 14px 100px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: hidden !important;
+        box-sizing: border-box !important;
+    }
+}
