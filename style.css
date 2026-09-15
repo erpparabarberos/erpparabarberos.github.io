@@ -11516,3 +11516,91 @@ planning-filter-card,
         margin-bottom: 12px !important;
     }
 }
+/* =====================================================
+   MÓVIL - FILTROS INVENTARIO COMO SERVICIOS
+===================================================== */
+
+@media (max-width: 768px) {
+
+    .inventory-modern-toolbar {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 14px !important;
+        width: 100% !important;
+    }
+
+    .inventory-modern-search-wrap {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .inventory-modern-search-wrap input {
+        width: 100% !important;
+        height: 56px !important;
+        border-radius: 10px !important;
+        font-size: 16px !important;
+        padding: 0 16px !important;
+        box-sizing: border-box !important;
+    }
+
+    .inventory-modern-filters {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .inventory-filter-item {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        flex: none !important;
+    }
+
+    .inventory-filter-item label {
+        display: block !important;
+        margin-bottom: 7px !important;
+        color: #526b8a !important;
+        font-size: 13px !important;
+        font-weight: 900 !important;
+    }
+
+    .inventory-filter-item select {
+        width: 100% !important;
+        height: 60px !important;
+        min-height: 60px !important;
+        border: 1px solid #dbe4f0 !important;
+        border-radius: 10px !important;
+        padding: 0 18px !important;
+        background: #ffffff !important;
+        color: #0f172a !important;
+        font-size: 16px !important;
+        font-weight: 500 !important;
+        box-sizing: border-box !important;
+    }
+
+    .inventory-filter-item select:focus,
+    .inventory-modern-search-wrap input:focus {
+        outline: none !important;
+        border-color: #2563eb !important;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important;
+    }
+}
+/* BOTÓN LIMPIAR FILTROS INVENTARIO EN MÓVIL */
+@media (max-width: 768px) {
+
+    .inventory-clear-filters,
+    #inventory-clear-filters,
+    button[data-action="clear-inventory-filters"] {
+        width: 100% !important;
+        height: 60px !important;
+        border-radius: 10px !important;
+        border: 1px solid #dbe4f0 !important;
+        background: #ffffff !important;
+        color: #2563eb !important;
+        font-size: 15px !important;
+        font-weight: 900 !important;
+        text-transform: uppercase !important;
+    }
+}
