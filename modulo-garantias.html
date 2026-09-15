@@ -584,6 +584,36 @@
             max-height: 24px !important;
         }
     }
+      /* =====================================================
+   FIX CAMBIO DE VISTAS MÓVIL - GARANTÍAS
+   Evita que Historial/Métricas carguen debajo del tablero
+===================================================== */
+
+@media (max-width: 768px) {
+
+    .view-section.hidden {
+        display: none !important;
+    }
+
+    #view_kanban.hidden,
+    #view_historial.hidden,
+    #view_analytics.hidden,
+    #view_directorio.hidden,
+    #view_inventario.hidden {
+        display: none !important;
+    }
+
+    #view_kanban:not(.hidden) {
+        display: flex !important;
+    }
+
+    #view_historial:not(.hidden),
+    #view_analytics:not(.hidden),
+    #view_directorio:not(.hidden),
+    #view_inventario:not(.hidden) {
+        display: block !important;
+    }
+}  
 </style>
 </head>
 <body class="flex flex-col h-screen overflow-hidden text-slate-900 bg-[#f8fafc]">
