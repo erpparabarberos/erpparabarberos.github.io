@@ -11482,3 +11482,37 @@ planning-filter-card,
         padding: 10px 14px !important;
     }
 }
+/* =====================================================
+   MÓVIL - OCULTAR FILTROS LARGOS / CHIPS DE INVENTARIO
+===================================================== */
+
+@media (max-width: 768px) {
+
+    /* Oculta chips largos de filtros activos */
+    .inventory-active-filters,
+    .active-filters,
+    .filter-tags,
+    .filters-tags,
+    .applied-filters,
+    .selected-filters,
+    .chips-container,
+    .filter-chips,
+    .inventory-filter-chips {
+        display: none !important;
+    }
+
+    /* Por si los filtros están dentro de una barra sin clase clara */
+    .inventory-modern-page .filters-summary,
+    .inventory-modern-page .filter-summary,
+    .inventory-modern-page .selected-filter-list,
+    .inventory-modern-page .applied-filter-list {
+        display: none !important;
+    }
+
+    /* Si hay una fila de filtros antes de la tabla, reducirla */
+    .inventory-modern-page .inventory-toolbar,
+    .inventory-modern-page .inventory-filters,
+    .inventory-modern-page .table-search-container {
+        margin-bottom: 12px !important;
+    }
+}
