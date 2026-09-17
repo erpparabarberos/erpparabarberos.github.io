@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Servicio Técnico Admin</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            min-height: 100%;
+            font-family: 'Inter', sans-serif;
+            background: #f6f8fb;
+            color: #0f172a;
+        }
+
+        body {
+            overflow-x: hidden;
+        }
+
+        .st-app {
+            width: 100%;
+            max-width: 520px;
+            min-height: 100vh;
+            margin: 0 auto;
+            padding: 18px 16px 96px;
+            background: #f6f8fb;
+        }
+
+        .st-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        .st-header h1 {
+            margin: 0;
+            font-size: 28px;
+            line-height: 1.05;
+            font-weight: 900;
+            letter-spacing: -0.04em;
+            color: #0f172a;
+        }
+
+        .st-header p {
+            margin: 5px 0 0;
+            color: #64748b;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .st-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            display: grid;
+            place-items: center;
+            font-weight: 900;
+            font-size: 18px;
+            color: #0f172a;
+            box-shadow: 0 8px 22px rgba(15, 23, 42, .08);
+        }
+
+        .balance-card {
+            background: linear-gradient(135deg, #0f172a 0%, #111827 45%, #2a2107 100%);
+            color: white;
+            border-radius: 26px;
+            padding: 24px;
+            box-shadow: 0 18px 45px rgba(15, 23, 42, .22);
+            margin-bottom: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .balance-card::after {
+            content: "";
+            position: absolute;
+            width: 190px;
+            height: 190px;
+            right: -75px;
+            top: -55px;
+            background: radial-gradient(circle, rgba(255,204,0,.35), transparent 70%);
+        }
+
+        .balance-label {
+            font-size: 15px;
+            font-weight: 800;
+            color: #e2e8f0;
+            margin-bottom: 10px;
+        }
+
+        .balance-value {
+            font-size: 42px;
+            font-weight: 900;
+            letter-spacing: -0.05em;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .balance-sub {
+            font-size: 13px;
+            font-weight: 600;
+            color: #cbd5e1;
+        }
+
+        .money-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1px;
+            background: #e2e8f0;
+            border-radius: 22px;
+            overflow: hidden;
+            margin-bottom: 24px;
+            box-shadow: 0 12px 28px rgba(15, 23, 42, .06);
+        }
+
+        .money-item {
+            background: white;
+            padding: 16px 12px;
+        }
+
+        .money-item span {
+            display: block;
+            color: #64748b;
+            font-size: 12px;
+            font-weight: 800;
+            margin-bottom: 5px;
+        }
+
+        .money-item strong {
+            font-size: 17px;
+            font-weight: 900;
+            color: #0f172a;
+        }
+
+        .section-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: end;
+            margin: 24px 0 12px;
+        }
+
+        .section-title h2 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 900;
+            letter-spacing: -0.03em;
+        }
+
+        .section-title button {
+            border: none;
+            background: transparent;
+            color: #2563eb;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .quick-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .quick-btn {
+            border: 1px solid #e2e8f0;
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 18px;
+            min-height: 94px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            justify-content: center;
+            box-shadow: 0 10px 25px rgba(15, 23, 42, .05);
+            cursor: pointer;
+        }
+
+        .quick-btn.primary {
+            background: #fff7df;
+            border-color: #fde68a;
+        }
+
+        .quick-btn.danger-soft {
+            background: #fff1f2;
+            border-color: #fecdd3;
+        }
+
+        .quick-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 14px;
+            display: grid;
+            place-items: center;
+            font-size: 22px;
+            font-weight: 900;
+            background: #f1f5f9;
+        }
+
+        .quick-btn strong {
+            font-size: 17px;
+            font-weight: 900;
+        }
+
+        .quick-btn small {
+            font-size: 12px;
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        .frequent-list,
+        .movement-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .mini-card,
+        .movement-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 18px;
+            padding: 15px;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, .04);
+        }
+
+        .mini-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .mini-card strong {
+            font-size: 14px;
+            font-weight: 900;
+        }
+
+        .mini-card span {
+            font-size: 13px;
+            font-weight: 800;
+            color: #2563eb;
+        }
+
+        .movement-card {
+            display: grid;
+            grid-template-columns: 42px 1fr auto;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .movement-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 16px;
+            background: #ecfdf5;
+            display: grid;
+            place-items: center;
+            font-size: 20px;
+        }
+
+        .movement-card h3 {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 900;
+        }
+
+        .movement-card p {
+            margin: 3px 0 0;
+            font-size: 12px;
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        .movement-card strong {
+            font-size: 14px;
+            font-weight: 900;
+            white-space: nowrap;
+        }
+
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        .form-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 24px;
+            padding: 18px;
+            box-shadow: 0 10px 28px rgba(15, 23, 42, .05);
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 900;
+            color: #526b8a;
+            margin-bottom: 7px;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            min-height: 52px;
+            border: 1px solid #dbe4f0;
+            border-radius: 14px;
+            padding: 0 15px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #0f172a;
+            background: #ffffff;
+            outline: none;
+        }
+
+        textarea {
+            min-height: 96px;
+            padding: 14px 15px;
+            resize: vertical;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
+        }
+
+        .submit-btn {
+            width: 100%;
+            min-height: 56px;
+            border: none;
+            border-radius: 16px;
+            background: #0f172a;
+            color: white;
+            font-size: 15px;
+            font-weight: 900;
+            margin-top: 8px;
+            cursor: pointer;
+        }
+
+        .secondary-btn {
+            width: 100%;
+            min-height: 52px;
+            border: 1px solid #dbe4f0;
+            border-radius: 16px;
+            background: white;
+            color: #2563eb;
+            font-size: 14px;
+            font-weight: 900;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            left: 50%;
+            bottom: 12px;
+            transform: translateX(-50%);
+            width: calc(100% - 24px);
+            max-width: 500px;
+            height: 70px;
+            background: rgba(255, 255, 255, .96);
+            border: 1px solid #e2e8f0;
+            border-radius: 26px;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            align-items: center;
+            box-shadow: 0 18px 48px rgba(15, 23, 42, .18);
+            backdrop-filter: blur(16px);
+            z-index: 999;
+        }
+
+        .bottom-nav button {
+            border: none;
+            background: transparent;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            color: #64748b;
+            font-size: 11px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .bottom-nav button span {
+            font-size: 21px;
+            line-height: 1;
+        }
+
+        .bottom-nav button.active {
+            color: #d29b00;
+        }
+
+        .catalog-tabs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .catalog-tabs button {
+            min-height: 48px;
+            border-radius: 14px;
+            border: 1px solid #dbe4f0;
+            background: white;
+            color: #64748b;
+            font-weight: 900;
+            cursor: pointer;
+        }
+
+        .catalog-tabs button.active {
+            background: #0f172a;
+            color: white;
+            border-color: #0f172a;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #64748b;
+            font-size: 13px;
+            font-weight: 700;
+            background: white;
+            border: 1px dashed #cbd5e1;
+            padding: 22px;
+            border-radius: 20px;
+        }
+
+        @media (min-width: 900px) {
+            .st-app {
+                max-width: 1180px;
+                padding: 30px 30px 110px;
+            }
+
+            .quick-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+
+            .desktop-grid {
+                display: grid;
+                grid-template-columns: 1.1fr .9fr;
+                gap: 20px;
+                align-items: start;
+            }
+
+            .balance-value {
+                font-size: 54px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="st-app">
+
+    <section id="view-inicio" class="view active">
+
+        <div class="st-header">
+            <div>
+                <h1>Servicio Técnico</h1>
+                <p id="todayLabel">Hoy</p>
+            </div>
+            <div class="st-avatar" id="userInitial">S</div>
+        </div>
+
+        <div class="balance-card">
+            <div class="balance-label">Balance de hoy</div>
+            <div class="balance-value" id="balanceHoy">$0</div>
+            <div class="balance-sub">Ventas menos gastos registrados</div>
+        </div>
+
+        <div class="money-row">
+            <div class="money-item">
+                <span>Ventas</span>
+                <strong id="ventasHoy">$0</strong>
+            </div>
+            <div class="money-item">
+                <span>Gastos</span>
+                <strong id="gastosHoy">$0</strong>
+            </div>
+            <div class="money-item">
+                <span>Utilidad</span>
+                <strong id="utilidadHoy">$0</strong>
+            </div>
+        </div>
+
+        <div class="section-title">
+            <h2>Acciones rápidas</h2>
+        </div>
+
+        <div class="quick-grid">
+            <button class="quick-btn primary" onclick="showView('ventas')">
+                <div class="quick-icon">+</div>
+                <strong>Venta</strong>
+                <small>Registrar venta</small>
+            </button>
+
+            <button class="quick-btn danger-soft" onclick="showView('gastos')">
+                <div class="quick-icon">−</div>
+                <strong>Gasto</strong>
+                <small>Registrar gasto</small>
+            </button>
+
+            <button class="quick-btn" onclick="showView('catalogo')">
+                <div class="quick-icon">📦</div>
+                <strong>Producto</strong>
+                <small>Agregar al catálogo</small>
+            </button>
+
+            <button class="quick-btn" onclick="showView('catalogo')">
+                <div class="quick-icon">🛠️</div>
+                <strong>Servicio</strong>
+                <small>Agregar servicio</small>
+            </button>
+        </div>
+
+        <div class="desktop-grid">
+
+            <div>
+                <div class="section-title">
+                    <h2>Más usados</h2>
+                </div>
+                <div class="frequent-list" id="frequentList">
+                    <div class="empty-state">Aún no hay productos o servicios frecuentes.</div>
+                </div>
+            </div>
+
+            <div>
+                <div class="section-title">
+                    <h2>Últimos movimientos</h2>
+                    <button onclick="showView('historial')">Ver todos</button>
+                </div>
+
+                <div class="movement-list" id="movementList">
+                    <div class="empty-state">Todavía no hay movimientos registrados.</div>
+                </div>
+            </div>
+
+        </div>
+
+    </section>
+
+    <section id="view-ventas" class="view">
+        <div class="st-header">
+            <div>
+                <h1>Nueva venta</h1>
+                <p>Producto o servicio vendido</p>
+            </div>
+        </div>
+
+        <div class="form-card">
+            <form id="ventaForm">
+                <div class="form-group">
+                    <label>Fecha</label>
+                    <input type="date" id="ventaFecha" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Cliente</label>
+                    <input type="text" id="ventaCliente" placeholder="Nombre del cliente">
+                </div>
+
+                <div class="form-group">
+                    <label>Producto o servicio</label>
+                    <select id="ventaItem" required>
+                        <option value="">Selecciona...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Cantidad</label>
+                    <input type="number" id="ventaCantidad" min="1" value="1" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Valor unitario</label>
+                    <input type="number" id="ventaValor" min="0" placeholder="Ej: 25000" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Medio de pago</label>
+                    <select id="ventaMedio" required>
+                        <option value="Efectivo">Efectivo</option>
+                        <option value="Nequi">Nequi</option>
+                        <option value="Daviplata">Daviplata</option>
+                        <option value="Transferencia">Transferencia</option>
+                        <option value="Tarjeta">Tarjeta</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Observaciones</label>
+                    <textarea id="ventaObs" placeholder="Opcional"></textarea>
+                </div>
+
+                <button class="submit-btn" type="submit">Guardar venta</button>
+            </form>
+        </div>
+    </section>
+
+    <section id="view-gastos" class="view">
+        <div class="st-header">
+            <div>
+                <h1>Nuevo gasto</h1>
+                <p>Registra compras o salidas de dinero</p>
+            </div>
+        </div>
+
+        <div class="form-card">
+            <form id="gastoForm">
+                <div class="form-group">
+                    <label>Fecha</label>
+                    <input type="date" id="gastoFecha" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Categoría</label>
+                    <select id="gastoCategoria" required>
+                        <option value="">Selecciona...</option>
+                        <option value="Repuestos">Repuestos</option>
+                        <option value="Herramientas">Herramientas</option>
+                        <option value="Transporte">Transporte</option>
+                        <option value="Domicilios / envíos">Domicilios / envíos</option>
+                        <option value="Mano de obra externa">Mano de obra externa</option>
+                        <option value="Insumos">Insumos</option>
+                        <option value="Otros">Otros</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Descripción</label>
+                    <input type="text" id="gastoDescripcion" placeholder="Ej: compra de repuesto" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Valor</label>
+                    <input type="number" id="gastoValor" min="0" placeholder="Ej: 12000" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Proveedor</label>
+                    <input type="text" id="gastoProveedor" placeholder="Opcional">
+                </div>
+
+                <div class="form-group">
+                    <label>Medio de pago</label>
+                    <select id="gastoMedio" required>
+                        <option value="Efectivo">Efectivo</option>
+                        <option value="Nequi">Nequi</option>
+                        <option value="Daviplata">Daviplata</option>
+                        <option value="Transferencia">Transferencia</option>
+                        <option value="Tarjeta">Tarjeta</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                </div>
+
+                <button class="submit-btn" type="submit">Guardar gasto</button>
+            </form>
+        </div>
+    </section>
+
+    <section id="view-catalogo" class="view">
+        <div class="st-header">
+            <div>
+                <h1>Catálogo</h1>
+                <p>Productos y servicios sin control de stock</p>
+            </div>
+        </div>
+
+        <div class="catalog-tabs">
+            <button id="tabProducto" class="active" onclick="setCatalogType('producto')">Producto</button>
+            <button id="tabServicio" onclick="setCatalogType('servicio')">Servicio</button>
+        </div>
+
+        <div class="form-card">
+            <form id="catalogoForm">
+                <input type="hidden" id="catalogoTipo" value="producto">
+
+                <div class="form-group">
+                    <label>Nombre</label>
+                    <input type="text" id="catalogoNombre" placeholder="Ej: Mantenimiento general" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Categoría</label>
+                    <input type="text" id="catalogoCategoria" placeholder="Ej: Repuesto, mantenimiento, limpieza">
+                </div>
+
+                <div class="form-group">
+                    <label>Precio de venta</label>
+                    <input type="number" id="catalogoPrecio" min="0" placeholder="Ej: 25000" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Costo aproximado opcional</label>
+                    <input type="number" id="catalogoCosto" min="0" placeholder="Ej: 12000">
+                </div>
+
+                <div class="form-group">
+                    <label>Observaciones</label>
+                    <textarea id="catalogoObs" placeholder="Opcional"></textarea>
+                </div>
+
+                <button class="submit-btn" type="submit">Guardar en catálogo</button>
+            </form>
+        </div>
+
+        <div class="section-title">
+            <h2>Catálogo actual</h2>
+        </div>
+
+        <div class="frequent-list" id="catalogList">
+            <div class="empty-state">Aún no hay productos o servicios creados.</div>
+        </div>
+    </section>
+
+    <section id="view-historial" class="view">
+        <div class="st-header">
+            <div>
+                <h1>Historial</h1>
+                <p>Ventas y gastos registrados</p>
+            </div>
+        </div>
+
+        <div class="movement-list" id="historyList">
+            <div class="empty-state">Todavía no hay historial.</div>
+        </div>
+    </section>
+
+</div>
+
+<nav class="bottom-nav">
+    <button class="nav-btn active" onclick="showView('inicio')" data-view="inicio">
+        <span>🏠</span>Inicio
+    </button>
+    <button class="nav-btn" onclick="showView('ventas')" data-view="ventas">
+        <span>🛒</span>Ventas
+    </button>
+    <button class="nav-btn" onclick="showView('gastos')" data-view="gastos">
+        <span>💳</span>Gastos
+    </button>
+    <button class="nav-btn" onclick="showView('catalogo')" data-view="catalogo">
+        <span>📦</span>Catálogo
+    </button>
+    <button class="nav-btn" onclick="showView('historial')" data-view="historial">
+        <span>📋</span>Historial
+    </button>
+</nav>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyDkH2_E7t07SWWH1SZr77BFlNp6RQTDDDY",
+        authDomain: "erpparabarberos-12de9.firebaseapp.com",
+        projectId: "erpparabarberos-12de9",
+        storageBucket: "erpparabarberos-12de9.firebasestorage.app",
+        messagingSenderId: "722745790519",
+        appId: "1:722745790519:web:7bf1dbe172433898a56fb2"
+    };
+
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    const ventasRef = db.collection("st_ventas");
+    const gastosRef = db.collection("st_gastos");
+    const catalogoRef = db.collection("st_catalogo");
+
+    let catalogoGlobal = [];
+    let ventasGlobal = [];
+    let gastosGlobal = [];
+    let currentUserEmail = "sin_usuario";
+
+    const money = (value) => {
+        const num = Number(value || 0);
+        return num.toLocaleString("es-CO", {
+            style: "currency",
+            currency: "COP",
+            maximumFractionDigits: 0
+        });
+    };
+
+    const todayISO = () => {
+        const offset = new Date().getTimezoneOffset() * 60000;
+        return new Date(Date.now() - offset).toISOString().slice(0, 10);
+    };
+
+    const todayReadable = () => {
+        return new Date().toLocaleDateString("es-CO", {
+            weekday: "long",
+            day: "numeric",
+            month: "long"
+        });
+    };
+
+    document.getElementById("todayLabel").textContent = "Hoy, " + todayReadable();
+    document.getElementById("ventaFecha").value = todayISO();
+    document.getElementById("gastoFecha").value = todayISO();
+
+    window.showView = function(viewName) {
+        document.querySelectorAll(".view").forEach(view => view.classList.remove("active"));
+        document.getElementById("view-" + viewName).classList.add("active");
+
+        document.querySelectorAll(".nav-btn").forEach(btn => {
+            btn.classList.toggle("active", btn.dataset.view === viewName);
+        });
+
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    window.setCatalogType = function(type) {
+        document.getElementById("catalogoTipo").value = type;
+
+        document.getElementById("tabProducto").classList.toggle("active", type === "producto");
+        document.getElementById("tabServicio").classList.toggle("active", type === "servicio");
+
+        document.getElementById("catalogoNombre").placeholder =
+            type === "producto" ? "Ej: Batería para máquina" : "Ej: Mantenimiento general";
+    };
+
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            currentUserEmail = user.email || "sin_usuario";
+            document.getElementById("userInitial").textContent = currentUserEmail.charAt(0).toUpperCase();
+        }
+
+        cargarDatos();
+    });
+
+    function cargarDatos() {
+        catalogoRef.orderBy("creadoEn", "desc").onSnapshot(snapshot => {
+            catalogoGlobal = [];
+            snapshot.forEach(doc => catalogoGlobal.push({ docId: doc.id, ...doc.data() }));
+            renderCatalogo();
+            llenarSelectVenta();
+            renderFrecuentes();
+        });
+
+        ventasRef.orderBy("creadoEn", "desc").onSnapshot(snapshot => {
+            ventasGlobal = [];
+            snapshot.forEach(doc => ventasGlobal.push({ docId: doc.id, ...doc.data() }));
+            renderDashboard();
+            renderMovimientos();
+            renderHistorial();
+        });
+
+        gastosRef.orderBy("creadoEn", "desc").onSnapshot(snapshot => {
+            gastosGlobal = [];
+            snapshot.forEach(doc => gastosGlobal.push({ docId: doc.id, ...doc.data() }));
+            renderDashboard();
+            renderMovimientos();
+            renderHistorial();
+        });
+    }
+
+    function renderDashboard() {
+        const hoy = todayISO();
+
+        const ventasHoy = ventasGlobal
+            .filter(v => v.fecha === hoy)
+            .reduce((acc, v) => acc + Number(v.total || 0), 0);
+
+        const gastosHoy = gastosGlobal
+            .filter(g => g.fecha === hoy)
+            .reduce((acc, g) => acc + Number(g.valor || 0), 0);
+
+        const utilidad = ventasHoy - gastosHoy;
+
+        document.getElementById("ventasHoy").textContent = money(ventasHoy);
+        document.getElementById("gastosHoy").textContent = money(gastosHoy);
+        document.getElementById("utilidadHoy").textContent = money(utilidad);
+        document.getElementById("balanceHoy").textContent = money(utilidad);
+    }
+
+    function renderMovimientos() {
+        const container = document.getElementById("movementList");
+
+        const movimientos = [
+            ...ventasGlobal.map(v => ({
+                tipo: "Venta",
+                nombre: v.itemNombre || "Venta",
+                valor: v.total,
+                medio: v.medioPago,
+                fecha: v.creadoEn,
+                icon: "🛒"
+            })),
+            ...gastosGlobal.map(g => ({
+                tipo: "Gasto",
+                nombre: g.descripcion || "Gasto",
+                valor: g.valor,
+                medio: g.medioPago,
+                fecha: g.creadoEn,
+                icon: "💳"
+            }))
+        ].sort((a, b) => {
+            const fa = a.fecha?.toMillis ? a.fecha.toMillis() : 0;
+            const fb = b.fecha?.toMillis ? b.fecha.toMillis() : 0;
+            return fb - fa;
+        }).slice(0, 5);
+
+        if (!movimientos.length) {
+            container.innerHTML = `<div class="empty-state">Todavía no hay movimientos registrados.</div>`;
+            return;
+        }
+
+        container.innerHTML = movimientos.map(m => `
+            <div class="movement-card">
+                <div class="movement-icon">${m.icon}</div>
+                <div>
+                    <h3>${m.tipo}</h3>
+                    <p>${m.nombre}</p>
+                </div>
+                <div style="text-align:right;">
+                    <strong>${money(m.valor)}</strong>
+                    <p style="margin:3px 0 0; font-size:12px; color:#64748b; font-weight:700;">${m.medio || ""}</p>
+                </div>
+            </div>
+        `).join("");
+    }
+
+    function renderHistorial() {
+        const container = document.getElementById("historyList");
+
+        const movimientos = [
+            ...ventasGlobal.map(v => ({
+                tipo: "Venta",
+                nombre: v.itemNombre || "Venta",
+                detalle: `${v.cliente || "Sin cliente"} · ${v.medioPago || ""}`,
+                valor: v.total,
+                icon: "🛒",
+                fecha: v.fecha
+            })),
+            ...gastosGlobal.map(g => ({
+                tipo: "Gasto",
+                nombre: g.descripcion || "Gasto",
+                detalle: `${g.categoria || "Sin categoría"} · ${g.medioPago || ""}`,
+                valor: g.valor,
+                icon: "💳",
+                fecha: g.fecha
+            }))
+        ].sort((a, b) => String(b.fecha).localeCompare(String(a.fecha)));
+
+        if (!movimientos.length) {
+            container.innerHTML = `<div class="empty-state">Todavía no hay historial.</div>`;
+            return;
+        }
+
+        container.innerHTML = movimientos.map(m => `
+            <div class="movement-card">
+                <div class="movement-icon">${m.icon}</div>
+                <div>
+                    <h3>${m.tipo}: ${m.nombre}</h3>
+                    <p>${m.detalle}<br>${m.fecha || ""}</p>
+                </div>
+                <div style="text-align:right;">
+                    <strong>${money(m.valor)}</strong>
+                </div>
+            </div>
+        `).join("");
+    }
+
+    function renderCatalogo() {
+        const container = document.getElementById("catalogList");
+
+        if (!catalogoGlobal.length) {
+            container.innerHTML = `<div class="empty-state">Aún no hay productos o servicios creados.</div>`;
+            return;
+        }
+
+        container.innerHTML = catalogoGlobal.map(item => `
+            <div class="mini-card">
+                <div>
+                    <strong>${item.nombre}</strong>
+                    <p style="margin:4px 0 0; color:#64748b; font-size:12px; font-weight:700;">
+                        ${item.tipo} · ${item.categoria || "Sin categoría"}
+                    </p>
+                </div>
+                <span>${money(item.precio)}</span>
+            </div>
+        `).join("");
+    }
+
+    function renderFrecuentes() {
+        const container = document.getElementById("frequentList");
+
+        const frecuentes = catalogoGlobal.slice(0, 4);
+
+        if (!frecuentes.length) {
+            container.innerHTML = `<div class="empty-state">Aún no hay productos o servicios frecuentes.</div>`;
+            return;
+        }
+
+        container.innerHTML = frecuentes.map(item => `
+            <div class="mini-card">
+                <div>
+                    <strong>${item.nombre}</strong>
+                    <p style="margin:4px 0 0; color:#64748b; font-size:12px; font-weight:700;">
+                        ${item.tipo}
+                    </p>
+                </div>
+                <span>${money(item.precio)}</span>
+            </div>
+        `).join("");
+    }
+
+    function llenarSelectVenta() {
+        const select = document.getElementById("ventaItem");
+        select.innerHTML = `<option value="">Selecciona...</option>`;
+
+        catalogoGlobal.forEach(item => {
+            select.innerHTML += `
+                <option value="${item.docId}" data-precio="${item.precio}" data-nombre="${item.nombre}">
+                    ${item.nombre} - ${money(item.precio)}
+                </option>
+            `;
+        });
+    }
+
+    document.getElementById("ventaItem").addEventListener("change", function() {
+        const option = this.options[this.selectedIndex];
+        const precio = option.dataset.precio || "";
+        document.getElementById("ventaValor").value = precio;
+    });
+
+    document.getElementById("ventaForm").addEventListener("submit", async function(e) {
+        e.preventDefault();
+
+        const select = document.getElementById("ventaItem");
+        const option = select.options[select.selectedIndex];
+
+        const cantidad = Number(document.getElementById("ventaCantidad").value || 1);
+        const valor = Number(document.getElementById("ventaValor").value || 0);
+        const total = cantidad * valor;
+
+        const data = {
+            fecha: document.getElementById("ventaFecha").value,
+            cliente: document.getElementById("ventaCliente").value.trim(),
+            itemId: select.value,
+            itemNombre: option.dataset.nombre || option.textContent,
+            cantidad,
+            valorUnitario: valor,
+            total,
+            medioPago: document.getElementById("ventaMedio").value,
+            observaciones: document.getElementById("ventaObs").value.trim(),
+            creadoPor: currentUserEmail,
+            creadoEn: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        await ventasRef.add(data);
+
+        this.reset();
+        document.getElementById("ventaFecha").value = todayISO();
+        document.getElementById("ventaCantidad").value = 1;
+
+        alert("Venta guardada correctamente.");
+        showView("inicio");
+    });
+
+    document.getElementById("gastoForm").addEventListener("submit", async function(e) {
+        e.preventDefault();
+
+        const data = {
+            fecha: document.getElementById("gastoFecha").value,
+            categoria: document.getElementById("gastoCategoria").value,
+            descripcion: document.getElementById("gastoDescripcion").value.trim(),
+            valor: Number(document.getElementById("gastoValor").value || 0),
+            proveedor: document.getElementById("gastoProveedor").value.trim(),
+            medioPago: document.getElementById("gastoMedio").value,
+            creadoPor: currentUserEmail,
+            creadoEn: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        await gastosRef.add(data);
+
+        this.reset();
+        document.getElementById("gastoFecha").value = todayISO();
+
+        alert("Gasto guardado correctamente.");
+        showView("inicio");
+    });
+
+    document.getElementById("catalogoForm").addEventListener("submit", async function(e) {
+        e.preventDefault();
+
+        const data = {
+            tipo: document.getElementById("catalogoTipo").value,
+            nombre: document.getElementById("catalogoNombre").value.trim(),
+            categoria: document.getElementById("catalogoCategoria").value.trim(),
+            precio: Number(document.getElementById("catalogoPrecio").value || 0),
+            costoAproximado: Number(document.getElementById("catalogoCosto").value || 0),
+            observaciones: document.getElementById("catalogoObs").value.trim(),
+            activo: true,
+            creadoPor: currentUserEmail,
+            creadoEn: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        await catalogoRef.add(data);
+
+        this.reset();
+        document.getElementById("catalogoTipo").value = "producto";
+        setCatalogType("producto");
+
+        alert("Guardado en catálogo correctamente.");
+    });
+</script>
+
+</body>
+</html>
