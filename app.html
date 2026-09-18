@@ -809,6 +809,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (moduloInicial.includes('garantias') && btnGar) btnGar.classList.add('active');
             if (moduloInicial.includes('calificaciones') && btnAte) btnAte.classList.add('active');
             if (moduloInicial.includes('ti') && btnTI) btnTI.classList.add('active');
+            if (moduloInicial.includes('servicio-tecnico') && btnServicioTecnico) btnServicioTecnico.classList.add('active');
 
             return;
         }
@@ -824,70 +825,81 @@ document.addEventListener('DOMContentLoaded', () => {
             mainFrame.src = `${url}?v=${version}`;
         }
     };
+function configurarMenuPorRol(rol) {
+    currentRol = (rol || '').toLowerCase().trim();
 
-    function configurarMenuPorRol(rol) {
-        currentRol = (rol || '').toLowerCase().trim();
+    ocultarBoton(btnGar);
+    ocultarBoton(btnTra);
+    ocultarBoton(btnTI);
+    ocultarBoton(btnAte);
+    ocultarBoton(btnServicioTecnico);
 
-        ocultarBoton(btnGar);
-        ocultarBoton(btnTra);
-        ocultarBoton(btnTI);
-        ocultarBoton(btnAte);
-        ocultarBoton(btnServicioTecnico);<
-        const btnST = document.getElementById('btnST');
+    if (currentRol === 'admin') {
+        mostrarBoton(btnGar);
+        mostrarBoton(btnTra);
+        mostrarBoton(btnTI);
+        mostrarBoton(btnAte);
+        mostrarBoton(btnServicioTecnico);
 
-        if (currentRol === 'admin') {
-            mostrarBoton(btnGar);
-            mostrarBoton(btnTra);
-            mostrarBoton(btnTI);
-            mostrarBoton(btnAte);
-
-            loadModule('modulo-ti.html', btnTI);
-            return;
-        }
-
-        if (
-            currentRol === 'separador' ||
-            currentRol === 'solicitante' ||
-            currentRol === 'inventarios' ||
-            currentRol === 'bodega'
-        ) {
-            mostrarBoton(btnTra);
-            loadModule('modulo-traslados.html', btnTra);
-            return;
-        }
-
-        if (
-            currentRol === 'ventas' ||
-            currentRol === 'atencion' ||
-            currentRol === 'atención'
-        ) {
-            mostrarBoton(btnAte);
-            loadModule('modulo-calificaciones.html', btnAte);
-            return;
-        }
-
-        if (
-            currentRol === 'garantias' ||
-            currentRol === 'garantías'
-        ) {
-            mostrarBoton(btnGar);
-            loadModule('modulo-garantias.html', btnGar);
-            return;
-        }
-
-        if (
-            currentRol === 'tecnologia' ||
-            currentRol === 'tecnología' ||
-            currentRol === 'ti'
-        ) {
-            mostrarBoton(btnTI);
-            loadModule('modulo-ti.html', btnTI);
-            return;
-        }
-
-        localStorage.removeItem('userRole');
-        auth.signOut();
+        loadModule('modulo-ti.html', btnTI);
+        return;
     }
+
+    if (
+        currentRol === 'separador' ||
+        currentRol === 'solicitante' ||
+        currentRol === 'inventarios' ||
+        currentRol === 'bodega'
+    ) {
+        mostrarBoton(btnTra);
+        loadModule('modulo-traslados.html', btnTra);
+        return;
+    }
+
+    if (
+        currentRol === 'ventas' ||
+        currentRol === 'atencion' ||
+        currentRol === 'atención'
+    ) {
+        mostrarBoton(btnAte);
+        loadModule('modulo-calificaciones.html', btnAte);
+        return;
+    }
+
+    if (
+        currentRol === 'garantias' ||
+        currentRol === 'garantías'
+    ) {
+        mostrarBoton(btnGar);
+        loadModule('modulo-garantias.html', btnGar);
+        return;
+    }
+
+    if (
+        currentRol === 'tecnologia' ||
+        currentRol === 'tecnología' ||
+        currentRol === 'ti'
+    ) {
+        mostrarBoton(btnTI);
+        loadModule('modulo-ti.html', btnTI);
+        return;
+    }
+
+    if (
+        currentRol === 'servicio_tecnico' ||
+        currentRol === 'servicio tecnico' ||
+        currentRol === 'servicio técnico' ||
+        currentRol === 'tecnico' ||
+        currentRol === 'técnico'
+    ) {
+        mostrarBoton(btnServicioTecnico);
+        loadModule('modulo-servicio-tecnico.html', btnServicioTecnico);
+        return;
+    }
+
+    localStorage.removeItem('userRole');
+    auth.signOut();
+}
 
     auth.onAuthStateChanged(user => {
         if (!user) {
