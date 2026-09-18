@@ -636,13 +636,155 @@ header .inline-block {
         bottom: calc(10px + env(safe-area-inset-bottom)) !important;
     }
 }
+ /* =====================================================
+   MÓVIL - MENÚ NEXUS DESPLEGABLE
+   Evita que choque con la barra interna de los módulos
+===================================================== */
+
+.module-toggle-btn {
+    display: none;
+}
+
+@media (max-width: 768px) {
+
+    #mainSideRail {
+        pointer-events: none !important;
+    }
+
+    .main-rail-capsule {
+        pointer-events: auto !important;
+        transition: all .25s ease !important;
+    }
+
+    .module-toggle-btn {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+
+        width: 42px !important;
+        height: 42px !important;
+        min-width: 42px !important;
+        min-height: 42px !important;
+
+        border: none !important;
+        border-radius: 14px !important;
+
+        background: #0f172a !important;
+        color: #ffffff !important;
+
+        font-size: 30px !important;
+        font-weight: 900 !important;
+        line-height: 1 !important;
+
+        padding: 0 !important;
+        margin: 0 !important;
+
+        box-shadow: 0 10px 25px rgba(15, 23, 42, .20) !important;
+        cursor: pointer !important;
+
+        transform: rotate(180deg) !important;
+        transition: all .25s ease !important;
+    }
+
+    /* Estado cerrado: solo se ve la flecha */
+    .main-rail-capsule.collapsed {
+        position: fixed !important;
+        left: auto !important;
+        right: 16px !important;
+        bottom: 96px !important;
+        top: auto !important;
+
+        transform: none !important;
+
+        width: 56px !important;
+        height: 56px !important;
+        min-width: 56px !important;
+        max-width: 56px !important;
+
+        padding: 7px !important;
+
+        border-radius: 18px !important;
+        background: rgba(255, 255, 255, .96) !important;
+        border: 1px solid #e2e8f0 !important;
+        box-shadow: 0 16px 40px rgba(15, 23, 42, .20) !important;
+
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 0 !important;
+    }
+
+    .main-rail-capsule.collapsed .nav-btn {
+        width: 0 !important;
+        min-width: 0 !important;
+        max-width: 0 !important;
+
+        height: 42px !important;
+        min-height: 42px !important;
+
+        padding: 0 !important;
+        margin: 0 !important;
+
+        opacity: 0 !important;
+        pointer-events: none !important;
+        overflow: hidden !important;
+    }
+
+    /* Estado abierto: se ven todos los módulos permitidos */
+    .main-rail-capsule.open {
+        position: fixed !important;
+        left: 50% !important;
+        right: auto !important;
+        bottom: 96px !important;
+        top: auto !important;
+
+        transform: translateX(-50%) !important;
+
+        width: auto !important;
+        max-width: calc(100vw - 24px) !important;
+        height: 58px !important;
+
+        padding: 7px 10px !important;
+
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 10px !important;
+
+        border-radius: 22px !important;
+        background: rgba(255, 255, 255, .96) !important;
+        border: 1px solid #e2e8f0 !important;
+        box-shadow: 0 16px 40px rgba(15, 23, 42, .20) !important;
+        backdrop-filter: blur(14px) !important;
+    }
+
+    .main-rail-capsule.open .module-toggle-btn {
+        transform: rotate(0deg) !important;
+        background: #2563eb !important;
+    }
+
+    .main-rail-capsule.open .nav-btn {
+        width: 42px !important;
+        min-width: 42px !important;
+        max-width: 42px !important;
+
+        height: 42px !important;
+        min-height: 42px !important;
+
+        padding: 0 !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+    }
+}      
 </style> 
 
 </head>
 <body class="flex h-screen overflow-hidden text-slate-900 bg-[#f8fafc]">
 
     <aside id="mainSideRail" class="shrink-0 z-20 relative">
-        <nav class="main-rail-capsule" id="mainNav">
+        <nav class="main-rail-capsule collapsed" id="mainNav">
+            <button id="mobileModuleToggle" type="button" class="module-toggle-btn" title="Abrir módulos">›</button>
             <button id="btn-garantias" onclick="loadModule('modulo-garantias.html', this)" class="hidden nav-btn p-3 hover:bg-slate-800 hover:text-white rounded-xl w-full flex justify-center transition-all" title="Garantías"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg></button>
             <button id="btn-traslados" onclick="loadModule('modulo-traslados.html', this)" class="hidden nav-btn p-3 hover:bg-slate-800 hover:text-white rounded-xl w-full flex justify-center transition-all" title="Traslados de Bodega"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg></button>
             <button id="btn-ti" onclick="loadModule('modulo-ti.html', this)" class="hidden nav-btn p-3 hover:bg-slate-800 hover:text-white rounded-xl w-full flex justify-center transition-all" title="Gestión de TI"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg></button>
@@ -712,9 +854,38 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnAte = document.getElementById('btn-atencion');
     const mainFrame = document.getElementById('mainFrame');
     const btnServicioTecnico = document.getElementById('btn-servicio-tecnico');
+    const mainNav = document.getElementById('mainNav');
+    const mobileModuleToggle = document.getElementById('mobileModuleToggle');
 
     let currentRol = '';
+    if (mobileModuleToggle && mainNav) {
+    mobileModuleToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
 
+        mainNav.classList.toggle('open');
+        mainNav.classList.toggle('collapsed');
+    });
+
+    document.addEventListener('click', (e) => {
+        if (
+            window.innerWidth <= 768 &&
+            mainNav.classList.contains('open') &&
+            !mainNav.contains(e.target)
+        ) {
+            mainNav.classList.remove('open');
+            mainNav.classList.add('collapsed');
+        }
+    });
+
+    document.querySelectorAll('#mainNav .nav-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (window.innerWidth <= 768) {
+                mainNav.classList.remove('open');
+                mainNav.classList.add('collapsed');
+            }
+        });
+    });
+}
     if (userMenuBtn && userDropdown) {
         userMenuBtn.addEventListener('click', (e) => {
             e.stopPropagation();
