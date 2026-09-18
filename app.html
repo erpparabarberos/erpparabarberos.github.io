@@ -776,7 +776,16 @@ header .inline-block {
         opacity: 1 !important;
         pointer-events: auto !important;
     }
-}      
+}
+
+body.no-side-menu main {
+    width: 100vw !important;
+    max-width: 100vw !important;
+}
+
+body.no-side-menu #mainSideRail {
+    display: none !important;
+}
 </style> 
 
 </head>
@@ -998,6 +1007,16 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 function configurarMenuPorRol(rol) {
     currentRol = (rol || '').toLowerCase().trim();
+    const mainSideRail = document.getElementById('mainSideRail')
+if (mainSideRail) {
+    if (currentRol === 'admin') {
+        mainSideRail.style.setProperty('display', 'block', 'important');
+        document.body.classList.remove('no-side-menu');
+    } else {
+        mainSideRail.style.setProperty('display', 'none', 'important');
+        document.body.classList.add('no-side-menu');
+    }
+}
 
     ocultarBoton(btnGar);
     ocultarBoton(btnTra);
