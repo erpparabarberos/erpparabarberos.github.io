@@ -469,6 +469,57 @@
                 font-size: 54px;
             }
         }
+        .search-product-box {
+    position: relative;
+}
+
+.search-results {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #dbe4f0;
+    border-radius: 16px;
+    box-shadow: 0 18px 45px rgba(15, 23, 42, .16);
+    z-index: 2000;
+    max-height: 260px;
+    overflow-y: auto;
+    padding: 6px;
+}
+
+.search-results.hidden {
+    display: none;
+}
+
+.search-result-item {
+    width: 100%;
+    border: none;
+    background: white;
+    text-align: left;
+    padding: 12px;
+    border-radius: 12px;
+    cursor: pointer;
+}
+
+.search-result-item:hover {
+    background: #f8fafc;
+}
+
+.search-result-item strong {
+    display: block;
+    font-size: 14px;
+    font-weight: 900;
+    color: #0f172a;
+}
+
+.search-result-item span {
+    display: block;
+    margin-top: 3px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #64748b;
+}
     </style>
 </head>
 
@@ -588,11 +639,25 @@
     <input type="text" id="catalogoCodigo" placeholder="Ej: 1444 o ST-001">
     </div>
     <div class="form-group">
-        <label>Producto o servicio</label>
-        <select id="ventaItem">
-            <option value="">Selecciona...</option>
-        </select>
+    <label>Producto o servicio</label>
+
+    <div class="search-product-box">
+        <input 
+            type="text" 
+            id="ventaBuscadorItem" 
+            placeholder="Escribe el código o el nombre del producto"
+            autocomplete="off"
+        >
+
+        <input type="hidden" id="ventaItem">
+
+        <div id="ventaSearchResults" class="search-results hidden"></div>
     </div>
+
+    <small id="ventaItemSeleccionado" style="display:block; margin-top:8px; color:#64748b; font-weight:700;">
+        Ningún producto seleccionado
+    </small>
+</div>
 
     <div class="form-group">
         <label>Cantidad</label>
@@ -1072,29 +1137,135 @@
         `).join("");
     }
 
-    function llenarSelectVenta() {
-        const select = document.getElementById("ventaItem");
-        select.innerHTML = `<option value="">Selecciona...</option>`;
+function llenarSelectVenta() {
+    limpiarBusquedaVenta();
+}
+    let itemVentaSeleccionado = null;
 
-        catalogoGlobal.forEach(item => {
-            select.innerHTML += `
-            <option 
-        value="${item.docId}" 
-        data-precio="${item.precio}" 
-        data-nombre="${item.nombre}"
-        data-tipo="${item.tipo}">
-        ${item.codigo ? item.codigo + ' - ' : ''}${item.nombre} - ${money(item.precio)}
-    </option>
-`;
-        });
+function normalizarBusqueda(texto) {
+    return String(texto || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim();
+}
+
+function limpiarHTML(texto) {
+    return String(texto || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+function limpiarBusquedaVenta() {
+    itemVentaSeleccionado = null;
+
+    const buscador = document.getElementById("ventaBuscadorItem");
+    const hidden = document.getElementById("ventaItem");
+    const seleccionado = document.getElementById("ventaItemSeleccionado");
+    const resultados = document.getElementById("ventaSearchResults");
+
+    if (buscador) buscador.value = "";
+    if (hidden) hidden.value = "";
+    if (seleccionado) seleccionado.textContent = "Ningún producto seleccionado";
+    if (resultados) {
+        resultados.innerHTML = "";
+        resultados.classList.add("hidden");
+    }
+}
+
+function renderResultadosVenta(query) {
+    const resultados = document.getElementById("ventaSearchResults");
+    const texto = normalizarBusqueda(query);
+
+    if (!resultados) return;
+
+    if (!texto) {
+        resultados.innerHTML = "";
+        resultados.classList.add("hidden");
+        return;
     }
 
-    document.getElementById("ventaItem").addEventListener("change", function() {
-        const option = this.options[this.selectedIndex];
-        const precio = option.dataset.precio || "";
-        document.getElementById("ventaValor").value = precio;
-    });
+    const coincidencias = catalogoGlobal
+        .filter(item => {
+            const codigo = normalizarBusqueda(item.codigo);
+            const nombre = normalizarBusqueda(item.nombre);
+            const categoria = normalizarBusqueda(item.categoria);
 
+            return (
+                codigo.includes(texto) ||
+                nombre.includes(texto) ||
+                categoria.includes(texto)
+            );
+        })
+        .slice(0, 12);
+
+    if (!coincidencias.length) {
+        resultados.innerHTML = `
+            <div class="empty-state" style="padding:14px;">
+                No se encontraron coincidencias.
+            </div>
+        `;
+        resultados.classList.remove("hidden");
+        return;
+    }
+
+    resultados.innerHTML = coincidencias.map(item => `
+        <button 
+            type="button" 
+            class="search-result-item"
+            onclick="seleccionarItemVenta('${item.docId}')">
+            <strong>${limpiarHTML(item.nombre)}</strong>
+            <span>${limpiarHTML(item.tipo || "producto")} · ${money(item.precio || 0)}</span>
+        </button>
+    `).join("");
+
+    resultados.classList.remove("hidden");
+}
+
+window.seleccionarItemVenta = function(docId) {
+    const item = catalogoGlobal.find(i => i.docId === docId);
+
+    if (!item) {
+        alert("No se encontró el producto seleccionado.");
+        return;
+    }
+
+    itemVentaSeleccionado = item;
+
+    document.getElementById("ventaItem").value = item.docId;
+    document.getElementById("ventaBuscadorItem").value = item.nombre;
+    document.getElementById("ventaValor").value = Number(item.precio || 0);
+
+    document.getElementById("ventaItemSeleccionado").textContent =
+        `${item.nombre} · ${money(item.precio || 0)}`;
+
+    document.getElementById("ventaSearchResults").classList.add("hidden");
+};
+
+document.getElementById("ventaBuscadorItem").addEventListener("input", function() {
+    itemVentaSeleccionado = null;
+    document.getElementById("ventaItem").value = "";
+    document.getElementById("ventaValor").value = "";
+    document.getElementById("ventaItemSeleccionado").textContent = "Ningún producto seleccionado";
+
+    renderResultadosVenta(this.value);
+});
+
+document.getElementById("ventaBuscadorItem").addEventListener("focus", function() {
+    renderResultadosVenta(this.value);
+});
+
+document.addEventListener("click", function(e) {
+    const box = document.querySelector(".search-product-box");
+    const resultados = document.getElementById("ventaSearchResults");
+
+    if (box && resultados && !box.contains(e.target)) {
+        resultados.classList.add("hidden");
+    }
+});
     function calcularTotalCarrito() {
     return carritoVenta.reduce((acc, item) => acc + Number(item.total || 0), 0);
 }
@@ -1144,17 +1315,12 @@ window.eliminarItemVenta = function(index) {
 };
 
 document.getElementById("btnAgregarItemVenta").addEventListener("click", function() {
-    const select = document.getElementById("ventaItem");
-    const option = select.options[select.selectedIndex];
-
-    const itemId = select.value;
-    const nombre = option?.dataset?.nombre || option?.textContent || "";
-    const tipo = option?.dataset?.tipo || "producto";
+    const item = itemVentaSeleccionado;
     const cantidad = Number(document.getElementById("ventaCantidad").value || 1);
     const valorUnitario = Number(document.getElementById("ventaValor").value || 0);
 
-    if (!itemId) {
-        alert("Selecciona un producto o servicio.");
+    if (!item) {
+        alert("Busca y selecciona un producto o servicio.");
         return;
     }
 
@@ -1169,21 +1335,22 @@ document.getElementById("btnAgregarItemVenta").addEventListener("click", functio
     }
 
     carritoVenta.push({
-        itemId,
-        nombre,
-        tipo,
+        itemId: item.docId,
+        codigo: item.codigo || "",
+        nombre: item.nombre,
+        tipo: item.tipo || "producto",
         cantidad,
         valorUnitario,
         total: cantidad * valorUnitario
     });
 
-    select.value = "";
+    limpiarBusquedaVenta();
+
     document.getElementById("ventaCantidad").value = 1;
     document.getElementById("ventaValor").value = "";
 
     renderCarritoVenta();
 });
-
 document.getElementById("btnLimpiarVenta").addEventListener("click", function() {
     if (!confirm("¿Quieres limpiar toda la venta?")) return;
 
@@ -1191,6 +1358,7 @@ document.getElementById("btnLimpiarVenta").addEventListener("click", function() 
     document.getElementById("ventaForm").reset();
     document.getElementById("ventaFecha").value = todayISO();
     document.getElementById("ventaCantidad").value = 1;
+    limpiarBusquedaVenta();
 
     renderCarritoVenta();
 });
