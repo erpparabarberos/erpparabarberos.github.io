@@ -573,113 +573,74 @@
 
         <div class="form-card">
             <form id="ventaForm">
-                <div class="form-group">
-                    <label>Fecha</label>
-                    <input type="date" id="ventaFecha" required>
-                </div>
 
-                <div class="form-group">
-                    <label>Cliente</label>
-                    <input type="text" id="ventaCliente" placeholder="Nombre del cliente">
-                </div>
+    <div class="form-group">
+        <label>Fecha</label>
+        <input type="date" id="ventaFecha" required>
+    </div>
 
-                <div class="form-group">
-                    <label>Producto o servicio</label>
-                    <select id="ventaItem" required>
-                        <option value="">Selecciona...</option>
-                    </select>
-                </div>
+    <div class="form-group">
+        <label>Cliente</label>
+        <input type="text" id="ventaCliente" placeholder="Nombre del cliente">
+    </div>
 
-                <div class="form-group">
-                    <label>Cantidad</label>
-                    <input type="number" id="ventaCantidad" min="1" value="1" required>
-                </div>
+    <div class="form-group">
+        <label>Producto o servicio</label>
+        <select id="ventaItem">
+            <option value="">Selecciona...</option>
+        </select>
+    </div>
 
-                <div class="form-group">
-                    <label>Valor unitario</label>
-                    <input type="number" id="ventaValor" min="0" placeholder="Ej: 25000" required>
-                </div>
+    <div class="form-group">
+        <label>Cantidad</label>
+        <input type="number" id="ventaCantidad" min="1" value="1">
+    </div>
 
-                <div class="form-group">
-                    <label>Medio de pago</label>
-                    <select id="ventaMedio" required>
-                        <option value="Efectivo">Efectivo</option>
-                        <option value="Nequi">Nequi</option>
-                        <option value="Daviplata">Daviplata</option>
-                        <option value="Transferencia">Transferencia</option>
-                        <option value="Tarjeta">Tarjeta</option>
-                        <option value="Otro">Otro</option>
-                    </select>
-                </div>
+    <div class="form-group">
+        <label>Valor unitario</label>
+        <input type="number" id="ventaValor" min="0" placeholder="Ej: 25000">
+    </div>
 
-                <div class="form-group">
-                    <label>Observaciones</label>
-                    <textarea id="ventaObs" placeholder="Opcional"></textarea>
-                </div>
+    <button type="button" class="secondary-btn" id="btnAgregarItemVenta">
+        + Agregar a la venta
+    </button>
 
-                <button class="submit-btn" type="submit">Guardar venta</button>
-            </form>
+    <div class="section-title" style="margin-top:20px;">
+        <h2>Detalle de venta</h2>
+    </div>
+
+    <div id="ventaItemsList" class="movement-list">
+        <div class="empty-state">Aún no has agregado productos o servicios.</div>
+    </div>
+
+    <div class="form-card" style="margin-top:16px; background:#0f172a; color:white;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:14px; font-weight:800; color:#cbd5e1;">Total venta</span>
+            <strong id="ventaTotalText" style="font-size:28px; font-weight:900;">$0</strong>
         </div>
-    </section>
+    </div>
 
-    <section id="view-gastos" class="view">
-        <div class="st-header">
-            <div>
-                <h1>Nuevo gasto</h1>
-                <p>Registra compras o salidas de dinero</p>
-            </div>
-        </div>
+    <div class="form-group" style="margin-top:16px;">
+        <label>Medio de pago</label>
+        <select id="ventaMedio" required>
+            <option value="Efectivo">Efectivo</option>
+            <option value="Nequi">Nequi</option>
+            <option value="Daviplata">Daviplata</option>
+            <option value="Transferencia">Transferencia</option>
+            <option value="Tarjeta">Tarjeta</option>
+            <option value="Otro">Otro</option>
+        </select>
+    </div>
 
-        <div class="form-card">
-            <form id="gastoForm">
-                <div class="form-group">
-                    <label>Fecha</label>
-                    <input type="date" id="gastoFecha" required>
-                </div>
+    <div class="form-group">
+        <label>Observaciones</label>
+        <textarea id="ventaObs" placeholder="Opcional"></textarea>
+    </div>
 
-                <div class="form-group">
-                    <label>Categoría</label>
-                    <select id="gastoCategoria" required>
-                        <option value="">Selecciona...</option>
-                        <option value="Repuestos">Repuestos</option>
-                        <option value="Herramientas">Herramientas</option>
-                        <option value="Transporte">Transporte</option>
-                        <option value="Domicilios / envíos">Domicilios / envíos</option>
-                        <option value="Mano de obra externa">Mano de obra externa</option>
-                        <option value="Insumos">Insumos</option>
-                        <option value="Otros">Otros</option>
-                    </select>
-                </div>
+    <button class="submit-btn" type="submit">Guardar venta</button>
+    <button class="secondary-btn" type="button" id="btnLimpiarVenta">Limpiar venta</button>
 
-                <div class="form-group">
-                    <label>Descripción</label>
-                    <input type="text" id="gastoDescripcion" placeholder="Ej: compra de repuesto" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Valor</label>
-                    <input type="number" id="gastoValor" min="0" placeholder="Ej: 12000" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Proveedor</label>
-                    <input type="text" id="gastoProveedor" placeholder="Opcional">
-                </div>
-
-                <div class="form-group">
-                    <label>Medio de pago</label>
-                    <select id="gastoMedio" required>
-                        <option value="Efectivo">Efectivo</option>
-                        <option value="Nequi">Nequi</option>
-                        <option value="Daviplata">Daviplata</option>
-                        <option value="Transferencia">Transferencia</option>
-                        <option value="Tarjeta">Tarjeta</option>
-                        <option value="Otro">Otro</option>
-                    </select>
-                </div>
-
-                <button class="submit-btn" type="submit">Guardar gasto</button>
-            </form>
+</form>
         </div>
     </section>
 
@@ -813,6 +774,7 @@
     let catalogoGlobal = [];
     let ventasGlobal = [];
     let gastosGlobal = [];
+    let carritoVenta = [];
     let currentUserEmail = "sin_usuario";
 
     const money = (value) => {
@@ -922,7 +884,7 @@
         const movimientos = [
             ...ventasGlobal.map(v => ({
                 tipo: "Venta",
-                nombre: v.itemNombre || "Venta",
+                nombre: v.items?.map(item => item.nombre).join(", ") || v.itemNombre || "Venta",
                 valor: v.total,
                 medio: v.medioPago,
                 fecha: v.creadoEn,
@@ -968,7 +930,7 @@
         const movimientos = [
             ...ventasGlobal.map(v => ({
                 tipo: "Venta",
-                nombre: v.itemNombre || "Venta",
+                nombre: v.items?.map(item => item.nombre).join(", ") || v.itemNombre || "Venta",
                 detalle: `${v.cliente || "Sin cliente"} · ${v.medioPago || ""}`,
                 valor: v.total,
                 icon: "🛒",
@@ -1053,10 +1015,14 @@
 
         catalogoGlobal.forEach(item => {
             select.innerHTML += `
-                <option value="${item.docId}" data-precio="${item.precio}" data-nombre="${item.nombre}">
-                    ${item.nombre} - ${money(item.precio)}
-                </option>
-            `;
+            -<option 
+        value="${item.docId}" 
+        data-precio="${item.precio}" 
+        data-nombre="${item.nombre}"
+        data-tipo="${item.tipo}">
+        ${item.nombre} - ${money(item.precio)}
+    </option>
+`;
         });
     }
 
@@ -1066,40 +1032,143 @@
         document.getElementById("ventaValor").value = precio;
     });
 
-    document.getElementById("ventaForm").addEventListener("submit", async function(e) {
-        e.preventDefault();
+    function calcularTotalCarrito() {
+    return carritoVenta.reduce((acc, item) => acc + Number(item.total || 0), 0);
+}
 
-        const select = document.getElementById("ventaItem");
-        const option = select.options[select.selectedIndex];
+function renderCarritoVenta() {
+    const container = document.getElementById("ventaItemsList");
+    const totalText = document.getElementById("ventaTotalText");
 
-        const cantidad = Number(document.getElementById("ventaCantidad").value || 1);
-        const valor = Number(document.getElementById("ventaValor").value || 0);
-        const total = cantidad * valor;
+    if (!container || !totalText) return;
 
-        const data = {
-            fecha: document.getElementById("ventaFecha").value,
-            cliente: document.getElementById("ventaCliente").value.trim(),
-            itemId: select.value,
-            itemNombre: option.dataset.nombre || option.textContent,
-            cantidad,
-            valorUnitario: valor,
-            total,
-            medioPago: document.getElementById("ventaMedio").value,
-            observaciones: document.getElementById("ventaObs").value.trim(),
-            creadoPor: currentUserEmail,
-            creadoEn: firebase.firestore.FieldValue.serverTimestamp()
-        };
+    if (!carritoVenta.length) {
+        container.innerHTML = `<div class="empty-state">Aún no has agregado productos o servicios.</div>`;
+        totalText.textContent = money(0);
+        return;
+    }
 
-        await ventasRef.add(data);
+    container.innerHTML = carritoVenta.map((item, index) => `
+        <div class="movement-card">
+            <div class="movement-icon">${item.tipo === 'servicio' ? '🛠️' : '📦'}</div>
 
-        this.reset();
-        document.getElementById("ventaFecha").value = todayISO();
-        document.getElementById("ventaCantidad").value = 1;
+            <div>
+                <h3>${item.nombre}</h3>
+                <p>
+                    Cantidad: ${item.cantidad} · 
+                    Unitario: ${money(item.valorUnitario)}
+                </p>
+            </div>
 
-        alert("Venta guardada correctamente.");
-        showView("inicio");
+            <div style="text-align:right;">
+                <strong>${money(item.total)}</strong>
+                <button 
+                    type="button" 
+                    onclick="eliminarItemVenta(${index})"
+                    style="margin-top:6px; border:none; background:#fee2e2; color:#dc2626; border-radius:10px; padding:6px 10px; font-weight:900;">
+                    Quitar
+                </button>
+            </div>
+        </div>
+    `).join("");
+
+    totalText.textContent = money(calcularTotalCarrito());
+}
+
+window.eliminarItemVenta = function(index) {
+    carritoVenta.splice(index, 1);
+    renderCarritoVenta();
+};
+
+document.getElementById("btnAgregarItemVenta").addEventListener("click", function() {
+    const select = document.getElementById("ventaItem");
+    const option = select.options[select.selectedIndex];
+
+    const itemId = select.value;
+    const nombre = option?.dataset?.nombre || option?.textContent || "";
+    const tipo = option?.dataset?.tipo || "producto";
+    const cantidad = Number(document.getElementById("ventaCantidad").value || 1);
+    const valorUnitario = Number(document.getElementById("ventaValor").value || 0);
+
+    if (!itemId) {
+        alert("Selecciona un producto o servicio.");
+        return;
+    }
+
+    if (cantidad <= 0) {
+        alert("La cantidad debe ser mayor a cero.");
+        return;
+    }
+
+    if (valorUnitario <= 0) {
+        alert("El valor unitario debe ser mayor a cero.");
+        return;
+    }
+
+    carritoVenta.push({
+        itemId,
+        nombre,
+        tipo,
+        cantidad,
+        valorUnitario,
+        total: cantidad * valorUnitario
     });
 
+    select.value = "";
+    document.getElementById("ventaCantidad").value = 1;
+    document.getElementById("ventaValor").value = "";
+
+    renderCarritoVenta();
+});
+
+document.getElementById("btnLimpiarVenta").addEventListener("click", function() {
+    if (!confirm("¿Quieres limpiar toda la venta?")) return;
+
+    carritoVenta = [];
+    document.getElementById("ventaForm").reset();
+    document.getElementById("ventaFecha").value = todayISO();
+    document.getElementById("ventaCantidad").value = 1;
+
+    renderCarritoVenta();
+});
+
+document.getElementById("ventaForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+
+    if (!carritoVenta.length) {
+        alert("Agrega al menos un producto o servicio a la venta.");
+        return;
+    }
+
+    const total = calcularTotalCarrito();
+
+    const data = {
+        fecha: document.getElementById("ventaFecha").value,
+        cliente: document.getElementById("ventaCliente").value.trim(),
+        items: carritoVenta,
+        cantidadItems: carritoVenta.length,
+        subtotal: total,
+        descuento: 0,
+        total: total,
+        medioPago: document.getElementById("ventaMedio").value,
+        observaciones: document.getElementById("ventaObs").value.trim(),
+        creadoPor: currentUserEmail,
+        creadoEn: firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    await ventasRef.add(data);
+
+    carritoVenta = [];
+
+    this.reset();
+    document.getElementById("ventaFecha").value = todayISO();
+    document.getElementById("ventaCantidad").value = 1;
+
+    renderCarritoVenta();
+
+    alert("Venta guardada correctamente.");
+    showView("inicio");
+});
     document.getElementById("gastoForm").addEventListener("submit", async function(e) {
         e.preventDefault();
 
