@@ -583,7 +583,10 @@
         <label>Cliente</label>
         <input type="text" id="ventaCliente" placeholder="Nombre del cliente">
     </div>
-
+    <div class="form-group">
+    <label>Código único</label>
+    <input type="text" id="catalogoCodigo" placeholder="Ej: 1444 o ST-001">
+    </div>
     <div class="form-group">
         <label>Producto o servicio</label>
         <select id="ventaItem">
@@ -1036,7 +1039,7 @@
         container.innerHTML = catalogoGlobal.map(item => `
             <div class="mini-card">
                 <div>
-                    <strong>${item.nombre}</strong>
+                    <strong>${item.codigo ? item.codigo + ' · ' : ''}${item.nombre}</strong>
                     <p style="margin:4px 0 0; color:#64748b; font-size:12px; font-weight:700;">
                         ${item.tipo} · ${item.categoria || "Sin categoría"}
                     </p>
@@ -1080,7 +1083,7 @@
         data-precio="${item.precio}" 
         data-nombre="${item.nombre}"
         data-tipo="${item.tipo}">
-        ${item.nombre} - ${money(item.precio)}
+        ${item.codigo ? item.codigo + ' - ' : ''}${item.nombre} - ${money(item.precio)}
     </option>
 `;
         });
@@ -1332,7 +1335,13 @@ async function importarCatalogoDesdeJSON(items) {
             item.servicio ||
             item.Servicio
         );
-
+        const codigo = normalizarTexto(
+            item.codigo ||
+            item.Codigo ||
+            item.Código ||
+            item.code ||
+            item.Code
+        );
         const categoriaOriginal = normalizarTexto(
             item.categoria ||
             item.Categoría ||
@@ -1367,6 +1376,7 @@ async function importarCatalogoDesdeJSON(items) {
         const nuevoDoc = catalogoRef.doc();
 
         batch.set(nuevoDoc, {
+            codigo: codigo,
             tipo: tipo,
             nombre: nombre,
             categoria: categoriaOriginal || (tipo === 'servicio' ? 'Servicios' : 'Producto'),
@@ -1396,6 +1406,7 @@ async function importarCatalogoDesdeJSON(items) {
         e.preventDefault();
 
         const data = {
+            codigo: document.getElementById("catalogoCodigo").value.trim(),
             tipo: document.getElementById("catalogoTipo").value,
             nombre: document.getElementById("catalogoNombre").value.trim(),
             categoria: document.getElementById("catalogoCategoria").value.trim(),
