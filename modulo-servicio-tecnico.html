@@ -644,6 +644,66 @@
         </div>
     </section>
 
+    <section id="view-gastos" class="view">
+    <div class="st-header">
+        <div>
+            <h1>Nuevo gasto</h1>
+            <p>Registra compras o salidas de dinero</p>
+        </div>
+    </div>
+
+    <div class="form-card">
+        <form id="gastoForm">
+            <div class="form-group">
+                <label>Fecha</label>
+                <input type="date" id="gastoFecha" required>
+            </div>
+
+            <div class="form-group">
+                <label>Categoría</label>
+                <select id="gastoCategoria" required>
+                    <option value="">Selecciona...</option>
+                    <option value="Repuestos">Repuestos</option>
+                    <option value="Herramientas">Herramientas</option>
+                    <option value="Transporte">Transporte</option>
+                    <option value="Domicilios / envíos">Domicilios / envíos</option>
+                    <option value="Mano de obra externa">Mano de obra externa</option>
+                    <option value="Insumos">Insumos</option>
+                    <option value="Otros">Otros</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Descripción</label>
+                <input type="text" id="gastoDescripcion" placeholder="Ej: compra de repuesto" required>
+            </div>
+
+            <div class="form-group">
+                <label>Valor</label>
+                <input type="number" id="gastoValor" min="0" placeholder="Ej: 12000" required>
+            </div>
+
+            <div class="form-group">
+                <label>Proveedor</label>
+                <input type="text" id="gastoProveedor" placeholder="Opcional">
+            </div>
+
+            <div class="form-group">
+                <label>Medio de pago</label>
+                <select id="gastoMedio" required>
+                    <option value="Efectivo">Efectivo</option>
+                    <option value="Nequi">Nequi</option>
+                    <option value="Daviplata">Daviplata</option>
+                    <option value="Transferencia">Transferencia</option>
+                    <option value="Tarjeta">Tarjeta</option>
+                    <option value="Otro">Otro</option>
+                </select>
+            </div>
+
+            <button class="submit-btn" type="submit">Guardar gasto</button>
+        </form>
+    </div>
+</section>
     <section id="view-catalogo" class="view">
         <div class="st-header">
             <div>
@@ -1015,7 +1075,7 @@
 
         catalogoGlobal.forEach(item => {
             select.innerHTML += `
-            -<option 
+            <option 
         value="${item.docId}" 
         data-precio="${item.precio}" 
         data-nombre="${item.nombre}"
