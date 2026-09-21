@@ -520,6 +520,33 @@
     font-weight: 700;
     color: #64748b;
 }
+        .catalog-scroll-box {
+    max-height: 520px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 6px;
+    border: 1px solid #e2e8f0;
+    border-radius: 22px;
+    background: #f8fafc;
+}
+
+.catalog-scroll-box::-webkit-scrollbar {
+    width: 9px;
+}
+
+.catalog-scroll-box::-webkit-scrollbar-track {
+    background: #e2e8f0;
+    border-radius: 999px;
+}
+
+.catalog-scroll-box::-webkit-scrollbar-thumb {
+    background: #94a3b8;
+    border-radius: 999px;
+}
+
+.catalog-scroll-box::-webkit-scrollbar-thumb:hover {
+    background: #64748b;
+}
     </style>
 </head>
 
@@ -802,7 +829,7 @@
         <div class="form-card">
             <form id="catalogoForm">
                 <input type="hidden" id="catalogoTipo" value="producto">
-
+                <input type="hidden" id="catalogoEditId" value="">
                 <div class="form-group">
                     <label>Nombre</label>
                     <input type="text" id="catalogoNombre" placeholder="Ej: Mantenimiento general" required>
@@ -828,15 +855,35 @@
                     <textarea id="catalogoObs" placeholder="Opcional"></textarea>
                 </div>
 
-                <button class="submit-btn" type="submit">Guardar en catálogo</button>
+                <button class="submit-btn" type="submit" id="catalogoSubmitBtn">
+    Guardar en catálogo
+</button>
+
+<button class="secondary-btn" type="button" id="cancelarEdicionCatalogoBtn" style="display:none;">
+    Cancelar edición
+</button>
             </form>
         </div>
 
         <div class="section-title">
-            <h2>Catálogo actual</h2>
-        </div>
+    <h2>Catálogo actual</h2>
+</div>
 
-        <div class="frequent-list" id="catalogList">
+<div class="form-group">
+    <label>Buscar en catálogo</label>
+    <input 
+        type="search" 
+        id="catalogSearchInput" 
+        placeholder="Buscar por código, nombre o categoría"
+        autocomplete="off"
+    >
+</div>
+
+<div class="catalog-scroll-box">
+    <div class="frequent-list" id="catalogList">
+        <div class="empty-state">Aún no hay productos o servicios creados.</div>
+    </div>
+</div>
             <div class="empty-state">Aún no hay productos o servicios creados.</div>
         </div>
     </section>
@@ -899,6 +946,7 @@
     let ventasGlobal = [];
     let gastosGlobal = [];
     let carritoVenta = [];
+    let catalogoBusqueda = "";
     let currentUserEmail = "sin_usuario";
 
     const money = (value) => {
@@ -1088,27 +1136,89 @@
             </div>
         `).join("");
     }
+function renderCatalogo() {
+    const container = document.getElementById("catalogList");
 
-    function renderCatalogo() {
-        const container = document.getElementById("catalogList");
+    if (!container) return;
 
-        if (!catalogoGlobal.length) {
-            container.innerHTML = `<div class="empty-state">Aún no hay productos o servicios creados.</div>`;
-            return;
-        }
+    let lista = [...catalogoGlobal];
 
-        container.innerHTML = catalogoGlobal.map(item => `
-            <div class="mini-card">
-                <div>
-                    <strong>${item.codigo ? item.codigo + ' · ' : ''}${item.nombre}</strong>
-                    <p style="margin:4px 0 0; color:#64748b; font-size:12px; font-weight:700;">
-                        ${item.tipo} · ${item.categoria || "Sin categoría"}
-                    </p>
-                </div>
-                <span>${money(item.precio)}</span>
-            </div>
-        `).join("");
+    const texto = String(catalogoBusqueda || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim();
+
+    if (texto) {
+        lista = lista.filter(item => {
+            const codigo = String(item.codigo || "")
+                .toLowerCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "");
+
+            const nombre = String(item.nombre || "")
+                .toLowerCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "");
+
+            const categoria = String(item.categoria || "")
+                .toLowerCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "");
+
+            const tipo = String(item.tipo || "")
+                .toLowerCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "");
+
+            return (
+                codigo.includes(texto) ||
+                nombre.includes(texto) ||
+                categoria.includes(texto) ||
+                tipo.includes(texto)
+            );
+        });
     }
+
+    if (!lista.length) {
+        container.innerHTML = `<div class="empty-state">No se encontraron productos o servicios.</div>`;
+        return;
+    }
+
+    container.innerHTML = lista.map(item => `
+        <div class="mini-card" style="align-items:flex-start; gap:12px;">
+            <div style="flex:1;">
+                <strong>
+                    ${item.codigo ? item.codigo + ' · ' : ''}${item.nombre}
+                </strong>
+
+                <p style="margin:4px 0 0; color:#64748b; font-size:12px; font-weight:700;">
+                    ${item.tipo || "producto"} · ${item.categoria || "Sin categoría"}
+                </p>
+
+                <p style="margin:6px 0 0; color:#0f172a; font-size:14px; font-weight:900;">
+                    ${money(item.precio || 0)}
+                </p>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:6px;">
+                <button 
+                    type="button"
+                    onclick="editarCatalogo('${item.docId}')"
+                    style="border:none; background:#dbeafe; color:#1d4ed8; border-radius:10px; padding:7px 10px; font-size:12px; font-weight:900;">
+                    Editar
+                </button>
+
+                <button 
+                    type="button"
+                    onclick="eliminarCatalogo('${item.docId}')"
+                    style="border:none; background:#fee2e2; color:#dc2626; border-radius:10px; padding:7px 10px; font-size:12px; font-weight:900;">
+                    Eliminar
+                </button>
+            </div>
+        </div>
+    `).join("");
+}
 
     function renderFrecuentes() {
         const container = document.getElementById("frequentList");
@@ -1566,30 +1676,119 @@ async function importarCatalogoDesdeJSON(items) {
         omitidos: totalOmitidos
     };
 }
-    document.getElementById("catalogoForm").addEventListener("submit", async function(e) {
-        e.preventDefault();
+    window.editarCatalogo = function(docId) {
+    const item = catalogoGlobal.find(p => p.docId === docId);
 
-        const data = {
-            codigo: document.getElementById("catalogoCodigo").value.trim(),
-            tipo: document.getElementById("catalogoTipo").value,
-            nombre: document.getElementById("catalogoNombre").value.trim(),
-            categoria: document.getElementById("catalogoCategoria").value.trim(),
-            precio: Number(document.getElementById("catalogoPrecio").value || 0),
-            costoAproximado: Number(document.getElementById("catalogoCosto").value || 0),
-            observaciones: document.getElementById("catalogoObs").value.trim(),
-            activo: true,
-            creadoPor: currentUserEmail,
-            creadoEn: firebase.firestore.FieldValue.serverTimestamp()
-        };
+    if (!item) {
+        alert("No se encontró el producto o servicio.");
+        return;
+    }
+
+    document.getElementById("catalogoEditId").value = item.docId;
+
+    if (document.getElementById("catalogoCodigo")) {
+        document.getElementById("catalogoCodigo").value = item.codigo || "";
+    }
+
+    document.getElementById("catalogoTipo").value = item.tipo || "producto";
+    document.getElementById("catalogoNombre").value = item.nombre || "";
+    document.getElementById("catalogoCategoria").value = item.categoria || "";
+    document.getElementById("catalogoPrecio").value = item.precio || 0;
+    document.getElementById("catalogoCosto").value = item.costoAproximado || 0;
+    document.getElementById("catalogoObs").value = item.observaciones || "";
+
+    setCatalogType(item.tipo || "producto");
+
+    document.getElementById("catalogoSubmitBtn").textContent = "Actualizar catálogo";
+    document.getElementById("cancelarEdicionCatalogoBtn").style.display = "block";
+
+    document.getElementById("catalogoForm").scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+    });
+};
+
+function cancelarEdicionCatalogo() {
+    document.getElementById("catalogoForm").reset();
+    document.getElementById("catalogoEditId").value = "";
+    document.getElementById("catalogoTipo").value = "producto";
+
+    setCatalogType("producto");
+
+    document.getElementById("catalogoSubmitBtn").textContent = "Guardar en catálogo";
+    document.getElementById("cancelarEdicionCatalogoBtn").style.display = "none";
+}
+
+document.getElementById("cancelarEdicionCatalogoBtn").addEventListener("click", cancelarEdicionCatalogo);
+
+window.eliminarCatalogo = async function(docId) {
+    const item = catalogoGlobal.find(p => p.docId === docId);
+
+    if (!item) {
+        alert("No se encontró el producto o servicio.");
+        return;
+    }
+
+    const confirmar = confirm(`¿Seguro que quieres eliminar "${item.nombre}" del catálogo?`);
+
+    if (!confirmar) return;
+
+    await catalogoRef.doc(docId).delete();
+
+    alert("Producto o servicio eliminado correctamente.");
+
+    const editId = document.getElementById("catalogoEditId").value;
+
+    if (editId === docId) {
+        cancelarEdicionCatalogo();
+    }
+};
+    const catalogSearchInput = document.getElementById("catalogSearchInput");
+
+if (catalogSearchInput) {
+    catalogSearchInput.addEventListener("input", function() {
+        catalogoBusqueda = this.value;
+        renderCatalogo();
+    });
+}
+document.getElementById("catalogoForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+
+    const editId = document.getElementById("catalogoEditId").value;
+
+    const data = {
+        codigo: document.getElementById("catalogoCodigo") 
+            ? document.getElementById("catalogoCodigo").value.trim() 
+            : "",
+        tipo: document.getElementById("catalogoTipo").value,
+        nombre: document.getElementById("catalogoNombre").value.trim(),
+        categoria: document.getElementById("catalogoCategoria").value.trim(),
+        precio: Number(document.getElementById("catalogoPrecio").value || 0),
+        costoAproximado: Number(document.getElementById("catalogoCosto").value || 0),
+        observaciones: document.getElementById("catalogoObs").value.trim(),
+        activo: true,
+        actualizadoPor: currentUserEmail,
+        actualizadoEn: firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    if (!data.nombre) {
+        alert("El nombre es obligatorio.");
+        return;
+    }
+
+    if (editId) {
+        await catalogoRef.doc(editId).update(data);
+        alert("Producto o servicio actualizado correctamente.");
+    } else {
+        data.creadoPor = currentUserEmail;
+        data.creadoEn = firebase.firestore.FieldValue.serverTimestamp();
 
         await catalogoRef.add(data);
-
-        this.reset();
-        document.getElementById("catalogoTipo").value = "producto";
-        setCatalogType("producto");
-
         alert("Guardado en catálogo correctamente.");
-    });
+    }
+
+    cancelarEdicionCatalogo();
+});
 </script>
 
 </body>
