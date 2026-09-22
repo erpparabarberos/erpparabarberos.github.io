@@ -658,9 +658,15 @@
     </div>
 
     <div class="form-group">
-        <label>Cliente</label>
-        <input type="text" id="ventaCliente" placeholder="Nombre del cliente">
-    </div>
+    <label>Cliente</label>
+    <input 
+        type="text" 
+        id="ventaCliente" 
+        value="Consumidor final"
+        readonly
+        style="background:#f1f5f9; color:#64748b; cursor:not-allowed;"
+    >
+</div>
     <div class="form-group">
     <label>Producto o servicio</label>
 
@@ -1456,9 +1462,10 @@ document.getElementById("btnLimpiarVenta").addEventListener("click", function() 
     if (!confirm("¿Quieres limpiar toda la venta?")) return;
 
     carritoVenta = [];
-    document.getElementById("ventaForm").reset();
-    document.getElementById("ventaFecha").value = todayISO();
-    document.getElementById("ventaCantidad").value = 1;
+document.getElementById("ventaForm").reset();
+document.getElementById("ventaFecha").value = todayISO();
+document.getElementById("ventaCliente").value = "Consumidor final";
+document.getElementById("ventaCantidad").value = 1;
     limpiarBusquedaVenta();
 
     renderCarritoVenta();
