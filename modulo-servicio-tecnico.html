@@ -547,6 +547,62 @@
 .catalog-scroll-box::-webkit-scrollbar-thumb:hover {
     background: #64748b;
 }
+        #view-historial {
+    padding-top: 0 !important;
+    padding-bottom: 120px !important;
+}
+
+#view-historial .st-header {
+    margin-top: 0 !important;
+    margin-bottom: 18px !important;
+}
+
+#historyList {
+    padding-bottom: 110px !important;
+}
+
+.history-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 18px;
+    padding: 14px;
+    display: grid;
+    grid-template-columns: 42px 1fr auto;
+    gap: 12px;
+    align-items: center;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, .04);
+}
+
+.history-card-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 15px;
+    background: #f1f5f9;
+    display: grid;
+    place-items: center;
+    font-size: 20px;
+}
+
+.history-card h3 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 900;
+    color: #0f172a;
+}
+
+.history-card p {
+    margin: 3px 0 0;
+    font-size: 12px;
+    font-weight: 700;
+    color: #64748b;
+}
+
+.history-card strong {
+    font-size: 14px;
+    font-weight: 900;
+    color: #0f172a;
+    white-space: nowrap;
+}
     </style>
 </head>
 
@@ -889,13 +945,13 @@
         </div>
     </section>
 
-    <section id="view-historial" class="view">
-        <div class="st-header">
-            <div>
-                <h1>Historial</h1>
-                <p>Ventas y gastos registrados</p>
-            </div>
+<section id="view-historial" class="view">
+    <div class="st-header">
+        <div>
+            <h1>Historial</h1>
+            <p>Ventas y gastos registrados</p>
         </div>
+    </div>
 
         <div class="movement-list" id="historyList">
             <div class="empty-state">Todavía no hay historial.</div>
@@ -1097,46 +1153,51 @@
         `).join("");
     }
 
-    function renderHistorial() {
-        const container = document.getElementById("historyList");
+function renderHistorial() {
+    const container = document.getElementById("historyList");
 
-        const movimientos = [
-            ...ventasGlobal.map(v => ({
-                tipo: "Venta",
-                nombre: v.items?.map(item => item.nombre).join(", ") || v.itemNombre || "Venta",
-                detalle: `${v.cliente || "Sin cliente"} · ${v.medioPago || ""}`,
-                valor: v.total,
-                icon: "🛒",
-                fecha: v.fecha
-            })),
-            ...gastosGlobal.map(g => ({
-                tipo: "Gasto",
-                nombre: g.descripcion || "Gasto",
-                detalle: `${g.categoria || "Sin categoría"} · ${g.medioPago || ""}`,
-                valor: g.valor,
-                icon: "💳",
-                fecha: g.fecha
-            }))
-        ].sort((a, b) => String(b.fecha).localeCompare(String(a.fecha)));
+    if (!container) return;
 
-        if (!movimientos.length) {
-            container.innerHTML = `<div class="empty-state">Todavía no hay historial.</div>`;
-            return;
-        }
+    const movimientos = [
+        ...ventasGlobal.map(v => ({
+            tipo: "Venta",
+            nombre: v.items?.map(item => item.nombre).join(", ") || v.itemNombre || "Venta",
+            detalle: `${v.cliente || "Consumidor final"} · ${v.medioPago || ""}`,
+            valor: v.total,
+            icon: "🛒",
+            fecha: v.fecha
+        })),
+        ...gastosGlobal.map(g => ({
+            tipo: "Gasto",
+            nombre: g.descripcion || "Gasto",
+            detalle: `${g.categoria || "Sin categoría"} · ${g.medioPago || ""}`,
+            valor: g.valor,
+            icon: "💳",
+            fecha: g.fecha
+        }))
+    ].sort((a, b) => String(b.fecha).localeCompare(String(a.fecha)));
 
-        container.innerHTML = movimientos.map(m => `
-            <div class="movement-card">
-                <div class="movement-icon">${m.icon}</div>
-                <div>
-                    <h3>${m.tipo}: ${m.nombre}</h3>
-                    <p>${m.detalle}<br>${m.fecha || ""}</p>
-                </div>
-                <div style="text-align:right;">
-                    <strong>${money(m.valor)}</strong>
-                </div>
-            </div>
-        `).join("");
+    if (!movimientos.length) {
+        container.innerHTML = `<div class="empty-state">Todavía no hay historial.</div>`;
+        return;
     }
+
+    container.innerHTML = movimientos.map(m => `
+        <div class="history-card">
+            <div class="history-card-icon">${m.icon}</div>
+
+            <div>
+                <h3>${m.tipo}: ${m.nombre}</h3>
+                <p>${m.detalle}</p>
+                <p>${m.fecha || ""}</p>
+            </div>
+
+            <div style="text-align:right;">
+                <strong>${money(m.valor)}</strong>
+            </div>
+        </div>
+    `).join("");
+}
 function renderCatalogo() {
     const container = document.getElementById("catalogList");
 
