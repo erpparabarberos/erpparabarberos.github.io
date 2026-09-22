@@ -383,7 +383,7 @@
             border: 1px solid #e2e8f0;
             border-radius: 26px;
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
+            grid-template-columns: repeat(6, 1fr);
             align-items: center;
             box-shadow: 0 18px 48px rgba(15, 23, 42, .18);
             backdrop-filter: blur(16px);
@@ -400,13 +400,13 @@
             justify-content: center;
             gap: 4px;
             color: #64748b;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 800;
             cursor: pointer;
         }
 
         .bottom-nav button span {
-            font-size: 21px;
+            font-size: 18px;
             line-height: 1;
         }
 
@@ -953,7 +953,113 @@
     <div class="frequent-list" id="catalogList"></div>
 </div>
     </section>
+<section id="view-caja" class="view">
+    <div class="st-header">
+        <div>
+            <h1>Caja</h1>
+            <p>Apertura, cierre y balance del turno</p>
+        </div>
+    </div>
 
+    <div id="turnoCerradoBox" class="form-card">
+        <h2 style="margin:0 0 8px; font-size:22px; font-weight:900;">
+            Abrir turno
+        </h2>
+
+        <p style="margin:0 0 16px; color:#64748b; font-size:13px; font-weight:700;">
+            Para registrar ventas o gastos primero debes abrir caja.
+        </p>
+
+        <form id="turnoAperturaForm">
+            <div class="form-group">
+                <label>Fecha</label>
+                <input type="date" id="turnoFechaApertura" readonly>
+            </div>
+
+            <div class="form-group">
+                <label>Efectivo inicial en caja</label>
+                <input type="number" id="turnoEfectivoInicial" min="0" placeholder="Ej: 50000" required>
+            </div>
+
+            <div class="form-group">
+                <label>Observación de apertura</label>
+                <textarea id="turnoObsApertura" placeholder="Opcional"></textarea>
+            </div>
+
+            <button class="submit-btn" type="submit">Abrir turno</button>
+        </form>
+    </div>
+
+    <div id="turnoActivoBox" style="display:none;">
+        <div class="balance-card">
+            <div class="balance-label">Turno abierto</div>
+            <div class="balance-value" id="turnoCajaEsperada">$0</div>
+            <div class="balance-sub">Efectivo esperado en caja</div>
+        </div>
+
+        <div class="money-row">
+            <div class="money-item">
+                <span>Inicial</span>
+                <strong id="turnoInicial">$0</strong>
+            </div>
+            <div class="money-item">
+                <span>Ventas efectivo</span>
+                <strong id="turnoVentasEfectivo">$0</strong>
+            </div>
+            <div class="money-item">
+                <span>Gastos efectivo</span>
+                <strong id="turnoGastosEfectivo">$0</strong>
+            </div>
+        </div>
+
+        <div class="form-card">
+            <h2 style="margin:0 0 8px; font-size:22px; font-weight:900;">
+                Cerrar turno
+            </h2>
+
+            <p style="margin:0 0 16px; color:#64748b; font-size:13px; font-weight:700;">
+                Cuenta el efectivo real que hay en caja y el sistema calculará si hay sobrante o faltante.
+            </p>
+
+            <div class="money-row" style="margin-bottom:16px;">
+                <div class="money-item">
+                    <span>Ventas total</span>
+                    <strong id="turnoVentasTotal">$0</strong>
+                </div>
+                <div class="money-item">
+                    <span>Gastos total</span>
+                    <strong id="turnoGastosTotal">$0</strong>
+                </div>
+                <div class="money-item">
+                    <span>Utilidad</span>
+                    <strong id="turnoUtilidad">$0</strong>
+                </div>
+            </div>
+
+            <form id="turnoCierreForm">
+                <div class="form-group">
+                    <label>Efectivo contado en caja</label>
+                    <input type="number" id="turnoEfectivoContado" min="0" placeholder="Ej: 150000" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Observación de cierre</label>
+                    <textarea id="turnoObsCierre" placeholder="Opcional"></textarea>
+                </div>
+
+                <button class="submit-btn" type="submit">Cerrar turno</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="section-title">
+        <h2>Historial de turnos</h2>
+    </div>
+
+    <div class="movement-list" id="turnosList">
+        <div class="empty-state">Todavía no hay turnos registrados.</div>
+    </div>
+</section>
 <section id="view-historial" class="view">
     <div class="st-header">
         <div>
@@ -970,6 +1076,9 @@
 </div>
 
 <nav class="bottom-nav">
+    <button class="nav-btn" onclick="showView('caja')" data-view="caja">
+    <span>💰</span>Caja
+</button>
     <button class="nav-btn active" onclick="showView('inicio')" data-view="inicio">
         <span>🏠</span>Inicio
     </button>
@@ -1007,12 +1116,15 @@
     const ventasRef = db.collection("st_ventas");
     const gastosRef = db.collection("st_gastos");
     const catalogoRef = db.collection("st_catalogo");
+    const turnosRef = db.collection("st_turnos");
 
     let catalogoGlobal = [];
     let ventasGlobal = [];
     let gastosGlobal = [];
     let carritoVenta = [];
     let catalogoBusqueda = "";
+    let turnosGlobal = [];
+    let turnoActivo = null;
     let currentUserEmail = "sin_usuario";
 
     const money = (value) => {
@@ -1041,7 +1153,16 @@
     document.getElementById("ventaFecha").value = todayISO();
     document.getElementById("gastoFecha").value = todayISO();
 
+if (document.getElementById("turnoFechaApertura")) {
+    document.getElementById("turnoFechaApertura").value = todayISO();
+}
+
 window.showView = function(viewName) {
+    if ((viewName === "ventas" || viewName === "gastos") && !turnoActivo) {
+        alert("Primero debes abrir turno en Caja.");
+        viewName = "caja";
+    }
+
     document.querySelectorAll(".view").forEach(view => {
         view.classList.remove("active");
         view.style.display = "none";
@@ -1112,27 +1233,149 @@ window.showView = function(viewName) {
             renderMovimientos();
             renderHistorial();
         });
+        turnosRef.orderBy("creadoEn", "desc").onSnapshot(snapshot => {
+    turnosGlobal = [];
+    snapshot.forEach(doc => turnosGlobal.push({ docId: doc.id, ...doc.data() }));
+
+    turnoActivo = turnosGlobal.find(t => 
+        t.estado === "abierto" && 
+        t.responsable === currentUserEmail
+    ) || null;
+
+    renderCaja();
+    renderDashboard();
+});
+    }
+function obtenerResumenTurno(turno) {
+    if (!turno) {
+        return {
+            efectivoInicial: 0,
+            totalVentas: 0,
+            totalGastos: 0,
+            ventasEfectivo: 0,
+            gastosEfectivo: 0,
+            efectivoEsperado: 0,
+            utilidad: 0
+        };
     }
 
-    function renderDashboard() {
+    const ventasTurno = ventasGlobal.filter(v => v.turnoId === turno.docId);
+    const gastosTurno = gastosGlobal.filter(g => g.turnoId === turno.docId);
+
+    const totalVentas = ventasTurno.reduce((acc, v) => acc + Number(v.total || 0), 0);
+    const totalGastos = gastosTurno.reduce((acc, g) => acc + Number(g.valor || 0), 0);
+
+    const ventasEfectivo = ventasTurno
+        .filter(v => String(v.medioPago || "").toLowerCase() === "efectivo")
+        .reduce((acc, v) => acc + Number(v.total || 0), 0);
+
+    const gastosEfectivo = gastosTurno
+        .filter(g => String(g.medioPago || "").toLowerCase() === "efectivo")
+        .reduce((acc, g) => acc + Number(g.valor || 0), 0);
+
+    const efectivoInicial = Number(turno.efectivoInicial || 0);
+    const efectivoEsperado = efectivoInicial + ventasEfectivo - gastosEfectivo;
+    const utilidad = totalVentas - totalGastos;
+
+    return {
+        efectivoInicial,
+        totalVentas,
+        totalGastos,
+        ventasEfectivo,
+        gastosEfectivo,
+        efectivoEsperado,
+        utilidad
+    };
+}
+
+function renderCaja() {
+    const cerradoBox = document.getElementById("turnoCerradoBox");
+    const activoBox = document.getElementById("turnoActivoBox");
+    const turnosList = document.getElementById("turnosList");
+
+    if (!cerradoBox || !activoBox || !turnosList) return;
+
+    if (!turnoActivo) {
+        cerradoBox.style.display = "block";
+        activoBox.style.display = "none";
+    } else {
+        cerradoBox.style.display = "none";
+        activoBox.style.display = "block";
+
+        const resumen = obtenerResumenTurno(turnoActivo);
+
+        document.getElementById("turnoInicial").textContent = money(resumen.efectivoInicial);
+        document.getElementById("turnoVentasEfectivo").textContent = money(resumen.ventasEfectivo);
+        document.getElementById("turnoGastosEfectivo").textContent = money(resumen.gastosEfectivo);
+        document.getElementById("turnoCajaEsperada").textContent = money(resumen.efectivoEsperado);
+
+        document.getElementById("turnoVentasTotal").textContent = money(resumen.totalVentas);
+        document.getElementById("turnoGastosTotal").textContent = money(resumen.totalGastos);
+        document.getElementById("turnoUtilidad").textContent = money(resumen.utilidad);
+    }
+
+    if (!turnosGlobal.length) {
+        turnosList.innerHTML = `<div class="empty-state">Todavía no hay turnos registrados.</div>`;
+        return;
+    }
+
+    turnosList.innerHTML = turnosGlobal.slice(0, 20).map(turno => {
+        const resumen = obtenerResumenTurno(turno);
+        const estado = turno.estado === "abierto" ? "Abierto" : "Cerrado";
+        const diferencia = Number(turno.diferencia || 0);
+
+        let diferenciaTexto = "";
+
+        if (turno.estado === "cerrado") {
+            if (diferencia > 0) diferenciaTexto = `Sobrante: ${money(diferencia)}`;
+            if (diferencia < 0) diferenciaTexto = `Faltante: ${money(Math.abs(diferencia))}`;
+            if (diferencia === 0) diferenciaTexto = "Caja cuadrada";
+        } else {
+            diferenciaTexto = "En curso";
+        }
+
+        return `
+            <div class="history-card">
+                <div class="history-card-icon">${turno.estado === "abierto" ? "🟢" : "🔒"}</div>
+
+                <div>
+                    <h3>Turno ${estado}</h3>
+                    <p>${turno.fechaApertura || ""} · ${turno.responsable || ""}</p>
+                    <p>${diferenciaTexto}</p>
+                </div>
+
+                <div style="text-align:right;">
+                    <strong>${money(turno.estado === "cerrado" ? turno.efectivoContado : resumen.efectivoEsperado)}</strong>
+                </div>
+            </div>
+        `;
+    }).join("");
+}
+function renderDashboard() {
+    let ventasBase = [];
+    let gastosBase = [];
+
+    if (turnoActivo) {
+        ventasBase = ventasGlobal.filter(v => v.turnoId === turnoActivo.docId);
+        gastosBase = gastosGlobal.filter(g => g.turnoId === turnoActivo.docId);
+    } else {
         const hoy = todayISO();
 
-        const ventasHoy = ventasGlobal
-            .filter(v => v.fecha === hoy)
-            .reduce((acc, v) => acc + Number(v.total || 0), 0);
-
-        const gastosHoy = gastosGlobal
-            .filter(g => g.fecha === hoy)
-            .reduce((acc, g) => acc + Number(g.valor || 0), 0);
-
-        const utilidad = ventasHoy - gastosHoy;
-
-        document.getElementById("ventasHoy").textContent = money(ventasHoy);
-        document.getElementById("gastosHoy").textContent = money(gastosHoy);
-        document.getElementById("utilidadHoy").textContent = money(utilidad);
-        document.getElementById("balanceHoy").textContent = money(utilidad);
+        ventasBase = ventasGlobal.filter(v => v.fecha === hoy);
+        gastosBase = gastosGlobal.filter(g => g.fecha === hoy);
     }
 
+    const ventasTotal = ventasBase.reduce((acc, v) => acc + Number(v.total || 0), 0);
+    const gastosTotal = gastosBase.reduce((acc, g) => acc + Number(g.valor || 0), 0);
+    const utilidad = ventasTotal - gastosTotal;
+
+    document.getElementById("ventasHoy").textContent = money(ventasTotal);
+    document.getElementById("gastosHoy").textContent = money(gastosTotal);
+    document.getElementById("utilidadHoy").textContent = money(utilidad);
+    document.getElementById("balanceHoy").textContent = money(utilidad);
+
+    renderCaja();
+}
     function renderMovimientos() {
         const container = document.getElementById("movementList");
 
@@ -1557,8 +1800,80 @@ document.getElementById("ventaCantidad").value = 1;
 
     renderCarritoVenta();
 });
+document.getElementById("turnoAperturaForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
 
+    if (turnoActivo) {
+        alert("Ya tienes un turno abierto.");
+        return;
+    }
+
+    const efectivoInicial = Number(document.getElementById("turnoEfectivoInicial").value || 0);
+
+    const data = {
+        estado: "abierto",
+        responsable: currentUserEmail,
+        fechaApertura: document.getElementById("turnoFechaApertura").value || todayISO(),
+        efectivoInicial: efectivoInicial,
+        observacionApertura: document.getElementById("turnoObsApertura").value.trim(),
+        creadoPor: currentUserEmail,
+        creadoEn: firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    await turnosRef.add(data);
+
+    this.reset();
+    document.getElementById("turnoFechaApertura").value = todayISO();
+
+    alert("Turno abierto correctamente.");
+});
+    document.getElementById("turnoCierreForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+
+    if (!turnoActivo) {
+        alert("No hay turno abierto para cerrar.");
+        return;
+    }
+
+    const resumen = obtenerResumenTurno(turnoActivo);
+    const efectivoContado = Number(document.getElementById("turnoEfectivoContado").value || 0);
+    const diferencia = efectivoContado - resumen.efectivoEsperado;
+
+    const confirmar = confirm(
+        `Caja esperada: ${money(resumen.efectivoEsperado)}\n` +
+        `Efectivo contado: ${money(efectivoContado)}\n` +
+        `Diferencia: ${money(diferencia)}\n\n` +
+        `¿Deseas cerrar el turno?`
+    );
+
+    if (!confirmar) return;
+
+    await turnosRef.doc(turnoActivo.docId).update({
+        estado: "cerrado",
+        totalVentas: resumen.totalVentas,
+        totalGastos: resumen.totalGastos,
+        ventasEfectivo: resumen.ventasEfectivo,
+        gastosEfectivo: resumen.gastosEfectivo,
+        utilidad: resumen.utilidad,
+        efectivoEsperado: resumen.efectivoEsperado,
+        efectivoContado: efectivoContado,
+        diferencia: diferencia,
+        observacionCierre: document.getElementById("turnoObsCierre").value.trim(),
+        cerradoPor: currentUserEmail,
+        cerradoEn: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    this.reset();
+
+    alert("Turno cerrado correctamente.");
+    showView("inicio");
+});
 document.getElementById("ventaForm").addEventListener("submit", async function(e) {
+    if (!turnoActivo) {
+    alert("Primero debes abrir turno en Caja.");
+    showView("caja");
+    return;
+}
     e.preventDefault();
 
     if (!carritoVenta.length) {
@@ -1569,18 +1884,20 @@ document.getElementById("ventaForm").addEventListener("submit", async function(e
     const total = calcularTotalCarrito();
 
     const data = {
-        fecha: document.getElementById("ventaFecha").value,
-        cliente: document.getElementById("ventaCliente").value.trim(),
-        items: carritoVenta,
-        cantidadItems: carritoVenta.length,
-        subtotal: total,
-        descuento: 0,
-        total: total,
-        medioPago: document.getElementById("ventaMedio").value,
-        observaciones: document.getElementById("ventaObs").value.trim(),
-        creadoPor: currentUserEmail,
-        creadoEn: firebase.firestore.FieldValue.serverTimestamp()
-    };
+    turnoId: turnoActivo.docId,
+    turnoFechaApertura: turnoActivo.fechaApertura || todayISO(),
+    fecha: document.getElementById("ventaFecha").value,
+    cliente: document.getElementById("ventaCliente").value.trim(),
+    items: carritoVenta,
+    cantidadItems: carritoVenta.length,
+    subtotal: total,
+    descuento: 0,
+    total: total,
+    medioPago: document.getElementById("ventaMedio").value,
+    observaciones: document.getElementById("ventaObs").value.trim(),
+    creadoPor: currentUserEmail,
+    creadoEn: firebase.firestore.FieldValue.serverTimestamp()
+};
 
     await ventasRef.add(data);
 
