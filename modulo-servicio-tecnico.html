@@ -603,6 +603,16 @@
     color: #0f172a;
     white-space: nowrap;
 }
+        #view-historial {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+#view-historial .st-header {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+        
     </style>
 </head>
 
@@ -1032,16 +1042,33 @@
     document.getElementById("ventaFecha").value = todayISO();
     document.getElementById("gastoFecha").value = todayISO();
 
-    window.showView = function(viewName) {
-        document.querySelectorAll(".view").forEach(view => view.classList.remove("active"));
-        document.getElementById("view-" + viewName).classList.add("active");
+window.showView = function(viewName) {
+    document.querySelectorAll(".view").forEach(view => {
+        view.classList.remove("active");
+        view.style.display = "none";
+    });
 
-        document.querySelectorAll(".nav-btn").forEach(btn => {
-            btn.classList.toggle("active", btn.dataset.view === viewName);
-        });
+    const activeView = document.getElementById("view-" + viewName);
 
-        window.scrollTo({ top: 0, behavior: "smooth" });
-    };
+    if (activeView) {
+        activeView.classList.add("active");
+        activeView.style.display = "block";
+    }
+
+    document.querySelectorAll(".nav-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.view === viewName);
+    });
+
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    window.scrollTo(0, 0);
+
+    setTimeout(() => {
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+        window.scrollTo(0, 0);
+    }, 50);
+};
 
     window.setCatalogType = function(type) {
         document.getElementById("catalogoTipo").value = type;
