@@ -903,6 +903,11 @@
                 <input type="hidden" id="catalogoTipo" value="producto">
                 <input type="hidden" id="catalogoEditId" value="">
                 <div class="form-group">
+                    <label>Código</label>
+                    <input type="text" id="catalogoCodigo" placeholder="Opcional. Ej: REP-001">
+                </div>
+
+                <div class="form-group">
                     <label>Nombre</label>
                     <input type="text" id="catalogoNombre" placeholder="Ej: Mantenimiento general" required>
                 </div>
@@ -1200,13 +1205,50 @@ window.showView = function(viewName) {
             type === "producto" ? "Ej: Batería para máquina" : "Ej: Mantenimiento general";
     };
 
-    auth.onAuthStateChanged(user => {
-        if (user) {
-            currentUserEmail = user.email || "sin_usuario";
-            document.getElementById("userInitial").textContent = currentUserEmail.charAt(0).toUpperCase();
+    const ROLES_PERMITIDOS = [
+        "admin",
+        "servicio_tecnico",
+        "servicio tecnico",
+        "servicio técnico",
+        "tecnico",
+        "técnico"
+    ];
+
+    let datosCargados = false;
+
+    function salirAlLogin() {
+        const destino = window.parent && window.parent !== window ? window.parent : window;
+        destino.location.href = "index.html";
+    }
+
+    auth.onAuthStateChanged(async user => {
+        if (!user) {
+            salirAlLogin();
+            return;
         }
 
-        cargarDatos();
+        try {
+            const email = String(user.email || "").toLowerCase();
+            const userDoc = await db.collection("usuarios").doc(email).get();
+            const rol = userDoc.exists ? String(userDoc.data().rol || "").toLowerCase().trim() : "";
+
+            if (!ROLES_PERMITIDOS.includes(rol)) {
+                alert("No tienes permiso para acceder a Servicio Técnico.");
+                salirAlLogin();
+                return;
+            }
+
+            currentUserEmail = user.email || "sin_usuario";
+            document.getElementById("userInitial").textContent = currentUserEmail.charAt(0).toUpperCase();
+
+            if (!datosCargados) {
+                datosCargados = true;
+                cargarDatos();
+            }
+        } catch (error) {
+            console.error(error);
+            alert("No se pudo verificar tu usuario: " + error.message);
+        }
     });
 
     function cargarDatos() {
@@ -1340,7 +1382,7 @@ function renderCaja() {
 
                 <div>
                     <h3>Turno ${estado}</h3>
-                    <p>${turno.fechaApertura || ""} · ${turno.responsable || ""}</p>
+                    <p>${limpiarHTML(turno.fechaApertura)} · ${limpiarHTML(turno.responsable)}</p>
                     <p>${diferenciaTexto}</p>
                 </div>
 
@@ -1412,11 +1454,11 @@ function renderDashboard() {
                 <div class="movement-icon">${m.icon}</div>
                 <div>
                     <h3>${m.tipo}</h3>
-                    <p>${m.nombre}</p>
+                    <p>${limpiarHTML(m.nombre)}</p>
                 </div>
                 <div style="text-align:right;">
                     <strong>${money(m.valor)}</strong>
-                    <p style="margin:3px 0 0; font-size:12px; color:#64748b; font-weight:700;">${m.medio || ""}</p>
+                    <p style="margin:3px 0 0; font-size:12px; color:#64748b; font-weight:700;">${limpiarHTML(m.medio)}</p>
                 </div>
             </div>
         `).join("");
@@ -1456,9 +1498,9 @@ function renderHistorial() {
             <div class="history-card-icon">${m.icon}</div>
 
             <div>
-                <h3>${m.tipo}: ${m.nombre}</h3>
-                <p>${m.detalle}</p>
-                <p>${m.fecha || ""}</p>
+                <h3>${m.tipo}: ${limpiarHTML(m.nombre)}</h3>
+                <p>${limpiarHTML(m.detalle)}</p>
+                <p>${limpiarHTML(m.fecha)}</p>
             </div>
 
             <div style="text-align:right;">
@@ -1520,11 +1562,11 @@ function renderCatalogo() {
         <div class="mini-card" style="align-items:flex-start; gap:12px;">
             <div style="flex:1;">
                 <strong>
-                    ${item.codigo ? item.codigo + ' · ' : ''}${item.nombre}
+                    ${item.codigo ? limpiarHTML(item.codigo) + ' · ' : ''}${limpiarHTML(item.nombre)}
                 </strong>
 
                 <p style="margin:4px 0 0; color:#64748b; font-size:12px; font-weight:700;">
-                    ${item.tipo || "producto"} · ${item.categoria || "Sin categoría"}
+                    ${limpiarHTML(item.tipo || "producto")} · ${limpiarHTML(item.categoria || "Sin categoría")}
                 </p>
 
                 <p style="margin:6px 0 0; color:#0f172a; font-size:14px; font-weight:900;">
@@ -1564,9 +1606,9 @@ function renderCatalogo() {
         container.innerHTML = frecuentes.map(item => `
             <div class="mini-card">
                 <div>
-                    <strong>${item.nombre}</strong>
+                    <strong>${limpiarHTML(item.nombre)}</strong>
                     <p style="margin:4px 0 0; color:#64748b; font-size:12px; font-weight:700;">
-                        ${item.tipo}
+                        ${limpiarHTML(item.tipo)}
                     </p>
                 </div>
                 <span>${money(item.precio)}</span>
@@ -1588,7 +1630,7 @@ function normalizarBusqueda(texto) {
 }
 
 function limpiarHTML(texto) {
-    return String(texto || "")
+    return String(texto ?? "")
         .replaceAll("&", "&amp;")
         .replaceAll("<", "&lt;")
         .replaceAll(">", "&gt;")
@@ -1724,9 +1766,9 @@ function renderCarritoVenta() {
             <div class="movement-icon">${item.tipo === 'servicio' ? '🛠️' : '📦'}</div>
 
             <div>
-                <h3>${item.nombre}</h3>
+                <h3>${limpiarHTML(item.nombre)}</h3>
                 <p>
-                    Cantidad: ${item.cantidad} · 
+                    Cantidad: ${limpiarHTML(item.cantidad)} ·
                     Unitario: ${money(item.valorUnitario)}
                 </p>
             </div>
@@ -1800,9 +1842,38 @@ document.getElementById("ventaCantidad").value = 1;
 
     renderCarritoVenta();
 });
-document.getElementById("turnoAperturaForm").addEventListener("submit", async function(e) {
-    e.preventDefault();
+// Evita guardados dobles: desactiva el botón mientras se guarda y muestra el error si falla.
+async function guardarConBoton(form, accion) {
+    const boton = form.querySelector('button[type="submit"]');
 
+    if (boton && boton.disabled) return;
+
+    const textoOriginal = boton ? boton.textContent : "";
+
+    if (boton) {
+        boton.disabled = true;
+        boton.textContent = "Guardando...";
+    }
+
+    try {
+        await accion();
+    } catch (error) {
+        console.error(error);
+        alert("No se pudo guardar: " + error.message);
+    } finally {
+        if (boton) {
+            boton.disabled = false;
+            if (boton.textContent === "Guardando...") boton.textContent = textoOriginal;
+        }
+    }
+}
+
+document.getElementById("turnoAperturaForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    guardarConBoton(this, () => abrirTurno(this));
+});
+
+async function abrirTurno(form) {
     if (turnoActivo) {
         alert("Ya tienes un turno abierto.");
         return;
@@ -1822,14 +1893,18 @@ document.getElementById("turnoAperturaForm").addEventListener("submit", async fu
 
     await turnosRef.add(data);
 
-    this.reset();
+    form.reset();
     document.getElementById("turnoFechaApertura").value = todayISO();
 
     alert("Turno abierto correctamente.");
-});
-    document.getElementById("turnoCierreForm").addEventListener("submit", async function(e) {
-    e.preventDefault();
+}
 
+document.getElementById("turnoCierreForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    guardarConBoton(this, () => cerrarTurno(this));
+});
+
+async function cerrarTurno(form) {
     if (!turnoActivo) {
         alert("No hay turno abierto para cerrar.");
         return;
@@ -1863,18 +1938,23 @@ document.getElementById("turnoAperturaForm").addEventListener("submit", async fu
         cerradoEn: firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    this.reset();
+    form.reset();
 
     alert("Turno cerrado correctamente.");
     showView("inicio");
-});
-document.getElementById("ventaForm").addEventListener("submit", async function(e) {
-    if (!turnoActivo) {
-    alert("Primero debes abrir turno en Caja.");
-    showView("caja");
-    return;
 }
+
+document.getElementById("ventaForm").addEventListener("submit", function(e) {
     e.preventDefault();
+    guardarConBoton(this, () => guardarVenta(this));
+});
+
+async function guardarVenta(form) {
+    if (!turnoActivo) {
+        alert("Primero debes abrir turno en Caja.");
+        showView("caja");
+        return;
+    }
 
     if (!carritoVenta.length) {
         alert("Agrega al menos un producto o servicio a la venta.");
@@ -1903,7 +1983,7 @@ document.getElementById("ventaForm").addEventListener("submit", async function(e
 
     carritoVenta = [];
 
-    this.reset();
+    form.reset();
     document.getElementById("ventaFecha").value = todayISO();
     document.getElementById("ventaCantidad").value = 1;
 
@@ -1911,11 +1991,23 @@ document.getElementById("ventaForm").addEventListener("submit", async function(e
 
     alert("Venta guardada correctamente.");
     showView("inicio");
-});
-    document.getElementById("gastoForm").addEventListener("submit", async function(e) {
+}
+
+    document.getElementById("gastoForm").addEventListener("submit", function(e) {
         e.preventDefault();
+        guardarConBoton(this, () => guardarGasto(this));
+    });
+
+    async function guardarGasto(form) {
+        if (!turnoActivo) {
+            alert("Primero debes abrir turno en Caja.");
+            showView("caja");
+            return;
+        }
 
         const data = {
+            turnoId: turnoActivo.docId,
+            turnoFechaApertura: turnoActivo.fechaApertura || todayISO(),
             fecha: document.getElementById("gastoFecha").value,
             categoria: document.getElementById("gastoCategoria").value,
             descripcion: document.getElementById("gastoDescripcion").value.trim(),
@@ -1928,12 +2020,12 @@ document.getElementById("ventaForm").addEventListener("submit", async function(e
 
         await gastosRef.add(data);
 
-        this.reset();
+        form.reset();
         document.getElementById("gastoFecha").value = todayISO();
 
         alert("Gasto guardado correctamente.");
         showView("inicio");
-    });
+    }
 
     document.getElementById("btnImportCatalog").addEventListener("click", async function() {
     const input = document.getElementById("jsonCatalogInput");
@@ -2157,9 +2249,12 @@ if (catalogSearchInput) {
         renderCatalogo();
     });
 }
-document.getElementById("catalogoForm").addEventListener("submit", async function(e) {
+document.getElementById("catalogoForm").addEventListener("submit", function(e) {
     e.preventDefault();
+    guardarConBoton(this, guardarCatalogo);
+});
 
+async function guardarCatalogo() {
     const editId = document.getElementById("catalogoEditId").value;
 
     const data = {
@@ -2194,7 +2289,7 @@ document.getElementById("catalogoForm").addEventListener("submit", async functio
     }
 
     cancelarEdicionCatalogo();
-});
+}
 </script>
 
 </body>
