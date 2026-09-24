@@ -1475,6 +1475,17 @@ i[data-icon] {
     color: #94a3b8;
 }
 
+.balance-turnos {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, .12);
+    color: #cbd5e1;
+}
+
+.balance-turnos:empty {
+    display: none;
+}
+
 .money-row {
     border-radius: var(--radius);
     border: 1px solid var(--line);
@@ -3022,7 +3033,8 @@ body.modal-abierto {
             <div class="balance-card">
                 <div class="balance-label">Balance de hoy</div>
                 <div class="balance-value" id="balanceHoy">$0</div>
-                <div class="balance-sub">Ventas menos gastos registrados</div>
+                <div class="balance-sub">Ventas menos gastos de todo el día</div>
+                <div class="balance-sub balance-turnos" id="balanceTurnos"></div>
             </div>
 
             <div class="money-row">
@@ -4232,19 +4244,12 @@ function renderCaja() {
         `;
     }).join("");
 }
+// Inicio muestra el día completo (todos los turnos de hoy). La Caja muestra solo el turno abierto.
 function renderDashboard() {
-    let ventasBase = [];
-    let gastosBase = [];
+    const hoy = todayISO();
 
-    if (turnoActivo) {
-        ventasBase = ventasGlobal.filter(v => v.turnoId === turnoActivo.docId && noAnulado(v));
-        gastosBase = gastosGlobal.filter(g => g.turnoId === turnoActivo.docId && noAnulado(g));
-    } else {
-        const hoy = todayISO();
-
-        ventasBase = ventasGlobal.filter(v => v.fecha === hoy && noAnulado(v));
-        gastosBase = gastosGlobal.filter(g => g.fecha === hoy && noAnulado(g));
-    }
+    const ventasBase = ventasGlobal.filter(v => v.fecha === hoy && noAnulado(v));
+    const gastosBase = gastosGlobal.filter(g => g.fecha === hoy && noAnulado(g));
 
     const ventasTotal = ventasBase.reduce((acc, v) => acc + Number(v.total || 0), 0);
     const gastosTotal = gastosBase.reduce((acc, g) => acc + Number(g.valor || 0), 0);
@@ -4254,6 +4259,13 @@ function renderDashboard() {
     document.getElementById("gastosHoy").textContent = money(gastosTotal);
     document.getElementById("utilidadHoy").textContent = money(utilidad);
     document.getElementById("balanceHoy").textContent = money(utilidad);
+
+    const turnosHoy = turnosGlobal.filter(t => t.fechaApertura === hoy).length;
+    let detalle = turnosHoy
+        ? `${turnosHoy} ${turnosHoy === 1 ? "turno" : "turnos"} hoy`
+        : "Sin turnos hoy";
+    if (turnoActivo) detalle += ` · Turno actual: ${money(obtenerResumenTurno(turnoActivo).utilidad)}`;
+    document.getElementById("balanceTurnos").textContent = detalle;
 
     renderCaja();
     refrescarModal();
@@ -5309,6 +5321,12 @@ const REP_TABS = {
     movimientos: "Movimientos"
 };
 
+// Horario del negocio: de 9 a. m. a 6 p. m. La última franja de las gráficas es 5 p. m. (de 5:00 a 5:59).
+const HORA_APERTURA = 9;
+const HORA_CIERRE = 17;
+
+const etiquetaHora = (h) => `${h % 12 || 12} ${h < 12 ? "a. m." : "p. m."}`;
+
 const DIAS_SEMANA = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 const MESES_CORTOS = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
 
@@ -5740,11 +5758,12 @@ function serieTemporal(r, ventas, gastos) {
     if (r.dias === 1) {
         unidad = "por hora";
         const horas = [...ventas, ...gastos].map(x => milisDe(x)).filter(x => x !== null).map(ms => new Date(ms).getHours());
-        const desdeH = Math.min(7, ...horas);
-        const hastaH = Math.max(19, ...horas);
+        // Horario del negocio: 9 a. m. a 6 p. m. (se amplía si hay movimientos por fuera).
+        const desdeH = Math.min(HORA_APERTURA, ...horas);
+        const hastaH = Math.max(HORA_CIERRE, ...horas);
         for (let h = desdeH; h <= hastaH; h++) {
             claves.push(h);
-            etiquetas.push(`${h} h`);
+            etiquetas.push(etiquetaHora(h));
         }
         claveDe = (x) => {
             const ms = milisDe(x);
@@ -6022,8 +6041,8 @@ function repVentas(panel, { actual, m }) {
         if (ms !== null) porHora[new Date(ms).getHours()] += Number(v.total || 0);
     });
     const horasConVenta = porHora.map((v, h) => (v ? h : null)).filter(h => h !== null);
-    const hDesde = Math.min(7, ...horasConVenta);
-    const hHasta = Math.max(19, ...horasConVenta);
+    const hDesde = Math.min(HORA_APERTURA, ...horasConVenta);
+    const hHasta = Math.max(HORA_CIERRE, ...horasConVenta);
     const horas = [];
     for (let h = hDesde; h <= hHasta; h++) horas.push(h);
 
@@ -6107,7 +6126,7 @@ function repVentas(panel, { actual, m }) {
 
     crearGrafico("repGrafHora", {
         type: "bar",
-        data: { labels: horas.map(h => `${h} h`), datasets: [serieBarras("Ventas", horas.map(h => porHora[h]), REP_COLOR.ventas)] },
+        data: { labels: horas.map(etiquetaHora), datasets: [serieBarras("Ventas", horas.map(h => porHora[h]), REP_COLOR.ventas)] },
         options: opcionesGrafico()
     });
 }
