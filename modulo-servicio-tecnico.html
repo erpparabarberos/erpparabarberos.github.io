@@ -1252,8 +1252,9 @@ html.embebido .nav-user {
 }
 
 @media (min-width: 600px) {
+    /* Los indicadores se reparten todo el ancho, sean 2, 3 o 4 */
     .rep-kpis {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     }
 }
 
@@ -2107,7 +2108,7 @@ textarea {
 
 @media (min-width: 1280px) {
     .rep-kpis {
-        grid-template-columns: repeat(6, minmax(0, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     }
 }
 
@@ -5716,8 +5717,6 @@ function rangoDelPeriodo() {
     let desde = hoy;
     let hasta = hoy;
     let nombre = "";
-    let antDesde = null;
-    let antHasta = null;
 
     switch (repEstado.periodo) {
         case "hoy":
@@ -5731,27 +5730,18 @@ function rangoDelPeriodo() {
             desde = sumarDias(hoy, -6);
             nombre = "Últimos 7 días";
             break;
-        case "mes": {
+        case "mes":
             desde = `${y}-${String(m).padStart(2, "0")}-01`;
             nombre = "Este mes";
-            // Se compara con los mismos días del mes anterior (1 al d).
-            const finMesAnt = new Date(y, m - 1, 0, 12);
-            antDesde = isoDesdeFecha(new Date(y, m - 2, 1, 12));
-            antHasta = isoDesdeFecha(new Date(y, m - 2, Math.min(d, finMesAnt.getDate()), 12));
             break;
-        }
         case "mesAnterior":
             desde = isoDesdeFecha(new Date(y, m - 2, 1, 12));
             hasta = isoDesdeFecha(new Date(y, m - 1, 0, 12));
             nombre = "Mes anterior";
-            antDesde = isoDesdeFecha(new Date(y, m - 3, 1, 12));
-            antHasta = isoDesdeFecha(new Date(y, m - 2, 0, 12));
             break;
         case "anio":
             desde = `${y}-01-01`;
             nombre = "Este año";
-            antDesde = `${y - 1}-01-01`;
-            antHasta = isoDesdeFecha(new Date(y - 1, m - 1, d, 12));
             break;
         case "custom":
             desde = document.getElementById("repDesde").value || hoy;
@@ -5763,13 +5753,7 @@ function rangoDelPeriodo() {
 
     const dias = diasEntre(desde, hasta);
 
-    // Por defecto se compara con un periodo de igual duración justo antes.
-    if (!antDesde) {
-        antHasta = sumarDias(desde, -1);
-        antDesde = sumarDias(antHasta, -(dias - 1));
-    }
-
-    return { desde, hasta, dias, nombre, antDesde, antHasta };
+    return { desde, hasta, dias, nombre };
 }
 
 function textoRango(desde, hasta) {
@@ -5819,9 +5803,7 @@ function calcularMetricas(ventas, gastos) {
         ingresos,
         egresos,
         utilidad: ingresos - egresos,
-        margen: ingresos ? (ingresos - egresos) / ingresos : null,
         nVentas: ventas.length,
-        ticket: ventas.length ? ingresos / ventas.length : 0,
         ingresosProductos,
         ingresosServicios,
         descuentos: suma(ventas, v => v.descuento)
@@ -5919,40 +5901,6 @@ function flujoPorMedio(ventas, gastos) {
 function pct(valor, decimales = 1) {
     if (valor === null || valor === undefined || !isFinite(valor)) return "—";
     return (valor * 100).toLocaleString("es-CO", { minimumFractionDigits: decimales, maximumFractionDigits: decimales }) + "%";
-}
-
-function variacion(actual, anterior) {
-    if (!anterior) return null;
-    return (actual - anterior) / Math.abs(anterior);
-}
-
-// subirEsBueno=false para los gastos: si suben, es mala noticia.
-function deltaHTML(actual, anterior, subirEsBueno = true) {
-    if (!actual && !anterior) return `<span class="rep-delta">Sin movimiento</span>`;
-
-    const v = variacion(actual, anterior);
-    if (v === null) return `<span class="rep-delta">Sin datos del periodo anterior</span>`;
-    if (Math.abs(v) < 0.0005) return `<span class="rep-delta">= Igual al periodo anterior</span>`;
-
-    const sube = v > 0;
-    const clase = sube === subirEsBueno ? "bien" : "mal";
-    return `<span class="rep-delta ${clase}">${sube ? "▲" : "▼"} ${pct(Math.abs(v))} vs. periodo anterior</span>`;
-}
-
-function deltaPuntosHTML(actual, anterior) {
-    if (actual === null || anterior === null) return `<span class="rep-delta">Sin datos del periodo anterior</span>`;
-
-    const puntos = (actual - anterior) * 100;
-    if (Math.abs(puntos) < 0.05) return `<span class="rep-delta">= Igual al periodo anterior</span>`;
-
-    const texto = Math.abs(puntos).toLocaleString("es-CO", { maximumFractionDigits: 1 });
-    return `<span class="rep-delta ${puntos > 0 ? "bien" : "mal"}">${puntos > 0 ? "▲" : "▼"} ${texto} puntos vs. periodo anterior</span>`;
-}
-
-function variacionTexto(actual, anterior) {
-    const v = variacion(actual, anterior);
-    if (v === null) return "—";
-    return (v > 0 ? "+" : "") + pct(v);
 }
 
 function moneyCorto(valor) {
@@ -6169,24 +6117,21 @@ function renderReportes() {
     centrarChipActivo("repTabs");
 
     document.getElementById("repPeriodoTexto").innerHTML =
-        `${r.nombre}: ${textoRango(r.desde, r.hasta)}<small>Comparado con ${textoRango(r.antDesde, r.antHasta)}</small>`;
+        `${r.nombre}: ${textoRango(r.desde, r.hasta)}`;
 
     document.getElementById("repPrintHeader").innerHTML = `
         <h1>Servicio Técnico · ${REP_TABS[repEstado.tab]}</h1>
-        <p>Periodo: ${textoRango(r.desde, r.hasta)} · Comparado con ${textoRango(r.antDesde, r.antHasta)}</p>
+        <p>Periodo: ${textoRango(r.desde, r.hasta)}</p>
         <p>Generado el ${new Date().toLocaleString("es-CO")} por ${limpiarHTML(currentUserEmail)}</p>`;
 
     destruirGraficos();
 
     const actual = datosDelRango(r.desde, r.hasta);
-    const anterior = datosDelRango(r.antDesde, r.antHasta);
 
     const ctx = {
         r,
         actual,
-        anterior,
-        m: calcularMetricas(actual.ventas, actual.gastos),
-        mAnt: calcularMetricas(anterior.ventas, anterior.gastos)
+        m: calcularMetricas(actual.ventas, actual.gastos)
     };
 
     const pintar = {
@@ -6257,7 +6202,7 @@ function alertasDelPeriodo(r, m) {
     return alertas.map(a => `<li>${a}</li>`).join("");
 }
 
-function repResumen(panel, { r, actual, m, mAnt }) {
+function repResumen(panel, { r, actual, m }) {
     const serie = serieTemporal(r, actual.ventas, actual.gastos);
     const medios = agrupar(actual.ventas, v => v.medioPago, v => v.total);
     const tipos = [
@@ -6267,12 +6212,10 @@ function repResumen(panel, { r, actual, m, mAnt }) {
 
     panel.innerHTML = `
         <div class="rep-kpis">
-            ${kpiHTML("Ventas", money(m.ingresos), deltaHTML(m.ingresos, mAnt.ingresos, true))}
-            ${kpiHTML("Gastos", money(m.egresos), deltaHTML(m.egresos, mAnt.egresos, false))}
-            ${kpiHTML("Utilidad", money(m.utilidad), deltaHTML(m.utilidad, mAnt.utilidad, true))}
-            ${kpiHTML("Margen neto", pct(m.margen), deltaPuntosHTML(m.margen, mAnt.margen))}
-            ${kpiHTML("N.º de ventas", m.nVentas.toLocaleString("es-CO"), deltaHTML(m.nVentas, mAnt.nVentas, true))}
-            ${kpiHTML("Ticket promedio", money(m.ticket), deltaHTML(m.ticket, mAnt.ticket, true))}
+            ${kpiHTML("Ventas", money(m.ingresos))}
+            ${kpiHTML("Gastos", money(m.egresos))}
+            ${kpiHTML("Utilidad", money(m.utilidad))}
+            ${kpiHTML("N.º de ventas", m.nVentas.toLocaleString("es-CO"))}
         </div>
 
         <div class="rep-card">
@@ -6313,46 +6256,33 @@ function repResumen(panel, { r, actual, m, mAnt }) {
     });
 }
 
-function repResultados(panel, { actual, anterior, m, mAnt }) {
-    const catAct = agrupar(actual.gastos, g => g.categoria || "Sin categoría", g => g.valor);
-    const catAnt = agrupar(anterior.gastos, g => g.categoria || "Sin categoría", g => g.valor);
-    const categorias = [...new Set([...catAct.map(c => c.clave), ...catAnt.map(c => c.clave)])];
-    const valorCat = (lista, clave) => lista.find(c => c.clave === clave)?.total || 0;
-
-    const fila = (concepto, a, b, clase = "") => ({
-        clase,
-        celdas: [concepto, money(a), money(b), variacionTexto(a, b)]
-    });
+function repResultados(panel, { actual, m }) {
+    const categorias = agrupar(actual.gastos, g => g.categoria || "Sin categoría", g => g.valor);
+    const fila = (concepto, valor, clase = "") => ({ clase, celdas: [concepto, money(valor)] });
 
     const filas = [
-        { clase: "seccion", celdas: ["Ingresos operacionales", "", "", ""] },
-        fila("Venta de productos", m.ingresosProductos, mAnt.ingresosProductos, "sub"),
-        fila("Venta de servicios", m.ingresosServicios, mAnt.ingresosServicios, "sub")
+        { clase: "seccion", celdas: ["Ingresos operacionales", ""] },
+        fila("Venta de productos", m.ingresosProductos, "sub"),
+        fila("Venta de servicios", m.ingresosServicios, "sub")
     ];
 
-    if (m.descuentos || mAnt.descuentos) {
-        filas.push(fila("(−) Descuentos", -m.descuentos, -mAnt.descuentos, "sub"));
-    }
+    if (m.descuentos) filas.push(fila("(−) Descuentos", -m.descuentos, "sub"));
 
-    filas.push(fila("Total ingresos", m.ingresos, mAnt.ingresos, "total"));
-    filas.push({ clase: "seccion", celdas: ["Gastos operacionales", "", "", ""] });
+    filas.push(fila("Total ingresos", m.ingresos, "total"));
+    filas.push({ clase: "seccion", celdas: ["Gastos operacionales", ""] });
 
-    categorias.forEach(c => filas.push(fila(limpiarHTML(c), valorCat(catAct, c), valorCat(catAnt, c), "sub")));
+    categorias.forEach(c => filas.push(fila(limpiarHTML(c.clave), c.total, "sub")));
+    if (!categorias.length) filas.push(fila("Sin gastos registrados", 0, "sub"));
 
-    if (!categorias.length) {
-        filas.push({ clase: "sub", celdas: ["Sin gastos registrados", money(0), money(0), "—"] });
-    }
-
-    filas.push(fila("Total gastos", m.egresos, mAnt.egresos, "total"));
-    filas.push(fila("Utilidad del periodo", m.utilidad, mAnt.utilidad, "total"));
-    filas.push({ clase: "sub", celdas: ["Margen neto", pct(m.margen), pct(mAnt.margen), ""] });
+    filas.push(fila("Total gastos", m.egresos, "total"));
+    filas.push(fila("Utilidad del periodo", m.utilidad, "total"));
 
     panel.innerHTML = `
         <div class="rep-card">
             <h3>Estado de resultados</h3>
-            <p class="rep-sub">Ingresos y gastos registrados en el periodo, comparados con el periodo anterior</p>
+            <p class="rep-sub">Ingresos y gastos registrados en el periodo</p>
             ${tablaHTML(
-                [{ t: "Concepto" }, { t: "Periodo", num: true }, { t: "Anterior", num: true }, { t: "Variación", num: true }],
+                [{ t: "Concepto" }, { t: "Valor", num: true }],
                 filas
             )}
             <p class="rep-nota">
@@ -6390,7 +6320,6 @@ function repVentas(panel, { actual, m }) {
         <div class="rep-kpis">
             ${kpiHTML("Ventas", money(m.ingresos))}
             ${kpiHTML("N.º de ventas", m.nVentas.toLocaleString("es-CO"))}
-            ${kpiHTML("Ticket promedio", money(m.ticket))}
         </div>
 
         <div class="rep-card">
@@ -6430,8 +6359,8 @@ function repVentas(panel, { actual, m }) {
             <div class="rep-card">
                 <h3>Por vendedor</h3>
                 ${tablaHTML(
-                    [{ t: "Usuario" }, { t: "N.º", num: true }, { t: "Total", num: true }, { t: "Ticket prom.", num: true }],
-                    vendedores.map(f => [limpiarHTML(f.clave), f.n, money(f.total), money(f.n ? f.total / f.n : 0)])
+                    [{ t: "Usuario" }, { t: "N.º", num: true }, { t: "Total", num: true }],
+                    vendedores.map(f => [limpiarHTML(f.clave), f.n, money(f.total)])
                 )}
             </div>
         </div>
@@ -6471,14 +6400,14 @@ function repVentas(panel, { actual, m }) {
     });
 }
 
-function repGastos(panel, { actual, m, mAnt }) {
+function repGastos(panel, { actual, m }) {
     const categorias = agrupar(actual.gastos, g => g.categoria || "Sin categoría", g => g.valor);
     const medios = agrupar(actual.gastos, g => g.medioPago, g => g.valor);
     const detalle = [...actual.gastos].sort((a, b) => String(b.fecha).localeCompare(String(a.fecha)) || (milisDe(b) || 0) - (milisDe(a) || 0));
 
     panel.innerHTML = `
         <div class="rep-kpis">
-            ${kpiHTML("Gastos", money(m.egresos), deltaHTML(m.egresos, mAnt.egresos, false))}
+            ${kpiHTML("Gastos", money(m.egresos))}
             ${kpiHTML("N.º de gastos", actual.gastos.length.toLocaleString("es-CO"))}
             ${kpiHTML("Gastos / ventas", pct(m.ingresos ? m.egresos / m.ingresos : null))}
         </div>
@@ -6852,18 +6781,14 @@ function exportarExcel() {
 
     const r = rangoDelPeriodo();
     const actual = datosDelRango(r.desde, r.hasta);
-    const anterior = datosDelRango(r.antDesde, r.antHasta);
     const m = calcularMetricas(actual.ventas, actual.gastos);
-    const mAnt = calcularMetricas(anterior.ventas, anterior.gastos);
     const libro = XLSX.utils.book_new();
 
     const redondear = (n) => Math.round(Number(n || 0));
     const fraccion = (parte, total) => (total ? parte / total : 0);
     const fechaXL = (iso) => (iso ? fechaDesdeIso(iso) : "");
-    const variacionXL = (a, b) => (b ? (a - b) / Math.abs(b) : "");
 
     const periodoTexto = `Periodo: ${textoRango(r.desde, r.hasta)} (${r.nombre})`;
-    const comparadoTexto = `Comparado con: ${textoRango(r.antDesde, r.antHasta)}`;
     const generadoTexto = `Generado el ${new Date().toLocaleString("es-CO")} por ${currentUserEmail}`;
     const agregar = (ws, nombre) => XLSX.utils.book_append_sheet(libro, ws, nombre);
 
@@ -6881,15 +6806,13 @@ function exportarExcel() {
 
     // ===== Hoja 1: Resumen =====
     const resumen = hojaExcel(4)
-        .titulo("Servicio Técnico · Reporte gerencial", [periodoTexto, comparadoTexto, generadoTexto])
+        .titulo("Servicio Técnico · Reporte gerencial", [periodoTexto, generadoTexto])
         .seccion("Indicadores principales")
-        .encabezado(["Indicador", "Periodo", "Periodo anterior", "Variación"])
-        .fila(["Ventas", redondear(m.ingresos), redondear(mAnt.ingresos), variacionXL(m.ingresos, mAnt.ingresos)], "dato", [null, "moneda", "moneda", "porcentaje"])
-        .fila(["Gastos", redondear(m.egresos), redondear(mAnt.egresos), variacionXL(m.egresos, mAnt.egresos)], "dato", [null, "moneda", "moneda", "porcentaje"])
-        .fila(["Utilidad", redondear(m.utilidad), redondear(mAnt.utilidad), variacionXL(m.utilidad, mAnt.utilidad)], "total", [null, "moneda", "moneda", "porcentaje"])
-        .fila(["Margen neto", m.margen ?? "", mAnt.margen ?? "", ""], "dato", [null, "porcentaje", "porcentaje"])
-        .fila(["N.º de ventas", m.nVentas, mAnt.nVentas, variacionXL(m.nVentas, mAnt.nVentas)], "dato", [null, "entero", "entero", "porcentaje"])
-        .fila(["Ticket promedio", redondear(m.ticket), redondear(mAnt.ticket), variacionXL(m.ticket, mAnt.ticket)], "dato", [null, "moneda", "moneda", "porcentaje"]);
+        .encabezado(["Indicador", "Valor"])
+        .fila(["Ventas", redondear(m.ingresos)], "dato", [null, "moneda"])
+        .fila(["Gastos", redondear(m.egresos)], "dato", [null, "moneda"])
+        .fila(["Utilidad", redondear(m.utilidad)], "total", [null, "moneda"])
+        .fila(["N.º de ventas", m.nVentas], "dato", [null, "entero"]);
 
     resumen.seccion("Ventas por medio de pago").encabezado(["Medio de pago", "N.º de ventas", "Total", "Participación"]);
     if (medios.length) {
@@ -6948,30 +6871,25 @@ function exportarExcel() {
     agregar(resumen.construir([42, 18, 18, 14]), "Resumen");
 
     // ===== Hoja 2: Estado de resultados =====
-    const catAnt = agrupar(anterior.gastos, g => g.categoria || "Sin categoría", g => g.valor);
-    const nombresCat = [...new Set([...categorias.map(c => c.clave), ...catAnt.map(c => c.clave)])];
-    const valorCat = (lista, clave) => lista.find(c => c.clave === clave)?.total || 0;
-    const filaER = (hoja, concepto, a, b, estilo) =>
-        hoja.fila([concepto, redondear(a), redondear(b), variacionXL(a, b)], estilo, [null, "moneda", "moneda", "porcentaje"]);
+    const filaER = (hoja, concepto, valor, estilo) => hoja.fila([concepto, redondear(valor)], estilo, [null, "moneda"]);
 
-    const er = hojaExcel(4)
-        .titulo("Estado de resultados", [periodoTexto, comparadoTexto])
+    const er = hojaExcel(2)
+        .titulo("Estado de resultados", [periodoTexto])
         .vacia()
-        .encabezado(["Concepto", "Periodo", "Periodo anterior", "Variación"])
-        .fila(["Ingresos operacionales"], "grupo", [], 4);
-    filaER(er, "    Venta de productos", m.ingresosProductos, mAnt.ingresosProductos, "sub");
-    filaER(er, "    Venta de servicios", m.ingresosServicios, mAnt.ingresosServicios, "sub");
-    if (m.descuentos || mAnt.descuentos) filaER(er, "    (−) Descuentos", -m.descuentos, -mAnt.descuentos, "sub");
-    filaER(er, "Total ingresos", m.ingresos, mAnt.ingresos, "total");
-    er.fila(["Gastos operacionales"], "grupo", [], 4);
-    nombresCat.forEach(c => filaER(er, "    " + c, valorCat(categorias, c), valorCat(catAnt, c), "sub"));
-    if (!nombresCat.length) er.fila(["    Sin gastos registrados"], "sub", [], 4);
-    filaER(er, "Total gastos", m.egresos, mAnt.egresos, "total");
+        .encabezado(["Concepto", "Valor"])
+        .fila(["Ingresos operacionales"], "grupo", [], 2);
+    filaER(er, "    Venta de productos", m.ingresosProductos, "sub");
+    filaER(er, "    Venta de servicios", m.ingresosServicios, "sub");
+    if (m.descuentos) filaER(er, "    (−) Descuentos", -m.descuentos, "sub");
+    filaER(er, "Total ingresos", m.ingresos, "total");
+    er.fila(["Gastos operacionales"], "grupo", [], 2);
+    categorias.forEach(c => filaER(er, "    " + c.clave, c.total, "sub"));
+    if (!categorias.length) er.fila(["    Sin gastos registrados"], "sub", [], 2);
+    filaER(er, "Total gastos", m.egresos, "total");
     er.vacia();
-    filaER(er, "UTILIDAD DEL PERIODO", m.utilidad, mAnt.utilidad, "total");
-    er.fila(["Margen neto", m.margen ?? "", mAnt.margen ?? "", ""], "dato", [null, "porcentaje", "porcentaje"]);
+    filaER(er, "UTILIDAD DEL PERIODO", m.utilidad, "total");
     er.vacia().fila(["Cifras con base en caja. No incluye IVA, retenciones, depreciaciones ni obligaciones laborales."], "nota");
-    agregar(er.construir([42, 18, 18, 14]), "Estado de resultados");
+    agregar(er.construir([48, 20]), "Estado de resultados");
 
     // ===== Hoja 3: Ventas =====
     const ventasOrdenadas = [...actual.ventas].sort((a, b) => String(a.fecha).localeCompare(String(b.fecha)) || (milisDe(a) || 0) - (milisDe(b) || 0));
