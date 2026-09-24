@@ -705,8 +705,9 @@ input[type="date"][readonly] {
 }
 
 /* Dentro de la app ya se muestra el usuario arriba */
-html.embebido .st-avatar {
-    display: none;
+html.embebido .st-avatar,
+html.embebido .nav-user {
+    display: none !important;
 }
 
 .balance-value {
@@ -777,8 +778,10 @@ html.embebido .st-avatar {
 }
 
 /* Mientras se escribe en el celular, el menú se esconde para no tapar el teclado */
-body.escribiendo .bottom-nav {
-    transform: translate(-50%, calc(100% + 40px));
+@media (max-width: 1023px) {
+    body.escribiendo .bottom-nav {
+        transform: translate(-50%, calc(100% + 40px));
+    }
 }
 
 @media (max-width: 480px) {
@@ -1332,6 +1335,786 @@ body.escribiendo .bottom-nav {
         max-width: 620px;
     }
 }
+
+/* =====================================================================
+   TEMA PROFESIONAL: neutros + azul marino; rojo solo para alertas.
+   ===================================================================== */
+
+:root {
+    --bg: #f4f6f9;
+    --surface: #ffffff;
+    --ink: #0f172a;
+    --ink-2: #334155;
+    --muted: #64748b;
+    --line: #e2e8f0;
+    --line-soft: #eef2f6;
+    --primary: #0f172a;
+    --primary-hover: #1e293b;
+    --accent: #1d4ed8;
+    --danger: #dc2626;
+    --danger-soft: #fef2f2;
+    --radius: 14px;
+    --radius-sm: 10px;
+    --shadow: 0 1px 2px rgba(15, 23, 42, .04), 0 1px 3px rgba(15, 23, 42, .04);
+}
+
+html,
+body,
+.st-app {
+    background: var(--bg);
+}
+
+body {
+    color: var(--ink);
+}
+
+svg.ico {
+    width: 20px;
+    height: 20px;
+    flex: 0 0 auto;
+    display: block;
+}
+
+i[data-icon] {
+    display: inline-flex;
+    font-style: normal;
+}
+
+.st-header h1 {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+}
+
+.st-header p {
+    font-weight: 500;
+}
+
+.section-title h2,
+.card-title {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+}
+
+.card-title {
+    margin-bottom: 14px;
+}
+
+.card-sub {
+    margin: -8px 0 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+}
+
+.section-title button {
+    font-weight: 600;
+    color: var(--accent);
+    cursor: pointer;
+}
+
+.ayuda {
+    display: block;
+    margin-top: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+}
+
+/* Tarjetas */
+.form-card,
+.mini-card,
+.movement-card,
+.history-card,
+.rep-card,
+.rep-kpi,
+.rep-filtros,
+.empty-state {
+    border-radius: var(--radius);
+    border-color: var(--line);
+    box-shadow: var(--shadow);
+}
+
+.form-card {
+    padding: 20px;
+    margin-bottom: 16px;
+}
+
+.empty-state {
+    font-weight: 500;
+    box-shadow: none;
+}
+
+/* Indicadores */
+.balance-card {
+    background: var(--primary);
+    border-radius: var(--radius);
+    box-shadow: none;
+}
+
+.balance-card::after {
+    display: none;
+}
+
+.balance-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #94a3b8;
+}
+
+.balance-value {
+    font-weight: 800;
+    letter-spacing: -0.03em;
+}
+
+.balance-sub {
+    font-weight: 500;
+    color: #94a3b8;
+}
+
+.money-row {
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    background: var(--line);
+    box-shadow: var(--shadow);
+}
+
+.money-item span {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+
+.money-item strong {
+    font-weight: 800;
+}
+
+.money-row-interna {
+    box-shadow: none;
+    margin-bottom: 18px;
+}
+
+/* Acciones rápidas: todas blancas; solo el turno se destaca */
+.quick-btn,
+.quick-btn.primary,
+.quick-btn.danger-soft {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    color: var(--ink);
+    transition: border-color .15s, box-shadow .15s;
+}
+
+.quick-btn:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, .06);
+}
+
+.quick-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-sm);
+    background: #f1f5f9;
+    color: var(--ink);
+}
+
+.quick-btn strong {
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.quick-btn small {
+    font-weight: 500;
+}
+
+.quick-btn.turno-btn.abrir {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+}
+
+.quick-btn.turno-btn.abrir .quick-icon {
+    background: rgba(255, 255, 255, .1);
+    color: white;
+}
+
+.quick-btn.turno-btn.abrir small {
+    color: #cbd5e1;
+}
+
+.quick-btn.turno-btn.cerrar {
+    background: var(--surface);
+    border-color: #fecaca;
+    color: var(--ink);
+}
+
+.quick-btn.turno-btn.cerrar .quick-icon {
+    background: var(--danger-soft);
+    color: var(--danger);
+}
+
+.quick-btn.turno-btn.cerrar small {
+    color: var(--muted);
+}
+
+/* Listas */
+.movement-icon,
+.history-card-icon {
+    background: #f1f5f9;
+    color: var(--ink-2);
+    border-radius: var(--radius-sm);
+}
+
+.movement-icon svg.ico,
+.history-card-icon svg.ico {
+    width: 18px;
+    height: 18px;
+}
+
+.movement-card h3,
+.history-card h3,
+.mini-card strong {
+    font-weight: 700;
+}
+
+.movement-card strong,
+.history-card strong {
+    font-weight: 700;
+}
+
+.mini-card span {
+    color: var(--ink);
+    font-weight: 700;
+}
+
+.movement-card p,
+.history-card p,
+.mini-card p {
+    font-weight: 500 !important;
+}
+
+/* Formularios */
+.form-group label,
+.rep-rango label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+}
+
+input,
+select,
+textarea {
+    border-radius: var(--radius-sm);
+    border-color: #d6dde7;
+    min-height: 46px;
+    font-weight: 500;
+}
+
+input[type="date"] {
+    height: 46px;
+    line-height: 46px;
+}
+
+textarea {
+    min-height: 88px;
+}
+
+.input-bloqueado {
+    background: #f1f5f9 !important;
+    color: var(--muted) !important;
+    cursor: not-allowed;
+}
+
+.input-archivo {
+    padding: 10px;
+    height: auto;
+    margin-bottom: 4px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0 14px;
+}
+
+.submit-btn,
+.secondary-btn {
+    border-radius: var(--radius-sm);
+    font-weight: 700;
+    min-height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.submit-btn {
+    background: var(--primary);
+    transition: background .15s;
+}
+
+.submit-btn:hover {
+    background: var(--primary-hover);
+}
+
+.submit-btn.peligro {
+    background: var(--danger);
+}
+
+.submit-btn.peligro:hover {
+    background: #b91c1c;
+}
+
+.secondary-btn {
+    color: var(--ink);
+    border-color: var(--line);
+}
+
+.secondary-btn:hover {
+    background: #f8fafc;
+}
+
+.secondary-btn svg.ico {
+    width: 18px;
+    height: 18px;
+}
+
+.total-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--primary);
+    color: white;
+    border-radius: var(--radius-sm);
+    padding: 16px 18px;
+    margin: 16px 0;
+}
+
+.total-box span {
+    font-size: 13px;
+    font-weight: 600;
+    color: #cbd5e1;
+}
+
+.total-box strong {
+    font-size: 26px;
+    font-weight: 800;
+}
+
+.catalog-tabs button {
+    border-radius: var(--radius-sm);
+    font-weight: 700;
+    min-height: 44px;
+}
+
+.catalog-tabs button.active {
+    background: var(--primary);
+    border-color: var(--primary);
+}
+
+.search-result-item strong {
+    font-weight: 700;
+}
+
+/* Reportes */
+.rep-chips button {
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+}
+
+.rep-chips button.active {
+    background: var(--primary);
+    border-color: var(--primary);
+}
+
+.rep-acciones button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: var(--radius-sm);
+    font-weight: 700;
+}
+
+.rep-acciones svg.ico {
+    width: 16px;
+    height: 16px;
+}
+
+.rep-card h3 {
+    font-weight: 700;
+}
+
+.rep-kpi strong {
+    font-weight: 800;
+}
+
+.rep-delta {
+    font-weight: 600;
+}
+
+.rep-delta.bien {
+    color: var(--accent);
+}
+
+.rep-delta.mal {
+    color: var(--danger);
+}
+
+.rep-alertas li {
+    font-weight: 500;
+}
+
+.alerta-icono {
+    display: inline-flex;
+    margin-top: 1px;
+}
+
+.alerta-icono svg.ico {
+    width: 18px;
+    height: 18px;
+}
+
+/* Menú inferior (celular y tablet) */
+.bottom-nav {
+    display: block;
+    padding: 0 6px;
+    height: 68px;
+    border-radius: 18px;
+    border-color: var(--line);
+    box-shadow: 0 10px 30px rgba(15, 23, 42, .12);
+}
+
+.nav-brand,
+.nav-user {
+    display: none;
+}
+
+.nav-items {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    height: 100%;
+    align-items: center;
+}
+
+.bottom-nav .nav-items button {
+    height: 56px;
+    margin: 0 2px;
+    border-radius: 12px;
+    gap: 4px;
+    font-size: 10.5px;
+    font-weight: 600;
+    color: var(--muted);
+}
+
+.bottom-nav .nav-items button.active {
+    color: var(--ink);
+    background: #f1f5f9;
+}
+
+.bottom-nav .nav-items button svg.ico {
+    width: 20px;
+    height: 20px;
+}
+
+@media (min-width: 480px) {
+    .form-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* ===== Computador: barra superior y contenido a todo el ancho ===== */
+@media (min-width: 1024px) {
+    .bottom-nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: auto;
+        transform: none;
+        width: auto;
+        max-width: none;
+        height: 64px;
+        border-radius: 0;
+        border: none;
+        border-bottom: 1px solid var(--line);
+        background: rgba(255, 255, 255, .96);
+        box-shadow: none;
+        display: flex;
+        align-items: center;
+        gap: 28px;
+        padding: 0 40px;
+    }
+
+    .nav-brand {
+        display: flex;
+        flex-direction: column;
+        white-space: nowrap;
+    }
+
+    .nav-brand strong {
+        font-size: 15px;
+        font-weight: 800;
+        letter-spacing: -0.01em;
+    }
+
+    .nav-brand span {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--muted);
+    }
+
+    .nav-items {
+        display: flex;
+        gap: 4px;
+        height: auto;
+    }
+
+    .bottom-nav .nav-items button {
+        flex-direction: row;
+        height: 38px;
+        margin: 0;
+        padding: 0 14px;
+        gap: 8px;
+        font-size: 14px;
+        border-radius: var(--radius-sm);
+        color: #475569;
+    }
+
+    .bottom-nav .nav-items button:hover {
+        background: #f1f5f9;
+        color: var(--ink);
+    }
+
+    .bottom-nav .nav-items button.active {
+        background: var(--primary);
+        color: white;
+    }
+
+    .bottom-nav .nav-items button svg.ico {
+        width: 18px;
+        height: 18px;
+    }
+
+    .nav-user {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-left: auto;
+        min-width: 0;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--muted);
+    }
+
+    .nav-user b {
+        display: block;
+        color: var(--ink);
+        font-weight: 600;
+        max-width: 240px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .nav-avatar {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: var(--primary);
+        color: white;
+        display: grid;
+        place-items: center;
+        font-weight: 700;
+        font-size: 14px;
+        flex: 0 0 auto;
+    }
+
+    .st-app {
+        width: 100%;
+        max-width: 1680px;
+        margin: 0 auto;
+        padding: 96px 40px 48px;
+    }
+
+    .st-header {
+        margin-bottom: 24px;
+    }
+
+    .st-header h1 {
+        font-size: 28px;
+    }
+
+    /* Inicio */
+    .kpi-top {
+        display: grid;
+        grid-template-columns: minmax(280px, 1fr) 2fr;
+        gap: 16px;
+        margin-bottom: 8px;
+    }
+
+    .kpi-top .balance-card,
+    .kpi-top .money-row {
+        margin: 0;
+    }
+
+    .kpi-top .money-item {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 20px 24px;
+    }
+
+    .kpi-top .money-item strong {
+        font-size: 26px;
+    }
+
+    .balance-value {
+        font-size: 40px;
+    }
+
+    .quick-grid {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+    .quick-btn.turno-btn {
+        grid-column: auto;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: space-between;
+    }
+
+    .quick-btn {
+        min-height: 120px;
+        padding: 18px;
+    }
+
+    .desktop-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 24px;
+        margin-top: 8px;
+    }
+
+    .panel {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 4px 20px 20px;
+    }
+
+    .panel .mini-card,
+    .panel .movement-card {
+        box-shadow: none;
+    }
+
+    /* Ventas: captura a la izquierda, detalle y total a la derecha */
+    .venta-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 24px;
+        align-items: start;
+    }
+
+    .venta-resumen {
+        position: sticky;
+        top: 88px;
+    }
+
+    /* Gastos */
+    .gastos-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+        gap: 24px;
+        align-items: start;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0 16px;
+    }
+
+    .form-grid .span-2 {
+        grid-column: 1 / -1;
+    }
+
+    /* Catálogo */
+    .catalogo-layout {
+        display: grid;
+        grid-template-columns: minmax(380px, 460px) minmax(0, 1fr);
+        gap: 24px;
+        align-items: start;
+    }
+
+    .catalogo-col-lista {
+        position: sticky;
+        top: 88px;
+    }
+
+    .catalog-scroll-box {
+        max-height: calc(100vh - 250px);
+    }
+
+    /* Caja */
+    .caja-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+        gap: 24px;
+        align-items: start;
+    }
+
+    .caja-main .kpi-top {
+        grid-template-columns: minmax(240px, 1fr) 1.6fr;
+        margin-bottom: 16px;
+    }
+
+    .caja-main .kpi-top .money-item strong {
+        font-size: 20px;
+    }
+
+    .caja-side .movement-list {
+        max-height: calc(100vh - 220px);
+        overflow-y: auto;
+    }
+
+    /* Historial en dos columnas */
+    #historyList {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        padding-bottom: 24px !important;
+    }
+
+    /* Reportes */
+    .rep-grafico {
+        height: 320px;
+    }
+}
+
+@media (min-width: 1280px) {
+    .rep-kpis {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+}
+
+/* Fuera del computador, las secciones van una debajo de la otra */
+@media (max-width: 1023px) {
+    .panel {
+        margin-bottom: 8px;
+    }
+
+    .gastos-lado,
+    .caja-side {
+        margin-top: 8px;
+    }
+}
     </style>
 </head>
 
@@ -1349,24 +2132,26 @@ body.escribiendo .bottom-nav {
             <div class="st-avatar" id="userInitial">S</div>
         </div>
 
-        <div class="balance-card">
-            <div class="balance-label">Balance de hoy</div>
-            <div class="balance-value" id="balanceHoy">$0</div>
-            <div class="balance-sub">Ventas menos gastos registrados</div>
-        </div>
+        <div class="kpi-top">
+            <div class="balance-card">
+                <div class="balance-label">Balance de hoy</div>
+                <div class="balance-value" id="balanceHoy">$0</div>
+                <div class="balance-sub">Ventas menos gastos registrados</div>
+            </div>
 
-        <div class="money-row">
-            <div class="money-item">
-                <span>Ventas</span>
-                <strong id="ventasHoy">$0</strong>
-            </div>
-            <div class="money-item">
-                <span>Gastos</span>
-                <strong id="gastosHoy">$0</strong>
-            </div>
-            <div class="money-item">
-                <span>Utilidad</span>
-                <strong id="utilidadHoy">$0</strong>
+            <div class="money-row">
+                <div class="money-item">
+                    <span>Ventas</span>
+                    <strong id="ventasHoy">$0</strong>
+                </div>
+                <div class="money-item">
+                    <span>Gastos</span>
+                    <strong id="gastosHoy">$0</strong>
+                </div>
+                <div class="money-item">
+                    <span>Utilidad</span>
+                    <strong id="utilidadHoy">$0</strong>
+                </div>
             </div>
         </div>
 
@@ -1376,41 +2161,49 @@ body.escribiendo .bottom-nav {
 
         <div class="quick-grid">
             <button class="quick-btn turno-btn abrir" id="quickTurnoBtn" onclick="accionRapidaTurno()">
-                <div class="quick-icon" id="quickTurnoIcon">🔓</div>
+                <div class="quick-icon" id="quickTurnoIcon"><i data-icon="unlock"></i></div>
                 <div>
                     <strong id="quickTurnoTitulo">Abrir turno</strong>
                     <small id="quickTurnoTexto">Inicia la caja para vender</small>
                 </div>
             </button>
 
-            <button class="quick-btn primary" onclick="showView('ventas')">
-                <div class="quick-icon">+</div>
-                <strong>Venta</strong>
-                <small>Registrar venta</small>
+            <button class="quick-btn" onclick="showView('ventas')">
+                <div class="quick-icon"><i data-icon="plus"></i></div>
+                <div>
+                    <strong>Venta</strong>
+                    <small>Registrar venta</small>
+                </div>
             </button>
 
-            <button class="quick-btn danger-soft" onclick="showView('gastos')">
-                <div class="quick-icon">−</div>
-                <strong>Gasto</strong>
-                <small>Registrar gasto</small>
+            <button class="quick-btn" onclick="showView('gastos')">
+                <div class="quick-icon"><i data-icon="minus"></i></div>
+                <div>
+                    <strong>Gasto</strong>
+                    <small>Registrar gasto</small>
+                </div>
             </button>
 
-            <button class="quick-btn" onclick="showView('catalogo')">
-                <div class="quick-icon">📦</div>
-                <strong>Producto</strong>
-                <small>Agregar al catálogo</small>
+            <button class="quick-btn" onclick="showView('catalogo'); setCatalogType('producto')">
+                <div class="quick-icon"><i data-icon="catalogo"></i></div>
+                <div>
+                    <strong>Producto</strong>
+                    <small>Agregar al catálogo</small>
+                </div>
             </button>
 
-            <button class="quick-btn" onclick="showView('catalogo')">
-                <div class="quick-icon">🛠️</div>
-                <strong>Servicio</strong>
-                <small>Agregar servicio</small>
+            <button class="quick-btn" onclick="showView('catalogo'); setCatalogType('servicio')">
+                <div class="quick-icon"><i data-icon="servicio"></i></div>
+                <div>
+                    <strong>Servicio</strong>
+                    <small>Agregar servicio</small>
+                </div>
             </button>
         </div>
 
         <div class="desktop-grid">
 
-            <div>
+            <div class="panel">
                 <div class="section-title">
                     <h2>Más usados</h2>
                 </div>
@@ -1419,7 +2212,7 @@ body.escribiendo .bottom-nav {
                 </div>
             </div>
 
-            <div>
+            <div class="panel">
                 <div class="section-title">
                     <h2>Últimos movimientos</h2>
                     <button onclick="showView('historial')">Ver todos</button>
@@ -1442,158 +2235,159 @@ body.escribiendo .bottom-nav {
             </div>
         </div>
 
-        <div class="form-card">
-            <form id="ventaForm">
+        <form id="ventaForm" class="venta-layout">
 
-    <div class="form-group">
-        <label>Fecha</label>
-        <input type="date" id="ventaFecha" required>
-    </div>
+            <div class="form-card venta-captura">
+                <h2 class="card-title">Agregar productos o servicios</h2>
 
-    <div class="form-group">
-    <label>Cliente</label>
-    <input 
-        type="text" 
-        id="ventaCliente" 
-        value="Consumidor final"
-        readonly
-        style="background:#f1f5f9; color:#64748b; cursor:not-allowed;"
-    >
-</div>
-    <div class="form-group">
-    <label>Producto o servicio</label>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Fecha</label>
+                        <input type="date" id="ventaFecha" required>
+                    </div>
 
-    <div class="search-product-box">
-        <input 
-            type="text" 
-            id="ventaBuscadorItem" 
-            placeholder="Código o nombre del producto"
-            autocomplete="off"
-        >
+                    <div class="form-group">
+                        <label>Cliente</label>
+                        <input type="text" id="ventaCliente" value="Consumidor final" readonly class="input-bloqueado">
+                    </div>
+                </div>
 
-        <input type="hidden" id="ventaItem">
+                <div class="form-group">
+                    <label>Producto o servicio</label>
 
-        <div id="ventaSearchResults" class="search-results hidden"></div>
-    </div>
+                    <div class="search-product-box">
+                        <input type="text" id="ventaBuscadorItem" placeholder="Código o nombre del producto" autocomplete="off">
+                        <input type="hidden" id="ventaItem">
+                        <div id="ventaSearchResults" class="search-results hidden"></div>
+                    </div>
 
-    <small id="ventaItemSeleccionado" style="display:block; margin-top:8px; color:#64748b; font-weight:700;">
-        Ningún producto seleccionado
-    </small>
-</div>
+                    <small id="ventaItemSeleccionado" class="ayuda">Ningún producto seleccionado</small>
+                </div>
 
-    <div class="form-group">
-        <label>Cantidad</label>
-        <input type="number" id="ventaCantidad" min="1" value="1">
-    </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Cantidad</label>
+                        <input type="number" id="ventaCantidad" min="1" value="1">
+                    </div>
 
-    <div class="form-group">
-        <label>Valor unitario</label>
-        <input type="number" id="ventaValor" min="0" placeholder="Ej: 25000">
-    </div>
+                    <div class="form-group">
+                        <label>Valor unitario</label>
+                        <input type="number" id="ventaValor" min="0" placeholder="Ej: 25000">
+                    </div>
+                </div>
 
-    <button type="button" class="secondary-btn" id="btnAgregarItemVenta">
-        + Agregar a la venta
-    </button>
+                <button type="button" class="secondary-btn" id="btnAgregarItemVenta">
+                    <i data-icon="plus"></i> Agregar a la venta
+                </button>
+            </div>
 
-    <div class="section-title" style="margin-top:20px;">
-        <h2>Detalle de venta</h2>
-    </div>
+            <div class="form-card venta-resumen">
+                <h2 class="card-title">Detalle de venta</h2>
 
-    <div id="ventaItemsList" class="movement-list">
-        <div class="empty-state">Aún no has agregado productos o servicios.</div>
-    </div>
+                <div id="ventaItemsList" class="movement-list">
+                    <div class="empty-state">Aún no has agregado productos o servicios.</div>
+                </div>
 
-    <div class="form-card" style="margin-top:16px; background:#0f172a; color:white;">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-size:14px; font-weight:800; color:#cbd5e1;">Total venta</span>
-            <strong id="ventaTotalText" style="font-size:28px; font-weight:900;">$0</strong>
-        </div>
-    </div>
+                <div class="total-box">
+                    <span>Total venta</span>
+                    <strong id="ventaTotalText">$0</strong>
+                </div>
 
-    <div class="form-group" style="margin-top:16px;">
-        <label>Medio de pago</label>
-        <select id="ventaMedio" required>
-            <option value="Efectivo">Efectivo</option>
-            <option value="Nequi">Nequi</option>
-            <option value="Daviplata">Daviplata</option>
-            <option value="Transferencia">Transferencia</option>
-            <option value="Tarjeta">Tarjeta</option>
-            <option value="Otro">Otro</option>
-        </select>
-    </div>
+                <div class="form-group">
+                    <label>Medio de pago</label>
+                    <select id="ventaMedio" required>
+                        <option value="Efectivo">Efectivo</option>
+                        <option value="Nequi">Nequi</option>
+                        <option value="Daviplata">Daviplata</option>
+                        <option value="Transferencia">Transferencia</option>
+                        <option value="Tarjeta">Tarjeta</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                </div>
 
-    <div class="form-group">
-        <label>Observaciones</label>
-        <textarea id="ventaObs" placeholder="Opcional"></textarea>
-    </div>
+                <div class="form-group">
+                    <label>Observaciones</label>
+                    <textarea id="ventaObs" placeholder="Opcional"></textarea>
+                </div>
 
-    <button class="submit-btn" type="submit">Guardar venta</button>
-    <button class="secondary-btn" type="button" id="btnLimpiarVenta">Limpiar venta</button>
+                <button class="submit-btn" type="submit">Guardar venta</button>
+                <button class="secondary-btn" type="button" id="btnLimpiarVenta">Limpiar venta</button>
+            </div>
 
-</form>
-        </div>
+        </form>
     </section>
 
     <section id="view-gastos" class="view">
-    <div class="st-header">
-        <div>
-            <h1>Nuevo gasto</h1>
-            <p>Registra compras o salidas de dinero</p>
+        <div class="st-header">
+            <div>
+                <h1>Nuevo gasto</h1>
+                <p>Registra compras o salidas de dinero</p>
+            </div>
         </div>
-    </div>
 
-    <div class="form-card">
-        <form id="gastoForm">
-            <div class="form-group">
-                <label>Fecha</label>
-                <input type="date" id="gastoFecha" required>
+        <div class="gastos-layout">
+            <div class="form-card">
+                <h2 class="card-title">Datos del gasto</h2>
+
+                <form id="gastoForm" class="form-grid">
+                    <div class="form-group">
+                        <label>Fecha</label>
+                        <input type="date" id="gastoFecha" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Categoría</label>
+                        <select id="gastoCategoria" required>
+                            <option value="">Selecciona...</option>
+                            <option value="Repuestos">Repuestos</option>
+                            <option value="Herramientas">Herramientas</option>
+                            <option value="Transporte">Transporte</option>
+                            <option value="Domicilios / envíos">Domicilios / envíos</option>
+                            <option value="Mano de obra externa">Mano de obra externa</option>
+                            <option value="Insumos">Insumos</option>
+                            <option value="Otros">Otros</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group span-2">
+                        <label>Descripción</label>
+                        <input type="text" id="gastoDescripcion" placeholder="Ej: compra de repuesto" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Valor</label>
+                        <input type="number" id="gastoValor" min="0" placeholder="Ej: 12000" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Proveedor</label>
+                        <input type="text" id="gastoProveedor" placeholder="Opcional">
+                    </div>
+
+                    <div class="form-group span-2">
+                        <label>Medio de pago</label>
+                        <select id="gastoMedio" required>
+                            <option value="Efectivo">Efectivo</option>
+                            <option value="Nequi">Nequi</option>
+                            <option value="Daviplata">Daviplata</option>
+                            <option value="Transferencia">Transferencia</option>
+                            <option value="Tarjeta">Tarjeta</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+
+                    <button class="submit-btn span-2" type="submit">Guardar gasto</button>
+                </form>
             </div>
 
-            <div class="form-group">
-                <label>Categoría</label>
-                <select id="gastoCategoria" required>
-                    <option value="">Selecciona...</option>
-                    <option value="Repuestos">Repuestos</option>
-                    <option value="Herramientas">Herramientas</option>
-                    <option value="Transporte">Transporte</option>
-                    <option value="Domicilios / envíos">Domicilios / envíos</option>
-                    <option value="Mano de obra externa">Mano de obra externa</option>
-                    <option value="Insumos">Insumos</option>
-                    <option value="Otros">Otros</option>
-                </select>
+            <div class="form-card gastos-lado">
+                <h2 class="card-title">Gastos del turno</h2>
+                <p class="card-sub" id="gastosTurnoTotal">Sin turno abierto</p>
+                <div class="movement-list" id="gastosTurnoList"></div>
             </div>
+        </div>
+    </section>
 
-            <div class="form-group">
-                <label>Descripción</label>
-                <input type="text" id="gastoDescripcion" placeholder="Ej: compra de repuesto" required>
-            </div>
-
-            <div class="form-group">
-                <label>Valor</label>
-                <input type="number" id="gastoValor" min="0" placeholder="Ej: 12000" required>
-            </div>
-
-            <div class="form-group">
-                <label>Proveedor</label>
-                <input type="text" id="gastoProveedor" placeholder="Opcional">
-            </div>
-
-            <div class="form-group">
-                <label>Medio de pago</label>
-                <select id="gastoMedio" required>
-                    <option value="Efectivo">Efectivo</option>
-                    <option value="Nequi">Nequi</option>
-                    <option value="Daviplata">Daviplata</option>
-                    <option value="Transferencia">Transferencia</option>
-                    <option value="Tarjeta">Tarjeta</option>
-                    <option value="Otro">Otro</option>
-                </select>
-            </div>
-
-            <button class="submit-btn" type="submit">Guardar gasto</button>
-        </form>
-    </div>
-</section>
     <section id="view-catalogo" class="view">
         <div class="st-header">
             <div>
@@ -1602,291 +2396,278 @@ body.escribiendo .bottom-nav {
             </div>
         </div>
 
-        <div class="catalog-tabs">
-            <button id="tabProducto" class="active" onclick="setCatalogType('producto')">Producto</button>
-            <button id="tabServicio" onclick="setCatalogType('servicio')">Servicio</button>
+        <div class="catalogo-layout">
+            <div class="catalogo-col-form">
+                <div class="catalog-tabs">
+                    <button id="tabProducto" class="active" onclick="setCatalogType('producto')">Producto</button>
+                    <button id="tabServicio" onclick="setCatalogType('servicio')">Servicio</button>
+                </div>
+
+                <div class="form-card">
+                    <form id="catalogoForm">
+                        <input type="hidden" id="catalogoTipo" value="producto">
+                        <input type="hidden" id="catalogoEditId" value="">
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Código</label>
+                                <input type="text" id="catalogoCodigo" placeholder="Opcional. Ej: REP-001">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Categoría</label>
+                                <input type="text" id="catalogoCategoria" placeholder="Ej: Repuestos">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Nombre</label>
+                            <input type="text" id="catalogoNombre" placeholder="Ej: Mantenimiento general" required>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Precio de venta</label>
+                                <input type="number" id="catalogoPrecio" min="0" placeholder="Ej: 25000" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Costo aproximado</label>
+                                <input type="number" id="catalogoCosto" min="0" placeholder="Opcional">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Observaciones</label>
+                            <textarea id="catalogoObs" placeholder="Opcional"></textarea>
+                        </div>
+
+                        <button class="submit-btn" type="submit" id="catalogoSubmitBtn">Guardar en catálogo</button>
+                        <button class="secondary-btn" type="button" id="cancelarEdicionCatalogoBtn" style="display:none;">Cancelar edición</button>
+                    </form>
+                </div>
+
+                <div class="form-card">
+                    <h2 class="card-title">Carga masiva</h2>
+                    <p class="card-sub">Sube un archivo JSON con productos y servicios para actualizar el catálogo.</p>
+
+                    <input type="file" id="jsonCatalogInput" accept=".json,application/json" class="input-archivo">
+
+                    <button type="button" class="secondary-btn" id="btnImportCatalog">Subir JSON al catálogo</button>
+
+                    <div id="importCatalogResult" class="ayuda"></div>
+                </div>
+            </div>
+
+            <div class="form-card catalogo-col-lista">
+                <h2 class="card-title">Catálogo actual</h2>
+
+                <div class="form-group">
+                    <input type="search" id="catalogSearchInput" placeholder="Buscar por código, nombre o categoría" autocomplete="off">
+                </div>
+
+                <div class="catalog-scroll-box">
+                    <div class="frequent-list" id="catalogList"></div>
+                </div>
+            </div>
         </div>
-        <div class="form-card" style="margin-bottom: 16px;">
-    <h2 style="margin:0 0 8px; font-size:20px; font-weight:900;">Carga masiva</h2>
-    <p style="margin:0 0 14px; color:#64748b; font-size:13px; font-weight:600;">
-        Sube un archivo JSON con productos y servicios para actualizar el catálogo.
-    </p>
-
-    <input 
-        type="file" 
-        id="jsonCatalogInput" 
-        accept=".json,application/json"
-        style="padding:14px; height:auto;"
-    >
-
-    <button type="button" class="secondary-btn" id="btnImportCatalog">
-        Subir JSON al catálogo
-    </button>
-
-    <div id="importCatalogResult" style="margin-top:12px; font-size:13px; font-weight:700; color:#64748b;"></div>
-</div>
-        <div class="form-card">
-            <form id="catalogoForm">
-                <input type="hidden" id="catalogoTipo" value="producto">
-                <input type="hidden" id="catalogoEditId" value="">
-                <div class="form-group">
-                    <label>Código</label>
-                    <input type="text" id="catalogoCodigo" placeholder="Opcional. Ej: REP-001">
-                </div>
-
-                <div class="form-group">
-                    <label>Nombre</label>
-                    <input type="text" id="catalogoNombre" placeholder="Ej: Mantenimiento general" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Categoría</label>
-                    <input type="text" id="catalogoCategoria" placeholder="Ej: Repuesto, mantenimiento, limpieza">
-                </div>
-
-                <div class="form-group">
-                    <label>Precio de venta</label>
-                    <input type="number" id="catalogoPrecio" min="0" placeholder="Ej: 25000" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Costo aproximado opcional</label>
-                    <input type="number" id="catalogoCosto" min="0" placeholder="Ej: 12000">
-                </div>
-
-                <div class="form-group">
-                    <label>Observaciones</label>
-                    <textarea id="catalogoObs" placeholder="Opcional"></textarea>
-                </div>
-
-                <button class="submit-btn" type="submit" id="catalogoSubmitBtn">
-    Guardar en catálogo
-</button>
-
-<button class="secondary-btn" type="button" id="cancelarEdicionCatalogoBtn" style="display:none;">
-    Cancelar edición
-</button>
-            </form>
-        </div>
-
-        <div class="section-title">
-    <h2>Catálogo actual</h2>
-</div>
-<div class="form-group">
-    <label>Buscar en catálogo</label>
-    <input 
-        type="search" 
-        id="catalogSearchInput" 
-        placeholder="Buscar por código, nombre o categoría"
-        autocomplete="off">
-</div>
-
-<div class="catalog-scroll-box">
-    <div class="frequent-list" id="catalogList"></div>
-</div>
     </section>
-<section id="view-caja" class="view">
-    <div class="st-header">
-        <div>
-            <h1>Caja</h1>
-            <p>Apertura, cierre y balance del turno</p>
-        </div>
-    </div>
 
-    <div id="turnoCerradoBox" class="form-card">
-        <h2 style="margin:0 0 8px; font-size:22px; font-weight:900;">
-            Abrir turno
-        </h2>
-
-        <p style="margin:0 0 16px; color:#64748b; font-size:13px; font-weight:700;">
-            Para registrar ventas o gastos primero debes abrir caja.
-        </p>
-
-        <form id="turnoAperturaForm">
-            <div class="form-group">
-                <label>Fecha</label>
-                <input type="date" id="turnoFechaApertura" readonly>
-            </div>
-
-            <div class="form-group">
-                <label>Efectivo inicial en caja</label>
-                <input type="number" id="turnoEfectivoInicial" min="0" placeholder="Ej: 50000" required>
-            </div>
-
-            <div class="form-group">
-                <label>Observación de apertura</label>
-                <textarea id="turnoObsApertura" placeholder="Opcional"></textarea>
-            </div>
-
-            <button class="submit-btn" type="submit">Abrir turno</button>
-        </form>
-    </div>
-
-    <div id="turnoActivoBox" style="display:none;">
-        <div class="balance-card">
-            <div class="balance-label">Turno abierto</div>
-            <div class="balance-value" id="turnoCajaEsperada">$0</div>
-            <div class="balance-sub">Efectivo esperado en caja</div>
-        </div>
-
-        <div class="money-row">
-            <div class="money-item">
-                <span>Inicial</span>
-                <strong id="turnoInicial">$0</strong>
-            </div>
-            <div class="money-item">
-                <span>Ventas efectivo</span>
-                <strong id="turnoVentasEfectivo">$0</strong>
-            </div>
-            <div class="money-item">
-                <span>Gastos efectivo</span>
-                <strong id="turnoGastosEfectivo">$0</strong>
+    <section id="view-caja" class="view">
+        <div class="st-header">
+            <div>
+                <h1>Caja</h1>
+                <p>Apertura, cierre y balance del turno</p>
             </div>
         </div>
 
-        <div class="form-card">
-            <h2 style="margin:0 0 8px; font-size:22px; font-weight:900;">
-                Cerrar turno
-            </h2>
+        <div class="caja-layout">
+            <div class="caja-main">
+                <div id="turnoCerradoBox" class="form-card">
+                    <h2 class="card-title">Abrir turno</h2>
+                    <p class="card-sub">Para registrar ventas o gastos primero debes abrir caja.</p>
 
-            <p style="margin:0 0 16px; color:#64748b; font-size:13px; font-weight:700;">
-                Cuenta el efectivo real que hay en caja y el sistema calculará si hay sobrante o faltante.
-            </p>
+                    <form id="turnoAperturaForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Fecha</label>
+                                <input type="date" id="turnoFechaApertura" readonly>
+                            </div>
 
-            <div class="money-row" style="margin-bottom:16px;">
-                <div class="money-item">
-                    <span>Ventas total</span>
-                    <strong id="turnoVentasTotal">$0</strong>
+                            <div class="form-group">
+                                <label>Efectivo inicial en caja</label>
+                                <input type="number" id="turnoEfectivoInicial" min="0" placeholder="Ej: 50000" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Observación de apertura</label>
+                            <textarea id="turnoObsApertura" placeholder="Opcional"></textarea>
+                        </div>
+
+                        <button class="submit-btn" type="submit">Abrir turno</button>
+                    </form>
                 </div>
-                <div class="money-item">
-                    <span>Gastos total</span>
-                    <strong id="turnoGastosTotal">$0</strong>
-                </div>
-                <div class="money-item">
-                    <span>Utilidad</span>
-                    <strong id="turnoUtilidad">$0</strong>
+
+                <div id="turnoActivoBox" style="display:none;">
+                    <div class="kpi-top">
+                        <div class="balance-card">
+                            <div class="balance-label">Turno abierto</div>
+                            <div class="balance-value" id="turnoCajaEsperada">$0</div>
+                            <div class="balance-sub">Efectivo esperado en caja</div>
+                        </div>
+
+                        <div class="money-row">
+                            <div class="money-item">
+                                <span>Inicial</span>
+                                <strong id="turnoInicial">$0</strong>
+                            </div>
+                            <div class="money-item">
+                                <span>Ventas efectivo</span>
+                                <strong id="turnoVentasEfectivo">$0</strong>
+                            </div>
+                            <div class="money-item">
+                                <span>Gastos efectivo</span>
+                                <strong id="turnoGastosEfectivo">$0</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-card">
+                        <h2 class="card-title">Cerrar turno</h2>
+                        <p class="card-sub">Cuenta el efectivo real que hay en caja y el sistema calculará si hay sobrante o faltante.</p>
+
+                        <div class="money-row money-row-interna">
+                            <div class="money-item">
+                                <span>Ventas total</span>
+                                <strong id="turnoVentasTotal">$0</strong>
+                            </div>
+                            <div class="money-item">
+                                <span>Gastos total</span>
+                                <strong id="turnoGastosTotal">$0</strong>
+                            </div>
+                            <div class="money-item">
+                                <span>Utilidad</span>
+                                <strong id="turnoUtilidad">$0</strong>
+                            </div>
+                        </div>
+
+                        <form id="turnoCierreForm">
+                            <div class="form-group">
+                                <label>Efectivo contado en caja</label>
+                                <input type="number" id="turnoEfectivoContado" min="0" placeholder="Ej: 150000" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Observación de cierre</label>
+                                <textarea id="turnoObsCierre" placeholder="Opcional"></textarea>
+                            </div>
+
+                            <button class="submit-btn peligro" type="submit">Cerrar turno</button>
+                        </form>
+                    </div>
                 </div>
             </div>
 
-            <form id="turnoCierreForm">
-                <div class="form-group">
-                    <label>Efectivo contado en caja</label>
-                    <input type="number" id="turnoEfectivoContado" min="0" placeholder="Ej: 150000" required>
+            <div class="form-card caja-side">
+                <h2 class="card-title">Historial de turnos</h2>
+                <div class="movement-list" id="turnosList">
+                    <div class="empty-state">Todavía no hay turnos registrados.</div>
                 </div>
-
-                <div class="form-group">
-                    <label>Observación de cierre</label>
-                    <textarea id="turnoObsCierre" placeholder="Opcional"></textarea>
-                </div>
-
-                <button class="submit-btn" type="submit">Cerrar turno</button>
-            </form>
+            </div>
         </div>
-    </div>
+    </section>
 
-    <div class="section-title">
-        <h2>Historial de turnos</h2>
-    </div>
-
-    <div class="movement-list" id="turnosList">
-        <div class="empty-state">Todavía no hay turnos registrados.</div>
-    </div>
-</section>
-<section id="view-historial" class="view">
-    <div class="st-header">
-        <div>
-            <h1>Historial</h1>
-            <p>Ventas y gastos registrados</p>
+    <section id="view-historial" class="view">
+        <div class="st-header">
+            <div>
+                <h1>Historial</h1>
+                <p>Ventas y gastos registrados</p>
+            </div>
         </div>
-    </div>
 
         <div class="movement-list" id="historyList">
             <div class="empty-state">Todavía no hay historial.</div>
         </div>
     </section>
 
-<section id="view-reportes" class="view">
-    <div class="st-header">
-        <div>
-            <h1>Reportes</h1>
-            <p>Informe gerencial del negocio</p>
-        </div>
-    </div>
-
-    <div class="rep-filtros">
-        <div class="rep-chips" id="repPeriodos">
-            <button type="button" data-periodo="hoy">Hoy</button>
-            <button type="button" data-periodo="ayer">Ayer</button>
-            <button type="button" data-periodo="7d">Últimos 7 días</button>
-            <button type="button" data-periodo="mes" class="active">Este mes</button>
-            <button type="button" data-periodo="mesAnterior">Mes anterior</button>
-            <button type="button" data-periodo="anio">Este año</button>
-            <button type="button" data-periodo="custom">Personalizado</button>
-        </div>
-
-        <div class="rep-rango" id="repRango" hidden>
+    <section id="view-reportes" class="view">
+        <div class="st-header">
             <div>
-                <label for="repDesde">Desde</label>
-                <input type="date" id="repDesde">
-            </div>
-            <div>
-                <label for="repHasta">Hasta</label>
-                <input type="date" id="repHasta">
+                <h1>Reportes</h1>
+                <p>Informe gerencial del negocio</p>
             </div>
         </div>
 
-        <div class="rep-periodo-linea">
-            <div class="rep-periodo-texto" id="repPeriodoTexto"></div>
-            <div class="rep-acciones">
-                <button type="button" id="btnRepExcel">⬇ Excel</button>
-                <button type="button" id="btnRepPdf">🖨 PDF</button>
+        <div class="rep-filtros">
+            <div class="rep-chips" id="repPeriodos">
+                <button type="button" data-periodo="hoy">Hoy</button>
+                <button type="button" data-periodo="ayer">Ayer</button>
+                <button type="button" data-periodo="7d">Últimos 7 días</button>
+                <button type="button" data-periodo="mes" class="active">Este mes</button>
+                <button type="button" data-periodo="mesAnterior">Mes anterior</button>
+                <button type="button" data-periodo="anio">Este año</button>
+                <button type="button" data-periodo="custom">Personalizado</button>
+            </div>
+
+            <div class="rep-rango" id="repRango" hidden>
+                <div>
+                    <label for="repDesde">Desde</label>
+                    <input type="date" id="repDesde">
+                </div>
+                <div>
+                    <label for="repHasta">Hasta</label>
+                    <input type="date" id="repHasta">
+                </div>
+            </div>
+
+            <div class="rep-periodo-linea">
+                <div class="rep-periodo-texto" id="repPeriodoTexto"></div>
+                <div class="rep-acciones">
+                    <button type="button" id="btnRepExcel"><i data-icon="descargar"></i> Excel</button>
+                    <button type="button" id="btnRepPdf"><i data-icon="imprimir"></i> PDF</button>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="rep-chips rep-tabs" id="repTabs">
-        <button type="button" data-tab="resumen" class="active">Resumen</button>
-        <button type="button" data-tab="resultados">Estado de resultados</button>
-        <button type="button" data-tab="ventas">Ventas</button>
-        <button type="button" data-tab="gastos">Gastos</button>
-        <button type="button" data-tab="caja">Caja y turnos</button>
-        <button type="button" data-tab="movimientos">Movimientos</button>
-    </div>
+        <div class="rep-chips rep-tabs" id="repTabs">
+            <button type="button" data-tab="resumen" class="active">Resumen</button>
+            <button type="button" data-tab="resultados">Estado de resultados</button>
+            <button type="button" data-tab="ventas">Ventas</button>
+            <button type="button" data-tab="gastos">Gastos</button>
+            <button type="button" data-tab="caja">Caja y turnos</button>
+            <button type="button" data-tab="movimientos">Movimientos</button>
+        </div>
 
-    <div class="rep-print-header" id="repPrintHeader"></div>
+        <div class="rep-print-header" id="repPrintHeader"></div>
 
-    <div class="rep-panel active" id="repPanel-resumen"></div>
-    <div class="rep-panel" id="repPanel-resultados"></div>
-    <div class="rep-panel" id="repPanel-ventas"></div>
-    <div class="rep-panel" id="repPanel-gastos"></div>
-    <div class="rep-panel" id="repPanel-caja"></div>
-    <div class="rep-panel" id="repPanel-movimientos"></div>
-</section>
+        <div class="rep-panel active" id="repPanel-resumen"></div>
+        <div class="rep-panel" id="repPanel-resultados"></div>
+        <div class="rep-panel" id="repPanel-ventas"></div>
+        <div class="rep-panel" id="repPanel-gastos"></div>
+        <div class="rep-panel" id="repPanel-caja"></div>
+        <div class="rep-panel" id="repPanel-movimientos"></div>
+    </section>
 
 </div>
 
 <nav class="bottom-nav">
-    <button class="nav-btn" onclick="showView('caja')" data-view="caja">
-    <span>💰</span>Caja
-</button>
-    <button class="nav-btn active" onclick="showView('inicio')" data-view="inicio">
-        <span>🏠</span>Inicio
-    </button>
-    <button class="nav-btn" onclick="showView('ventas')" data-view="ventas">
-        <span>🛒</span>Ventas
-    </button>
-    <button class="nav-btn" onclick="showView('gastos')" data-view="gastos">
-        <span>💳</span>Gastos
-    </button>
-    <button class="nav-btn" onclick="showView('catalogo')" data-view="catalogo">
-        <span>📦</span>Catálogo
-    </button>
-    <button class="nav-btn" onclick="showView('historial')" data-view="historial" id="navHistorial">
-        <span>📋</span>Historial
-    </button>
-    <button class="nav-btn" onclick="showView('reportes')" data-view="reportes" id="navReportes" style="display:none;">
-        <span>📊</span>Reportes
-    </button>
+    <div class="nav-brand">
+        <strong>Servicio Técnico</strong>
+        <span id="navTurnoEstado">Sin turno abierto</span>
+    </div>
+
+    <div class="nav-items">
+        <button class="nav-btn active" onclick="showView('inicio')" data-view="inicio"><i data-icon="inicio"></i>Inicio</button>
+        <button class="nav-btn" onclick="showView('caja')" data-view="caja"><i data-icon="caja"></i>Caja</button>
+        <button class="nav-btn" onclick="showView('ventas')" data-view="ventas"><i data-icon="ventas"></i>Ventas</button>
+        <button class="nav-btn" onclick="showView('gastos')" data-view="gastos"><i data-icon="gastos"></i>Gastos</button>
+        <button class="nav-btn" onclick="showView('catalogo')" data-view="catalogo"><i data-icon="catalogo"></i>Catálogo</button>
+        <button class="nav-btn" onclick="showView('historial')" data-view="historial" id="navHistorial"><i data-icon="historial"></i>Historial</button>
+        <button class="nav-btn" onclick="showView('reportes')" data-view="reportes" id="navReportes" style="display:none;"><i data-icon="reportes"></i>Reportes</button>
+    </div>
+
+    <div class="nav-user" id="navUsuario"></div>
 </nav>
 
 <script>
@@ -1923,6 +2704,38 @@ body.escribiendo .bottom-nav {
 
     const esAdmin = () => currentUserRol === "admin";
     const noAnulado = (registro) => !registro.anulada;
+
+    // Íconos de línea (reemplazan los emojis). Se pintan donde haya <i data-icon="nombre">.
+    const ICONOS = {
+        inicio: '<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/>',
+        caja: '<path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3"/><path d="M21 9h-6a3 3 0 0 0 0 6h6z"/><circle cx="15.5" cy="12" r=".6"/>',
+        ventas: '<circle cx="9" cy="20" r="1.3"/><circle cx="18" cy="20" r="1.3"/><path d="M2.5 3.5h3l2.4 11.1a1.5 1.5 0 0 0 1.5 1.2h8.4a1.5 1.5 0 0 0 1.5-1.1L21 8H6.3"/>',
+        gastos: '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/>',
+        catalogo: '<path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5M12 13v8"/>',
+        historial: '<path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6h.01M4 12h.01M4 18h.01"/>',
+        reportes: '<path d="M3 3v18h18"/><path d="M7 15v2M11 11v6M15 7v10M19 12v5"/>',
+        servicio: '<path d="M14.7 6.3a4 4 0 0 0-5.4 5.2L3 17.8V21h3.2l6.3-6.3a4 4 0 0 0 5.2-5.4l-2.6 2.6-2.8-.6-.6-2.8z"/>',
+        plus: '<path d="M12 5v14M5 12h14"/>',
+        minus: '<path d="M5 12h14"/>',
+        lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+        unlock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.6-1.7"/>',
+        descargar: '<path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 19h16"/>',
+        imprimir: '<path d="M7 9V3h10v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M7 14h10v7H7z"/>',
+        alerta: '<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>',
+        info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',
+        prohibido: '<circle cx="12" cy="12" r="9"/><path d="m5.6 5.6 12.8 12.8"/>',
+        check: '<circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/>',
+        baja: '<path d="m3 7 6 6 4-4 8 8"/><path d="M21 11v6h-6"/>',
+        reloj: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'
+    };
+
+    function icono(nombre) {
+        return `<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONOS[nombre] || ""}</svg>`;
+    }
+
+    document.querySelectorAll("[data-icon]").forEach(el => {
+        el.innerHTML = icono(el.dataset.icon);
+    });
 
     const money = (value) => {
         const num = Number(value || 0);
@@ -2076,6 +2889,13 @@ window.showView = function(viewName) {
             document.getElementById("navReportes").style.display = esAdmin() ? "" : "none";
             document.getElementById("navHistorial").style.display = esAdmin() ? "none" : "";
 
+            document.getElementById("navUsuario").innerHTML = `
+                <div style="text-align:right; min-width:0;">
+                    <b>${limpiarHTML(currentUserEmail)}</b>
+                    <span>${esAdmin() ? "Administrador" : "Técnico"}</span>
+                </div>
+                <div class="nav-avatar">${limpiarHTML(currentUserEmail.charAt(0).toUpperCase())}</div>`;
+
             if (!datosCargados) {
                 datosCargados = true;
                 cargarDatos();
@@ -2178,11 +2998,45 @@ function actualizarBotonTurno() {
     boton.classList.toggle("abrir", !abierto);
     boton.classList.toggle("cerrar", abierto);
 
-    document.getElementById("quickTurnoIcon").textContent = abierto ? "🔒" : "🔓";
+    document.getElementById("quickTurnoIcon").innerHTML = icono(abierto ? "lock" : "unlock");
     document.getElementById("quickTurnoTitulo").textContent = abierto ? "Cerrar turno" : "Abrir turno";
     document.getElementById("quickTurnoTexto").textContent = abierto
         ? `Abierto desde ${turnoActivo.fechaApertura || "hoy"} · cuadra la caja`
         : "Inicia la caja para vender";
+
+    document.getElementById("navTurnoEstado").textContent = abierto
+        ? `Turno abierto desde ${turnoActivo.fechaApertura || "hoy"}`
+        : "Sin turno abierto";
+
+    renderGastosTurno();
+}
+
+// Lista lateral en la pantalla de Gastos: lo gastado en el turno abierto.
+function renderGastosTurno() {
+    const lista = document.getElementById("gastosTurnoList");
+    const total = document.getElementById("gastosTurnoTotal");
+    if (!lista || !total) return;
+
+    if (!turnoActivo) {
+        total.textContent = "Sin turno abierto";
+        lista.innerHTML = `<div class="empty-state">Abre un turno en Caja para registrar gastos.</div>`;
+        return;
+    }
+
+    const gastos = gastosGlobal.filter(g => g.turnoId === turnoActivo.docId && noAnulado(g));
+    total.textContent = `${gastos.length} ${gastos.length === 1 ? "gasto" : "gastos"} · ${money(gastos.reduce((acc, g) => acc + Number(g.valor || 0), 0))}`;
+
+    lista.innerHTML = gastos.length
+        ? gastos.map(g => `
+            <div class="movement-card">
+                <div class="movement-icon">${icono("gastos")}</div>
+                <div>
+                    <h3>${limpiarHTML(g.descripcion || "Gasto")}</h3>
+                    <p>${limpiarHTML(g.categoria || "Sin categoría")} · ${limpiarHTML(g.medioPago)}</p>
+                </div>
+                <strong>${money(g.valor)}</strong>
+            </div>`).join("")
+        : `<div class="empty-state">Todavía no hay gastos en este turno.</div>`;
 }
 
 window.accionRapidaTurno = function() {
@@ -2248,7 +3102,7 @@ function renderCaja() {
 
         return `
             <div class="history-card">
-                <div class="history-card-icon">${turno.estado === "abierto" ? "🟢" : "🔒"}</div>
+                <div class="history-card-icon">${icono(turno.estado === "abierto" ? "reloj" : "lock")}</div>
 
                 <div>
                     <h3>Turno ${estado}</h3>
@@ -2298,7 +3152,7 @@ function renderDashboard() {
                 valor: v.total,
                 medio: v.medioPago,
                 fecha: v.creadoEn,
-                icon: "🛒"
+                icon: icono("ventas")
             })),
             ...gastosGlobal.filter(noAnulado).map(g => ({
                 tipo: "Gasto",
@@ -2306,7 +3160,7 @@ function renderDashboard() {
                 valor: g.valor,
                 medio: g.medioPago,
                 fecha: g.creadoEn,
-                icon: "💳"
+                icon: icono("gastos")
             }))
         ].sort((a, b) => {
             const fa = a.fecha?.toMillis ? a.fecha.toMillis() : 0;
@@ -2345,7 +3199,7 @@ function renderHistorial() {
             nombre: v.items?.map(item => item.nombre).join(", ") || v.itemNombre || "Venta",
             detalle: `${v.cliente || "Consumidor final"} · ${v.medioPago || ""}`,
             valor: v.total,
-            icon: "🛒",
+            icon: icono("ventas"),
             fecha: v.fecha,
             anulada: !!v.anulada
         })),
@@ -2354,7 +3208,7 @@ function renderHistorial() {
             nombre: g.descripcion || "Gasto",
             detalle: `${g.categoria || "Sin categoría"} · ${g.medioPago || ""}`,
             valor: g.valor,
-            icon: "💳",
+            icon: icono("gastos"),
             fecha: g.fecha,
             anulada: !!g.anulada
         }))
@@ -2635,7 +3489,7 @@ function renderCarritoVenta() {
 
     container.innerHTML = carritoVenta.map((item, index) => `
         <div class="movement-card">
-            <div class="movement-icon">${item.tipo === 'servicio' ? '🛠️' : '📦'}</div>
+            <div class="movement-icon">${icono(item.tipo === 'servicio' ? 'servicio' : 'catalogo')}</div>
 
             <div>
                 <h3>${limpiarHTML(item.nombre)}</h3>
@@ -3760,6 +4614,10 @@ function kpiHTML(titulo, valor, delta = "") {
     return `<div class="rep-kpi"><span>${titulo}</span><strong>${valor}</strong>${delta}</div>`;
 }
 
+function marcaAlerta(nombre, color) {
+    return `<span class="alerta-icono" style="color:${color};">${icono(nombre)}</span>`;
+}
+
 function alertasDelPeriodo(r, m) {
     const alertas = [];
     const turnos = turnosGlobal.filter(t => enRango(t.fechaApertura, r.desde, r.hasta) && t.estado === "cerrado");
@@ -3769,34 +4627,34 @@ function alertasDelPeriodo(r, m) {
     const anuladas = ventasGlobal.filter(v => v.anulada && enRango(v.fecha, r.desde, r.hasta));
 
     if (m.utilidad < 0) {
-        alertas.push(`📉 <span>El periodo tiene <b>pérdida de ${money(Math.abs(m.utilidad))}</b>: los gastos superan a las ventas.</span>`);
+        alertas.push(`${marcaAlerta("baja", "var(--danger)")}<span>El periodo tiene <b>pérdida de ${money(Math.abs(m.utilidad))}</b>: los gastos superan a las ventas.</span>`);
     }
 
     if (faltantes.length) {
         const total = suma(faltantes, t => Math.abs(Number(t.diferencia || 0)));
-        alertas.push(`⚠️ <span><b>Faltantes de caja:</b> ${faltantes.length} ${faltantes.length === 1 ? "turno" : "turnos"} por ${money(total)}. Revisa la pestaña Caja y turnos.</span>`);
+        alertas.push(`${marcaAlerta("alerta", "var(--danger)")}<span><b>Faltantes de caja:</b> ${faltantes.length} ${faltantes.length === 1 ? "turno" : "turnos"} por ${money(total)}. Revisa la pestaña Caja y turnos.</span>`);
     }
 
     if (sobrantes.length) {
         const total = suma(sobrantes, t => Number(t.diferencia || 0));
-        alertas.push(`ℹ️ <span><b>Sobrantes de caja:</b> ${sobrantes.length} ${sobrantes.length === 1 ? "turno" : "turnos"} por ${money(total)}.</span>`);
+        alertas.push(`${marcaAlerta("info", "var(--ink-2)")}<span><b>Sobrantes de caja:</b> ${sobrantes.length} ${sobrantes.length === 1 ? "turno" : "turnos"} por ${money(total)}.</span>`);
     }
 
     if (anuladas.length) {
-        alertas.push(`🚫 <span><b>Ventas anuladas:</b> ${anuladas.length} por ${money(suma(anuladas, v => v.total))}. No suman en ningún total.</span>`);
+        alertas.push(`${marcaAlerta("prohibido", "var(--danger)")}<span><b>Ventas anuladas:</b> ${anuladas.length} por ${money(suma(anuladas, v => v.total))}. No suman en ningún total.</span>`);
     }
 
     if (m.ingresos && m.coberturaCosto < 0.9) {
-        alertas.push(`📦 <span>El <b>${pct(1 - m.coberturaCosto, 0)} de las ventas no tiene costo registrado</b> en el catálogo, así que el margen bruto es parcial.</span>`);
+        alertas.push(`${marcaAlerta("catalogo", "var(--ink-2)")}<span>El <b>${pct(1 - m.coberturaCosto, 0)} de las ventas no tiene costo registrado</b> en el catálogo, así que el margen bruto es parcial.</span>`);
     }
 
     if (abiertos.length) {
         const nombres = abiertos.map(t => limpiarHTML(t.responsable || "sin responsable")).join(", ");
-        alertas.push(`🟢 <span><b>Turnos abiertos ahora:</b> ${abiertos.length} (${nombres}).</span>`);
+        alertas.push(`${marcaAlerta("reloj", "var(--accent)")}<span><b>Turnos abiertos ahora:</b> ${abiertos.length} (${nombres}).</span>`);
     }
 
     if (!alertas.length) {
-        alertas.push(`✅ <span>Sin novedades en este periodo.</span>`);
+        alertas.push(`${marcaAlerta("check", "var(--accent)")}<span>Sin novedades en este periodo.</span>`);
     }
 
     return alertas.map(a => `<li>${a}</li>`).join("");
@@ -4117,8 +4975,8 @@ function repCaja(panel, { r, actual }) {
 
     const textoDiferencia = (d) => {
         if (d === null) return `<span class="rep-etiqueta">En curso</span>`;
-        if (d < 0) return `<span style="color:#b42318; font-weight:900;">▼ Faltante ${money(Math.abs(d))}</span>`;
-        if (d > 0) return `<span style="color:#006300; font-weight:900;">▲ Sobrante ${money(d)}</span>`;
+        if (d < 0) return `<span style="color:var(--danger); font-weight:700;">▼ Faltante ${money(Math.abs(d))}</span>`;
+        if (d > 0) return `<span style="color:var(--accent); font-weight:700;">▲ Sobrante ${money(d)}</span>`;
         return "Cuadrada";
     };
 
