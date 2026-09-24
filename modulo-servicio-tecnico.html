@@ -2687,53 +2687,6 @@ body.modal-abierto {
     color: var(--danger);
 }
 
-.mini-btn.primario {
-    background: var(--primary);
-    border-color: var(--primary);
-    color: white;
-}
-
-/* Detalle de venta: edición de cantidad y precio */
-.carrito-lado {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 6px;
-    text-align: right;
-}
-
-.carrito-botones {
-    display: flex;
-    gap: 6px;
-    justify-content: flex-end;
-}
-
-.movement-card.carrito-editando {
-    grid-template-columns: 42px minmax(0, 1fr);
-    align-items: start;
-    border-color: var(--ink-2);
-}
-
-.carrito-campos {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-    margin: 10px 0;
-}
-
-.carrito-campos label {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    font-size: 12px;
-    font-weight: 600;
-    color: #475569;
-}
-
-.carrito-campos input {
-    min-height: 40px;
-}
-
 /* Listas largas: se desplazan dentro de su propia caja en lugar de alargar toda la página */
 .lista-scroll {
     max-height: min(62vh, 620px);
@@ -3402,7 +3355,7 @@ body.modal-abierto {
                 <div class="form-row">
                     <div class="form-group">
                         <label>Código</label>
-                        <input type="text" id="catalogoCodigo" placeholder="Automático" readonly class="input-bloqueado" title="El código se asigna automáticamente">
+                        <input type="text" id="catalogoCodigo" readonly class="input-bloqueado" title="El código se asigna automáticamente">
                     </div>
 
                     <div class="form-group">
@@ -4042,7 +3995,7 @@ function renderListasDia() {
         kpi("Ventas", ventasValidas.length) +
         kpi("Total vendido", money(totalVentas)) +
         kpi("En efectivo", money(ventasEfectivo)) +
-        kpi("En transferencia", money(totalVentas - ventasEfectivo));
+        kpi("Otros medios", money(totalVentas - ventasEfectivo));
 
     document.getElementById("ventasDiaList").innerHTML = ventasHoy.length
         ? ventasHoy.map(v => {
@@ -4072,7 +4025,7 @@ function renderListasDia() {
         kpi("Gastos", gastosValidos.length) +
         kpi("Total gastado", money(totalGastos)) +
         kpi("En efectivo", money(gastosEfectivo)) +
-        kpi("En transferencia", money(totalGastos - gastosEfectivo));
+        kpi("Otros medios", money(totalGastos - gastosEfectivo));
 
     document.getElementById("gastosDiaList").innerHTML = gastosHoy.length
         ? gastosHoy.map(g => `
@@ -5159,7 +5112,8 @@ async function reservarCodigosCatalogo(cantidad, minimo = 0) {
 window.abrirFormCatalogo = function(tipo = "producto") {
     cancelarEdicionCatalogo();
     setCatalogType(tipo);
-    document.getElementById("catalogoCodigo").placeholder = `Automático (${mayorCodigoCatalogo() + 1})`;
+    // Se muestra el código que tendrá; al guardar se confirma el consecutivo definitivo.
+    document.getElementById("catalogoCodigo").value = String(mayorCodigoCatalogo() + 1);
     abrirPanelEnModal("panelFormCatalogo", {
         titulo: tipo === "servicio" ? "Nuevo servicio" : "Nuevo producto",
         sub: "Se agrega al catálogo para poder venderlo"
