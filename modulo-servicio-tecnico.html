@@ -2079,11 +2079,6 @@ textarea {
         font-size: 20px;
     }
 
-    .caja-side .movement-list {
-        max-height: calc(100vh - 220px);
-        overflow-y: auto;
-    }
-
     /* Historial en dos columnas */
     #historyList {
         display: grid;
@@ -2692,6 +2687,184 @@ body.modal-abierto {
     color: var(--danger);
 }
 
+/* Listas largas: se desplazan dentro de su propia caja en lugar de alargar toda la página */
+.lista-scroll {
+    max-height: min(62vh, 620px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    margin: 0 -6px;
+    padding: 2px 6px 4px;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+}
+
+.lista-scroll::-webkit-scrollbar {
+    width: 8px;
+}
+
+.lista-scroll::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 999px;
+}
+
+.lista-barra {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.lista-barra .submit-btn {
+    width: auto;
+    margin: 0;
+    padding: 0 22px;
+    min-height: 46px;
+    flex: 1 1 auto;
+}
+
+.lista-barra svg.ico {
+    width: 18px;
+    height: 18px;
+}
+
+.dia-kpis {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+}
+
+.dia-kpis div {
+    background: white;
+    padding: 14px 16px;
+    min-width: 0;
+}
+
+.dia-kpis span {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--muted);
+}
+
+.dia-kpis strong {
+    display: block;
+    margin-top: 4px;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--ink);
+    overflow-wrap: anywhere;
+}
+
+/* Caja sin turno abierto */
+.estado-turno {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.estado-turno-icono {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-sm);
+    background: #f1f5f9;
+    color: var(--ink);
+    display: grid;
+    place-items: center;
+}
+
+.estado-turno .card-title {
+    margin-bottom: 4px;
+}
+
+.estado-turno .card-sub {
+    margin: 0;
+}
+
+.estado-turno .submit-btn {
+    width: auto;
+    padding: 0 28px;
+    margin: 4px 0 0;
+}
+
+#turnoActivoBox .submit-btn.peligro {
+    margin-top: 4px;
+}
+
+#turnoActivoBox .submit-btn svg.ico {
+    width: 18px;
+    height: 18px;
+}
+
+/* Registro de venta dentro de la ventana */
+#modalCuerpo .venta-resumen {
+    position: static;
+}
+
+#modalCuerpo .venta-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px 28px;
+}
+
+#modalCuerpo .venta-resumen {
+    border-top: 1px solid var(--line);
+    padding-top: 16px;
+    margin-top: 8px;
+}
+
+@media (min-width: 760px) {
+    #modalCuerpo .venta-layout {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+
+    #modalCuerpo .venta-resumen {
+        border-top: none;
+        padding-top: 0;
+        margin-top: 0;
+        border-left: 1px solid var(--line);
+        padding-left: 28px;
+    }
+
+    #modalCuerpo .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0 16px;
+    }
+
+    #modalCuerpo .form-grid .span-2 {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (min-width: 600px) {
+    .dia-kpis {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .lista-barra .submit-btn {
+        flex: 0 0 auto;
+    }
+}
+
+@media (min-width: 1024px) {
+    .lista-scroll {
+        max-height: calc(100vh - 330px);
+        min-height: 260px;
+    }
+
+    .caja-side .lista-scroll {
+        max-height: calc(100vh - 200px);
+    }
+}
+
 /* Formularios dentro de la ventana */
 .form-acciones {
     display: flex;
@@ -2846,7 +3019,7 @@ body.modal-abierto {
                 </div>
             </button>
 
-            <button class="quick-btn" onclick="showView('ventas')">
+            <button class="quick-btn" onclick="abrirRegistroVenta()">
                 <div class="quick-icon"><i data-icon="plus"></i></div>
                 <div>
                     <strong>Venta</strong>
@@ -2854,7 +3027,7 @@ body.modal-abierto {
                 </div>
             </button>
 
-            <button class="quick-btn" onclick="showView('gastos')">
+            <button class="quick-btn" onclick="abrirRegistroGasto()">
                 <div class="quick-icon"><i data-icon="minus"></i></div>
                 <div>
                     <strong>Gasto</strong>
@@ -2908,160 +3081,45 @@ body.modal-abierto {
     <section id="view-ventas" class="view">
         <div class="st-header">
             <div>
-                <h1>Nueva venta</h1>
-                <p>Producto o servicio vendido</p>
+                <h1>Ventas</h1>
+                <p>Ventas del día</p>
             </div>
         </div>
 
-        <form id="ventaForm" class="venta-layout">
+        <div class="lista-barra">
+            <button type="button" class="submit-btn" onclick="abrirRegistroVenta()"><i data-icon="plus"></i> Registrar venta</button>
+        </div>
 
-            <div class="form-card venta-captura">
-                <h2 class="card-title">Agregar productos o servicios</h2>
+        <div class="dia-kpis" id="ventasDiaKpis"></div>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Fecha</label>
-                        <input type="date" id="ventaFecha" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Cliente</label>
-                        <input type="text" id="ventaCliente" value="Consumidor final" readonly class="input-bloqueado">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Producto o servicio</label>
-
-                    <div class="search-product-box">
-                        <input type="text" id="ventaBuscadorItem" placeholder="Código o nombre del producto" autocomplete="off">
-                        <input type="hidden" id="ventaItem">
-                        <div id="ventaSearchResults" class="search-results hidden"></div>
-                    </div>
-
-                    <small id="ventaItemSeleccionado" class="ayuda">Ningún producto seleccionado</small>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Cantidad</label>
-                        <input type="number" id="ventaCantidad" min="1" value="1">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Valor unitario</label>
-                        <input type="number" id="ventaValor" min="0" placeholder="Ej: 25000">
-                    </div>
-                </div>
-
-                <button type="button" class="secondary-btn" id="btnAgregarItemVenta">
-                    <i data-icon="plus"></i> Agregar a la venta
-                </button>
+        <div class="form-card">
+            <h2 class="card-title">Ventas del día</h2>
+            <p class="card-sub" id="ventasDiaFecha"></p>
+            <div class="lista-scroll">
+                <div class="movement-list" id="ventasDiaList"></div>
             </div>
-
-            <div class="form-card venta-resumen">
-                <h2 class="card-title">Detalle de venta</h2>
-
-                <div id="ventaItemsList" class="movement-list">
-                    <div class="empty-state">Aún no has agregado productos o servicios.</div>
-                </div>
-
-                <div class="total-box">
-                    <span>Total venta</span>
-                    <strong id="ventaTotalText">$0</strong>
-                </div>
-
-                <div class="form-group">
-                    <label>Medio de pago</label>
-                    <select id="ventaMedio" required>
-                        <option value="Efectivo">Efectivo</option>
-                        <option value="Nequi">Nequi</option>
-                        <option value="Daviplata">Daviplata</option>
-                        <option value="Transferencia">Transferencia</option>
-                        <option value="Tarjeta">Tarjeta</option>
-                        <option value="Otro">Otro</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Observaciones</label>
-                    <textarea id="ventaObs" placeholder="Opcional"></textarea>
-                </div>
-
-                <button class="submit-btn" type="submit">Guardar venta</button>
-                <button class="secondary-btn" type="button" id="btnLimpiarVenta">Limpiar venta</button>
-            </div>
-
-        </form>
+        </div>
     </section>
 
     <section id="view-gastos" class="view">
         <div class="st-header">
             <div>
-                <h1>Nuevo gasto</h1>
-                <p>Registra compras o salidas de dinero</p>
+                <h1>Gastos</h1>
+                <p>Gastos del día</p>
             </div>
         </div>
 
-        <div class="gastos-layout">
-            <div class="form-card">
-                <h2 class="card-title">Datos del gasto</h2>
+        <div class="lista-barra">
+            <button type="button" class="submit-btn" onclick="abrirRegistroGasto()"><i data-icon="plus"></i> Registrar gasto</button>
+        </div>
 
-                <form id="gastoForm" class="form-grid">
-                    <div class="form-group">
-                        <label>Fecha</label>
-                        <input type="date" id="gastoFecha" required>
-                    </div>
+        <div class="dia-kpis" id="gastosDiaKpis"></div>
 
-                    <div class="form-group">
-                        <label>Categoría</label>
-                        <select id="gastoCategoria" required>
-                            <option value="">Selecciona...</option>
-                            <option value="Repuestos">Repuestos</option>
-                            <option value="Herramientas">Herramientas</option>
-                            <option value="Transporte">Transporte</option>
-                            <option value="Domicilios / envíos">Domicilios / envíos</option>
-                            <option value="Mano de obra externa">Mano de obra externa</option>
-                            <option value="Insumos">Insumos</option>
-                            <option value="Otros">Otros</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group span-2">
-                        <label>Descripción</label>
-                        <input type="text" id="gastoDescripcion" placeholder="Ej: compra de repuesto" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Valor</label>
-                        <input type="number" id="gastoValor" min="0" placeholder="Ej: 12000" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Proveedor</label>
-                        <input type="text" id="gastoProveedor" placeholder="Opcional">
-                    </div>
-
-                    <div class="form-group span-2">
-                        <label>Medio de pago</label>
-                        <select id="gastoMedio" required>
-                            <option value="Efectivo">Efectivo</option>
-                            <option value="Nequi">Nequi</option>
-                            <option value="Daviplata">Daviplata</option>
-                            <option value="Transferencia">Transferencia</option>
-                            <option value="Tarjeta">Tarjeta</option>
-                            <option value="Otro">Otro</option>
-                        </select>
-                    </div>
-
-                    <button class="submit-btn span-2" type="submit">Guardar gasto</button>
-                </form>
-            </div>
-
-            <div class="form-card gastos-lado">
-                <h2 class="card-title">Gastos del turno</h2>
-                <p class="card-sub" id="gastosTurnoTotal">Sin turno abierto</p>
-                <div class="movement-list" id="gastosTurnoList"></div>
+        <div class="form-card">
+            <h2 class="card-title">Gastos del día</h2>
+            <p class="card-sub" id="gastosDiaFecha"></p>
+            <div class="lista-scroll">
+                <div class="movement-list" id="gastosDiaList"></div>
             </div>
         </div>
     </section>
@@ -3083,6 +3141,8 @@ body.modal-abierto {
         </div>
 
         <div class="form-card">
+            <h2 class="card-title">Productos y servicios</h2>
+
             <div class="catalogo-filtros">
                 <input type="search" id="catalogSearchInput" placeholder="Buscar por código, nombre o categoría" autocomplete="off">
 
@@ -3095,12 +3155,206 @@ body.modal-abierto {
 
             <p class="ayuda" id="catalogoConteo"></p>
 
-            <div class="catalogo-lista" id="catalogList"></div>
+            <div class="lista-scroll">
+                <div class="catalogo-lista" id="catalogList"></div>
+            </div>
         </div>
     </section>
 
     <!-- Contenido de las ventanas del catálogo: se muestra dentro de la ventana emergente -->
     <div id="plantillasModal" hidden>
+        <div data-panel id="panelVenta">
+            <form id="ventaForm" class="venta-layout">
+
+                <div class="venta-captura">
+                    <div class="modal-seccion" style="margin-top:0;">Agregar productos o servicios</div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Fecha</label>
+                            <input type="date" id="ventaFecha" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Cliente</label>
+                            <input type="text" id="ventaCliente" value="Consumidor final" readonly class="input-bloqueado">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Producto o servicio</label>
+
+                        <div class="search-product-box">
+                            <input type="text" id="ventaBuscadorItem" placeholder="Código o nombre del producto" autocomplete="off">
+                            <input type="hidden" id="ventaItem">
+                            <div id="ventaSearchResults" class="search-results hidden"></div>
+                        </div>
+
+                        <small id="ventaItemSeleccionado" class="ayuda">Ningún producto seleccionado</small>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Cantidad</label>
+                            <input type="number" id="ventaCantidad" min="1" value="1">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Valor unitario</label>
+                            <input type="number" id="ventaValor" min="0" placeholder="Ej: 25000">
+                        </div>
+                    </div>
+
+                    <button type="button" class="secondary-btn" id="btnAgregarItemVenta">
+                        <i data-icon="plus"></i> Agregar a la venta
+                    </button>
+                </div>
+
+                <div class="venta-resumen">
+                    <div class="modal-seccion" style="margin-top:0;">Detalle de venta</div>
+
+                    <div id="ventaItemsList" class="movement-list">
+                        <div class="empty-state">Aún no has agregado productos o servicios.</div>
+                    </div>
+
+                    <div class="total-box">
+                        <span>Total venta</span>
+                        <strong id="ventaTotalText">$0</strong>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Medio de pago</label>
+                        <select id="ventaMedio" required>
+                            <option value="Efectivo">Efectivo</option>
+                            <option value="Nequi">Nequi</option>
+                            <option value="Daviplata">Daviplata</option>
+                            <option value="Transferencia">Transferencia</option>
+                            <option value="Tarjeta">Tarjeta</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Observaciones</label>
+                        <textarea id="ventaObs" placeholder="Opcional"></textarea>
+                    </div>
+
+                    <div class="form-acciones">
+                        <button class="secondary-btn" type="button" id="btnLimpiarVenta">Limpiar</button>
+                        <button class="submit-btn" type="submit">Guardar venta</button>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+
+        <div data-panel id="panelGasto">
+            <form id="gastoForm" class="form-grid">
+                <div class="form-group">
+                    <label>Fecha</label>
+                    <input type="date" id="gastoFecha" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Categoría</label>
+                    <select id="gastoCategoria" required>
+                        <option value="">Selecciona...</option>
+                        <option value="Repuestos">Repuestos</option>
+                        <option value="Herramientas">Herramientas</option>
+                        <option value="Transporte">Transporte</option>
+                        <option value="Domicilios / envíos">Domicilios / envíos</option>
+                        <option value="Mano de obra externa">Mano de obra externa</option>
+                        <option value="Insumos">Insumos</option>
+                        <option value="Otros">Otros</option>
+                    </select>
+                </div>
+
+                <div class="form-group span-2">
+                    <label>Descripción</label>
+                    <input type="text" id="gastoDescripcion" placeholder="Ej: compra de repuesto" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Valor</label>
+                    <input type="number" id="gastoValor" min="0" placeholder="Ej: 12000" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Proveedor</label>
+                    <input type="text" id="gastoProveedor" placeholder="Opcional">
+                </div>
+
+                <div class="form-group span-2">
+                    <label>Medio de pago</label>
+                    <select id="gastoMedio" required>
+                        <option value="Efectivo">Efectivo</option>
+                        <option value="Nequi">Nequi</option>
+                        <option value="Daviplata">Daviplata</option>
+                        <option value="Transferencia">Transferencia</option>
+                        <option value="Tarjeta">Tarjeta</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                </div>
+
+                <div class="form-acciones span-2">
+                    <button class="secondary-btn" type="button" data-cerrar-modal>Cancelar</button>
+                    <button class="submit-btn" type="submit">Guardar gasto</button>
+                </div>
+            </form>
+        </div>
+
+        <div data-panel id="panelAbrirTurno">
+            <form id="turnoAperturaForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Fecha</label>
+                        <input type="date" id="turnoFechaApertura" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Efectivo inicial en caja</label>
+                        <input type="number" id="turnoEfectivoInicial" min="0" placeholder="Ej: 50000" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Observación de apertura</label>
+                    <textarea id="turnoObsApertura" placeholder="Opcional"></textarea>
+                </div>
+
+                <div class="form-acciones">
+                    <button class="secondary-btn" type="button" data-cerrar-modal>Cancelar</button>
+                    <button class="submit-btn" type="submit">Abrir turno</button>
+                </div>
+            </form>
+        </div>
+
+        <div data-panel id="panelCerrarTurno">
+            <div class="modal-cifra">
+                <span>Efectivo esperado en caja</span>
+                <strong id="cierreEsperado">$0</strong>
+                <small id="cierreDetalle"></small>
+            </div>
+
+            <form id="turnoCierreForm">
+                <div class="form-group">
+                    <label>Efectivo contado en caja</label>
+                    <input type="number" id="turnoEfectivoContado" min="0" placeholder="Cuenta los billetes y monedas" required>
+                    <small class="ayuda" id="cierreDiferencia">Escribe el efectivo contado para ver la diferencia.</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Observación de cierre</label>
+                    <textarea id="turnoObsCierre" placeholder="Opcional"></textarea>
+                </div>
+
+                <div class="form-acciones">
+                    <button class="secondary-btn" type="button" data-cerrar-modal>Cancelar</button>
+                    <button class="submit-btn peligro" type="submit">Cerrar turno</button>
+                </div>
+            </form>
+        </div>
+
         <div data-panel id="panelFormCatalogo">
             <div class="catalog-tabs">
                 <button type="button" id="tabProducto" class="active" onclick="setCatalogType('producto')">Producto</button>
@@ -3193,30 +3447,13 @@ body.modal-abierto {
 
         <div class="caja-layout">
             <div class="caja-main">
-                <div id="turnoCerradoBox" class="form-card">
-                    <h2 class="card-title">Abrir turno</h2>
-                    <p class="card-sub">Para registrar ventas o gastos primero debes abrir caja.</p>
-
-                    <form id="turnoAperturaForm">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Fecha</label>
-                                <input type="date" id="turnoFechaApertura" readonly>
-                            </div>
-
-                            <div class="form-group">
-                                <label>Efectivo inicial en caja</label>
-                                <input type="number" id="turnoEfectivoInicial" min="0" placeholder="Ej: 50000" required>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Observación de apertura</label>
-                            <textarea id="turnoObsApertura" placeholder="Opcional"></textarea>
-                        </div>
-
-                        <button class="submit-btn" type="submit">Abrir turno</button>
-                    </form>
+                <div id="turnoCerradoBox" class="form-card estado-turno">
+                    <div class="estado-turno-icono"><i data-icon="unlock"></i></div>
+                    <div class="estado-turno-texto">
+                        <h2 class="card-title">No hay un turno abierto</h2>
+                        <p class="card-sub">Abre la caja con el efectivo inicial para poder registrar ventas y gastos.</p>
+                    </div>
+                    <button type="button" class="submit-btn" onclick="abrirModalAbrirTurno()">Abrir turno</button>
                 </div>
 
                 <div id="turnoActivoBox" style="display:none;">
@@ -3244,8 +3481,7 @@ body.modal-abierto {
                     </div>
 
                     <div class="form-card">
-                        <h2 class="card-title">Cerrar turno</h2>
-                        <p class="card-sub">Cuenta el efectivo real que hay en caja y el sistema calculará si hay sobrante o faltante.</p>
+                        <h2 class="card-title">Resumen del turno</h2>
 
                         <div class="money-row money-row-interna">
                             <div class="money-item">
@@ -3262,27 +3498,17 @@ body.modal-abierto {
                             </div>
                         </div>
 
-                        <form id="turnoCierreForm">
-                            <div class="form-group">
-                                <label>Efectivo contado en caja</label>
-                                <input type="number" id="turnoEfectivoContado" min="0" placeholder="Ej: 150000" required>
-                            </div>
-
-                            <div class="form-group">
-                                <label>Observación de cierre</label>
-                                <textarea id="turnoObsCierre" placeholder="Opcional"></textarea>
-                            </div>
-
-                            <button class="submit-btn peligro" type="submit">Cerrar turno</button>
-                        </form>
+                        <button type="button" class="submit-btn peligro" onclick="abrirModalCerrarTurno()"><i data-icon="lock"></i> Cerrar turno</button>
                     </div>
                 </div>
             </div>
 
             <div class="form-card caja-side">
                 <h2 class="card-title">Historial de turnos</h2>
-                <div class="movement-list" id="turnosList">
-                    <div class="empty-state">Todavía no hay turnos registrados.</div>
+                <div class="lista-scroll">
+                    <div class="movement-list" id="turnosList">
+                        <div class="empty-state">Todavía no hay turnos registrados.</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -3296,8 +3522,13 @@ body.modal-abierto {
             </div>
         </div>
 
-        <div class="movement-list" id="historyList">
-            <div class="empty-state">Todavía no hay historial.</div>
+        <div class="form-card">
+            <h2 class="card-title">Historial de ventas y gastos</h2>
+            <div class="lista-scroll">
+                <div class="movement-list" id="historyList">
+                    <div class="empty-state">Todavía no hay historial.</div>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -3535,11 +3766,6 @@ if (document.getElementById("turnoFechaApertura")) {
 }
 
 window.showView = function(viewName) {
-    if ((viewName === "ventas" || viewName === "gastos") && !turnoActivo) {
-        alert("Primero debes abrir turno en Caja.");
-        viewName = "caja";
-    }
-
     if (viewName === "reportes" && !esAdmin()) {
         viewName = "inicio";
     }
@@ -3752,48 +3978,179 @@ function actualizarBotonTurno() {
         ? `Turno abierto desde ${turnoActivo.fechaApertura || "hoy"}`
         : "Sin turno abierto";
 
-    renderGastosTurno();
+    renderListasDia();
 }
 
-// Lista lateral en la pantalla de Gastos: lo gastado en el turno abierto.
-function renderGastosTurno() {
-    const lista = document.getElementById("gastosTurnoList");
-    const total = document.getElementById("gastosTurnoTotal");
-    if (!lista || !total) return;
+// Pantallas de Ventas y Gastos: lo registrado hoy, con sus totales.
+function renderListasDia() {
+    const hoy = todayISO();
+    const fechaTexto = "Hoy, " + todayReadable();
 
-    if (!turnoActivo) {
-        total.textContent = "Sin turno abierto";
-        lista.innerHTML = `<div class="empty-state">Abre un turno en Caja para registrar gastos.</div>`;
-        return;
-    }
+    const ventasHoy = ventasGlobal
+        .filter(v => v.fecha === hoy)
+        .sort((a, b) => (b.creadoEn?.toMillis?.() || 0) - (a.creadoEn?.toMillis?.() || 0));
 
-    const gastos = gastosGlobal.filter(g => g.turnoId === turnoActivo.docId && noAnulado(g));
-    total.textContent = `${gastos.length} ${gastos.length === 1 ? "gasto" : "gastos"} · ${money(gastos.reduce((acc, g) => acc + Number(g.valor || 0), 0))}`;
+    const gastosHoy = gastosGlobal
+        .filter(g => g.fecha === hoy)
+        .sort((a, b) => (b.creadoEn?.toMillis?.() || 0) - (a.creadoEn?.toMillis?.() || 0));
 
-    lista.innerHTML = gastos.length
-        ? gastos.map(g => `
-            <div class="movement-card" ${attrDetalle("gasto:" + g.docId)}>
+    const sumar = (lista, campo) => lista.reduce((acc, x) => acc + Number(x[campo] || 0), 0);
+    const kpi = (titulo, valor) => `<div><span>${titulo}</span><strong>${valor}</strong></div>`;
+
+    const ventasValidas = ventasHoy.filter(noAnulado);
+    const totalVentas = sumar(ventasValidas, "total");
+    const ventasEfectivo = sumar(ventasValidas.filter(v => v.medioPago === "Efectivo"), "total");
+
+    document.getElementById("ventasDiaFecha").textContent = fechaTexto;
+    document.getElementById("ventasDiaKpis").innerHTML =
+        kpi("Ventas", ventasValidas.length) +
+        kpi("Total vendido", money(totalVentas)) +
+        kpi("En efectivo", money(ventasEfectivo)) +
+        kpi("Otros medios", money(totalVentas - ventasEfectivo));
+
+    document.getElementById("ventasDiaList").innerHTML = ventasHoy.length
+        ? ventasHoy.map(v => {
+            const nombres = (v.items || []).map(i => i.nombre).join(", ") || v.itemNombre || "Venta";
+            const hora = v.creadoEn?.toMillis ? new Date(v.creadoEn.toMillis()).toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" }) : "";
+            return `
+                <div class="movement-card ${v.anulada ? "historial-anulada" : ""}" ${attrDetalle("venta:" + v.docId)}>
+                    <div class="movement-icon">${icono("ventas")}</div>
+                    <div>
+                        <h3>${v.anulada ? "Venta anulada" : "Venta"}${hora ? " · " + hora : ""}</h3>
+                        <p>${limpiarHTML(nombres)}</p>
+                    </div>
+                    <div style="text-align:right;">
+                        <strong>${money(v.total)}</strong>
+                        <p>${limpiarHTML(v.medioPago)}</p>
+                    </div>
+                </div>`;
+        }).join("")
+        : `<div class="empty-state">Todavía no hay ventas hoy.</div>`;
+
+    const gastosValidos = gastosHoy.filter(noAnulado);
+    const totalGastos = sumar(gastosValidos, "valor");
+    const gastosEfectivo = sumar(gastosValidos.filter(g => g.medioPago === "Efectivo"), "valor");
+
+    document.getElementById("gastosDiaFecha").textContent = fechaTexto;
+    document.getElementById("gastosDiaKpis").innerHTML =
+        kpi("Gastos", gastosValidos.length) +
+        kpi("Total gastado", money(totalGastos)) +
+        kpi("En efectivo", money(gastosEfectivo)) +
+        kpi("Otros medios", money(totalGastos - gastosEfectivo));
+
+    document.getElementById("gastosDiaList").innerHTML = gastosHoy.length
+        ? gastosHoy.map(g => `
+            <div class="movement-card ${g.anulada ? "historial-anulada" : ""}" ${attrDetalle("gasto:" + g.docId)}>
                 <div class="movement-icon">${icono("gastos")}</div>
                 <div>
-                    <h3>${limpiarHTML(g.descripcion || "Gasto")}</h3>
+                    <h3>${limpiarHTML(g.descripcion || "Gasto")}${g.anulada ? " (anulado)" : ""}</h3>
                     <p>${limpiarHTML(g.categoria || "Sin categoría")} · ${limpiarHTML(g.medioPago)}</p>
                 </div>
                 <strong>${money(g.valor)}</strong>
             </div>`).join("")
-        : `<div class="empty-state">Todavía no hay gastos en este turno.</div>`;
+        : `<div class="empty-state">Todavía no hay gastos hoy.</div>`;
 }
 
+// ---------- Ventanas de registro ----------
+
+function exigirTurno() {
+    if (turnoActivo) return true;
+    alert("Primero debes abrir un turno.");
+    abrirModalAbrirTurno();
+    return false;
+}
+
+window.abrirRegistroVenta = function() {
+    if (!exigirTurno()) return;
+
+    if (!document.getElementById("ventaFecha").value) {
+        document.getElementById("ventaFecha").value = todayISO();
+    }
+
+    abrirPanelEnModal("panelVenta", {
+        titulo: "Registrar venta",
+        sub: `Turno de ${turnoActivo.responsable || ""} · ${todayReadable()}`,
+        ancha: true
+    });
+    setTimeout(() => document.getElementById("ventaBuscadorItem").focus({ preventScroll: true }), 50);
+};
+
+window.abrirRegistroGasto = function() {
+    if (!exigirTurno()) return;
+
+    if (!document.getElementById("gastoFecha").value) {
+        document.getElementById("gastoFecha").value = todayISO();
+    }
+
+    abrirPanelEnModal("panelGasto", {
+        titulo: "Registrar gasto",
+        sub: "Compra o salida de dinero del turno"
+    });
+    setTimeout(() => document.getElementById("gastoCategoria").focus({ preventScroll: true }), 50);
+};
+
+window.abrirModalAbrirTurno = function() {
+    if (turnoActivo) {
+        abrirModalCerrarTurno();
+        return;
+    }
+
+    document.getElementById("turnoFechaApertura").value = todayISO();
+    abrirPanelEnModal("panelAbrirTurno", {
+        titulo: "Abrir turno",
+        sub: "Registra el efectivo con el que empieza la caja"
+    });
+    setTimeout(() => document.getElementById("turnoEfectivoInicial").focus({ preventScroll: true }), 50);
+};
+
+window.abrirModalCerrarTurno = function() {
+    if (!turnoActivo) {
+        abrirModalAbrirTurno();
+        return;
+    }
+
+    const r = obtenerResumenTurno(turnoActivo);
+    document.getElementById("cierreEsperado").textContent = money(r.efectivoEsperado);
+    document.getElementById("cierreDetalle").textContent =
+        `Inicial ${money(r.efectivoInicial)} + ventas en efectivo ${money(r.ventasEfectivo)} − gastos en efectivo ${money(r.gastosEfectivo)}`;
+    actualizarDiferenciaCierre();
+
+    abrirPanelEnModal("panelCerrarTurno", {
+        titulo: "Cerrar turno",
+        sub: `Abierto desde ${turnoActivo.fechaApertura || "hoy"} · ${turnoActivo.responsable || ""}`
+    });
+    setTimeout(() => document.getElementById("turnoEfectivoContado").focus({ preventScroll: true }), 50);
+};
+
+// Mientras se escribe el efectivo contado, muestra si hay faltante o sobrante.
+function actualizarDiferenciaCierre() {
+    const campo = document.getElementById("turnoEfectivoContado");
+    const texto = document.getElementById("cierreDiferencia");
+    if (!turnoActivo || campo.value === "") {
+        texto.textContent = "Escribe el efectivo contado para ver la diferencia.";
+        texto.style.color = "";
+        return;
+    }
+
+    const diferencia = Number(campo.value || 0) - obtenerResumenTurno(turnoActivo).efectivoEsperado;
+
+    if (diferencia < 0) {
+        texto.textContent = `Faltante de ${money(Math.abs(diferencia))}`;
+        texto.style.color = "var(--danger)";
+    } else if (diferencia > 0) {
+        texto.textContent = `Sobrante de ${money(diferencia)}`;
+        texto.style.color = "var(--accent)";
+    } else {
+        texto.textContent = "La caja cuadra exacto.";
+        texto.style.color = "var(--ink)";
+    }
+}
+
+document.getElementById("turnoEfectivoContado").addEventListener("input", actualizarDiferenciaCierre);
+
 window.accionRapidaTurno = function() {
-    showView("caja");
-
-    const campo = document.getElementById(turnoActivo ? "turnoEfectivoContado" : "turnoEfectivoInicial");
-
-    // Espera a que showView termine de subir el scroll antes de llevar al campo.
-    setTimeout(() => {
-        if (!campo) return;
-        campo.scrollIntoView({ behavior: "smooth", block: "center" });
-        campo.focus({ preventScroll: true });
-    }, 100);
+    if (turnoActivo) abrirModalCerrarTurno();
+    else abrirModalAbrirTurno();
 };
 
 function renderCaja() {
@@ -4361,6 +4718,7 @@ async function abrirTurno(form) {
     form.reset();
     document.getElementById("turnoFechaApertura").value = todayISO();
 
+    cerrarModal();
     alert("Turno abierto correctamente.");
 }
 
@@ -4405,8 +4763,8 @@ async function cerrarTurno(form) {
 
     form.reset();
 
+    cerrarModal();
     alert("Turno cerrado correctamente.");
-    showView("inicio");
 }
 
 document.getElementById("ventaForm").addEventListener("submit", function(e) {
@@ -4417,7 +4775,7 @@ document.getElementById("ventaForm").addEventListener("submit", function(e) {
 async function guardarVenta(form) {
     if (!turnoActivo) {
         alert("Primero debes abrir turno en Caja.");
-        showView("caja");
+        abrirModalAbrirTurno();
         return;
     }
 
@@ -4454,8 +4812,8 @@ async function guardarVenta(form) {
 
     renderCarritoVenta();
 
+    cerrarModal();
     alert("Venta guardada correctamente.");
-    showView("inicio");
 }
 
     document.getElementById("gastoForm").addEventListener("submit", function(e) {
@@ -4466,7 +4824,7 @@ async function guardarVenta(form) {
     async function guardarGasto(form) {
         if (!turnoActivo) {
             alert("Primero debes abrir turno en Caja.");
-            showView("caja");
+            abrirModalAbrirTurno();
             return;
         }
 
@@ -4488,8 +4846,8 @@ async function guardarVenta(form) {
         form.reset();
         document.getElementById("gastoFecha").value = todayISO();
 
+        cerrarModal();
         alert("Gasto guardado correctamente.");
-        showView("inicio");
     }
 
     document.getElementById("btnImportCatalog").addEventListener("click", async function() {
@@ -6423,9 +6781,9 @@ function devolverPaneles(excepto = null) {
     });
 }
 
-function abrirPanelEnModal(idPanel, { titulo, sub = "" }) {
+function abrirPanelEnModal(idPanel, { titulo, sub = "", ancha = false }) {
     modalPila.length = 0;
-    pintarModal({ titulo, sub, nodo: document.getElementById(idPanel), acciones: [] });
+    pintarModal({ titulo, sub, ancha, nodo: document.getElementById(idPanel), acciones: [] });
 }
 
 function pintarModal(d, enfocar = true) {
