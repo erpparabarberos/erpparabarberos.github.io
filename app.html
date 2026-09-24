@@ -1089,7 +1089,8 @@ if (mainSideRail) {
         }
 
         if (roleBadge) {
-            roleBadge.textContent = 'Rol: ' + rol;
+            // Solo para mostrar: "servicio_tecnico" se ve como "servicio tecnico". El rol guardado no cambia.
+            roleBadge.textContent = 'Rol: ' + rol.replace(/_/g, ' ');
         }
 
         configurarMenuPorRol(rol);
