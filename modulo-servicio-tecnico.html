@@ -2104,6 +2104,427 @@ textarea {
     }
 }
 
+/* ===== Ventana de detalle ===== */
+
+[data-detalle] {
+    cursor: pointer;
+}
+
+.movement-card[data-detalle],
+.history-card[data-detalle],
+.mini-card[data-detalle] {
+    transition: border-color .15s, box-shadow .15s;
+}
+
+.movement-card[data-detalle]:hover,
+.history-card[data-detalle]:hover,
+.mini-card[data-detalle]:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, .06);
+}
+
+.rep-tabla tr[data-detalle]:hover td {
+    background: #f8fafc;
+}
+
+[data-detalle]:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.modal {
+    position: fixed;
+    inset: 0;
+    z-index: 3000;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.modal[hidden] {
+    display: none;
+}
+
+.modal-fondo {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, .45);
+    animation: modal-fundido .15s ease-out;
+}
+
+.modal-caja {
+    position: relative;
+    width: 100%;
+    max-height: 90vh;
+    max-height: 90dvh;
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    border-radius: 18px 18px 0 0;
+    box-shadow: 0 -10px 40px rgba(15, 23, 42, .2);
+    animation: modal-subir .2s ease-out;
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+.modal-cab {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 18px 18px 14px;
+    border-bottom: 1px solid var(--line);
+}
+
+.modal-titulos {
+    flex: 1;
+    min-width: 0;
+}
+
+.modal-titulos h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ink);
+    overflow-wrap: anywhere;
+}
+
+.modal-titulos p {
+    overflow-wrap: anywhere;
+    margin: 3px 0 0;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+}
+
+.modal-etiqueta {
+    align-self: center;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 9px;
+    border-radius: 999px;
+    background: #f1f5f9;
+    color: var(--ink-2);
+    white-space: nowrap;
+}
+
+.modal-etiqueta:empty {
+    display: none;
+}
+
+.modal-etiqueta.peligro {
+    background: var(--danger-soft);
+    color: var(--danger);
+}
+
+.modal-icono-btn {
+    flex: 0 0 auto;
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--line);
+    background: white;
+    border-radius: var(--radius-sm);
+    color: var(--ink-2);
+    cursor: pointer;
+}
+
+.modal-icono-btn:hover {
+    background: #f8fafc;
+}
+
+.modal-icono-btn[hidden] {
+    display: none;
+}
+
+.modal-cuerpo {
+    padding: 18px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+}
+
+.modal-pie {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: flex-end;
+    padding: 14px 18px;
+    border-top: 1px solid var(--line);
+}
+
+.modal-pie:empty {
+    display: none;
+}
+
+.modal-pie .submit-btn,
+.modal-pie .secondary-btn {
+    width: auto;
+    margin: 0;
+    padding: 0 18px;
+    min-height: 44px;
+    flex: 1 1 auto;
+}
+
+.modal-cifra {
+    background: #f8fafc;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    margin-bottom: 16px;
+}
+
+.modal-cifra span {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+}
+
+.modal-cifra strong {
+    display: block;
+    margin-top: 4px;
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    overflow-wrap: anywhere;
+}
+
+.modal-cifra small {
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+}
+
+.modal-kpis {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 16px;
+}
+
+.modal-kpis div {
+    background: white;
+    padding: 12px 14px;
+    min-width: 0;
+}
+
+.modal-kpis span {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--muted);
+}
+
+.modal-kpis strong {
+    display: block;
+    margin-top: 4px;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ink);
+    overflow-wrap: anywhere;
+}
+
+.modal-seccion {
+    margin: 18px 0 8px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--muted);
+}
+
+.modal-datos {
+    margin: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+
+.modal-datos > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line-soft);
+}
+
+.modal-datos > div:last-child {
+    border-bottom: none;
+}
+
+.modal-datos dt {
+    flex: 0 0 auto;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+}
+
+.modal-datos dd {
+    margin: 0;
+    min-width: 0;
+    text-align: right;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    overflow-wrap: anywhere;
+}
+
+.modal-enlace {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.modal-nota {
+    margin-top: 14px;
+    padding: 12px 14px;
+    border-radius: var(--radius-sm);
+    background: #f8fafc;
+    border: 1px solid var(--line);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-2);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.modal-nota.peligro {
+    background: var(--danger-soft);
+    border-color: #fecaca;
+    color: #991b1b;
+}
+
+.modal-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.modal-lista .movement-card {
+    box-shadow: none;
+}
+
+@keyframes modal-fundido {
+    from { opacity: 0; }
+}
+
+@keyframes modal-subir {
+    from { transform: translateY(24px); opacity: 0; }
+}
+
+@media (min-width: 640px) {
+    .modal {
+        align-items: center;
+        padding: 24px;
+    }
+
+    .modal-caja {
+        width: min(680px, 100%);
+        max-height: 88vh;
+        border-radius: 18px;
+        box-shadow: 0 24px 60px rgba(15, 23, 42, .25);
+    }
+
+    .modal-caja.ancha {
+        width: min(880px, 100%);
+    }
+
+    .modal-cab,
+    .modal-cuerpo,
+    .modal-pie {
+        padding-left: 24px;
+        padding-right: 24px;
+    }
+
+    .modal-kpis {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .modal-pie .submit-btn,
+    .modal-pie .secondary-btn {
+        flex: 0 0 auto;
+    }
+}
+
+body.modal-abierto {
+    overflow: hidden;
+}
+
+/* En celular (2 columnas), si el número de indicadores es impar el último ocupa toda la fila */
+@media (max-width: 639px) {
+    .modal-kpis div:last-child:nth-child(odd) {
+        grid-column: 1 / -1;
+    }
+}
+
+/* Comprobante de venta: solo existe al imprimir */
+#comprobante {
+    display: none;
+}
+
+@media print {
+    html.imprimiendo-comprobante .st-app,
+    html.imprimiendo-comprobante .bottom-nav,
+    html.imprimiendo-comprobante .modal {
+        display: none !important;
+    }
+
+    html.imprimiendo-comprobante #comprobante {
+        display: block;
+        max-width: 380px;
+        margin: 0 auto;
+        font-size: 12px;
+        color: #000;
+    }
+
+    #comprobante h1 {
+        margin: 0;
+        font-size: 18px;
+        text-align: center;
+    }
+
+    #comprobante .centro {
+        text-align: center;
+        margin: 2px 0;
+    }
+
+    #comprobante table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 10px 0;
+    }
+
+    #comprobante th,
+    #comprobante td {
+        padding: 4px 0;
+        text-align: left;
+        border-bottom: 1px dashed #999;
+    }
+
+    #comprobante .num {
+        text-align: right;
+    }
+
+    #comprobante .total {
+        display: flex;
+        justify-content: space-between;
+        font-size: 16px;
+        font-weight: 800;
+        margin: 8px 0;
+    }
+}
+
 /* Sin títulos de sección: el menú ya indica dónde se está y así se gana espacio */
 .view > .st-header {
     display: none;
@@ -2681,6 +3102,29 @@ textarea {
     <div class="nav-user" id="navUsuario"></div>
 </nav>
 
+<div class="modal" id="modalDetalle" hidden>
+    <div class="modal-fondo" data-cerrar-modal></div>
+    <div class="modal-caja" role="dialog" aria-modal="true" aria-labelledby="modalTitulo">
+        <header class="modal-cab">
+            <button type="button" class="modal-icono-btn" id="modalVolver" aria-label="Volver" hidden>
+                <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <div class="modal-titulos">
+                <h2 id="modalTitulo"></h2>
+                <p id="modalSub"></p>
+            </div>
+            <span class="modal-etiqueta" id="modalEtiqueta"></span>
+            <button type="button" class="modal-icono-btn" data-cerrar-modal aria-label="Cerrar">
+                <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+            </button>
+        </header>
+        <div class="modal-cuerpo" id="modalCuerpo"></div>
+        <footer class="modal-pie" id="modalPie"></footer>
+    </div>
+</div>
+
+<div id="comprobante"></div>
+
 <script>
     const firebaseConfig = {
         apiKey: "AIzaSyDkH2_E7t07SWWH1SZr77BFlNp6RQTDDDY",
@@ -2747,6 +3191,9 @@ textarea {
     document.querySelectorAll("[data-icon]").forEach(el => {
         el.innerHTML = icono(el.dataset.icon);
     });
+
+    // Marca un elemento como "tocable": al hacer clic abre su ventana de detalle ("venta:ID", "turno:ID"...).
+    const attrDetalle = (clave) => clave ? `data-detalle="${limpiarHTML(clave)}" tabindex="0" role="button"` : "";
 
     const money = (value) => {
         const num = Number(value || 0);
@@ -2930,6 +3377,7 @@ window.showView = function(viewName) {
         ventasRef.orderBy("creadoEn", "desc").onSnapshot(snapshot => {
             ventasGlobal = [];
             snapshot.forEach(doc => ventasGlobal.push({ docId: doc.id, ...doc.data() }));
+            renderFrecuentes();
             renderDashboard();
             renderMovimientos();
             renderHistorial();
@@ -3039,7 +3487,7 @@ function renderGastosTurno() {
 
     lista.innerHTML = gastos.length
         ? gastos.map(g => `
-            <div class="movement-card">
+            <div class="movement-card" ${attrDetalle("gasto:" + g.docId)}>
                 <div class="movement-icon">${icono("gastos")}</div>
                 <div>
                     <h3>${limpiarHTML(g.descripcion || "Gasto")}</h3>
@@ -3112,7 +3560,7 @@ function renderCaja() {
         }
 
         return `
-            <div class="history-card">
+            <div class="history-card" ${attrDetalle("turno:" + turno.docId)}>
                 <div class="history-card-icon">${icono(turno.estado === "abierto" ? "reloj" : "lock")}</div>
 
                 <div>
@@ -3152,6 +3600,7 @@ function renderDashboard() {
     document.getElementById("balanceHoy").textContent = money(utilidad);
 
     renderCaja();
+    refrescarModal();
 }
     function renderMovimientos() {
         const container = document.getElementById("movementList");
@@ -3163,7 +3612,8 @@ function renderDashboard() {
                 valor: v.total,
                 medio: v.medioPago,
                 fecha: v.creadoEn,
-                icon: icono("ventas")
+                icon: icono("ventas"),
+                clave: "venta:" + v.docId
             })),
             ...gastosGlobal.filter(noAnulado).map(g => ({
                 tipo: "Gasto",
@@ -3171,7 +3621,8 @@ function renderDashboard() {
                 valor: g.valor,
                 medio: g.medioPago,
                 fecha: g.creadoEn,
-                icon: icono("gastos")
+                icon: icono("gastos"),
+                clave: "gasto:" + g.docId
             }))
         ].sort((a, b) => {
             const fa = a.fecha?.toMillis ? a.fecha.toMillis() : 0;
@@ -3185,7 +3636,7 @@ function renderDashboard() {
         }
 
         container.innerHTML = movimientos.map(m => `
-            <div class="movement-card">
+            <div class="movement-card" ${attrDetalle(m.clave)}>
                 <div class="movement-icon">${m.icon}</div>
                 <div>
                     <h3>${m.tipo}</h3>
@@ -3212,7 +3663,8 @@ function renderHistorial() {
             valor: v.total,
             icon: icono("ventas"),
             fecha: v.fecha,
-            anulada: !!v.anulada
+            anulada: !!v.anulada,
+            clave: "venta:" + v.docId
         })),
         ...gastosGlobal.map(g => ({
             tipo: g.anulada ? "Gasto anulado" : "Gasto",
@@ -3221,7 +3673,8 @@ function renderHistorial() {
             valor: g.valor,
             icon: icono("gastos"),
             fecha: g.fecha,
-            anulada: !!g.anulada
+            anulada: !!g.anulada,
+            clave: "gasto:" + g.docId
         }))
     ].sort((a, b) => String(b.fecha).localeCompare(String(a.fecha)));
 
@@ -3231,7 +3684,7 @@ function renderHistorial() {
     }
 
     container.innerHTML = movimientos.map(m => `
-        <div class="history-card ${m.anulada ? "historial-anulada" : ""}">
+        <div class="history-card ${m.anulada ? "historial-anulada" : ""}" ${attrDetalle(m.clave)}>
             <div class="history-card-icon">${m.icon}</div>
 
             <div>
@@ -3296,7 +3749,7 @@ function renderCatalogo() {
     }
 
     container.innerHTML = lista.map(item => `
-        <div class="mini-card" style="align-items:flex-start; gap:12px;">
+        <div class="mini-card" style="align-items:flex-start; gap:12px;" ${attrDetalle("producto:" + item.docId)}>
             <div style="flex:1;">
                 <strong>
                     ${item.codigo ? limpiarHTML(item.codigo) + ' · ' : ''}${limpiarHTML(item.nombre)}
@@ -3333,7 +3786,22 @@ function renderCatalogo() {
     function renderFrecuentes() {
         const container = document.getElementById("frequentList");
 
-        const frecuentes = catalogoGlobal.slice(0, 4);
+        // Los más vendidos (en unidades) de los últimos 30 días; si faltan, se completan con los más recientes.
+        const desde = sumarDias(todayISO(), -29);
+        const unidades = {};
+        ventasGlobal
+            .filter(v => noAnulado(v) && v.fecha >= desde)
+            .forEach(v => (v.items || []).forEach(item => {
+                if (item.itemId) unidades[item.itemId] = (unidades[item.itemId] || 0) + Number(item.cantidad || 0);
+            }));
+
+        const masVendidos = catalogoGlobal
+            .filter(item => unidades[item.docId])
+            .sort((a, b) => unidades[b.docId] - unidades[a.docId]);
+
+        const frecuentes = [...masVendidos, ...catalogoGlobal.filter(item => !unidades[item.docId])]
+            .slice(0, 4)
+            .map(item => ({ ...item, vendidos: unidades[item.docId] || 0 }));
 
         if (!frecuentes.length) {
             container.innerHTML = `<div class="empty-state">Aún no hay productos o servicios frecuentes.</div>`;
@@ -3341,11 +3809,11 @@ function renderCatalogo() {
         }
 
         container.innerHTML = frecuentes.map(item => `
-            <div class="mini-card">
+            <div class="mini-card" ${attrDetalle("producto:" + item.docId)}>
                 <div>
                     <strong>${limpiarHTML(item.nombre)}</strong>
                     <p style="margin:4px 0 0; color:#64748b; font-size:12px; font-weight:700;">
-                        ${limpiarHTML(item.tipo)}
+                        ${limpiarHTML(item.tipo)}${item.vendidos ? ` · ${item.vendidos} vendidos en 30 días` : ""}
                     </p>
                 </div>
                 <span>${money(item.precio)}</span>
@@ -4268,6 +4736,7 @@ function ventasPorItem(ventas) {
     ventas.forEach(v => itemsDeVenta(v).forEach(item => {
         const clave = item.itemId || item.codigo || item.nombre;
         const fila = mapa.get(clave) || {
+            itemId: item.itemId || "",
             nombre: item.nombre || "Sin nombre",
             codigo: item.codigo || "",
             tipo: item.tipo || "producto",
@@ -4385,7 +4854,8 @@ function tablaHTML(columnas, filas, opciones = {}) {
         ? filas.map(f => {
             const celdas = Array.isArray(f) ? f : f.celdas;
             const clase = Array.isArray(f) ? "" : (f.clase || "");
-            return `<tr class="${clase}">${celdas.map(celda).join("")}</tr>`;
+            const detalle = !Array.isArray(f) && f.detalle ? attrDetalle(f.detalle) : "";
+            return `<tr class="${clase}" ${detalle}>${celdas.map(celda).join("")}</tr>`;
         }).join("")
         : `<tr><td colspan="${columnas.length}" style="text-align:center; color:#64748b; padding:18px;">Sin datos en este periodo.</td></tr>`;
 
@@ -4839,14 +5309,14 @@ function repVentas(panel, { actual, m }) {
             <p class="rep-sub">Todo lo vendido en el periodo</p>
             ${tablaHTML(
                 [{ t: "Producto / servicio" }, { t: "Tipo" }, { t: "Cant.", num: true }, { t: "Vendido", num: true }, { t: "Part.", num: true }, { t: "Margen est.", num: true }],
-                items.map(i => [
+                items.map(i => ({ detalle: catalogoGlobal.some(c => c.docId === i.itemId) ? "producto:" + i.itemId : "", celdas: [
                     `${i.codigo ? `<span style="color:#64748b;">${limpiarHTML(i.codigo)}</span> · ` : ""}${limpiarHTML(i.nombre)}`,
                     limpiarHTML(i.tipo),
                     i.cantidad.toLocaleString("es-CO"),
                     money(i.total),
                     pct(totalItems ? i.total / totalItems : null),
                     i.conCosto && i.total ? pct((i.total - i.costo) / i.total) : `<span style="color:#94a3b8;">Sin costo</span>`
-                ]),
+                ] })),
                 { apilar: true, pie: ["Total", "", suma(items, i => i.cantidad).toLocaleString("es-CO"), money(totalItems), pct(totalItems ? 1 : null), ""] }
             )}
         </div>
@@ -4953,14 +5423,14 @@ function repGastos(panel, { actual, m, mAnt }) {
             <h3>Detalle de gastos</h3>
             ${tablaHTML(
                 [{ t: "Fecha" }, { t: "Categoría" }, { t: "Descripción" }, { t: "Proveedor" }, { t: "Medio" }, { t: "Valor", num: true }],
-                detalle.map(g => [
+                detalle.map(g => ({ detalle: "gasto:" + g.docId, celdas: [
                     limpiarHTML(g.fecha),
                     limpiarHTML(g.categoria || "Sin categoría"),
                     limpiarHTML(g.descripcion),
                     limpiarHTML(g.proveedor || "—"),
                     limpiarHTML(g.medioPago),
                     money(g.valor)
-                ]),
+                ] })),
                 { apilar: true, pie: ["Total", "", "", "", "", money(m.egresos)] }
             )}
         </div>`;
@@ -5005,7 +5475,7 @@ function repCaja(panel, { r, actual }) {
                 [{ t: "Apertura" }, { t: "Responsable" }, { t: "Inicial", num: true }, { t: "Ventas ef.", num: true }, { t: "Gastos ef.", num: true }, { t: "Esperado", num: true }, { t: "Contado", num: true }, { t: "Diferencia", num: true }],
                 turnos.map(t => {
                     const s = resumenDeTurno(t);
-                    return [
+                    return { detalle: "turno:" + t.docId, celdas: [
                         limpiarHTML(t.fechaApertura),
                         limpiarHTML(t.responsable),
                         money(s.efectivoInicial),
@@ -5014,7 +5484,7 @@ function repCaja(panel, { r, actual }) {
                         money(s.efectivoEsperado),
                         s.efectivoContado === null ? "—" : money(s.efectivoContado),
                         textoDiferencia(s.diferencia)
-                    ];
+                    ] };
                 }),
                 { apilar: true, pie: ["Diferencia neta", "", "", "", "", "", "", textoDiferencia(sobrantes - faltantes)] }
             )}
@@ -5105,6 +5575,7 @@ function pintarListaMovimientos() {
             [{ t: "Fecha" }, { t: "Tipo" }, { t: "Descripción" }, { t: "Medio" }, { t: "Usuario" }, { t: "Valor", num: true }, { t: "", clase: "no-tachar rep-no-print" }],
             lista.map(mv => ({
                 clase: mv.anulada ? "anulada" : "",
+                detalle: `${mv.tipo}:${mv.docId}`,
                 celdas: [
                     `${limpiarHTML(mv.fecha)}<br><span style="color:#94a3b8; font-size:11px;">${limpiarHTML(mv.hora)}</span>`,
                     mv.tipo === "venta" ? "Venta" : "Gasto",
@@ -5149,6 +5620,7 @@ window.anularMovimiento = async function(tipo, docId) {
             anuladaPor: currentUserEmail,
             anuladaEn: firebase.firestore.FieldValue.serverTimestamp()
         });
+        cerrarModal();
         alert(`${tipo === "venta" ? "Venta anulada" : "Gasto anulado"} correctamente.`);
     } catch (error) {
         console.error(error);
@@ -5311,6 +5783,459 @@ document.getElementById("repTabs").addEventListener("click", function(e) {
 
 document.getElementById("btnRepExcel").addEventListener("click", exportarExcel);
 document.getElementById("btnRepPdf").addEventListener("click", imprimirReporte);
+
+// =====================================================================
+// VENTANAS DE DETALLE (venta, gasto, turno, producto)
+// =====================================================================
+
+// Pila de ventanas: desde un turno se puede abrir una venta y volver al turno.
+const modalPila = [];
+let modalFocoPrevio = null;
+
+function fechaHoraDe(ts) {
+    if (!ts || typeof ts.toMillis !== "function") return "—";
+    return new Date(ts.toMillis()).toLocaleString("es-CO", {
+        day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit"
+    });
+}
+
+function numeroVenta(venta) {
+    return String(venta.docId || "").slice(0, 8).toUpperCase();
+}
+
+function datosHTML(pares) {
+    const filas = pares.filter(p => p && p[1] !== undefined && p[1] !== null && p[1] !== "");
+    return `<dl class="modal-datos">${filas.map(([t, v]) => `<div><dt>${t}</dt><dd>${v}</dd></div>`).join("")}</dl>`;
+}
+
+function kpisModalHTML(pares) {
+    return `<div class="modal-kpis">${pares.map(([t, v]) => `<div><span>${t}</span><strong>${v}</strong></div>`).join("")}</div>`;
+}
+
+function cifraHTML(titulo, valor, nota = "", color = "") {
+    return `
+        <div class="modal-cifra">
+            <span>${titulo}</span>
+            <strong${color ? ` style="color:${color};"` : ""}>${valor}</strong>
+            ${nota ? `<small>${nota}</small>` : ""}
+        </div>`;
+}
+
+function enlaceTurno(turnoId) {
+    const t = turnosGlobal.find(x => x.docId === turnoId);
+    if (!t) return "";
+    return `<span class="modal-enlace" data-detalle="turno:${t.docId}" data-apilar="1" tabindex="0" role="button">${limpiarHTML(t.fechaApertura)} · ${limpiarHTML(t.responsable)}</span>`;
+}
+
+function bloqueAnulacion(registro) {
+    if (!registro.anulada) return "";
+
+    const quien = registro.anuladaPor ? ` por ${limpiarHTML(registro.anuladaPor)}` : "";
+    const cuando = registro.anuladaEn ? ` el ${fechaHoraDe(registro.anuladaEn)}` : "";
+
+    return `<div class="modal-nota peligro"><b>Anulado</b>${quien}${cuando}.
+Motivo: ${limpiarHTML(registro.motivoAnulacion || "Sin motivo registrado")}</div>`;
+}
+
+function filaMovimientoHTML(tipo, registro) {
+    const esVenta = tipo === "venta";
+    const descripcion = esVenta ? itemsDeVenta(registro).map(i => i.nombre).join(", ") : (registro.descripcion || "Gasto");
+    const estado = registro.anulada ? (esVenta ? " anulada" : " anulado") : "";
+
+    return `
+        <div class="movement-card ${registro.anulada ? "historial-anulada" : ""}" data-detalle="${tipo}:${registro.docId}" data-apilar="1" tabindex="0" role="button">
+            <div class="movement-icon">${icono(esVenta ? "ventas" : "gastos")}</div>
+            <div>
+                <h3>${esVenta ? "Venta" : "Gasto"}${estado}</h3>
+                <p>${limpiarHTML(descripcion)}${horaDe(registro) ? " · " + limpiarHTML(horaDe(registro)) : ""}</p>
+            </div>
+            <div style="text-align:right;">
+                <strong>${esVenta ? "" : "−"}${money(esVenta ? registro.total : registro.valor)}</strong>
+                <p>${limpiarHTML(registro.medioPago)}</p>
+            </div>
+        </div>`;
+}
+
+const botonCerrarModal = `<button type="button" class="submit-btn" data-cerrar-modal>Cerrar</button>`;
+
+function detalleVenta(id) {
+    const v = ventasGlobal.find(x => x.docId === id);
+    if (!v) return null;
+
+    const items = itemsDeVenta(v);
+    const costo = items.reduce((acc, i) => acc + costoUnitarioDe(i) * Number(i.cantidad || 0), 0);
+    const costoCompleto = items.every(i => costoUnitarioDe(i) > 0);
+
+    const acciones = [
+        `<button type="button" class="secondary-btn" onclick="imprimirComprobante('${v.docId}')">${icono("imprimir")} Imprimir comprobante</button>`
+    ];
+    if (esAdmin() && !v.anulada) {
+        acciones.push(`<button type="button" class="secondary-btn" style="color:var(--danger);" onclick="anularMovimiento('venta', '${v.docId}')">Anular venta</button>`);
+    }
+    acciones.push(botonCerrarModal);
+
+    let textoCosto = "Sin costo registrado";
+    if (costo) textoCosto = money(costo) + (costoCompleto ? "" : " (parcial)");
+
+    return {
+        titulo: "Venta",
+        sub: `${fechaCorta(v.fecha)}${horaDe(v) ? " · " + horaDe(v) : ""} · N.º ${numeroVenta(v)}`,
+        etiqueta: v.anulada ? "Anulada" : (v.medioPago || ""),
+        etiquetaPeligro: !!v.anulada,
+        cuerpo: `
+            ${cifraHTML("Total de la venta", money(v.total), `${items.length} ${items.length === 1 ? "ítem" : "ítems"} · ${limpiarHTML(v.medioPago || "")}`)}
+            ${bloqueAnulacion(v)}
+
+            <div class="modal-seccion">Productos y servicios</div>
+            ${tablaHTML(
+                [{ t: "Descripción" }, { t: "Cant.", num: true }, { t: "Unitario", num: true }, { t: "Total", num: true }],
+                items.map(i => [
+                    `${i.codigo ? `<span style="color:#64748b;">${limpiarHTML(i.codigo)}</span> · ` : ""}${limpiarHTML(i.nombre)}`,
+                    limpiarHTML(i.cantidad),
+                    money(i.valorUnitario),
+                    money(i.total)
+                ]),
+                { pie: ["Total", "", "", money(v.total)] }
+            )}
+
+            <div class="modal-seccion">Datos de la venta</div>
+            ${datosHTML([
+                ["Cliente", limpiarHTML(v.cliente || "Consumidor final")],
+                ["Medio de pago", limpiarHTML(v.medioPago)],
+                ["Registrada por", limpiarHTML(v.creadoPor)],
+                ["Fecha de registro", fechaHoraDe(v.creadoEn)],
+                ["Turno", enlaceTurno(v.turnoId)],
+                Number(v.descuento) ? ["Descuento", money(v.descuento)] : null,
+                esAdmin() ? ["Costo estimado", textoCosto] : null,
+                esAdmin() && costo && Number(v.total) ? ["Margen estimado", pct((Number(v.total) - costo) / Number(v.total))] : null
+            ])}
+
+            ${v.observaciones ? `<div class="modal-seccion">Observaciones</div><div class="modal-nota">${limpiarHTML(v.observaciones)}</div>` : ""}`,
+        acciones
+    };
+}
+
+function detalleGasto(id) {
+    const g = gastosGlobal.find(x => x.docId === id);
+    if (!g) return null;
+
+    const acciones = [];
+    if (esAdmin() && !g.anulada) {
+        acciones.push(`<button type="button" class="secondary-btn" style="color:var(--danger);" onclick="anularMovimiento('gasto', '${g.docId}')">Anular gasto</button>`);
+    }
+    acciones.push(botonCerrarModal);
+
+    return {
+        titulo: "Gasto",
+        sub: `${fechaCorta(g.fecha)}${horaDe(g) ? " · " + horaDe(g) : ""}`,
+        etiqueta: g.anulada ? "Anulado" : (g.categoria || ""),
+        etiquetaPeligro: !!g.anulada,
+        cuerpo: `
+            ${cifraHTML("Valor del gasto", money(g.valor), limpiarHTML(g.descripcion || ""))}
+            ${bloqueAnulacion(g)}
+
+            <div class="modal-seccion">Datos del gasto</div>
+            ${datosHTML([
+                ["Descripción", limpiarHTML(g.descripcion || "—")],
+                ["Categoría", limpiarHTML(g.categoria || "Sin categoría")],
+                ["Proveedor", limpiarHTML(g.proveedor || "Sin proveedor")],
+                ["Medio de pago", limpiarHTML(g.medioPago)],
+                ["Registrado por", limpiarHTML(g.creadoPor)],
+                ["Fecha de registro", fechaHoraDe(g.creadoEn)],
+                ["Turno", enlaceTurno(g.turnoId)]
+            ])}`,
+        acciones
+    };
+}
+
+function detalleTurno(id) {
+    const t = turnosGlobal.find(x => x.docId === id);
+    if (!t) return null;
+
+    const s = resumenDeTurno(t);
+    const abierto = t.estado === "abierto";
+    const ventas = ventasGlobal.filter(v => v.turnoId === t.docId);
+    const gastos = gastosGlobal.filter(g => g.turnoId === t.docId);
+    const ventasValidas = ventas.filter(noAnulado);
+    const gastosValidos = gastos.filter(noAnulado);
+    const totalVentas = suma(ventasValidas, v => v.total);
+    const totalGastos = suma(gastosValidos, g => g.valor);
+    const flujo = flujoPorMedio(ventasValidas, gastosValidos);
+
+    const movimientos = [
+        ...ventas.map(v => ({ tipo: "venta", registro: v })),
+        ...gastos.map(g => ({ tipo: "gasto", registro: g }))
+    ].sort((a, b) => (milisDe(b.registro) || 0) - (milisDe(a.registro) || 0));
+
+    let cifra;
+    if (abierto) {
+        cifra = cifraHTML("Efectivo esperado en caja", money(s.efectivoEsperado), "Turno en curso");
+    } else {
+        const d = s.diferencia;
+        const texto = d < 0 ? `Faltante de ${money(Math.abs(d))}` : d > 0 ? `Sobrante de ${money(d)}` : "Caja cuadrada";
+        cifra = cifraHTML("Resultado del cierre", texto, `Contado ${money(s.efectivoContado)} · Esperado ${money(s.efectivoEsperado)}`, d < 0 ? "var(--danger)" : "");
+    }
+
+    const acciones = [];
+    if (abierto && t.responsable === currentUserEmail) {
+        acciones.push(`<button type="button" class="secondary-btn" onclick="cerrarModal(); accionRapidaTurno();">${icono("lock")} Ir a cerrar turno</button>`);
+    }
+    acciones.push(botonCerrarModal);
+
+    return {
+        ancha: true,
+        titulo: abierto ? "Turno abierto" : "Turno cerrado",
+        sub: `${t.responsable || ""} · ${fechaCorta(t.fechaApertura)}`,
+        etiqueta: abierto ? "En curso" : (s.diferencia < 0 ? "Con faltante" : "Cerrado"),
+        etiquetaPeligro: !abierto && s.diferencia < 0,
+        cuerpo: `
+            ${cifra}
+            ${kpisModalHTML([
+                ["Efectivo inicial", money(s.efectivoInicial)],
+                ["Ventas en efectivo", money(s.ventasEfectivo)],
+                ["Gastos en efectivo", money(s.gastosEfectivo)],
+                ["Ventas totales", money(totalVentas)],
+                ["Gastos totales", money(totalGastos)],
+                ["Utilidad", money(totalVentas - totalGastos)]
+            ])}
+
+            <div class="modal-seccion">Apertura y cierre</div>
+            ${datosHTML([
+                ["Abierto por", limpiarHTML(t.creadoPor || t.responsable)],
+                ["Apertura", fechaHoraDe(t.creadoEn)],
+                abierto ? null : ["Cerrado por", limpiarHTML(t.cerradoPor || "—")],
+                abierto ? null : ["Cierre", fechaHoraDe(t.cerradoEn)]
+            ])}
+            ${t.observacionApertura ? `<div class="modal-nota"><b>Observación de apertura:</b> ${limpiarHTML(t.observacionApertura)}</div>` : ""}
+            ${t.observacionCierre ? `<div class="modal-nota"><b>Observación de cierre:</b> ${limpiarHTML(t.observacionCierre)}</div>` : ""}
+
+            <div class="modal-seccion">Por medio de pago</div>
+            ${tablaHTML(
+                [{ t: "Medio" }, { t: "Entradas", num: true }, { t: "Salidas", num: true }, { t: "Neto", num: true }],
+                flujo.map(f => [limpiarHTML(f.medio), money(f.entradas), money(f.salidas), money(f.entradas - f.salidas)]),
+                { apilar: true }
+            )}
+
+            <div class="modal-seccion">Movimientos del turno (${movimientos.length})</div>
+            <div class="modal-lista">
+                ${movimientos.length
+                    ? movimientos.map(m => filaMovimientoHTML(m.tipo, m.registro)).join("")
+                    : `<div class="empty-state">Sin movimientos en este turno.</div>`}
+            </div>`,
+        acciones
+    };
+}
+
+function detalleProducto(id) {
+    const p = catalogoGlobal.find(x => x.docId === id);
+    if (!p) return null;
+
+    const precio = Number(p.precio || 0);
+    const costo = Number(p.costoAproximado || 0);
+    const hace30 = sumarDias(todayISO(), -29);
+
+    const ventas = ventasGlobal
+        .filter(v => noAnulado(v) && (v.items || []).some(i => i.itemId === id))
+        .sort((a, b) => (milisDe(b) || 0) - (milisDe(a) || 0));
+
+    let unidades = 0;
+    let vendido = 0;
+    let unidades30 = 0;
+
+    ventas.forEach(v => v.items.forEach(i => {
+        if (i.itemId !== id) return;
+        unidades += Number(i.cantidad || 0);
+        vendido += Number(i.total || 0);
+        if (v.fecha >= hace30) unidades30 += Number(i.cantidad || 0);
+    }));
+
+    const notaPrecio = costo
+        ? `Costo aproximado ${money(costo)} · Margen ${pct(precio ? (precio - costo) / precio : null)}`
+        : "Sin costo registrado: no se puede calcular el margen";
+
+    return {
+        titulo: p.nombre || "Sin nombre",
+        sub: `${p.codigo ? p.codigo + " · " : ""}${p.categoria || "Sin categoría"}`,
+        etiqueta: p.tipo === "servicio" ? "Servicio" : "Producto",
+        cuerpo: `
+            ${cifraHTML("Precio de venta", money(precio), notaPrecio)}
+            ${kpisModalHTML([
+                ["Unidades vendidas", unidades.toLocaleString("es-CO")],
+                ["Total vendido", money(vendido)],
+                ["Vendidas en 30 días", unidades30.toLocaleString("es-CO")]
+            ])}
+
+            <div class="modal-seccion">Datos</div>
+            ${datosHTML([
+                ["Código", limpiarHTML(p.codigo || "—")],
+                ["Tipo", p.tipo === "servicio" ? "Servicio" : "Producto"],
+                ["Categoría", limpiarHTML(p.categoria || "Sin categoría")],
+                ["Precio de venta", money(precio)],
+                ["Costo aproximado", costo ? money(costo) : "—"],
+                ["Creado por", limpiarHTML(p.creadoPor || "—")],
+                ["Fecha de creación", fechaHoraDe(p.creadoEn)],
+                p.actualizadoEn ? ["Última actualización", `${fechaHoraDe(p.actualizadoEn)} · ${limpiarHTML(p.actualizadoPor || "")}`] : null
+            ])}
+
+            ${p.observaciones ? `<div class="modal-seccion">Observaciones</div><div class="modal-nota">${limpiarHTML(p.observaciones)}</div>` : ""}
+
+            <div class="modal-seccion">Últimas ventas</div>
+            <div class="modal-lista">
+                ${ventas.length
+                    ? ventas.slice(0, 5).map(v => filaMovimientoHTML("venta", v)).join("")
+                    : `<div class="empty-state">Todavía no se ha vendido.</div>`}
+            </div>`,
+        acciones: [
+            `<button type="button" class="secondary-btn" style="color:var(--danger);" onclick="cerrarModal(); eliminarCatalogo('${p.docId}')">Eliminar</button>`,
+            `<button type="button" class="secondary-btn" onclick="cerrarModal(); showView('catalogo'); editarCatalogo('${p.docId}')">Editar</button>`,
+            botonCerrarModal
+        ]
+    };
+}
+
+const DETALLES = {
+    venta: detalleVenta,
+    gasto: detalleGasto,
+    turno: detalleTurno,
+    producto: detalleProducto
+};
+
+function pintarModal(d, enfocar = true) {
+    const modal = document.getElementById("modalDetalle");
+    const etiqueta = document.getElementById("modalEtiqueta");
+
+    document.getElementById("modalTitulo").textContent = d.titulo;
+    document.getElementById("modalSub").textContent = d.sub || "";
+    etiqueta.textContent = d.etiqueta || "";
+    etiqueta.classList.toggle("peligro", !!d.etiquetaPeligro);
+    document.getElementById("modalCuerpo").innerHTML = d.cuerpo;
+    document.getElementById("modalPie").innerHTML = (d.acciones || []).join("");
+    document.getElementById("modalVolver").hidden = modalPila.length < 2;
+    modal.querySelector(".modal-caja").classList.toggle("ancha", !!d.ancha);
+
+    if (modal.hidden) {
+        modalFocoPrevio = document.activeElement;
+        modal.hidden = false;
+        document.body.classList.add("modal-abierto");
+    }
+
+    if (enfocar) {
+        document.getElementById("modalCuerpo").scrollTop = 0;
+        modal.querySelector(".modal-cab [data-cerrar-modal]").focus({ preventScroll: true });
+    }
+}
+
+function abrirDetalle(clave, apilar = false) {
+    const [tipo, id] = String(clave).split(":");
+    const d = DETALLES[tipo]?.(id);
+    if (!d) return;
+
+    if (!apilar) modalPila.length = 0;
+    modalPila.push(clave);
+    pintarModal(d);
+}
+
+function volverModal() {
+    modalPila.pop();
+    const anterior = modalPila.pop();
+    if (anterior) abrirDetalle(anterior, true);
+}
+
+function cerrarModal() {
+    const modal = document.getElementById("modalDetalle");
+    if (!modal || modal.hidden) return;
+
+    modal.hidden = true;
+    modalPila.length = 0;
+    document.body.classList.remove("modal-abierto");
+
+    if (modalFocoPrevio && document.contains(modalFocoPrevio)) {
+        modalFocoPrevio.focus({ preventScroll: true });
+    }
+}
+
+window.cerrarModal = cerrarModal;
+
+// Si llegan datos nuevos con la ventana abierta, se actualiza su contenido.
+function refrescarModal() {
+    const modal = document.getElementById("modalDetalle");
+    if (!modal || modal.hidden || !modalPila.length) return;
+
+    const [tipo, id] = modalPila[modalPila.length - 1].split(":");
+    const d = DETALLES[tipo]?.(id);
+    if (d) pintarModal(d, false);
+    else cerrarModal();
+}
+
+window.imprimirComprobante = function(id) {
+    const v = ventasGlobal.find(x => x.docId === id);
+    if (!v) return;
+
+    const items = itemsDeVenta(v);
+
+    document.getElementById("comprobante").innerHTML = `
+        <h1>Servicio Técnico</h1>
+        <p class="centro">Comprobante de venta</p>
+        <p class="centro">N.º ${numeroVenta(v)} · ${fechaCorta(v.fecha)} ${limpiarHTML(horaDe(v))}</p>
+        ${v.anulada ? `<p class="centro"><b>VENTA ANULADA</b></p>` : ""}
+        <table>
+            <thead><tr><th>Descripción</th><th class="num">Cant.</th><th class="num">Total</th></tr></thead>
+            <tbody>
+                ${items.map(i => `
+                    <tr>
+                        <td>${limpiarHTML(i.nombre)}<br><small>${money(i.valorUnitario)} c/u</small></td>
+                        <td class="num">${limpiarHTML(i.cantidad)}</td>
+                        <td class="num">${money(i.total)}</td>
+                    </tr>`).join("")}
+            </tbody>
+        </table>
+        <div class="total"><span>Total</span><span>${money(v.total)}</span></div>
+        <p>Medio de pago: ${limpiarHTML(v.medioPago)}</p>
+        <p>Cliente: ${limpiarHTML(v.cliente || "Consumidor final")}</p>
+        <p>Atendido por: ${limpiarHTML(v.creadoPor)}</p>
+        <p class="centro" style="margin-top:14px;">Gracias por su compra</p>`;
+
+    const tituloOriginal = document.title;
+    document.documentElement.classList.add("imprimiendo-comprobante");
+    document.title = `Comprobante ${numeroVenta(v)}`;
+
+    window.addEventListener("afterprint", () => {
+        document.documentElement.classList.remove("imprimiendo-comprobante");
+        document.title = tituloOriginal;
+    }, { once: true });
+
+    window.print();
+};
+
+document.addEventListener("click", function(e) {
+    if (e.target.closest("[data-cerrar-modal]")) {
+        cerrarModal();
+        return;
+    }
+
+    const elemento = e.target.closest("[data-detalle]");
+    if (!elemento || !elemento.dataset.detalle) return;
+
+    // Los botones dentro de la tarjeta (Editar, Eliminar, Anular) hacen lo suyo sin abrir la ventana.
+    const interactivo = e.target.closest("button, a, input, select, textarea, label");
+    if (interactivo && interactivo !== elemento && elemento.contains(interactivo)) return;
+
+    abrirDetalle(elemento.dataset.detalle, elemento.dataset.apilar === "1");
+});
+
+document.addEventListener("keydown", function(e) {
+    if (e.key === "Escape") {
+        cerrarModal();
+        return;
+    }
+
+    if ((e.key === "Enter" || e.key === " ") && e.target.matches && e.target.matches("[data-detalle]")) {
+        e.preventDefault();
+        abrirDetalle(e.target.dataset.detalle, e.target.dataset.apilar === "1");
+    }
+});
+
+document.getElementById("modalVolver").addEventListener("click", volverModal);
 </script>
 
 </body>
