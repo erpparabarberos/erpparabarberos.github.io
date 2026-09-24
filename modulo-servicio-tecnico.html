@@ -2687,6 +2687,53 @@ body.modal-abierto {
     color: var(--danger);
 }
 
+.mini-btn.primario {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+}
+
+/* Detalle de venta: edición de cantidad y precio */
+.carrito-lado {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    text-align: right;
+}
+
+.carrito-botones {
+    display: flex;
+    gap: 6px;
+    justify-content: flex-end;
+}
+
+.movement-card.carrito-editando {
+    grid-template-columns: 42px minmax(0, 1fr);
+    align-items: start;
+    border-color: var(--ink-2);
+}
+
+.carrito-campos {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin: 10px 0;
+}
+
+.carrito-campos label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+}
+
+.carrito-campos input {
+    min-height: 40px;
+}
+
 /* Listas largas: se desplazan dentro de su propia caja en lugar de alargar toda la página */
 .lista-scroll {
     max-height: min(62vh, 620px);
@@ -3226,11 +3273,7 @@ body.modal-abierto {
                         <label>Medio de pago</label>
                         <select id="ventaMedio" required>
                             <option value="Efectivo">Efectivo</option>
-                            <option value="Nequi">Nequi</option>
-                            <option value="Daviplata">Daviplata</option>
                             <option value="Transferencia">Transferencia</option>
-                            <option value="Tarjeta">Tarjeta</option>
-                            <option value="Otro">Otro</option>
                         </select>
                     </div>
 
@@ -3280,19 +3323,10 @@ body.modal-abierto {
                 </div>
 
                 <div class="form-group">
-                    <label>Proveedor</label>
-                    <input type="text" id="gastoProveedor" placeholder="Opcional">
-                </div>
-
-                <div class="form-group span-2">
                     <label>Medio de pago</label>
                     <select id="gastoMedio" required>
                         <option value="Efectivo">Efectivo</option>
-                        <option value="Nequi">Nequi</option>
-                        <option value="Daviplata">Daviplata</option>
                         <option value="Transferencia">Transferencia</option>
-                        <option value="Tarjeta">Tarjeta</option>
-                        <option value="Otro">Otro</option>
                     </select>
                 </div>
 
@@ -3368,7 +3402,7 @@ body.modal-abierto {
                 <div class="form-row">
                     <div class="form-group">
                         <label>Código</label>
-                        <input type="text" id="catalogoCodigo" placeholder="Opcional. Ej: REP-001">
+                        <input type="text" id="catalogoCodigo" placeholder="Automático" readonly class="input-bloqueado" title="El código se asigna automáticamente">
                     </div>
 
                     <div class="form-group">
@@ -3415,11 +3449,11 @@ body.modal-abierto {
 
             <div class="modal-seccion" style="margin-top:0;">Formato del archivo</div>
             <pre class="codigo-ejemplo">[
-  { "codigo": "REP-001", "nombre": "Batería para máquina", "categoria": "Repuestos", "precio": 85000, "costo": 45000 },
-  { "codigo": "SRV-01", "nombre": "Mantenimiento general", "categoria": "Servicios", "precio": 35000 }
+  { "nombre": "Batería para máquina", "categoria": "Repuestos", "precio": 85000, "costo": 45000 },
+  { "nombre": "Mantenimiento general", "categoria": "Servicios", "precio": 35000 }
 ]</pre>
             <p class="ayuda" style="margin:6px 0 16px;">
-                Obligatorio: <b>nombre</b>. Opcionales: codigo, categoria, precio, costo. Si la categoría dice "servicio", se registra como servicio.
+                Obligatorio: <b>nombre</b>. Opcionales: categoria, precio, costo y codigo. Si un registro no trae código, el sistema le asigna el siguiente consecutivo. Si la categoría dice "servicio", se registra como servicio.
             </p>
 
             <label class="zona-archivo" for="jsonCatalogInput">
@@ -3655,6 +3689,8 @@ body.modal-abierto {
     const gastosRef = db.collection("st_gastos");
     const catalogoRef = db.collection("st_catalogo");
     const turnosRef = db.collection("st_turnos");
+    // Guarda el último código de catálogo asignado, para que dos personas no reciban el mismo.
+    const contadorCatalogoRef = db.collection("metadata").doc("stCatalogoCounter");
 
     let catalogoGlobal = [];
     let ventasGlobal = [];
@@ -4006,7 +4042,7 @@ function renderListasDia() {
         kpi("Ventas", ventasValidas.length) +
         kpi("Total vendido", money(totalVentas)) +
         kpi("En efectivo", money(ventasEfectivo)) +
-        kpi("Otros medios", money(totalVentas - ventasEfectivo));
+        kpi("En transferencia", money(totalVentas - ventasEfectivo));
 
     document.getElementById("ventasDiaList").innerHTML = ventasHoy.length
         ? ventasHoy.map(v => {
@@ -4036,7 +4072,7 @@ function renderListasDia() {
         kpi("Gastos", gastosValidos.length) +
         kpi("Total gastado", money(totalGastos)) +
         kpi("En efectivo", money(gastosEfectivo)) +
-        kpi("Otros medios", money(totalGastos - gastosEfectivo));
+        kpi("En transferencia", money(totalGastos - gastosEfectivo));
 
     document.getElementById("gastosDiaList").innerHTML = gastosHoy.length
         ? gastosHoy.map(g => `
@@ -4581,35 +4617,118 @@ function renderCarritoVenta() {
         return;
     }
 
-    container.innerHTML = carritoVenta.map((item, index) => `
-        <div class="movement-card">
-            <div class="movement-icon">${icono(item.tipo === 'servicio' ? 'servicio' : 'catalogo')}</div>
+    if (itemCarritoEditando !== null && itemCarritoEditando >= carritoVenta.length) {
+        itemCarritoEditando = null;
+    }
 
-            <div>
-                <h3>${limpiarHTML(item.nombre)}</h3>
-                <p>
-                    Cantidad: ${limpiarHTML(item.cantidad)} ·
-                    Unitario: ${money(item.valorUnitario)}
-                </p>
-            </div>
+    container.innerHTML = carritoVenta.map((item, index) => {
+        const icon = `<div class="movement-icon">${icono(item.tipo === 'servicio' ? 'servicio' : 'catalogo')}</div>`;
 
-            <div style="text-align:right;">
-                <strong>${money(item.total)}</strong>
-                <button 
-                    type="button" 
-                    onclick="eliminarItemVenta(${index})"
-                    style="margin-top:6px; border:none; background:#fee2e2; color:#dc2626; border-radius:10px; padding:6px 10px; font-weight:900;">
-                    Quitar
-                </button>
-            </div>
-        </div>
-    `).join("");
+        if (index === itemCarritoEditando) {
+            return `
+                <div class="movement-card carrito-editando">
+                    ${icon}
+                    <div>
+                        <h3>${limpiarHTML(item.nombre)}</h3>
+                        <div class="carrito-campos">
+                            <label>Cantidad
+                                <input type="number" id="editItemCantidad" min="1" step="1" value="${Number(item.cantidad) || 1}">
+                            </label>
+                            <label>Precio unitario
+                                <input type="number" id="editItemValor" min="0" value="${Number(item.valorUnitario) || 0}">
+                            </label>
+                        </div>
+                        <div class="carrito-botones">
+                            <button type="button" class="mini-btn" onclick="cancelarEdicionItemVenta()">Cancelar</button>
+                            <button type="button" class="mini-btn primario" onclick="guardarEdicionItemVenta(${index})">Guardar</button>
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        return `
+            <div class="movement-card">
+                ${icon}
+                <div>
+                    <h3>${limpiarHTML(item.nombre)}</h3>
+                    <p>${limpiarHTML(item.cantidad)} × ${money(item.valorUnitario)}</p>
+                </div>
+                <div class="carrito-lado">
+                    <strong>${money(item.total)}</strong>
+                    <div class="carrito-botones">
+                        <button type="button" class="mini-btn" onclick="editarItemVenta(${index})">Editar</button>
+                        <button type="button" class="mini-btn peligro" onclick="eliminarItemVenta(${index})">Quitar</button>
+                    </div>
+                </div>
+            </div>`;
+    }).join("");
 
     totalText.textContent = money(calcularTotalCarrito());
+
+    if (itemCarritoEditando !== null) {
+        const campo = document.getElementById("editItemCantidad");
+        if (campo) {
+            campo.focus({ preventScroll: true });
+            campo.select();
+        }
+    }
 }
+
+// Índice del producto del detalle que se está editando (null si ninguno).
+let itemCarritoEditando = null;
+
+window.editarItemVenta = function(index) {
+    itemCarritoEditando = index;
+    renderCarritoVenta();
+};
+
+window.cancelarEdicionItemVenta = function() {
+    itemCarritoEditando = null;
+    renderCarritoVenta();
+};
+
+window.guardarEdicionItemVenta = function(index) {
+    const item = carritoVenta[index];
+    if (!item) return;
+
+    const cantidad = Number(document.getElementById("editItemCantidad").value || 0);
+    const valorUnitario = Number(document.getElementById("editItemValor").value || 0);
+
+    if (cantidad <= 0) {
+        alert("La cantidad debe ser mayor a cero.");
+        return;
+    }
+
+    if (valorUnitario <= 0) {
+        alert("El precio debe ser mayor a cero.");
+        return;
+    }
+
+    item.cantidad = cantidad;
+    item.valorUnitario = valorUnitario;
+    item.total = cantidad * valorUnitario;
+
+    itemCarritoEditando = null;
+    renderCarritoVenta();
+};
+
+// Enter guarda y Esc cancela la edición, sin enviar la venta ni cerrar la ventana.
+document.getElementById("ventaItemsList").addEventListener("keydown", function(e) {
+    if (itemCarritoEditando === null || !e.target.matches("#editItemCantidad, #editItemValor")) return;
+
+    if (e.key === "Enter") {
+        e.preventDefault();
+        guardarEdicionItemVenta(itemCarritoEditando);
+    } else if (e.key === "Escape") {
+        e.preventDefault();
+        e.stopPropagation();
+        cancelarEdicionItemVenta();
+    }
+});
 
 window.eliminarItemVenta = function(index) {
     carritoVenta.splice(index, 1);
+    itemCarritoEditando = null;
     renderCarritoVenta();
 };
 
@@ -4835,7 +4954,6 @@ async function guardarVenta(form) {
             categoria: document.getElementById("gastoCategoria").value,
             descripcion: document.getElementById("gastoDescripcion").value.trim(),
             valor: Number(document.getElementById("gastoValor").value || 0),
-            proveedor: document.getElementById("gastoProveedor").value.trim(),
             medioPago: document.getElementById("gastoMedio").value,
             creadoPor: currentUserEmail,
             creadoEn: firebase.firestore.FieldValue.serverTimestamp()
@@ -4921,6 +5039,19 @@ async function importarCatalogoDesdeJSON(items) {
     let totalImportados = 0;
     let totalOmitidos = 0;
 
+    // Los registros sin código reciben el consecutivo; los que traen código numérico lo conservan
+    // y el contador avanza hasta el mayor de ellos para no repetir.
+    const codigoDe = (item) => normalizarTexto(item.codigo || item.Codigo || item.Código || item.code || item.Code);
+    const nombreDe = (item) => normalizarTexto(item.nombre || item.Nombre || item.producto || item.Producto || item.servicio || item.Servicio);
+    const validos = items.filter(item => nombreDe(item));
+    const sinCodigo = validos.filter(item => !codigoDe(item)).length;
+    const mayorEnArchivo = validos.reduce((mayor, item) => {
+        const c = codigoDe(item);
+        return /^\d+$/.test(c) ? Math.max(mayor, Number(c)) : mayor;
+    }, 0);
+
+    let siguienteCodigo = validos.length ? await reservarCodigosCatalogo(sinCodigo, mayorEnArchivo) : 0;
+
     items.forEach((item) => {
         const nombre = normalizarTexto(
             item.nombre ||
@@ -4971,7 +5102,7 @@ async function importarCatalogoDesdeJSON(items) {
         const nuevoDoc = catalogoRef.doc();
 
         batch.set(nuevoDoc, {
-            codigo: codigo,
+            codigo: codigo || String(siguienteCodigo++),
             tipo: tipo,
             nombre: nombre,
             categoria: categoriaOriginal || (tipo === 'servicio' ? 'Servicios' : 'Producto'),
@@ -4997,10 +5128,38 @@ async function importarCatalogoDesdeJSON(items) {
         omitidos: totalOmitidos
     };
 }
+// Código numérico más alto del catálogo (los códigos empiezan en 1001).
+function mayorCodigoCatalogo() {
+    return catalogoGlobal.reduce((mayor, item) => {
+        const codigo = String(item.codigo || "").trim();
+        return /^\d+$/.test(codigo) ? Math.max(mayor, Number(codigo)) : mayor;
+    }, 1000);
+}
+
+// Reserva `cantidad` códigos seguidos en una transacción y devuelve el primero.
+// Parte del mayor entre el contador, el catálogo y `minimo` (códigos que vengan en un archivo).
+async function reservarCodigosCatalogo(cantidad, minimo = 0) {
+    return db.runTransaction(async (tx) => {
+        const contador = await tx.get(contadorCatalogoRef);
+        const ultimoContador = contador.exists ? Number(contador.data().ultimo || 0) : 0;
+        const primero = Math.max(ultimoContador, mayorCodigoCatalogo(), minimo) + 1;
+        const ultimo = primero + cantidad - 1;
+
+        tx.set(contadorCatalogoRef, {
+            ultimo,
+            actualizadoPor: currentUserEmail,
+            actualizadoEn: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+
+        return primero;
+    });
+}
+
 // Abre la ventana para crear un producto/servicio nuevo.
 window.abrirFormCatalogo = function(tipo = "producto") {
     cancelarEdicionCatalogo();
     setCatalogType(tipo);
+    document.getElementById("catalogoCodigo").placeholder = `Automático (${mayorCodigoCatalogo() + 1})`;
     abrirPanelEnModal("panelFormCatalogo", {
         titulo: tipo === "servicio" ? "Nuevo servicio" : "Nuevo producto",
         sub: "Se agrega al catálogo para poder venderlo"
@@ -5021,6 +5180,7 @@ window.editarCatalogo = function(docId) {
 
     document.getElementById("catalogoEditId").value = item.docId;
     document.getElementById("catalogoCodigo").value = item.codigo || "";
+    document.getElementById("catalogoCodigo").placeholder = "Sin código";
     document.getElementById("catalogoNombre").value = item.nombre || "";
     document.getElementById("catalogoCategoria").value = item.categoria || "";
     document.getElementById("catalogoPrecio").value = item.precio || 0;
@@ -5133,10 +5293,8 @@ document.getElementById("catalogoForm").addEventListener("submit", function(e) {
 async function guardarCatalogo() {
     const editId = document.getElementById("catalogoEditId").value;
 
+    // El código no lo escribe el usuario: se asigna el consecutivo automáticamente.
     const data = {
-        codigo: document.getElementById("catalogoCodigo") 
-            ? document.getElementById("catalogoCodigo").value.trim() 
-            : "",
         tipo: document.getElementById("catalogoTipo").value,
         nombre: document.getElementById("catalogoNombre").value.trim(),
         categoria: document.getElementById("catalogoCategoria").value.trim(),
@@ -5154,14 +5312,38 @@ async function guardarCatalogo() {
     }
 
     if (editId) {
+        const actual = catalogoGlobal.find(p => p.docId === editId);
+
+        // Los productos antiguos sin código reciben uno al editarlos.
+        if (actual && !String(actual.codigo || "").trim()) {
+            data.codigo = String(await reservarCodigosCatalogo(1));
+        }
+
         await catalogoRef.doc(editId).update(data);
-        alert("Producto o servicio actualizado correctamente.");
+        alert(data.codigo
+            ? `Producto o servicio actualizado. Se le asignó el código ${data.codigo}.`
+            : "Producto o servicio actualizado correctamente.");
     } else {
         data.creadoPor = currentUserEmail;
         data.creadoEn = firebase.firestore.FieldValue.serverTimestamp();
 
-        await catalogoRef.add(data);
-        alert("Guardado en catálogo correctamente.");
+        // En una sola transacción: se toma el siguiente consecutivo y se crea el producto.
+        const codigo = await db.runTransaction(async (tx) => {
+            const contador = await tx.get(contadorCatalogoRef);
+            const ultimoContador = contador.exists ? Number(contador.data().ultimo || 0) : 0;
+            const siguiente = Math.max(ultimoContador, mayorCodigoCatalogo()) + 1;
+
+            tx.set(contadorCatalogoRef, {
+                ultimo: siguiente,
+                actualizadoPor: currentUserEmail,
+                actualizadoEn: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
+            tx.set(catalogoRef.doc(), { ...data, codigo: String(siguiente) });
+
+            return siguiente;
+        });
+
+        alert(`Guardado en catálogo con el código ${codigo}.`);
     }
 
     cerrarModal();
@@ -6046,7 +6228,6 @@ function repVentas(panel, { actual, m }) {
 
 function repGastos(panel, { actual, m, mAnt }) {
     const categorias = agrupar(actual.gastos, g => g.categoria || "Sin categoría", g => g.valor);
-    const proveedores = agrupar(actual.gastos, g => g.proveedor || "Sin proveedor", g => g.valor);
     const medios = agrupar(actual.gastos, g => g.medioPago, g => g.valor);
     const detalle = [...actual.gastos].sort((a, b) => String(b.fecha).localeCompare(String(a.fecha)) || (milisDe(b) || 0) - (milisDe(a) || 0));
 
@@ -6070,37 +6251,26 @@ function repGastos(panel, { actual, m, mAnt }) {
             )}
         </div>
 
-        <div class="rep-dos-col">
-            <div class="rep-card">
-                <h3>Por proveedor</h3>
-                ${tablaHTML(
-                    [{ t: "Proveedor" }, { t: "N.º", num: true }, { t: "Total", num: true }],
-                    proveedores.map(f => [limpiarHTML(f.clave), f.n, money(f.total)])
-                )}
-            </div>
-
-            <div class="rep-card">
-                <h3>Por medio de pago</h3>
-                ${tablaHTML(
-                    [{ t: "Medio" }, { t: "N.º", num: true }, { t: "Total", num: true }],
-                    medios.map(f => [limpiarHTML(f.clave), f.n, money(f.total)])
-                )}
-            </div>
+        <div class="rep-card">
+            <h3>Por medio de pago</h3>
+            ${tablaHTML(
+                [{ t: "Medio" }, { t: "N.º", num: true }, { t: "Total", num: true }],
+                medios.map(f => [limpiarHTML(f.clave), f.n, money(f.total)])
+            )}
         </div>
 
         <div class="rep-card">
             <h3>Detalle de gastos</h3>
             ${tablaHTML(
-                [{ t: "Fecha" }, { t: "Categoría" }, { t: "Descripción" }, { t: "Proveedor" }, { t: "Medio" }, { t: "Valor", num: true }],
+                [{ t: "Fecha" }, { t: "Categoría" }, { t: "Descripción" }, { t: "Medio" }, { t: "Valor", num: true }],
                 detalle.map(g => ({ detalle: "gasto:" + g.docId, celdas: [
                     limpiarHTML(g.fecha),
                     limpiarHTML(g.categoria || "Sin categoría"),
                     limpiarHTML(g.descripcion),
-                    limpiarHTML(g.proveedor || "—"),
                     limpiarHTML(g.medioPago),
                     money(g.valor)
                 ] })),
-                { apilar: true, pie: ["Total", "", "", "", "", money(m.egresos)] }
+                { apilar: true, pie: ["Total", "", "", "", money(m.egresos)] }
             )}
         </div>`;
 
@@ -6374,9 +6544,9 @@ function exportarExcel() {
     ], [12, 12, 40, 10, 9, 13, 12, 13, 12, 15, 28]);
 
     hoja("Gastos", [
-        ["Fecha", "Categoría", "Descripción", "Proveedor", "Medio de pago", "Valor", "Registrado por"],
-        ...actual.gastos.map(g => [g.fecha, g.categoria || "", g.descripcion || "", g.proveedor || "", g.medioPago || "", redondear(g.valor), g.creadoPor || ""])
-    ], [12, 20, 40, 22, 15, 12, 28]);
+        ["Fecha", "Categoría", "Descripción", "Medio de pago", "Valor", "Registrado por"],
+        ...actual.gastos.map(g => [g.fecha, g.categoria || "", g.descripcion || "", g.medioPago || "", redondear(g.valor), g.creadoPor || ""])
+    ], [12, 20, 40, 15, 12, 28]);
 
     hoja("Turnos", [
         ["Apertura", "Responsable", "Estado", "Inicial", "Ventas efectivo", "Gastos efectivo", "Esperado", "Contado", "Diferencia", "Observación cierre"],
@@ -6607,7 +6777,6 @@ function detalleGasto(id) {
             ${datosHTML([
                 ["Descripción", limpiarHTML(g.descripcion || "—")],
                 ["Categoría", limpiarHTML(g.categoria || "Sin categoría")],
-                ["Proveedor", limpiarHTML(g.proveedor || "Sin proveedor")],
                 ["Medio de pago", limpiarHTML(g.medioPago)],
                 ["Registrado por", limpiarHTML(g.creadoPor)],
                 ["Fecha de registro", fechaHoraDe(g.creadoEn)],
