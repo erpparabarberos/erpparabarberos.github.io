@@ -2633,12 +2633,6 @@ body.modal-abierto {
     overflow-wrap: anywhere;
 }
 
-.prod-cat {
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--muted);
-}
-
 .prod-lado {
     display: flex;
     flex-direction: column;
@@ -2654,12 +2648,6 @@ body.modal-abierto {
     font-weight: 800;
     color: var(--ink);
     white-space: nowrap;
-}
-
-.prod-margen {
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--muted);
 }
 
 .prod-botones {
@@ -2685,6 +2673,53 @@ body.modal-abierto {
 
 .mini-btn.peligro {
     color: var(--danger);
+}
+
+.mini-btn.primario {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+}
+
+/* Detalle de venta: edición de cantidad y precio */
+.carrito-lado {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    text-align: right;
+}
+
+.carrito-botones {
+    display: flex;
+    gap: 6px;
+    justify-content: flex-end;
+}
+
+.movement-card.carrito-editando {
+    grid-template-columns: 42px minmax(0, 1fr);
+    align-items: start;
+    border-color: var(--ink-2);
+}
+
+.carrito-campos {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin: 10px 0;
+}
+
+.carrito-campos label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+}
+
+.carrito-campos input {
+    min-height: 40px;
 }
 
 /* Listas largas: se desplazan dentro de su propia caja en lugar de alargar toda la página */
@@ -3368,19 +3403,10 @@ body.modal-abierto {
                     <input type="text" id="catalogoNombre" placeholder="Ej: Mantenimiento general" required>
                 </div>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Precio de venta</label>
-                        <input type="number" id="catalogoPrecio" min="0" placeholder="Ej: 25000" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Costo aproximado</label>
-                        <input type="number" id="catalogoCosto" min="0" placeholder="Opcional">
-                    </div>
+                <div class="form-group">
+                    <label>Precio de venta</label>
+                    <input type="number" id="catalogoPrecio" min="0" placeholder="Ej: 25000" required>
                 </div>
-
-                <p class="ayuda" id="catalogoMargen" style="margin:-4px 0 14px;"></p>
 
                 <div class="form-group">
                     <label>Observaciones</label>
@@ -3401,11 +3427,11 @@ body.modal-abierto {
 
             <div class="modal-seccion" style="margin-top:0;">Formato del archivo</div>
             <pre class="codigo-ejemplo">[
-  { "nombre": "Batería para máquina", "categoria": "Producto", "precio": 85000, "costo": 45000 },
+  { "nombre": "Batería para máquina", "categoria": "Producto", "precio": 85000 },
   { "nombre": "Mantenimiento general", "categoria": "Servicio", "precio": 35000 }
 ]</pre>
             <p class="ayuda" style="margin:6px 0 16px;">
-                Obligatorio: <b>nombre</b>. Opcionales: categoria (Producto o Servicio), precio, costo y codigo. Si un registro no trae código, el sistema le asigna el siguiente consecutivo. Si no dice "Servicio", se registra como producto.
+                Obligatorio: <b>nombre</b>. Opcionales: categoria (Producto o Servicio), precio y codigo. Si un registro no trae código, el sistema le asigna el siguiente consecutivo. Si no dice "Servicio", se registra como producto.
             </p>
 
             <label class="zona-archivo" for="jsonCatalogInput">
@@ -3994,7 +4020,7 @@ function renderListasDia() {
         kpi("Ventas", ventasValidas.length) +
         kpi("Total vendido", money(totalVentas)) +
         kpi("En efectivo", money(ventasEfectivo)) +
-        kpi("Otros medios", money(totalVentas - ventasEfectivo));
+        kpi("En transferencia", money(totalVentas - ventasEfectivo));
 
     document.getElementById("ventasDiaList").innerHTML = ventasHoy.length
         ? ventasHoy.map(v => {
@@ -4024,7 +4050,7 @@ function renderListasDia() {
         kpi("Gastos", gastosValidos.length) +
         kpi("Total gastado", money(totalGastos)) +
         kpi("En efectivo", money(gastosEfectivo)) +
-        kpi("Otros medios", money(totalGastos - gastosEfectivo));
+        kpi("En transferencia", money(totalGastos - gastosEfectivo));
 
     document.getElementById("gastosDiaList").innerHTML = gastosHoy.length
         ? gastosHoy.map(g => `
@@ -4358,10 +4384,6 @@ function renderCatalogo() {
 
     container.innerHTML = lista.map(item => {
         const precio = Number(item.precio || 0);
-        const costo = Number(item.costoAproximado || 0);
-        const margen = precio > 0 && costo > 0
-            ? `Margen ${((precio - costo) / precio * 100).toLocaleString("es-CO", { maximumFractionDigits: 1 })}%`
-            : "Sin costo";
 
         return `
             <div class="prod-card" ${attrDetalle("producto:" + item.docId)}>
@@ -4375,7 +4397,6 @@ function renderCatalogo() {
 
                 <div class="prod-lado">
                     <strong class="prod-precio">${money(precio)}</strong>
-                    <span class="prod-margen">${margen}</span>
                     <div class="prod-botones">
                         <button type="button" class="mini-btn" onclick="editarCatalogo('${item.docId}')">Editar</button>
                         <button type="button" class="mini-btn peligro" onclick="eliminarCatalogo('${item.docId}')">Eliminar</button>
@@ -4710,9 +4731,7 @@ document.getElementById("btnAgregarItemVenta").addEventListener("click", functio
         tipo: item.tipo || "producto",
         cantidad,
         valorUnitario,
-        total: cantidad * valorUnitario,
-        // Se guarda el costo del momento para que el margen no cambie si luego se edita el catálogo.
-        costoUnitario: Number(item.costoAproximado || 0)
+        total: cantidad * valorUnitario
     });
 
     limpiarBusquedaVenta();
@@ -5042,14 +5061,6 @@ async function importarCatalogoDesdeJSON(items) {
             0
         );
 
-        const costo = Number(
-            item.costo ||
-            item.Costo ||
-            item.costoAproximado ||
-            item.CostoAproximado ||
-            0
-        );
-
         const nuevoDoc = catalogoRef.doc();
 
         batch.set(nuevoDoc, {
@@ -5058,7 +5069,6 @@ async function importarCatalogoDesdeJSON(items) {
             nombre: nombre,
             categoria: tipo === 'servicio' ? 'Servicio' : 'Producto',
             precio: precio,
-            costoAproximado: costo,
             observaciones: 'Creado por carga masiva JSON',
             activo: true,
             creadoPor: currentUserEmail,
@@ -5135,11 +5145,9 @@ window.editarCatalogo = function(docId) {
     document.getElementById("catalogoCodigo").placeholder = "Sin código";
     document.getElementById("catalogoNombre").value = item.nombre || "";
     document.getElementById("catalogoPrecio").value = item.precio || 0;
-    document.getElementById("catalogoCosto").value = item.costoAproximado || "";
     document.getElementById("catalogoObs").value = item.observaciones || "";
 
     setCatalogType(item.tipo || "producto");
-    actualizarMargenCatalogo();
 
     document.getElementById("catalogoSubmitBtn").textContent = "Guardar cambios";
 
@@ -5155,30 +5163,9 @@ function cancelarEdicionCatalogo() {
     document.getElementById("catalogoTipo").value = "producto";
 
     setCatalogType("producto");
-    actualizarMargenCatalogo();
 
     document.getElementById("catalogoSubmitBtn").textContent = "Guardar en catálogo";
 }
-
-// Mientras se escribe precio y costo, muestra el margen que quedaría.
-function actualizarMargenCatalogo() {
-    const precio = Number(document.getElementById("catalogoPrecio").value || 0);
-    const costo = Number(document.getElementById("catalogoCosto").value || 0);
-    const texto = document.getElementById("catalogoMargen");
-
-    if (precio > 0 && costo > 0) {
-        const margen = (precio - costo) / precio;
-        texto.textContent = `Ganancia por unidad: ${money(precio - costo)} · Margen ${(margen * 100).toLocaleString("es-CO", { maximumFractionDigits: 1 })}%`;
-        texto.style.color = margen < 0 ? "var(--danger)" : "";
-    } else {
-        texto.textContent = "Registra el costo para ver el margen en los reportes.";
-        texto.style.color = "";
-    }
-}
-
-["catalogoPrecio", "catalogoCosto"].forEach(id => {
-    document.getElementById(id).addEventListener("input", actualizarMargenCatalogo);
-});
 
 document.getElementById("cancelarEdicionCatalogoBtn").addEventListener("click", () => cerrarModal());
 
@@ -5250,7 +5237,6 @@ async function guardarCatalogo() {
         nombre: document.getElementById("catalogoNombre").value.trim(),
         categoria: document.getElementById("catalogoTipo").value === "servicio" ? "Servicio" : "Producto",
         precio: Number(document.getElementById("catalogoPrecio").value || 0),
-        costoAproximado: Number(document.getElementById("catalogoCosto").value || 0),
         observaciones: document.getElementById("catalogoObs").value.trim(),
         activo: true,
         actualizadoPor: currentUserEmail,
@@ -5468,23 +5454,12 @@ function itemsDeVenta(venta) {
     }];
 }
 
-// Costo guardado en la venta; si no hay, el costo actual del catálogo.
-function costoUnitarioDe(item) {
-    const guardado = Number(item.costoUnitario || 0);
-    if (guardado > 0) return guardado;
-
-    const enCatalogo = catalogoGlobal.find(c => c.docId === item.itemId);
-    return Number(enCatalogo?.costoAproximado || 0);
-}
-
 function calcularMetricas(ventas, gastos) {
     const ingresos = suma(ventas, v => v.total);
     const egresos = suma(gastos, g => g.valor);
 
     let ingresosProductos = 0;
     let ingresosServicios = 0;
-    let costo = 0;
-    let ingresosConCosto = 0;
 
     ventas.forEach(v => {
         itemsDeVenta(v).forEach(item => {
@@ -5492,12 +5467,6 @@ function calcularMetricas(ventas, gastos) {
 
             if ((item.tipo || "producto") === "servicio") ingresosServicios += total;
             else ingresosProductos += total;
-
-            const cu = costoUnitarioDe(item);
-            if (cu > 0) {
-                costo += cu * Number(item.cantidad || 0);
-                ingresosConCosto += total;
-            }
         });
     });
 
@@ -5510,11 +5479,7 @@ function calcularMetricas(ventas, gastos) {
         ticket: ventas.length ? ingresos / ventas.length : 0,
         ingresosProductos,
         ingresosServicios,
-        descuentos: suma(ventas, v => v.descuento),
-        costo,
-        ingresosConCosto,
-        utilidadBruta: ingresosConCosto - costo,
-        coberturaCosto: ingresos ? ingresosConCosto / ingresos : 0
+        descuentos: suma(ventas, v => v.descuento)
     };
 }
 
@@ -5543,18 +5508,11 @@ function ventasPorItem(ventas) {
             codigo: item.codigo || "",
             tipo: item.tipo || "producto",
             cantidad: 0,
-            total: 0,
-            costo: 0,
-            conCosto: true
+            total: 0
         };
 
-        const cantidad = Number(item.cantidad || 0);
-        const cu = costoUnitarioDe(item);
-
-        fila.cantidad += cantidad;
+        fila.cantidad += Number(item.cantidad || 0);
         fila.total += Number(item.total || 0);
-        if (cu > 0) fila.costo += cu * cantidad;
-        else fila.conCosto = false;
 
         mapa.set(clave, fila);
     }));
@@ -5927,9 +5885,6 @@ function alertasDelPeriodo(r, m) {
         alertas.push(`${marcaAlerta("prohibido", "var(--danger)")}<span><b>Ventas anuladas:</b> ${anuladas.length} por ${money(suma(anuladas, v => v.total))}. No suman en ningún total.</span>`);
     }
 
-    if (m.ingresos && m.coberturaCosto < 0.9) {
-        alertas.push(`${marcaAlerta("catalogo", "var(--ink-2)")}<span>El <b>${pct(1 - m.coberturaCosto, 0)} de las ventas no tiene costo registrado</b> en el catálogo, así que el margen bruto es parcial.</span>`);
-    }
 
     if (abiertos.length) {
         const nombres = abiertos.map(t => limpiarHTML(t.responsable || "sin responsable")).join(", ");
@@ -6045,25 +6000,6 @@ function repResultados(panel, { actual, anterior, m, mAnt }) {
                 Se calcula con base en caja: lo vendido menos lo gastado en el periodo. No incluye IVA, retenciones,
                 depreciaciones ni obligaciones laborales; para la contabilidad oficial valide las cifras con su contador.
             </p>
-        </div>
-
-        <div class="rep-card">
-            <h3>Margen bruto estimado</h3>
-            <p class="rep-sub">Solo las ventas cuyo producto o servicio tiene costo registrado</p>
-            ${tablaHTML(
-                [{ t: "Concepto" }, { t: "Valor", num: true }],
-                [
-                    ["Ventas con costo registrado", money(m.ingresosConCosto)],
-                    ["(−) Costo estimado de lo vendido", money(m.costo)],
-                    { clase: "total", celdas: ["Utilidad bruta estimada", money(m.utilidadBruta)] },
-                    ["Margen bruto", pct(m.ingresosConCosto ? m.utilidadBruta / m.ingresosConCosto : null)],
-                    ["Ventas cubiertas por este cálculo", pct(m.coberturaCosto, 0)]
-                ]
-            )}
-            <p class="rep-nota">
-                El costo sale del campo "Costo aproximado" del catálogo. Si los repuestos que vende también los registra
-                como gasto, no sume este margen con la utilidad del periodo: el costo quedaría contado dos veces.
-            </p>
         </div>`;
 }
 
@@ -6110,16 +6046,15 @@ function repVentas(panel, { actual, m }) {
             <h3>Ventas por producto y servicio</h3>
             <p class="rep-sub">Todo lo vendido en el periodo</p>
             ${tablaHTML(
-                [{ t: "Producto / servicio" }, { t: "Tipo" }, { t: "Cant.", num: true }, { t: "Vendido", num: true }, { t: "Part.", num: true }, { t: "Margen est.", num: true }],
+                [{ t: "Producto / servicio" }, { t: "Tipo" }, { t: "Cant.", num: true }, { t: "Vendido", num: true }, { t: "Part.", num: true }],
                 items.map(i => ({ detalle: catalogoGlobal.some(c => c.docId === i.itemId) ? "producto:" + i.itemId : "", celdas: [
                     `${i.codigo ? `<span style="color:#64748b;">${limpiarHTML(i.codigo)}</span> · ` : ""}${limpiarHTML(i.nombre)}`,
                     limpiarHTML(i.tipo),
                     i.cantidad.toLocaleString("es-CO"),
                     money(i.total),
-                    pct(totalItems ? i.total / totalItems : null),
-                    i.conCosto && i.total ? pct((i.total - i.costo) / i.total) : `<span style="color:#94a3b8;">Sin costo</span>`
+                    pct(totalItems ? i.total / totalItems : null)
                 ] })),
-                { apilar: true, pie: ["Total", "", suma(items, i => i.cantidad).toLocaleString("es-CO"), money(totalItems), pct(totalItems ? 1 : null), ""] }
+                { apilar: true, pie: ["Total", "", suma(items, i => i.cantidad).toLocaleString("es-CO"), money(totalItems), pct(totalItems ? 1 : null)] }
             )}
         </div>
 
@@ -6453,10 +6388,7 @@ function exportarExcel() {
         ["N.º de ventas", m.nVentas],
         ["Ticket promedio", redondear(m.ticket)],
         ["Venta de productos", redondear(m.ingresosProductos)],
-        ["Venta de servicios", redondear(m.ingresosServicios)],
-        ["Costo estimado de lo vendido", redondear(m.costo)],
-        ["Utilidad bruta estimada", redondear(m.utilidadBruta)],
-        ["Ventas con costo registrado %", porcentaje(m.coberturaCosto)]
+        ["Venta de servicios", redondear(m.ingresosServicios)]
     ], [32, 18, 18]);
 
     const categorias = agrupar(actual.gastos, g => g.categoria || "Sin categoría", g => g.valor);
@@ -6483,16 +6415,12 @@ function exportarExcel() {
     ], [12, 8, 18, 45, 15, 12, 10, 12, 28, 30]);
 
     hoja("Detalle vendido", [
-        ["Fecha", "Código", "Producto / servicio", "Tipo", "Cantidad", "Valor unitario", "Total", "Costo unitario", "Costo total", "Medio de pago", "Vendedor"],
-        ...actual.ventas.flatMap(v => itemsDeVenta(v).map(i => {
-            const cu = costoUnitarioDe(i);
-            return [
-                v.fecha, i.codigo || "", i.nombre || "", i.tipo || "producto", Number(i.cantidad || 0),
-                redondear(i.valorUnitario), redondear(i.total), cu ? redondear(cu) : "", cu ? redondear(cu * Number(i.cantidad || 0)) : "",
-                v.medioPago || "", v.creadoPor || ""
-            ];
-        }))
-    ], [12, 12, 40, 10, 9, 13, 12, 13, 12, 15, 28]);
+        ["Fecha", "Código", "Producto / servicio", "Tipo", "Cantidad", "Valor unitario", "Total", "Medio de pago", "Vendedor"],
+        ...actual.ventas.flatMap(v => itemsDeVenta(v).map(i => [
+            v.fecha, i.codigo || "", i.nombre || "", i.tipo || "producto", Number(i.cantidad || 0),
+            redondear(i.valorUnitario), redondear(i.total), v.medioPago || "", v.creadoPor || ""
+        ]))
+    ], [12, 12, 40, 10, 9, 13, 12, 15, 28]);
 
     hoja("Gastos", [
         ["Fecha", "Categoría", "Descripción", "Medio de pago", "Valor", "Registrado por"],
@@ -6653,8 +6581,6 @@ function detalleVenta(id) {
     if (!v) return null;
 
     const items = itemsDeVenta(v);
-    const costo = items.reduce((acc, i) => acc + costoUnitarioDe(i) * Number(i.cantidad || 0), 0);
-    const costoCompleto = items.every(i => costoUnitarioDe(i) > 0);
 
     const acciones = [
         `<button type="button" class="secondary-btn" onclick="imprimirComprobante('${v.docId}')">${icono("imprimir")} Imprimir comprobante</button>`
@@ -6663,9 +6589,6 @@ function detalleVenta(id) {
         acciones.push(`<button type="button" class="secondary-btn" style="color:var(--danger);" onclick="anularMovimiento('venta', '${v.docId}')">Anular venta</button>`);
     }
     acciones.push(botonCerrarModal);
-
-    let textoCosto = "Sin costo registrado";
-    if (costo) textoCosto = money(costo) + (costoCompleto ? "" : " (parcial)");
 
     return {
         titulo: "Venta",
@@ -6695,9 +6618,7 @@ function detalleVenta(id) {
                 ["Registrada por", limpiarHTML(v.creadoPor)],
                 ["Fecha de registro", fechaHoraDe(v.creadoEn)],
                 ["Turno", enlaceTurno(v.turnoId)],
-                Number(v.descuento) ? ["Descuento", money(v.descuento)] : null,
-                esAdmin() ? ["Costo estimado", textoCosto] : null,
-                esAdmin() && costo && Number(v.total) ? ["Margen estimado", pct((Number(v.total) - costo) / Number(v.total))] : null
+                Number(v.descuento) ? ["Descuento", money(v.descuento)] : null
             ])}
 
             ${v.observaciones ? `<div class="modal-seccion">Observaciones</div><div class="modal-nota">${limpiarHTML(v.observaciones)}</div>` : ""}`,
@@ -6820,8 +6741,8 @@ function detalleProducto(id) {
     if (!p) return null;
 
     const precio = Number(p.precio || 0);
-    const costo = Number(p.costoAproximado || 0);
     const hace30 = sumarDias(todayISO(), -29);
+    const tipoTexto = p.tipo === "servicio" ? "Servicio" : "Producto";
 
     const ventas = ventasGlobal
         .filter(v => noAnulado(v) && (v.items || []).some(i => i.itemId === id))
@@ -6838,16 +6759,12 @@ function detalleProducto(id) {
         if (v.fecha >= hace30) unidades30 += Number(i.cantidad || 0);
     }));
 
-    const notaPrecio = costo
-        ? `Costo aproximado ${money(costo)} · Margen ${pct(precio ? (precio - costo) / precio : null)}`
-        : "Sin costo registrado: no se puede calcular el margen";
-
     return {
         titulo: p.nombre || "Sin nombre",
-        sub: `${p.codigo ? p.codigo + " · " : ""}${p.categoria || "Sin categoría"}`,
-        etiqueta: p.tipo === "servicio" ? "Servicio" : "Producto",
+        sub: p.codigo ? `Código ${p.codigo}` : "Sin código",
+        etiqueta: tipoTexto,
         cuerpo: `
-            ${cifraHTML("Precio de venta", money(precio), notaPrecio)}
+            ${cifraHTML("Precio de venta", money(precio))}
             ${kpisModalHTML([
                 ["Unidades vendidas", unidades.toLocaleString("es-CO")],
                 ["Total vendido", money(vendido)],
@@ -6857,10 +6774,8 @@ function detalleProducto(id) {
             <div class="modal-seccion">Datos</div>
             ${datosHTML([
                 ["Código", limpiarHTML(p.codigo || "—")],
-                ["Tipo", p.tipo === "servicio" ? "Servicio" : "Producto"],
-                ["Categoría", limpiarHTML(p.categoria || "Sin categoría")],
+                ["Categoría", tipoTexto],
                 ["Precio de venta", money(precio)],
-                ["Costo aproximado", costo ? money(costo) : "—"],
                 ["Creado por", limpiarHTML(p.creadoPor || "—")],
                 ["Fecha de creación", fechaHoraDe(p.creadoEn)],
                 p.actualizadoEn ? ["Última actualización", `${fechaHoraDe(p.actualizadoEn)} · ${limpiarHTML(p.actualizadoPor || "")}`] : null

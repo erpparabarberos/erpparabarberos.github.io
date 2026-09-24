@@ -908,7 +908,7 @@ document.addEventListener('DOMContentLoaded', () => {
                'modulo-calificaciones.html',
                'modulo-servicio-tecnico.html'
            ],
-            servicio_tecnico: ['modulo-servicio-tecnico.html'],
+            servicio tecnico: ['modulo-servicio-tecnico.html'],
             'servicio tecnico': ['modulo-servicio-tecnico.html'],
             'servicio técnico': ['modulo-servicio-tecnico.html'],
             tecnico: ['modulo-servicio-tecnico.html'],
@@ -950,7 +950,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const moduloInicial = permisos[0] || 'modulo-traslados.html';
 
             if (mainFrame) {
-                const version = '20260924-13';
+                const version = '20260924-14';
             
                 mainFrame.src = `${moduloInicial}?v=${version}`;
             }
@@ -973,7 +973,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (mainFrame) {
-            const version = '20260924-13';
+            const version = '20260924-14';
             mainFrame.src = `${url}?v=${version}`;
         }
     };
@@ -1048,7 +1048,7 @@ if (mainSideRail) {
     }
 
     if (
-        currentRol === 'servicio_tecnico' ||
+        currentRol === 'servicio tecnico' ||
         currentRol === 'servicio tecnico' ||
         currentRol === 'servicio técnico' ||
         currentRol === 'tecnico' ||
