@@ -9,6 +9,9 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
@@ -829,6 +832,490 @@ body.escribiendo .bottom-nav {
     }
 }
 
+/* ===== Reportes ===== */
+
+.rep-filtros {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    padding: 14px;
+    margin-bottom: 12px;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, .04);
+}
+
+.rep-chips {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+}
+
+.rep-chips::-webkit-scrollbar {
+    display: none;
+}
+
+.rep-chips button {
+    flex: 0 0 auto;
+    border: 1px solid #dbe4f0;
+    background: white;
+    color: #475569;
+    border-radius: 999px;
+    padding: 9px 14px;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.rep-chips button.active {
+    background: #0f172a;
+    border-color: #0f172a;
+    color: white;
+}
+
+.rep-rango {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.rep-rango label {
+    display: block;
+    font-size: 12px;
+    font-weight: 900;
+    color: #526b8a;
+    margin-bottom: 6px;
+}
+
+.rep-rango[hidden] {
+    display: none;
+}
+
+.rep-periodo-linea {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+}
+
+.rep-periodo-texto {
+    font-size: 13px;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.rep-periodo-texto small {
+    display: block;
+    color: #64748b;
+    font-weight: 700;
+    margin-top: 2px;
+}
+
+.rep-acciones {
+    display: flex;
+    gap: 8px;
+}
+
+.rep-acciones button {
+    border: 1px solid #dbe4f0;
+    background: white;
+    color: #0f172a;
+    border-radius: 12px;
+    padding: 9px 12px;
+    font-size: 13px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.rep-tabs {
+    margin: 4px 0 16px;
+}
+
+.rep-tabs button {
+    border-radius: 12px;
+}
+
+.rep-panel {
+    display: none;
+}
+
+.rep-panel.active {
+    display: block;
+}
+
+.rep-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    padding: 16px;
+    margin-bottom: 14px;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, .04);
+    min-width: 0;
+}
+
+.rep-card h3 {
+    margin: 0 0 4px;
+    font-size: 16px;
+    font-weight: 900;
+    color: #0f172a;
+}
+
+.rep-card .rep-sub {
+    margin: 0 0 12px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #64748b;
+}
+
+.rep-kpis {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.rep-kpi {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 18px;
+    padding: 14px;
+    min-width: 0;
+}
+
+.rep-kpi span {
+    display: block;
+    font-size: 12px;
+    font-weight: 800;
+    color: #64748b;
+}
+
+.rep-kpi strong {
+    display: block;
+    margin-top: 6px;
+    font-size: clamp(17px, 5vw, 22px);
+    font-weight: 900;
+    color: #0f172a;
+    overflow-wrap: anywhere;
+}
+
+.rep-delta {
+    display: block;
+    margin-top: 6px;
+    font-size: 11px;
+    font-weight: 800;
+    color: #64748b;
+}
+
+.rep-delta.bien {
+    color: #006300;
+}
+
+.rep-delta.mal {
+    color: #b42318;
+}
+
+.rep-grafico {
+    position: relative;
+    width: 100%;
+    height: 260px;
+}
+
+.rep-grafico.alto {
+    height: 340px;
+}
+
+.rep-dos-col {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0 14px;
+}
+
+.tabla-wrap {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.rep-tabla {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.rep-tabla th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 900;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    padding: 8px 10px;
+    border-bottom: 1px solid #e2e8f0;
+    white-space: nowrap;
+}
+
+.rep-tabla td {
+    padding: 9px 10px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #0f172a;
+    font-weight: 600;
+    vertical-align: top;
+}
+
+.rep-tabla .num {
+    text-align: right;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.rep-tabla tfoot td,
+.rep-tabla tr.total td {
+    font-weight: 900;
+    border-top: 1px solid #cbd5e1;
+    border-bottom: none;
+}
+
+.rep-tabla tr.seccion td {
+    font-weight: 900;
+    color: #0f172a;
+    background: #f8fafc;
+}
+
+.rep-tabla tr.sub td:first-child {
+    padding-left: 22px;
+    color: #475569;
+}
+
+.rep-tabla tr.anulada td {
+    color: #94a3b8;
+    text-decoration: line-through;
+}
+
+.rep-tabla tr.anulada td.no-tachar {
+    text-decoration: none;
+}
+
+.rep-barra {
+    height: 8px;
+    background: #f1f5f9;
+    border-radius: 999px;
+    overflow: hidden;
+    margin-top: 6px;
+}
+
+.rep-barra i {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+}
+
+.rep-alertas {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.rep-alertas li {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 10px 0;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 13px;
+    font-weight: 700;
+    color: #334155;
+}
+
+.rep-alertas li:last-child {
+    border-bottom: none;
+}
+
+.rep-alertas b {
+    color: #0f172a;
+}
+
+.rep-etiqueta {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 900;
+    padding: 3px 7px;
+    border-radius: 999px;
+    background: #f1f5f9;
+    color: #475569;
+    white-space: nowrap;
+}
+
+.rep-etiqueta.anulada {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.rep-btn-anular {
+    border: none;
+    background: #fee2e2;
+    color: #dc2626;
+    border-radius: 10px;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.rep-nota {
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+    margin: 10px 0 0;
+    line-height: 1.45;
+}
+
+.rep-print-header {
+    display: none;
+}
+
+.rep-chips {
+    position: relative;
+}
+
+/* En celular las tablas anchas se muestran como tarjetas: una fila = un bloque */
+@media (max-width: 599px) {
+    .rep-tabla.apilable thead {
+        display: none;
+    }
+
+    .rep-tabla.apilable,
+    .rep-tabla.apilable tbody,
+    .rep-tabla.apilable tfoot,
+    .rep-tabla.apilable tr,
+    .rep-tabla.apilable td {
+        display: block;
+        width: 100%;
+    }
+
+    .rep-tabla.apilable tr {
+        padding: 10px 0;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .rep-tabla.apilable td {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 12px;
+        padding: 3px 0;
+        border: none;
+        text-align: right;
+        white-space: normal;
+    }
+
+    .rep-tabla.apilable td::before {
+        content: attr(data-label);
+        flex: 0 0 auto;
+        font-size: 11px;
+        font-weight: 800;
+        color: #64748b;
+        text-align: left;
+    }
+
+    .rep-tabla.apilable td:first-child {
+        display: block;
+        text-align: left;
+        font-weight: 900;
+        padding-bottom: 6px;
+    }
+
+    .rep-tabla.apilable td:first-child::before,
+    .rep-tabla.apilable td:empty,
+    .rep-tabla.apilable td[data-label=""]::before {
+        display: none;
+    }
+
+    .rep-tabla.apilable tfoot tr {
+        border-bottom: none;
+    }
+
+    .rep-tabla.apilable tfoot td {
+        border-top: none;
+    }
+}
+
+.historial-anulada {
+    opacity: .6;
+}
+
+@media (min-width: 600px) {
+    .rep-kpis {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 900px) {
+    .rep-dos-col {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .rep-grafico {
+        height: 300px;
+    }
+}
+
+@media print {
+    @page {
+        margin: 14mm;
+    }
+
+    html,
+    body,
+    .st-app {
+        background: white !important;
+    }
+
+    .st-app {
+        max-width: none !important;
+        padding: 0 !important;
+    }
+
+    .bottom-nav,
+    .rep-filtros,
+    .rep-tabs,
+    .rep-no-print,
+    #view-reportes > .st-header {
+        display: none !important;
+    }
+
+    .rep-print-header {
+        display: block;
+        border-bottom: 2px solid #0f172a;
+        padding-bottom: 10px;
+        margin-bottom: 16px;
+    }
+
+    .rep-print-header h1 {
+        margin: 0;
+        font-size: 22px;
+    }
+
+    .rep-print-header p {
+        margin: 4px 0 0;
+        font-size: 12px;
+        color: #475569;
+    }
+
+    .rep-card,
+    .rep-kpi {
+        box-shadow: none;
+        break-inside: avoid;
+    }
+
+    .tabla-wrap {
+        overflow: visible;
+    }
+}
+
 /* Tablet vertical: aprovecha el ancho */
 @media (min-width: 600px) and (max-width: 899px) {
     .st-app {
@@ -1318,6 +1805,64 @@ body.escribiendo .bottom-nav {
         </div>
     </section>
 
+<section id="view-reportes" class="view">
+    <div class="st-header">
+        <div>
+            <h1>Reportes</h1>
+            <p>Informe gerencial del negocio</p>
+        </div>
+    </div>
+
+    <div class="rep-filtros">
+        <div class="rep-chips" id="repPeriodos">
+            <button type="button" data-periodo="hoy">Hoy</button>
+            <button type="button" data-periodo="ayer">Ayer</button>
+            <button type="button" data-periodo="7d">Últimos 7 días</button>
+            <button type="button" data-periodo="mes" class="active">Este mes</button>
+            <button type="button" data-periodo="mesAnterior">Mes anterior</button>
+            <button type="button" data-periodo="anio">Este año</button>
+            <button type="button" data-periodo="custom">Personalizado</button>
+        </div>
+
+        <div class="rep-rango" id="repRango" hidden>
+            <div>
+                <label for="repDesde">Desde</label>
+                <input type="date" id="repDesde">
+            </div>
+            <div>
+                <label for="repHasta">Hasta</label>
+                <input type="date" id="repHasta">
+            </div>
+        </div>
+
+        <div class="rep-periodo-linea">
+            <div class="rep-periodo-texto" id="repPeriodoTexto"></div>
+            <div class="rep-acciones">
+                <button type="button" id="btnRepExcel">⬇ Excel</button>
+                <button type="button" id="btnRepPdf">🖨 PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="rep-chips rep-tabs" id="repTabs">
+        <button type="button" data-tab="resumen" class="active">Resumen</button>
+        <button type="button" data-tab="resultados">Estado de resultados</button>
+        <button type="button" data-tab="ventas">Ventas</button>
+        <button type="button" data-tab="gastos">Gastos</button>
+        <button type="button" data-tab="caja">Caja y turnos</button>
+        <button type="button" data-tab="movimientos">Movimientos</button>
+    </div>
+
+    <div class="rep-print-header" id="repPrintHeader"></div>
+
+    <div class="rep-panel active" id="repPanel-resumen"></div>
+    <div class="rep-panel" id="repPanel-resultados"></div>
+    <div class="rep-panel" id="repPanel-ventas"></div>
+    <div class="rep-panel" id="repPanel-gastos"></div>
+    <div class="rep-panel" id="repPanel-caja"></div>
+    <div class="rep-panel" id="repPanel-movimientos"></div>
+</section>
+
 </div>
 
 <nav class="bottom-nav">
@@ -1336,8 +1881,11 @@ body.escribiendo .bottom-nav {
     <button class="nav-btn" onclick="showView('catalogo')" data-view="catalogo">
         <span>📦</span>Catálogo
     </button>
-    <button class="nav-btn" onclick="showView('historial')" data-view="historial">
+    <button class="nav-btn" onclick="showView('historial')" data-view="historial" id="navHistorial">
         <span>📋</span>Historial
+    </button>
+    <button class="nav-btn" onclick="showView('reportes')" data-view="reportes" id="navReportes" style="display:none;">
+        <span>📊</span>Reportes
     </button>
 </nav>
 
@@ -1371,6 +1919,10 @@ body.escribiendo .bottom-nav {
     let turnosGlobal = [];
     let turnoActivo = null;
     let currentUserEmail = "sin_usuario";
+    let currentUserRol = "";
+
+    const esAdmin = () => currentUserRol === "admin";
+    const noAnulado = (registro) => !registro.anulada;
 
     const money = (value) => {
         const num = Number(value || 0);
@@ -1438,6 +1990,10 @@ window.showView = function(viewName) {
         viewName = "caja";
     }
 
+    if (viewName === "reportes" && !esAdmin()) {
+        viewName = "inicio";
+    }
+
     document.querySelectorAll(".view").forEach(view => {
         view.classList.remove("active");
         view.style.display = "none";
@@ -1453,6 +2009,10 @@ window.showView = function(viewName) {
     document.querySelectorAll(".nav-btn").forEach(btn => {
         btn.classList.toggle("active", btn.dataset.view === viewName);
     });
+
+    if (viewName === "reportes") {
+        renderReportes();
+    }
 
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
@@ -1509,7 +2069,12 @@ window.showView = function(viewName) {
             }
 
             currentUserEmail = user.email || "sin_usuario";
+            currentUserRol = rol;
             document.getElementById("userInitial").textContent = currentUserEmail.charAt(0).toUpperCase();
+
+            // Los reportes gerenciales solo los ve el administrador; ocupan el lugar de Historial en el menú.
+            document.getElementById("navReportes").style.display = esAdmin() ? "" : "none";
+            document.getElementById("navHistorial").style.display = esAdmin() ? "none" : "";
 
             if (!datosCargados) {
                 datosCargados = true;
@@ -1528,6 +2093,7 @@ window.showView = function(viewName) {
             renderCatalogo();
             llenarSelectVenta();
             renderFrecuentes();
+            renderReportesSiVisible();
         });
 
         ventasRef.orderBy("creadoEn", "desc").onSnapshot(snapshot => {
@@ -1536,6 +2102,7 @@ window.showView = function(viewName) {
             renderDashboard();
             renderMovimientos();
             renderHistorial();
+            renderReportesSiVisible();
         });
 
         gastosRef.orderBy("creadoEn", "desc").onSnapshot(snapshot => {
@@ -1544,6 +2111,7 @@ window.showView = function(viewName) {
             renderDashboard();
             renderMovimientos();
             renderHistorial();
+            renderReportesSiVisible();
         });
         turnosRef.orderBy("creadoEn", "desc").onSnapshot(snapshot => {
     turnosGlobal = [];
@@ -1556,6 +2124,7 @@ window.showView = function(viewName) {
 
     renderCaja();
     renderDashboard();
+    renderReportesSiVisible();
 });
     }
 function obtenerResumenTurno(turno) {
@@ -1571,8 +2140,8 @@ function obtenerResumenTurno(turno) {
         };
     }
 
-    const ventasTurno = ventasGlobal.filter(v => v.turnoId === turno.docId);
-    const gastosTurno = gastosGlobal.filter(g => g.turnoId === turno.docId);
+    const ventasTurno = ventasGlobal.filter(v => v.turnoId === turno.docId && noAnulado(v));
+    const gastosTurno = gastosGlobal.filter(g => g.turnoId === turno.docId && noAnulado(g));
 
     const totalVentas = ventasTurno.reduce((acc, v) => acc + Number(v.total || 0), 0);
     const totalGastos = gastosTurno.reduce((acc, g) => acc + Number(g.valor || 0), 0);
@@ -1699,13 +2268,13 @@ function renderDashboard() {
     let gastosBase = [];
 
     if (turnoActivo) {
-        ventasBase = ventasGlobal.filter(v => v.turnoId === turnoActivo.docId);
-        gastosBase = gastosGlobal.filter(g => g.turnoId === turnoActivo.docId);
+        ventasBase = ventasGlobal.filter(v => v.turnoId === turnoActivo.docId && noAnulado(v));
+        gastosBase = gastosGlobal.filter(g => g.turnoId === turnoActivo.docId && noAnulado(g));
     } else {
         const hoy = todayISO();
 
-        ventasBase = ventasGlobal.filter(v => v.fecha === hoy);
-        gastosBase = gastosGlobal.filter(g => g.fecha === hoy);
+        ventasBase = ventasGlobal.filter(v => v.fecha === hoy && noAnulado(v));
+        gastosBase = gastosGlobal.filter(g => g.fecha === hoy && noAnulado(g));
     }
 
     const ventasTotal = ventasBase.reduce((acc, v) => acc + Number(v.total || 0), 0);
@@ -1723,7 +2292,7 @@ function renderDashboard() {
         const container = document.getElementById("movementList");
 
         const movimientos = [
-            ...ventasGlobal.map(v => ({
+            ...ventasGlobal.filter(noAnulado).map(v => ({
                 tipo: "Venta",
                 nombre: v.items?.map(item => item.nombre).join(", ") || v.itemNombre || "Venta",
                 valor: v.total,
@@ -1731,7 +2300,7 @@ function renderDashboard() {
                 fecha: v.creadoEn,
                 icon: "🛒"
             })),
-            ...gastosGlobal.map(g => ({
+            ...gastosGlobal.filter(noAnulado).map(g => ({
                 tipo: "Gasto",
                 nombre: g.descripcion || "Gasto",
                 valor: g.valor,
@@ -1772,20 +2341,22 @@ function renderHistorial() {
 
     const movimientos = [
         ...ventasGlobal.map(v => ({
-            tipo: "Venta",
+            tipo: v.anulada ? "Venta anulada" : "Venta",
             nombre: v.items?.map(item => item.nombre).join(", ") || v.itemNombre || "Venta",
             detalle: `${v.cliente || "Consumidor final"} · ${v.medioPago || ""}`,
             valor: v.total,
             icon: "🛒",
-            fecha: v.fecha
+            fecha: v.fecha,
+            anulada: !!v.anulada
         })),
         ...gastosGlobal.map(g => ({
-            tipo: "Gasto",
+            tipo: g.anulada ? "Gasto anulado" : "Gasto",
             nombre: g.descripcion || "Gasto",
             detalle: `${g.categoria || "Sin categoría"} · ${g.medioPago || ""}`,
             valor: g.valor,
             icon: "💳",
-            fecha: g.fecha
+            fecha: g.fecha,
+            anulada: !!g.anulada
         }))
     ].sort((a, b) => String(b.fecha).localeCompare(String(a.fecha)));
 
@@ -1795,7 +2366,7 @@ function renderHistorial() {
     }
 
     container.innerHTML = movimientos.map(m => `
-        <div class="history-card">
+        <div class="history-card ${m.anulada ? "historial-anulada" : ""}">
             <div class="history-card-icon">${m.icon}</div>
 
             <div>
@@ -2121,7 +2692,9 @@ document.getElementById("btnAgregarItemVenta").addEventListener("click", functio
         tipo: item.tipo || "producto",
         cantidad,
         valorUnitario,
-        total: cantidad * valorUnitario
+        total: cantidad * valorUnitario,
+        // Se guarda el costo del momento para que el margen no cambie si luego se edita el catálogo.
+        costoUnitario: Number(item.costoAproximado || 0)
     });
 
     limpiarBusquedaVenta();
@@ -2591,6 +3164,1284 @@ async function guardarCatalogo() {
 
     cancelarEdicionCatalogo();
 }
+
+// =====================================================================
+// REPORTES GERENCIALES (solo administrador)
+// =====================================================================
+
+// Colores fijos por concepto: ventas siempre azul, gastos siempre naranja.
+const REP_COLOR = {
+    ventas: "#2a78d6",
+    gastos: "#eb6834",
+    grid: "#e1e0d9",
+    eje: "#898781",
+    base: "#c3c2b7",
+    texto: "#52514e"
+};
+
+const REP_TABS = {
+    resumen: "Resumen",
+    resultados: "Estado de resultados",
+    ventas: "Ventas",
+    gastos: "Gastos",
+    caja: "Caja y turnos",
+    movimientos: "Movimientos"
+};
+
+const DIAS_SEMANA = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+const MESES_CORTOS = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+
+const repEstado = { periodo: "mes", tab: "resumen", busqueda: "" };
+let repGraficos = [];
+
+if (typeof Chart !== "undefined") {
+    Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
+    Chart.defaults.color = REP_COLOR.texto;
+    // Sin animación: los gráficos se redibujan con cada venta nueva y deben salir completos al imprimir.
+    Chart.defaults.animation = false;
+}
+
+// Al imprimir, los gráficos se ajustan al ancho de la hoja.
+window.addEventListener("beforeprint", () => repGraficos.forEach(g => g.resize()));
+window.addEventListener("afterprint", () => repGraficos.forEach(g => g.resize()));
+
+// ---------- Fechas ----------
+
+function isoDesdeFecha(d) {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function fechaDesdeIso(iso) {
+    const [y, m, d] = String(iso).split("-").map(Number);
+    return new Date(y, m - 1, d, 12);
+}
+
+function sumarDias(iso, n) {
+    const d = fechaDesdeIso(iso);
+    d.setDate(d.getDate() + n);
+    return isoDesdeFecha(d);
+}
+
+function diasEntre(desde, hasta) {
+    return Math.round((fechaDesdeIso(hasta) - fechaDesdeIso(desde)) / 86400000) + 1;
+}
+
+function fechaCorta(iso) {
+    if (!iso) return "";
+    const d = fechaDesdeIso(iso);
+    return `${d.getDate()} ${MESES_CORTOS[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+function milisDe(registro) {
+    const c = registro.creadoEn;
+    return c && typeof c.toMillis === "function" ? c.toMillis() : null;
+}
+
+function horaDe(registro) {
+    const ms = milisDe(registro);
+    return ms === null ? "" : new Date(ms).toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" });
+}
+
+const enRango = (fecha, desde, hasta) => !!fecha && fecha >= desde && fecha <= hasta;
+
+function rangoDelPeriodo() {
+    const hoy = todayISO();
+    const [y, m, d] = hoy.split("-").map(Number);
+    let desde = hoy;
+    let hasta = hoy;
+    let nombre = "";
+    let antDesde = null;
+    let antHasta = null;
+
+    switch (repEstado.periodo) {
+        case "hoy":
+            nombre = "Hoy";
+            break;
+        case "ayer":
+            desde = hasta = sumarDias(hoy, -1);
+            nombre = "Ayer";
+            break;
+        case "7d":
+            desde = sumarDias(hoy, -6);
+            nombre = "Últimos 7 días";
+            break;
+        case "mes": {
+            desde = `${y}-${String(m).padStart(2, "0")}-01`;
+            nombre = "Este mes";
+            // Se compara con los mismos días del mes anterior (1 al d).
+            const finMesAnt = new Date(y, m - 1, 0, 12);
+            antDesde = isoDesdeFecha(new Date(y, m - 2, 1, 12));
+            antHasta = isoDesdeFecha(new Date(y, m - 2, Math.min(d, finMesAnt.getDate()), 12));
+            break;
+        }
+        case "mesAnterior":
+            desde = isoDesdeFecha(new Date(y, m - 2, 1, 12));
+            hasta = isoDesdeFecha(new Date(y, m - 1, 0, 12));
+            nombre = "Mes anterior";
+            antDesde = isoDesdeFecha(new Date(y, m - 3, 1, 12));
+            antHasta = isoDesdeFecha(new Date(y, m - 2, 0, 12));
+            break;
+        case "anio":
+            desde = `${y}-01-01`;
+            nombre = "Este año";
+            antDesde = `${y - 1}-01-01`;
+            antHasta = isoDesdeFecha(new Date(y - 1, m - 1, d, 12));
+            break;
+        case "custom":
+            desde = document.getElementById("repDesde").value || hoy;
+            hasta = document.getElementById("repHasta").value || hoy;
+            if (desde > hasta) [desde, hasta] = [hasta, desde];
+            nombre = "Personalizado";
+            break;
+    }
+
+    const dias = diasEntre(desde, hasta);
+
+    // Por defecto se compara con un periodo de igual duración justo antes.
+    if (!antDesde) {
+        antHasta = sumarDias(desde, -1);
+        antDesde = sumarDias(antHasta, -(dias - 1));
+    }
+
+    return { desde, hasta, dias, nombre, antDesde, antHasta };
+}
+
+function textoRango(desde, hasta) {
+    return desde === hasta ? fechaCorta(desde) : `${fechaCorta(desde)} – ${fechaCorta(hasta)}`;
+}
+
+// ---------- Cálculos ----------
+
+const suma = (lista, fn) => lista.reduce((acc, x) => acc + Number(fn(x) || 0), 0);
+
+function datosDelRango(desde, hasta) {
+    return {
+        ventas: ventasGlobal.filter(v => noAnulado(v) && enRango(v.fecha, desde, hasta)),
+        gastos: gastosGlobal.filter(g => noAnulado(g) && enRango(g.fecha, desde, hasta))
+    };
+}
+
+function itemsDeVenta(venta) {
+    if (Array.isArray(venta.items) && venta.items.length) return venta.items;
+
+    return [{
+        nombre: venta.itemNombre || "Venta sin detalle",
+        tipo: "producto",
+        cantidad: 1,
+        valorUnitario: Number(venta.total || 0),
+        total: Number(venta.total || 0)
+    }];
+}
+
+// Costo guardado en la venta; si no hay, el costo actual del catálogo.
+function costoUnitarioDe(item) {
+    const guardado = Number(item.costoUnitario || 0);
+    if (guardado > 0) return guardado;
+
+    const enCatalogo = catalogoGlobal.find(c => c.docId === item.itemId);
+    return Number(enCatalogo?.costoAproximado || 0);
+}
+
+function calcularMetricas(ventas, gastos) {
+    const ingresos = suma(ventas, v => v.total);
+    const egresos = suma(gastos, g => g.valor);
+
+    let ingresosProductos = 0;
+    let ingresosServicios = 0;
+    let costo = 0;
+    let ingresosConCosto = 0;
+
+    ventas.forEach(v => {
+        itemsDeVenta(v).forEach(item => {
+            const total = Number(item.total || 0);
+
+            if ((item.tipo || "producto") === "servicio") ingresosServicios += total;
+            else ingresosProductos += total;
+
+            const cu = costoUnitarioDe(item);
+            if (cu > 0) {
+                costo += cu * Number(item.cantidad || 0);
+                ingresosConCosto += total;
+            }
+        });
+    });
+
+    return {
+        ingresos,
+        egresos,
+        utilidad: ingresos - egresos,
+        margen: ingresos ? (ingresos - egresos) / ingresos : null,
+        nVentas: ventas.length,
+        ticket: ventas.length ? ingresos / ventas.length : 0,
+        ingresosProductos,
+        ingresosServicios,
+        descuentos: suma(ventas, v => v.descuento),
+        costo,
+        ingresosConCosto,
+        utilidadBruta: ingresosConCosto - costo,
+        coberturaCosto: ingresos ? ingresosConCosto / ingresos : 0
+    };
+}
+
+function agrupar(lista, claveFn, valorFn) {
+    const mapa = new Map();
+
+    lista.forEach(x => {
+        const clave = claveFn(x) || "Sin dato";
+        const fila = mapa.get(clave) || { clave, n: 0, total: 0 };
+        fila.n++;
+        fila.total += Number(valorFn(x) || 0);
+        mapa.set(clave, fila);
+    });
+
+    return [...mapa.values()].sort((a, b) => b.total - a.total);
+}
+
+function ventasPorItem(ventas) {
+    const mapa = new Map();
+
+    ventas.forEach(v => itemsDeVenta(v).forEach(item => {
+        const clave = item.itemId || item.codigo || item.nombre;
+        const fila = mapa.get(clave) || {
+            nombre: item.nombre || "Sin nombre",
+            codigo: item.codigo || "",
+            tipo: item.tipo || "producto",
+            cantidad: 0,
+            total: 0,
+            costo: 0,
+            conCosto: true
+        };
+
+        const cantidad = Number(item.cantidad || 0);
+        const cu = costoUnitarioDe(item);
+
+        fila.cantidad += cantidad;
+        fila.total += Number(item.total || 0);
+        if (cu > 0) fila.costo += cu * cantidad;
+        else fila.conCosto = false;
+
+        mapa.set(clave, fila);
+    }));
+
+    return [...mapa.values()].sort((a, b) => b.total - a.total);
+}
+
+function resumenDeTurno(turno) {
+    if (turno.estado === "cerrado") {
+        return {
+            efectivoInicial: Number(turno.efectivoInicial || 0),
+            ventasEfectivo: Number(turno.ventasEfectivo || 0),
+            gastosEfectivo: Number(turno.gastosEfectivo || 0),
+            efectivoEsperado: Number(turno.efectivoEsperado || 0),
+            efectivoContado: Number(turno.efectivoContado || 0),
+            diferencia: Number(turno.diferencia || 0),
+            totalVentas: Number(turno.totalVentas || 0)
+        };
+    }
+
+    const vivo = obtenerResumenTurno(turno);
+    return { ...vivo, efectivoContado: null, diferencia: null };
+}
+
+function flujoPorMedio(ventas, gastos) {
+    const mapa = new Map();
+    const fila = (medio) => mapa.get(medio) || { medio, entradas: 0, salidas: 0 };
+
+    ventas.forEach(v => {
+        const f = fila(v.medioPago || "Sin dato");
+        f.entradas += Number(v.total || 0);
+        mapa.set(f.medio, f);
+    });
+
+    gastos.forEach(g => {
+        const f = fila(g.medioPago || "Sin dato");
+        f.salidas += Number(g.valor || 0);
+        mapa.set(f.medio, f);
+    });
+
+    return [...mapa.values()].sort((a, b) => b.entradas - a.entradas);
+}
+
+// ---------- Formato ----------
+
+function pct(valor, decimales = 1) {
+    if (valor === null || valor === undefined || !isFinite(valor)) return "—";
+    return (valor * 100).toLocaleString("es-CO", { minimumFractionDigits: decimales, maximumFractionDigits: decimales }) + "%";
+}
+
+function variacion(actual, anterior) {
+    if (!anterior) return null;
+    return (actual - anterior) / Math.abs(anterior);
+}
+
+// subirEsBueno=false para los gastos: si suben, es mala noticia.
+function deltaHTML(actual, anterior, subirEsBueno = true) {
+    if (!actual && !anterior) return `<span class="rep-delta">Sin movimiento</span>`;
+
+    const v = variacion(actual, anterior);
+    if (v === null) return `<span class="rep-delta">Sin datos del periodo anterior</span>`;
+    if (Math.abs(v) < 0.0005) return `<span class="rep-delta">= Igual al periodo anterior</span>`;
+
+    const sube = v > 0;
+    const clase = sube === subirEsBueno ? "bien" : "mal";
+    return `<span class="rep-delta ${clase}">${sube ? "▲" : "▼"} ${pct(Math.abs(v))} vs. periodo anterior</span>`;
+}
+
+function deltaPuntosHTML(actual, anterior) {
+    if (actual === null || anterior === null) return `<span class="rep-delta">Sin datos del periodo anterior</span>`;
+
+    const puntos = (actual - anterior) * 100;
+    if (Math.abs(puntos) < 0.05) return `<span class="rep-delta">= Igual al periodo anterior</span>`;
+
+    const texto = Math.abs(puntos).toLocaleString("es-CO", { maximumFractionDigits: 1 });
+    return `<span class="rep-delta ${puntos > 0 ? "bien" : "mal"}">${puntos > 0 ? "▲" : "▼"} ${texto} puntos vs. periodo anterior</span>`;
+}
+
+function variacionTexto(actual, anterior) {
+    const v = variacion(actual, anterior);
+    if (v === null) return "—";
+    return (v > 0 ? "+" : "") + pct(v);
+}
+
+function moneyCorto(valor) {
+    const n = Math.abs(valor);
+    if (n >= 1e6) return "$" + (valor / 1e6).toLocaleString("es-CO", { maximumFractionDigits: 1 }) + " M";
+    if (n >= 1e3) return "$" + Math.round(valor / 1e3).toLocaleString("es-CO") + " mil";
+    return "$" + valor;
+}
+
+// opciones.apilar: en celular cada fila se muestra como tarjeta (para tablas de muchas columnas).
+function tablaHTML(columnas, filas, opciones = {}) {
+    const claseCol = (i) => `${columnas[i]?.num ? "num" : ""} ${columnas[i]?.clase || ""}`;
+    const etiqueta = (i) => limpiarHTML(columnas[i]?.t || "");
+    const celda = (c, i) => `<td class="${claseCol(i)}" data-label="${etiqueta(i)}">${c}</td>`;
+
+    const cuerpo = filas.length
+        ? filas.map(f => {
+            const celdas = Array.isArray(f) ? f : f.celdas;
+            const clase = Array.isArray(f) ? "" : (f.clase || "");
+            return `<tr class="${clase}">${celdas.map(celda).join("")}</tr>`;
+        }).join("")
+        : `<tr><td colspan="${columnas.length}" style="text-align:center; color:#64748b; padding:18px;">Sin datos en este periodo.</td></tr>`;
+
+    const pie = opciones.pie && filas.length
+        ? `<tfoot><tr>${opciones.pie.map(celda).join("")}</tr></tfoot>`
+        : "";
+
+    return `
+        <div class="tabla-wrap">
+            <table class="rep-tabla ${opciones.apilar ? "apilable" : ""}">
+                <thead><tr>${columnas.map((c, i) => `<th class="${claseCol(i)}">${c.t}</th>`).join("")}</tr></thead>
+                <tbody>${cuerpo}</tbody>
+                ${pie}
+            </table>
+        </div>`;
+}
+
+// Barras en HTML con el valor y el porcentaje siempre visibles.
+function barrasHTML(filas, total, color) {
+    if (!filas.length || !total) return `<p class="rep-nota">Sin datos en este periodo.</p>`;
+
+    return filas.map(f => {
+        const p = f.total / total;
+        const ancho = f.total > 0 ? Math.max(p * 100, 1) : 0;
+
+        return `
+            <div style="margin-bottom:12px;">
+                <div style="display:flex; justify-content:space-between; gap:10px; font-size:13px; font-weight:800;">
+                    <span style="min-width:0; overflow-wrap:anywhere;">
+                        ${limpiarHTML(f.clave)}${f.n ? ` <span style="color:#64748b; font-weight:700;">· ${f.n}</span>` : ""}
+                    </span>
+                    <span style="white-space:nowrap;">
+                        ${money(f.total)} <span style="color:#64748b; font-weight:700;">${pct(p)}</span>
+                    </span>
+                </div>
+                <div class="rep-barra"><i style="width:${ancho}%; background:${color};"></i></div>
+            </div>`;
+    }).join("");
+}
+
+// ---------- Gráficos ----------
+
+function destruirGraficos() {
+    repGraficos.forEach(g => g.destroy());
+    repGraficos = [];
+}
+
+function opcionesGrafico({ horizontal = false, leyenda = false } = {}) {
+    const ejeValor = {
+        beginAtZero: true,
+        grid: { color: REP_COLOR.grid, drawTicks: false },
+        border: { display: false },
+        ticks: { color: REP_COLOR.eje, font: { size: 11 }, padding: 6, maxTicksLimit: horizontal ? 4 : 6, callback: v => moneyCorto(v) }
+    };
+
+    const ejeCategoria = {
+        grid: { display: false },
+        border: { color: REP_COLOR.base },
+        ticks: {
+            color: REP_COLOR.eje,
+            font: { size: 11 },
+            autoSkip: true,
+            maxRotation: 0,
+            callback: function(valor) {
+                const texto = String(this.getLabelForValue(valor));
+                return texto.length > 24 ? texto.slice(0, 23) + "…" : texto;
+            }
+        }
+    };
+
+    return {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: horizontal ? "y" : "x",
+        interaction: { mode: "index", intersect: false },
+        plugins: {
+            legend: {
+                display: leyenda,
+                position: "top",
+                align: "start",
+                labels: { boxWidth: 10, boxHeight: 10, useBorderRadius: true, borderRadius: 2, font: { size: 12, weight: "700" } }
+            },
+            tooltip: {
+                backgroundColor: "#0f172a",
+                padding: 10,
+                cornerRadius: 10,
+                callbacks: {
+                    label: ctx => `${ctx.dataset.label}: ${money(horizontal ? ctx.parsed.x : ctx.parsed.y)}`
+                }
+            }
+        },
+        scales: horizontal ? { x: ejeValor, y: ejeCategoria } : { x: ejeCategoria, y: ejeValor }
+    };
+}
+
+function serieBarras(label, data, color) {
+    return {
+        label,
+        data,
+        backgroundColor: color,
+        borderRadius: 4,
+        borderSkipped: "start",
+        maxBarThickness: 22,
+        categoryPercentage: 0.8,
+        barPercentage: 0.9
+    };
+}
+
+function crearGrafico(idCanvas, config) {
+    const canvas = document.getElementById(idCanvas);
+    if (!canvas || typeof Chart === "undefined") return;
+    repGraficos.push(new Chart(canvas, config));
+}
+
+// Un día → por hora; hasta 62 días → por día; más → por mes.
+function serieTemporal(r, ventas, gastos) {
+    let claves = [];
+    let etiquetas = [];
+    let claveDe;
+    let unidad;
+
+    if (r.dias === 1) {
+        unidad = "por hora";
+        const horas = [...ventas, ...gastos].map(x => milisDe(x)).filter(x => x !== null).map(ms => new Date(ms).getHours());
+        const desdeH = Math.min(7, ...horas);
+        const hastaH = Math.max(19, ...horas);
+        for (let h = desdeH; h <= hastaH; h++) {
+            claves.push(h);
+            etiquetas.push(`${h} h`);
+        }
+        claveDe = (x) => {
+            const ms = milisDe(x);
+            return ms === null ? null : new Date(ms).getHours();
+        };
+    } else if (r.dias <= 62) {
+        unidad = "por día";
+        for (let i = 0; i < r.dias; i++) {
+            const iso = sumarDias(r.desde, i);
+            const d = fechaDesdeIso(iso);
+            claves.push(iso);
+            etiquetas.push(`${d.getDate()} ${MESES_CORTOS[d.getMonth()]}`);
+        }
+        claveDe = (x) => x.fecha;
+    } else {
+        unidad = "por mes";
+        const d = fechaDesdeIso(r.desde);
+        d.setDate(1);
+        while (isoDesdeFecha(d).slice(0, 7) <= r.hasta.slice(0, 7)) {
+            claves.push(isoDesdeFecha(d).slice(0, 7));
+            etiquetas.push(`${MESES_CORTOS[d.getMonth()]} ${d.getFullYear()}`);
+            d.setMonth(d.getMonth() + 1);
+        }
+        claveDe = (x) => String(x.fecha || "").slice(0, 7);
+    }
+
+    const acumular = (lista, valorFn) => {
+        const mapa = {};
+        lista.forEach(x => {
+            const k = claveDe(x);
+            if (k === null || k === undefined) return;
+            mapa[k] = (mapa[k] || 0) + Number(valorFn(x) || 0);
+        });
+        return claves.map(k => mapa[k] || 0);
+    };
+
+    return {
+        unidad,
+        etiquetas,
+        ventas: acumular(ventas, v => v.total),
+        gastos: acumular(gastos, g => g.valor)
+    };
+}
+
+// ---------- Pantalla ----------
+
+function renderReportesSiVisible() {
+    const vista = document.getElementById("view-reportes");
+    if (vista && vista.classList.contains("active")) renderReportes();
+}
+
+function renderReportes() {
+    if (!esAdmin()) return;
+
+    const r = rangoDelPeriodo();
+
+    document.querySelectorAll("#repPeriodos button").forEach(b => b.classList.toggle("active", b.dataset.periodo === repEstado.periodo));
+    document.querySelectorAll("#repTabs button").forEach(b => b.classList.toggle("active", b.dataset.tab === repEstado.tab));
+    document.querySelectorAll(".rep-panel").forEach(p => p.classList.toggle("active", p.id === "repPanel-" + repEstado.tab));
+    document.getElementById("repRango").hidden = repEstado.periodo !== "custom";
+
+    centrarChipActivo("repPeriodos");
+    centrarChipActivo("repTabs");
+
+    document.getElementById("repPeriodoTexto").innerHTML =
+        `${r.nombre}: ${textoRango(r.desde, r.hasta)}<small>Comparado con ${textoRango(r.antDesde, r.antHasta)}</small>`;
+
+    document.getElementById("repPrintHeader").innerHTML = `
+        <h1>Servicio Técnico · ${REP_TABS[repEstado.tab]}</h1>
+        <p>Periodo: ${textoRango(r.desde, r.hasta)} · Comparado con ${textoRango(r.antDesde, r.antHasta)}</p>
+        <p>Generado el ${new Date().toLocaleString("es-CO")} por ${limpiarHTML(currentUserEmail)}</p>`;
+
+    destruirGraficos();
+
+    const actual = datosDelRango(r.desde, r.hasta);
+    const anterior = datosDelRango(r.antDesde, r.antHasta);
+
+    const ctx = {
+        r,
+        actual,
+        anterior,
+        m: calcularMetricas(actual.ventas, actual.gastos),
+        mAnt: calcularMetricas(anterior.ventas, anterior.gastos)
+    };
+
+    const pintar = {
+        resumen: repResumen,
+        resultados: repResultados,
+        ventas: repVentas,
+        gastos: repGastos,
+        caja: repCaja,
+        movimientos: repMovimientos
+    }[repEstado.tab];
+
+    pintar(document.getElementById("repPanel-" + repEstado.tab), ctx);
+}
+
+// En celular las filas de botones se deslizan de lado: deja visible el botón elegido.
+function centrarChipActivo(idContenedor) {
+    const contenedor = document.getElementById(idContenedor);
+    const activo = contenedor?.querySelector("button.active");
+    if (!activo || contenedor.scrollWidth <= contenedor.clientWidth) return;
+
+    contenedor.scrollLeft = activo.offsetLeft - (contenedor.clientWidth - activo.offsetWidth) / 2;
+}
+
+function kpiHTML(titulo, valor, delta = "") {
+    return `<div class="rep-kpi"><span>${titulo}</span><strong>${valor}</strong>${delta}</div>`;
+}
+
+function alertasDelPeriodo(r, m) {
+    const alertas = [];
+    const turnos = turnosGlobal.filter(t => enRango(t.fechaApertura, r.desde, r.hasta) && t.estado === "cerrado");
+    const faltantes = turnos.filter(t => Number(t.diferencia || 0) < 0);
+    const sobrantes = turnos.filter(t => Number(t.diferencia || 0) > 0);
+    const abiertos = turnosGlobal.filter(t => t.estado === "abierto");
+    const anuladas = ventasGlobal.filter(v => v.anulada && enRango(v.fecha, r.desde, r.hasta));
+
+    if (m.utilidad < 0) {
+        alertas.push(`📉 <span>El periodo tiene <b>pérdida de ${money(Math.abs(m.utilidad))}</b>: los gastos superan a las ventas.</span>`);
+    }
+
+    if (faltantes.length) {
+        const total = suma(faltantes, t => Math.abs(Number(t.diferencia || 0)));
+        alertas.push(`⚠️ <span><b>Faltantes de caja:</b> ${faltantes.length} ${faltantes.length === 1 ? "turno" : "turnos"} por ${money(total)}. Revisa la pestaña Caja y turnos.</span>`);
+    }
+
+    if (sobrantes.length) {
+        const total = suma(sobrantes, t => Number(t.diferencia || 0));
+        alertas.push(`ℹ️ <span><b>Sobrantes de caja:</b> ${sobrantes.length} ${sobrantes.length === 1 ? "turno" : "turnos"} por ${money(total)}.</span>`);
+    }
+
+    if (anuladas.length) {
+        alertas.push(`🚫 <span><b>Ventas anuladas:</b> ${anuladas.length} por ${money(suma(anuladas, v => v.total))}. No suman en ningún total.</span>`);
+    }
+
+    if (m.ingresos && m.coberturaCosto < 0.9) {
+        alertas.push(`📦 <span>El <b>${pct(1 - m.coberturaCosto, 0)} de las ventas no tiene costo registrado</b> en el catálogo, así que el margen bruto es parcial.</span>`);
+    }
+
+    if (abiertos.length) {
+        const nombres = abiertos.map(t => limpiarHTML(t.responsable || "sin responsable")).join(", ");
+        alertas.push(`🟢 <span><b>Turnos abiertos ahora:</b> ${abiertos.length} (${nombres}).</span>`);
+    }
+
+    if (!alertas.length) {
+        alertas.push(`✅ <span>Sin novedades en este periodo.</span>`);
+    }
+
+    return alertas.map(a => `<li>${a}</li>`).join("");
+}
+
+function repResumen(panel, { r, actual, m, mAnt }) {
+    const serie = serieTemporal(r, actual.ventas, actual.gastos);
+    const medios = agrupar(actual.ventas, v => v.medioPago, v => v.total);
+    const tipos = [
+        { clave: "Productos", total: m.ingresosProductos },
+        { clave: "Servicios", total: m.ingresosServicios }
+    ];
+
+    panel.innerHTML = `
+        <div class="rep-kpis">
+            ${kpiHTML("Ventas", money(m.ingresos), deltaHTML(m.ingresos, mAnt.ingresos, true))}
+            ${kpiHTML("Gastos", money(m.egresos), deltaHTML(m.egresos, mAnt.egresos, false))}
+            ${kpiHTML("Utilidad", money(m.utilidad), deltaHTML(m.utilidad, mAnt.utilidad, true))}
+            ${kpiHTML("Margen neto", pct(m.margen), deltaPuntosHTML(m.margen, mAnt.margen))}
+            ${kpiHTML("N.º de ventas", m.nVentas.toLocaleString("es-CO"), deltaHTML(m.nVentas, mAnt.nVentas, true))}
+            ${kpiHTML("Ticket promedio", money(m.ticket), deltaHTML(m.ticket, mAnt.ticket, true))}
+        </div>
+
+        <div class="rep-card">
+            <h3>Ventas y gastos ${serie.unidad}</h3>
+            <p class="rep-sub">En pesos, sin registros anulados</p>
+            <div class="rep-grafico"><canvas id="repGrafTiempo" aria-label="Ventas y gastos ${serie.unidad}" role="img"></canvas></div>
+        </div>
+
+        <div class="rep-dos-col">
+            <div class="rep-card">
+                <h3>Ventas por medio de pago</h3>
+                <p class="rep-sub">Cómo pagan los clientes · número de ventas</p>
+                ${barrasHTML(medios, m.ingresos, REP_COLOR.ventas)}
+            </div>
+
+            <div class="rep-card">
+                <h3>Productos vs. servicios</h3>
+                <p class="rep-sub">Participación en lo vendido</p>
+                ${barrasHTML(tipos, m.ingresosProductos + m.ingresosServicios, REP_COLOR.ventas)}
+            </div>
+        </div>
+
+        <div class="rep-card">
+            <h3>Puntos de atención</h3>
+            <ul class="rep-alertas">${alertasDelPeriodo(r, m)}</ul>
+        </div>`;
+
+    crearGrafico("repGrafTiempo", {
+        type: "bar",
+        data: {
+            labels: serie.etiquetas,
+            datasets: [
+                serieBarras("Ventas", serie.ventas, REP_COLOR.ventas),
+                serieBarras("Gastos", serie.gastos, REP_COLOR.gastos)
+            ]
+        },
+        options: opcionesGrafico({ leyenda: true })
+    });
+}
+
+function repResultados(panel, { actual, anterior, m, mAnt }) {
+    const catAct = agrupar(actual.gastos, g => g.categoria || "Sin categoría", g => g.valor);
+    const catAnt = agrupar(anterior.gastos, g => g.categoria || "Sin categoría", g => g.valor);
+    const categorias = [...new Set([...catAct.map(c => c.clave), ...catAnt.map(c => c.clave)])];
+    const valorCat = (lista, clave) => lista.find(c => c.clave === clave)?.total || 0;
+
+    const fila = (concepto, a, b, clase = "") => ({
+        clase,
+        celdas: [concepto, money(a), money(b), variacionTexto(a, b)]
+    });
+
+    const filas = [
+        { clase: "seccion", celdas: ["Ingresos operacionales", "", "", ""] },
+        fila("Venta de productos", m.ingresosProductos, mAnt.ingresosProductos, "sub"),
+        fila("Venta de servicios", m.ingresosServicios, mAnt.ingresosServicios, "sub")
+    ];
+
+    if (m.descuentos || mAnt.descuentos) {
+        filas.push(fila("(−) Descuentos", -m.descuentos, -mAnt.descuentos, "sub"));
+    }
+
+    filas.push(fila("Total ingresos", m.ingresos, mAnt.ingresos, "total"));
+    filas.push({ clase: "seccion", celdas: ["Gastos operacionales", "", "", ""] });
+
+    categorias.forEach(c => filas.push(fila(limpiarHTML(c), valorCat(catAct, c), valorCat(catAnt, c), "sub")));
+
+    if (!categorias.length) {
+        filas.push({ clase: "sub", celdas: ["Sin gastos registrados", money(0), money(0), "—"] });
+    }
+
+    filas.push(fila("Total gastos", m.egresos, mAnt.egresos, "total"));
+    filas.push(fila("Utilidad del periodo", m.utilidad, mAnt.utilidad, "total"));
+    filas.push({ clase: "sub", celdas: ["Margen neto", pct(m.margen), pct(mAnt.margen), ""] });
+
+    panel.innerHTML = `
+        <div class="rep-card">
+            <h3>Estado de resultados</h3>
+            <p class="rep-sub">Ingresos y gastos registrados en el periodo, comparados con el periodo anterior</p>
+            ${tablaHTML(
+                [{ t: "Concepto" }, { t: "Periodo", num: true }, { t: "Anterior", num: true }, { t: "Variación", num: true }],
+                filas
+            )}
+            <p class="rep-nota">
+                Se calcula con base en caja: lo vendido menos lo gastado en el periodo. No incluye IVA, retenciones,
+                depreciaciones ni obligaciones laborales; para la contabilidad oficial valide las cifras con su contador.
+            </p>
+        </div>
+
+        <div class="rep-card">
+            <h3>Margen bruto estimado</h3>
+            <p class="rep-sub">Solo las ventas cuyo producto o servicio tiene costo registrado</p>
+            ${tablaHTML(
+                [{ t: "Concepto" }, { t: "Valor", num: true }],
+                [
+                    ["Ventas con costo registrado", money(m.ingresosConCosto)],
+                    ["(−) Costo estimado de lo vendido", money(m.costo)],
+                    { clase: "total", celdas: ["Utilidad bruta estimada", money(m.utilidadBruta)] },
+                    ["Margen bruto", pct(m.ingresosConCosto ? m.utilidadBruta / m.ingresosConCosto : null)],
+                    ["Ventas cubiertas por este cálculo", pct(m.coberturaCosto, 0)]
+                ]
+            )}
+            <p class="rep-nota">
+                El costo sale del campo "Costo aproximado" del catálogo. Si los repuestos que vende también los registra
+                como gasto, no sume este margen con la utilidad del periodo: el costo quedaría contado dos veces.
+            </p>
+        </div>`;
+}
+
+function repVentas(panel, { actual, m }) {
+    const items = ventasPorItem(actual.ventas);
+    const top = items.slice(0, 10);
+    const totalItems = suma(items, i => i.total);
+    const medios = agrupar(actual.ventas, v => v.medioPago, v => v.total);
+    const vendedores = agrupar(actual.ventas, v => v.creadoPor, v => v.total);
+
+    const orden = [1, 2, 3, 4, 5, 6, 0];
+    const porDia = Array(7).fill(0);
+    actual.ventas.forEach(v => {
+        if (v.fecha) porDia[fechaDesdeIso(v.fecha).getDay()] += Number(v.total || 0);
+    });
+
+    const porHora = Array(24).fill(0);
+    actual.ventas.forEach(v => {
+        const ms = milisDe(v);
+        if (ms !== null) porHora[new Date(ms).getHours()] += Number(v.total || 0);
+    });
+    const horasConVenta = porHora.map((v, h) => (v ? h : null)).filter(h => h !== null);
+    const hDesde = Math.min(7, ...horasConVenta);
+    const hHasta = Math.max(19, ...horasConVenta);
+    const horas = [];
+    for (let h = hDesde; h <= hHasta; h++) horas.push(h);
+
+    panel.innerHTML = `
+        <div class="rep-kpis">
+            ${kpiHTML("Ventas", money(m.ingresos))}
+            ${kpiHTML("N.º de ventas", m.nVentas.toLocaleString("es-CO"))}
+            ${kpiHTML("Ticket promedio", money(m.ticket))}
+        </div>
+
+        <div class="rep-card">
+            <h3>Top 10 productos y servicios</h3>
+            <p class="rep-sub">Por valor vendido</p>
+            ${top.length
+                ? `<div class="rep-grafico" style="height:${Math.max(160, top.length * 34 + 40)}px;"><canvas id="repGrafTop" role="img" aria-label="Top 10 productos y servicios"></canvas></div>`
+                : `<p class="rep-nota">Sin ventas en este periodo.</p>`}
+        </div>
+
+        <div class="rep-card">
+            <h3>Ventas por producto y servicio</h3>
+            <p class="rep-sub">Todo lo vendido en el periodo</p>
+            ${tablaHTML(
+                [{ t: "Producto / servicio" }, { t: "Tipo" }, { t: "Cant.", num: true }, { t: "Vendido", num: true }, { t: "Part.", num: true }, { t: "Margen est.", num: true }],
+                items.map(i => [
+                    `${i.codigo ? `<span style="color:#64748b;">${limpiarHTML(i.codigo)}</span> · ` : ""}${limpiarHTML(i.nombre)}`,
+                    limpiarHTML(i.tipo),
+                    i.cantidad.toLocaleString("es-CO"),
+                    money(i.total),
+                    pct(totalItems ? i.total / totalItems : null),
+                    i.conCosto && i.total ? pct((i.total - i.costo) / i.total) : `<span style="color:#94a3b8;">Sin costo</span>`
+                ]),
+                { apilar: true, pie: ["Total", "", suma(items, i => i.cantidad).toLocaleString("es-CO"), money(totalItems), pct(totalItems ? 1 : null), ""] }
+            )}
+        </div>
+
+        <div class="rep-dos-col">
+            <div class="rep-card">
+                <h3>Por medio de pago</h3>
+                ${tablaHTML(
+                    [{ t: "Medio" }, { t: "N.º", num: true }, { t: "Total", num: true }, { t: "%", num: true }],
+                    medios.map(f => [limpiarHTML(f.clave), f.n, money(f.total), pct(m.ingresos ? f.total / m.ingresos : null)]),
+                    { pie: ["Total", m.nVentas, money(m.ingresos), pct(m.ingresos ? 1 : null)] }
+                )}
+            </div>
+
+            <div class="rep-card">
+                <h3>Por vendedor</h3>
+                ${tablaHTML(
+                    [{ t: "Usuario" }, { t: "N.º", num: true }, { t: "Total", num: true }, { t: "Ticket prom.", num: true }],
+                    vendedores.map(f => [limpiarHTML(f.clave), f.n, money(f.total), money(f.n ? f.total / f.n : 0)])
+                )}
+            </div>
+        </div>
+
+        <div class="rep-dos-col">
+            <div class="rep-card">
+                <h3>Ventas por día de la semana</h3>
+                <p class="rep-sub">Qué días se vende más</p>
+                <div class="rep-grafico"><canvas id="repGrafSemana" role="img" aria-label="Ventas por día de la semana"></canvas></div>
+            </div>
+
+            <div class="rep-card">
+                <h3>Ventas por hora del día</h3>
+                <p class="rep-sub">Horas de mayor movimiento</p>
+                <div class="rep-grafico"><canvas id="repGrafHora" role="img" aria-label="Ventas por hora del día"></canvas></div>
+            </div>
+        </div>`;
+
+    if (top.length) {
+        crearGrafico("repGrafTop", {
+            type: "bar",
+            data: { labels: top.map(i => i.nombre), datasets: [serieBarras("Vendido", top.map(i => i.total), REP_COLOR.ventas)] },
+            options: opcionesGrafico({ horizontal: true })
+        });
+    }
+
+    crearGrafico("repGrafSemana", {
+        type: "bar",
+        data: { labels: orden.map(i => DIAS_SEMANA[i].slice(0, 3)), datasets: [serieBarras("Ventas", orden.map(i => porDia[i]), REP_COLOR.ventas)] },
+        options: opcionesGrafico()
+    });
+
+    crearGrafico("repGrafHora", {
+        type: "bar",
+        data: { labels: horas.map(h => `${h} h`), datasets: [serieBarras("Ventas", horas.map(h => porHora[h]), REP_COLOR.ventas)] },
+        options: opcionesGrafico()
+    });
+}
+
+function repGastos(panel, { actual, m, mAnt }) {
+    const categorias = agrupar(actual.gastos, g => g.categoria || "Sin categoría", g => g.valor);
+    const proveedores = agrupar(actual.gastos, g => g.proveedor || "Sin proveedor", g => g.valor);
+    const medios = agrupar(actual.gastos, g => g.medioPago, g => g.valor);
+    const detalle = [...actual.gastos].sort((a, b) => String(b.fecha).localeCompare(String(a.fecha)) || (milisDe(b) || 0) - (milisDe(a) || 0));
+
+    panel.innerHTML = `
+        <div class="rep-kpis">
+            ${kpiHTML("Gastos", money(m.egresos), deltaHTML(m.egresos, mAnt.egresos, false))}
+            ${kpiHTML("N.º de gastos", actual.gastos.length.toLocaleString("es-CO"))}
+            ${kpiHTML("Gastos / ventas", pct(m.ingresos ? m.egresos / m.ingresos : null))}
+        </div>
+
+        <div class="rep-card">
+            <h3>Gastos por categoría</h3>
+            <p class="rep-sub">En qué se va el dinero</p>
+            ${categorias.length
+                ? `<div class="rep-grafico" style="height:${Math.max(160, categorias.length * 34 + 40)}px;"><canvas id="repGrafCategorias" role="img" aria-label="Gastos por categoría"></canvas></div>`
+                : `<p class="rep-nota">Sin gastos en este periodo.</p>`}
+            ${tablaHTML(
+                [{ t: "Categoría" }, { t: "N.º", num: true }, { t: "Total", num: true }, { t: "%", num: true }],
+                categorias.map(f => [limpiarHTML(f.clave), f.n, money(f.total), pct(m.egresos ? f.total / m.egresos : null)]),
+                { pie: ["Total", actual.gastos.length, money(m.egresos), pct(m.egresos ? 1 : null)] }
+            )}
+        </div>
+
+        <div class="rep-dos-col">
+            <div class="rep-card">
+                <h3>Por proveedor</h3>
+                ${tablaHTML(
+                    [{ t: "Proveedor" }, { t: "N.º", num: true }, { t: "Total", num: true }],
+                    proveedores.map(f => [limpiarHTML(f.clave), f.n, money(f.total)])
+                )}
+            </div>
+
+            <div class="rep-card">
+                <h3>Por medio de pago</h3>
+                ${tablaHTML(
+                    [{ t: "Medio" }, { t: "N.º", num: true }, { t: "Total", num: true }],
+                    medios.map(f => [limpiarHTML(f.clave), f.n, money(f.total)])
+                )}
+            </div>
+        </div>
+
+        <div class="rep-card">
+            <h3>Detalle de gastos</h3>
+            ${tablaHTML(
+                [{ t: "Fecha" }, { t: "Categoría" }, { t: "Descripción" }, { t: "Proveedor" }, { t: "Medio" }, { t: "Valor", num: true }],
+                detalle.map(g => [
+                    limpiarHTML(g.fecha),
+                    limpiarHTML(g.categoria || "Sin categoría"),
+                    limpiarHTML(g.descripcion),
+                    limpiarHTML(g.proveedor || "—"),
+                    limpiarHTML(g.medioPago),
+                    money(g.valor)
+                ]),
+                { apilar: true, pie: ["Total", "", "", "", "", money(m.egresos)] }
+            )}
+        </div>`;
+
+    if (categorias.length) {
+        crearGrafico("repGrafCategorias", {
+            type: "bar",
+            data: { labels: categorias.map(c => c.clave), datasets: [serieBarras("Gastos", categorias.map(c => c.total), REP_COLOR.gastos)] },
+            options: opcionesGrafico({ horizontal: true })
+        });
+    }
+}
+
+function repCaja(panel, { r, actual }) {
+    const turnos = turnosGlobal
+        .filter(t => enRango(t.fechaApertura, r.desde, r.hasta))
+        .sort((a, b) => String(b.fechaApertura).localeCompare(String(a.fechaApertura)));
+
+    const cerrados = turnos.filter(t => t.estado === "cerrado");
+    const faltantes = suma(cerrados.filter(t => Number(t.diferencia || 0) < 0), t => Math.abs(Number(t.diferencia || 0)));
+    const sobrantes = suma(cerrados.filter(t => Number(t.diferencia || 0) > 0), t => Number(t.diferencia || 0));
+    const flujo = flujoPorMedio(actual.ventas, actual.gastos);
+
+    const textoDiferencia = (d) => {
+        if (d === null) return `<span class="rep-etiqueta">En curso</span>`;
+        if (d < 0) return `<span style="color:#b42318; font-weight:900;">▼ Faltante ${money(Math.abs(d))}</span>`;
+        if (d > 0) return `<span style="color:#006300; font-weight:900;">▲ Sobrante ${money(d)}</span>`;
+        return "Cuadrada";
+    };
+
+    panel.innerHTML = `
+        <div class="rep-kpis">
+            ${kpiHTML("Turnos", turnos.length.toLocaleString("es-CO"), `<span class="rep-delta">${cerrados.length} cerrados · ${turnos.length - cerrados.length} abiertos</span>`)}
+            ${kpiHTML("Faltantes", money(faltantes))}
+            ${kpiHTML("Sobrantes", money(sobrantes))}
+        </div>
+
+        <div class="rep-card">
+            <h3>Cuadres de caja</h3>
+            <p class="rep-sub">Efectivo esperado contra efectivo contado en cada turno</p>
+            ${tablaHTML(
+                [{ t: "Apertura" }, { t: "Responsable" }, { t: "Inicial", num: true }, { t: "Ventas ef.", num: true }, { t: "Gastos ef.", num: true }, { t: "Esperado", num: true }, { t: "Contado", num: true }, { t: "Diferencia", num: true }],
+                turnos.map(t => {
+                    const s = resumenDeTurno(t);
+                    return [
+                        limpiarHTML(t.fechaApertura),
+                        limpiarHTML(t.responsable),
+                        money(s.efectivoInicial),
+                        money(s.ventasEfectivo),
+                        money(s.gastosEfectivo),
+                        money(s.efectivoEsperado),
+                        s.efectivoContado === null ? "—" : money(s.efectivoContado),
+                        textoDiferencia(s.diferencia)
+                    ];
+                }),
+                { apilar: true, pie: ["Diferencia neta", "", "", "", "", "", "", textoDiferencia(sobrantes - faltantes)] }
+            )}
+        </div>
+
+        <div class="rep-card">
+            <h3>Flujo por medio de pago</h3>
+            <p class="rep-sub">Para conciliar con Nequi, Daviplata, bancos y datáfono</p>
+            ${tablaHTML(
+                [{ t: "Medio" }, { t: "Entradas", num: true }, { t: "Salidas", num: true }, { t: "Neto", num: true }],
+                flujo.map(f => [limpiarHTML(f.medio), money(f.entradas), money(f.salidas), money(f.entradas - f.salidas)]),
+                { apilar: true, pie: ["Total", money(suma(flujo, f => f.entradas)), money(suma(flujo, f => f.salidas)), money(suma(flujo, f => f.entradas - f.salidas))] }
+            )}
+        </div>`;
+}
+
+function movimientosDelRango(r) {
+    const ventas = ventasGlobal
+        .filter(v => enRango(v.fecha, r.desde, r.hasta))
+        .map(v => ({
+            tipo: "venta",
+            docId: v.docId,
+            fecha: v.fecha,
+            ms: milisDe(v) || 0,
+            hora: horaDe(v),
+            descripcion: itemsDeVenta(v).map(i => `${i.cantidad > 1 ? i.cantidad + "× " : ""}${i.nombre}`).join(", "),
+            medio: v.medioPago || "",
+            usuario: v.creadoPor || "",
+            valor: Number(v.total || 0),
+            anulada: !!v.anulada,
+            motivo: v.motivoAnulacion || ""
+        }));
+
+    const gastos = gastosGlobal
+        .filter(g => enRango(g.fecha, r.desde, r.hasta))
+        .map(g => ({
+            tipo: "gasto",
+            docId: g.docId,
+            fecha: g.fecha,
+            ms: milisDe(g) || 0,
+            hora: horaDe(g),
+            descripcion: `${g.categoria || "Sin categoría"}: ${g.descripcion || ""}`,
+            medio: g.medioPago || "",
+            usuario: g.creadoPor || "",
+            valor: Number(g.valor || 0),
+            anulada: !!g.anulada,
+            motivo: g.motivoAnulacion || ""
+        }));
+
+    return [...ventas, ...gastos].sort((a, b) => String(b.fecha).localeCompare(String(a.fecha)) || b.ms - a.ms);
+}
+
+function repMovimientos(panel) {
+    panel.innerHTML = `
+        <div class="rep-card">
+            <h3>Movimientos del periodo</h3>
+            <p class="rep-sub">Todas las ventas y gastos, incluidos los anulados. Anular deja la traza: el registro no se borra.</p>
+            <input type="search" id="repBuscarMov" class="rep-no-print" placeholder="Buscar por descripción, medio o usuario" autocomplete="off" value="${limpiarHTML(repEstado.busqueda)}">
+            <div id="repListaMov" style="margin-top:12px;"></div>
+        </div>`;
+
+    document.getElementById("repBuscarMov").addEventListener("input", function() {
+        repEstado.busqueda = this.value;
+        pintarListaMovimientos();
+    });
+
+    pintarListaMovimientos();
+}
+
+function pintarListaMovimientos() {
+    const contenedor = document.getElementById("repListaMov");
+    if (!contenedor) return;
+
+    const texto = normalizarBusqueda(repEstado.busqueda);
+    const lista = movimientosDelRango(rangoDelPeriodo()).filter(mv =>
+        !texto || normalizarBusqueda(`${mv.descripcion} ${mv.medio} ${mv.usuario} ${mv.tipo}`).includes(texto)
+    );
+
+    const validos = lista.filter(mv => !mv.anulada);
+    const totalVentas = suma(validos.filter(mv => mv.tipo === "venta"), mv => mv.valor);
+    const totalGastos = suma(validos.filter(mv => mv.tipo === "gasto"), mv => mv.valor);
+
+    contenedor.innerHTML = `
+        <p class="rep-nota" style="margin:0 0 10px;">
+            ${lista.length} movimientos · Ventas ${money(totalVentas)} · Gastos ${money(totalGastos)} (sin anulados)
+        </p>
+        ${tablaHTML(
+            [{ t: "Fecha" }, { t: "Tipo" }, { t: "Descripción" }, { t: "Medio" }, { t: "Usuario" }, { t: "Valor", num: true }, { t: "", clase: "no-tachar rep-no-print" }],
+            lista.map(mv => ({
+                clase: mv.anulada ? "anulada" : "",
+                celdas: [
+                    `${limpiarHTML(mv.fecha)}<br><span style="color:#94a3b8; font-size:11px;">${limpiarHTML(mv.hora)}</span>`,
+                    mv.tipo === "venta" ? "Venta" : "Gasto",
+                    limpiarHTML(mv.descripcion),
+                    limpiarHTML(mv.medio),
+                    limpiarHTML(mv.usuario),
+                    (mv.tipo === "gasto" ? "−" : "") + money(mv.valor),
+                    mv.anulada
+                        ? `<span class="rep-etiqueta anulada" title="${limpiarHTML(mv.motivo)}">Anulada</span>`
+                        : `<button type="button" class="rep-btn-anular" onclick="anularMovimiento('${mv.tipo}', '${mv.docId}')">Anular</button>`
+                ]
+            })),
+            { apilar: true }
+        )}`;
+}
+
+window.anularMovimiento = async function(tipo, docId) {
+    if (!esAdmin()) return;
+
+    const lista = tipo === "venta" ? ventasGlobal : gastosGlobal;
+    const registro = lista.find(x => x.docId === docId);
+    if (!registro || registro.anulada) return;
+
+    const valor = tipo === "venta" ? registro.total : registro.valor;
+    const turno = turnosGlobal.find(t => t.docId === registro.turnoId);
+    const aviso = turno && turno.estado === "cerrado"
+        ? "\n\nOjo: el turno de este registro ya está cerrado; su cuadre de caja no se recalcula."
+        : "";
+
+    const motivo = prompt(`Anular ${tipo} de ${money(valor)} del ${registro.fecha}.${aviso}\n\nEscribe el motivo de la anulación:`);
+    if (motivo === null) return;
+
+    if (!motivo.trim()) {
+        alert("El motivo es obligatorio para anular.");
+        return;
+    }
+
+    try {
+        await (tipo === "venta" ? ventasRef : gastosRef).doc(docId).update({
+            anulada: true,
+            motivoAnulacion: motivo.trim(),
+            anuladaPor: currentUserEmail,
+            anuladaEn: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        alert(`${tipo === "venta" ? "Venta anulada" : "Gasto anulado"} correctamente.`);
+    } catch (error) {
+        console.error(error);
+        alert("No se pudo anular: " + error.message);
+    }
+};
+
+// ---------- Exportar ----------
+
+function exportarExcel() {
+    if (typeof XLSX === "undefined") {
+        alert("No se pudo cargar la herramienta de Excel. Revisa la conexión a internet.");
+        return;
+    }
+
+    const r = rangoDelPeriodo();
+    const actual = datosDelRango(r.desde, r.hasta);
+    const m = calcularMetricas(actual.ventas, actual.gastos);
+    const libro = XLSX.utils.book_new();
+
+    const hoja = (nombre, filas, anchos) => {
+        const ws = XLSX.utils.aoa_to_sheet(filas);
+        if (anchos) ws["!cols"] = anchos.map(wch => ({ wch }));
+        XLSX.utils.book_append_sheet(libro, ws, nombre);
+    };
+
+    const redondear = (n) => Math.round(Number(n || 0));
+    const porcentaje = (n) => (n === null || !isFinite(n) ? "" : Math.round(n * 1000) / 10);
+
+    hoja("Resumen", [
+        ["Reporte Servicio Técnico"],
+        ["Periodo", r.desde, r.hasta],
+        ["Generado", new Date().toLocaleString("es-CO"), currentUserEmail],
+        [],
+        ["Indicador", "Valor"],
+        ["Ventas", redondear(m.ingresos)],
+        ["Gastos", redondear(m.egresos)],
+        ["Utilidad", redondear(m.utilidad)],
+        ["Margen neto %", porcentaje(m.margen)],
+        ["N.º de ventas", m.nVentas],
+        ["Ticket promedio", redondear(m.ticket)],
+        ["Venta de productos", redondear(m.ingresosProductos)],
+        ["Venta de servicios", redondear(m.ingresosServicios)],
+        ["Costo estimado de lo vendido", redondear(m.costo)],
+        ["Utilidad bruta estimada", redondear(m.utilidadBruta)],
+        ["Ventas con costo registrado %", porcentaje(m.coberturaCosto)]
+    ], [32, 18, 18]);
+
+    const categorias = agrupar(actual.gastos, g => g.categoria || "Sin categoría", g => g.valor);
+    hoja("Estado de resultados", [
+        ["Concepto", "Valor"],
+        ["INGRESOS OPERACIONALES", ""],
+        ["Venta de productos", redondear(m.ingresosProductos)],
+        ["Venta de servicios", redondear(m.ingresosServicios)],
+        ["(−) Descuentos", -redondear(m.descuentos)],
+        ["Total ingresos", redondear(m.ingresos)],
+        ["GASTOS OPERACIONALES", ""],
+        ...categorias.map(c => [c.clave, redondear(c.total)]),
+        ["Total gastos", redondear(m.egresos)],
+        ["UTILIDAD DEL PERIODO", redondear(m.utilidad)],
+        ["Margen neto %", porcentaje(m.margen)]
+    ], [34, 18]);
+
+    hoja("Ventas", [
+        ["Fecha", "Hora", "Cliente", "Productos / servicios", "Medio de pago", "Subtotal", "Descuento", "Total", "Vendedor", "Observaciones"],
+        ...actual.ventas.map(v => [
+            v.fecha, horaDe(v), v.cliente || "", itemsDeVenta(v).map(i => i.nombre).join(", "), v.medioPago || "",
+            redondear(v.subtotal ?? v.total), redondear(v.descuento), redondear(v.total), v.creadoPor || "", v.observaciones || ""
+        ])
+    ], [12, 8, 18, 45, 15, 12, 10, 12, 28, 30]);
+
+    hoja("Detalle vendido", [
+        ["Fecha", "Código", "Producto / servicio", "Tipo", "Cantidad", "Valor unitario", "Total", "Costo unitario", "Costo total", "Medio de pago", "Vendedor"],
+        ...actual.ventas.flatMap(v => itemsDeVenta(v).map(i => {
+            const cu = costoUnitarioDe(i);
+            return [
+                v.fecha, i.codigo || "", i.nombre || "", i.tipo || "producto", Number(i.cantidad || 0),
+                redondear(i.valorUnitario), redondear(i.total), cu ? redondear(cu) : "", cu ? redondear(cu * Number(i.cantidad || 0)) : "",
+                v.medioPago || "", v.creadoPor || ""
+            ];
+        }))
+    ], [12, 12, 40, 10, 9, 13, 12, 13, 12, 15, 28]);
+
+    hoja("Gastos", [
+        ["Fecha", "Categoría", "Descripción", "Proveedor", "Medio de pago", "Valor", "Registrado por"],
+        ...actual.gastos.map(g => [g.fecha, g.categoria || "", g.descripcion || "", g.proveedor || "", g.medioPago || "", redondear(g.valor), g.creadoPor || ""])
+    ], [12, 20, 40, 22, 15, 12, 28]);
+
+    hoja("Turnos", [
+        ["Apertura", "Responsable", "Estado", "Inicial", "Ventas efectivo", "Gastos efectivo", "Esperado", "Contado", "Diferencia", "Observación cierre"],
+        ...turnosGlobal
+            .filter(t => enRango(t.fechaApertura, r.desde, r.hasta))
+            .map(t => {
+                const s = resumenDeTurno(t);
+                return [
+                    t.fechaApertura, t.responsable || "", t.estado || "", redondear(s.efectivoInicial), redondear(s.ventasEfectivo),
+                    redondear(s.gastosEfectivo), redondear(s.efectivoEsperado),
+                    s.efectivoContado === null ? "" : redondear(s.efectivoContado),
+                    s.diferencia === null ? "" : redondear(s.diferencia),
+                    t.observacionCierre || ""
+                ];
+            })
+    ], [12, 28, 10, 12, 15, 15, 12, 12, 12, 30]);
+
+    hoja("Medios de pago", [
+        ["Medio", "Entradas", "Salidas", "Neto"],
+        ...flujoPorMedio(actual.ventas, actual.gastos).map(f => [f.medio, redondear(f.entradas), redondear(f.salidas), redondear(f.entradas - f.salidas)])
+    ], [18, 14, 14, 14]);
+
+    hoja("Anulados", [
+        ["Tipo", "Fecha", "Descripción", "Valor", "Motivo", "Anulado por"],
+        ...movimientosDelRango(r).filter(mv => mv.anulada).map(mv => {
+            const reg = (mv.tipo === "venta" ? ventasGlobal : gastosGlobal).find(x => x.docId === mv.docId) || {};
+            return [mv.tipo, mv.fecha, mv.descripcion, redondear(mv.valor), mv.motivo, reg.anuladaPor || ""];
+        })
+    ], [8, 12, 45, 12, 35, 28]);
+
+    XLSX.writeFile(libro, `Reporte_ServicioTecnico_${r.desde}_a_${r.hasta}.xlsx`);
+}
+
+function imprimirReporte() {
+    const r = rangoDelPeriodo();
+    const tituloOriginal = document.title;
+
+    // El título se usa como nombre del archivo al guardar como PDF.
+    document.title = `Reporte ${REP_TABS[repEstado.tab]} ${r.desde} a ${r.hasta}`;
+    window.addEventListener("afterprint", () => { document.title = tituloOriginal; }, { once: true });
+    window.print();
+}
+
+// ---------- Eventos ----------
+
+document.getElementById("repPeriodos").addEventListener("click", function(e) {
+    const boton = e.target.closest("button[data-periodo]");
+    if (!boton) return;
+
+    repEstado.periodo = boton.dataset.periodo;
+
+    if (repEstado.periodo === "custom") {
+        const desde = document.getElementById("repDesde");
+        const hasta = document.getElementById("repHasta");
+        if (!hasta.value) hasta.value = todayISO();
+        if (!desde.value) desde.value = todayISO().slice(0, 8) + "01";
+    }
+
+    renderReportes();
+});
+
+document.getElementById("repTabs").addEventListener("click", function(e) {
+    const boton = e.target.closest("button[data-tab]");
+    if (!boton) return;
+
+    repEstado.tab = boton.dataset.tab;
+    renderReportes();
+});
+
+["repDesde", "repHasta"].forEach(id => {
+    document.getElementById(id).addEventListener("change", renderReportes);
+});
+
+document.getElementById("btnRepExcel").addEventListener("click", exportarExcel);
+document.getElementById("btnRepPdf").addEventListener("click", imprimirReporte);
 </script>
 
 </body>
