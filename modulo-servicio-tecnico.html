@@ -10,7 +10,8 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Variante de SheetJS que permite dar formato (negrita, colores, bordes) al Excel -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
@@ -3031,10 +3032,8 @@ body.modal-abierto {
 
         <div class="kpi-top">
             <div class="balance-card">
-                <div class="balance-label">Balance de hoy</div>
+                <div class="balance-label">Hoy</div>
                 <div class="balance-value" id="balanceHoy">$0</div>
-                <div class="balance-sub">Ventas menos gastos de todo el día</div>
-                <div class="balance-sub balance-turnos" id="balanceTurnos"></div>
             </div>
 
             <div class="money-row">
@@ -4260,12 +4259,16 @@ function renderDashboard() {
     document.getElementById("utilidadHoy").textContent = money(utilidad);
     document.getElementById("balanceHoy").textContent = money(utilidad);
 
-    const turnosHoy = turnosGlobal.filter(t => t.fechaApertura === hoy).length;
-    let detalle = turnosHoy
-        ? `${turnosHoy} ${turnosHoy === 1 ? "turno" : "turnos"} hoy`
-        : "Sin turnos hoy";
-    if (turnoActivo) detalle += ` · Turno actual: ${money(obtenerResumenTurno(turnoActivo).utilidad)}`;
-    document.getElementById("balanceTurnos").textContent = detalle;
+    // Línea opcional con el número de turnos del día (solo si existe en la tarjeta).
+    const lineaTurnos = document.getElementById("balanceTurnos");
+    if (lineaTurnos) {
+        const turnosHoy = turnosGlobal.filter(t => t.fechaApertura === hoy).length;
+        let detalle = turnosHoy
+            ? `${turnosHoy} ${turnosHoy === 1 ? "turno" : "turnos"} hoy`
+            : "Sin turnos hoy";
+        if (turnoActivo) detalle += ` · Turno actual: ${money(obtenerResumenTurno(turnoActivo).utilidad)}`;
+        lineaTurnos.textContent = detalle;
+    }
 
     renderCaja();
     refrescarModal();
@@ -6372,7 +6375,135 @@ window.anularMovimiento = async function(tipo, docId) {
     }
 };
 
-// ---------- Exportar ----------
+// ---------- Exportar a Excel (informe con formato) ----------
+
+const XL_FORMATO = {
+    moneda: '"$" #,##0;[Red]-"$" #,##0',
+    entero: "#,##0",
+    porcentaje: "0.0%",
+    fecha: "dd/mm/yyyy"
+};
+
+const XL_LINEA = { style: "thin", color: { rgb: "E2E8F0" } };
+
+const XL_ESTILO = {
+    titulo: { font: { bold: true, sz: 16, color: { rgb: "0F172A" } } },
+    subtitulo: { font: { sz: 10, color: { rgb: "64748B" } } },
+    seccion: {
+        font: { bold: true, sz: 11, color: { rgb: "FFFFFF" } },
+        fill: { patternType: "solid", fgColor: { rgb: "0F172A" } }
+    },
+    encabezado: {
+        font: { bold: true, sz: 10, color: { rgb: "334155" } },
+        fill: { patternType: "solid", fgColor: { rgb: "E2E8F0" } },
+        border: { bottom: { style: "thin", color: { rgb: "94A3B8" } } }
+    },
+    dato: { font: { sz: 10, color: { rgb: "0F172A" } }, border: { bottom: XL_LINEA } },
+    sub: { font: { sz: 10, color: { rgb: "334155" } }, border: { bottom: XL_LINEA } },
+    grupo: {
+        font: { bold: true, sz: 10, color: { rgb: "0F172A" } },
+        fill: { patternType: "solid", fgColor: { rgb: "F8FAFC" } },
+        border: { bottom: XL_LINEA }
+    },
+    total: {
+        font: { bold: true, sz: 10, color: { rgb: "0F172A" } },
+        fill: { patternType: "solid", fgColor: { rgb: "F1F5F9" } },
+        border: { top: { style: "thin", color: { rgb: "0F172A" } } }
+    },
+    alerta: { font: { sz: 10, color: { rgb: "B91C1C" } } },
+    nota: { font: { italic: true, sz: 9, color: { rgb: "64748B" } } },
+    anulado: { font: { sz: 10, color: { rgb: "94A3B8" }, strike: true }, border: { bottom: XL_LINEA } }
+};
+
+// Construye una hoja fila por fila; cada fila lleva su estilo y el formato de cada columna.
+function hojaExcel(columnas) {
+    const filas = [];
+    const meta = [];
+    const merges = [];
+    let filtro = null;
+
+    const api = {
+        fila(valores, estilo = "dato", formatos = [], pintar = 0) {
+            filas.push(valores);
+            meta.push({ estilo, formatos, pintar });
+            return api;
+        },
+        vacia() {
+            return api.fila([], null);
+        },
+        titulo(texto, subtitulos = []) {
+            merges.push({ s: { r: filas.length, c: 0 }, e: { r: filas.length, c: columnas - 1 } });
+            api.fila([texto], "titulo");
+            subtitulos.forEach(s => {
+                merges.push({ s: { r: filas.length, c: 0 }, e: { r: filas.length, c: columnas - 1 } });
+                api.fila([s], "subtitulo");
+            });
+            return api;
+        },
+        seccion(texto) {
+            api.vacia();
+            return api.fila([texto], "seccion", [], columnas);
+        },
+        encabezado(valores) {
+            return api.fila(valores, "encabezado", [], columnas);
+        },
+        // Marca la fila actual como inicio de una tabla con filtros (hasta la última fila de datos).
+        conFiltro() {
+            filtro = { desde: filas.length, hasta: null };
+            return api;
+        },
+        cerrarFiltro() {
+            if (filtro) filtro.hasta = filas.length - 1;
+            return api;
+        },
+        construir(anchos) {
+            const ws = XLSX.utils.aoa_to_sheet(filas, { cellDates: true });
+
+            meta.forEach((m, r) => {
+                if (!m.estilo) return;
+                const cols = Math.max(filas[r].length, m.pintar);
+
+                for (let c = 0; c < cols; c++) {
+                    const ref = XLSX.utils.encode_cell({ r, c });
+                    if (!ws[ref]) ws[ref] = { t: "s", v: "" };
+
+                    const celda = ws[ref];
+                    const formato = m.formatos[c];
+                    // Los títulos de columna se alinean como los datos que tienen debajo.
+                    const debajo = m.estilo === "encabezado" ? filas[r + 1]?.[c] : null;
+                    const esNumero = celda.t === "n" || celda.t === "d" || typeof debajo === "number" || debajo instanceof Date;
+
+                    if (formato && XL_FORMATO[formato]) celda.z = XL_FORMATO[formato];
+
+                    celda.s = {
+                        ...XL_ESTILO[m.estilo],
+                        alignment: {
+                            vertical: "center",
+                            horizontal: esNumero ? "right" : "left",
+                            wrapText: m.estilo === "dato" || m.estilo === "anulado"
+                        }
+                    };
+                }
+            });
+
+            const ultima = XLSX.utils.decode_range(ws["!ref"] || "A1");
+            ultima.e.c = Math.max(ultima.e.c, columnas - 1);
+            ws["!ref"] = XLSX.utils.encode_range(ultima);
+            ws["!cols"] = anchos.map(wch => ({ wch }));
+            if (merges.length) ws["!merges"] = merges;
+
+            if (filtro && filtro.hasta !== null && filtro.hasta > filtro.desde) {
+                ws["!autofilter"] = {
+                    ref: XLSX.utils.encode_range({ s: { r: filtro.desde, c: 0 }, e: { r: filtro.hasta, c: columnas - 1 } })
+                };
+            }
+
+            return ws;
+        }
+    };
+
+    return api;
+}
 
 function exportarExcel() {
     if (typeof XLSX === "undefined") {
@@ -6382,100 +6513,218 @@ function exportarExcel() {
 
     const r = rangoDelPeriodo();
     const actual = datosDelRango(r.desde, r.hasta);
+    const anterior = datosDelRango(r.antDesde, r.antHasta);
     const m = calcularMetricas(actual.ventas, actual.gastos);
+    const mAnt = calcularMetricas(anterior.ventas, anterior.gastos);
     const libro = XLSX.utils.book_new();
 
-    const hoja = (nombre, filas, anchos) => {
-        const ws = XLSX.utils.aoa_to_sheet(filas);
-        if (anchos) ws["!cols"] = anchos.map(wch => ({ wch }));
-        XLSX.utils.book_append_sheet(libro, ws, nombre);
-    };
-
     const redondear = (n) => Math.round(Number(n || 0));
-    const porcentaje = (n) => (n === null || !isFinite(n) ? "" : Math.round(n * 1000) / 10);
+    const fraccion = (parte, total) => (total ? parte / total : 0);
+    const fechaXL = (iso) => (iso ? fechaDesdeIso(iso) : "");
+    const variacionXL = (a, b) => (b ? (a - b) / Math.abs(b) : "");
 
-    hoja("Resumen", [
-        ["Reporte Servicio Técnico"],
-        ["Periodo", r.desde, r.hasta],
-        ["Generado", new Date().toLocaleString("es-CO"), currentUserEmail],
-        [],
-        ["Indicador", "Valor"],
-        ["Ventas", redondear(m.ingresos)],
-        ["Gastos", redondear(m.egresos)],
-        ["Utilidad", redondear(m.utilidad)],
-        ["Margen neto %", porcentaje(m.margen)],
-        ["N.º de ventas", m.nVentas],
-        ["Ticket promedio", redondear(m.ticket)],
-        ["Venta de productos", redondear(m.ingresosProductos)],
-        ["Venta de servicios", redondear(m.ingresosServicios)]
-    ], [32, 18, 18]);
+    const periodoTexto = `Periodo: ${textoRango(r.desde, r.hasta)} (${r.nombre})`;
+    const comparadoTexto = `Comparado con: ${textoRango(r.antDesde, r.antHasta)}`;
+    const generadoTexto = `Generado el ${new Date().toLocaleString("es-CO")} por ${currentUserEmail}`;
+    const agregar = (ws, nombre) => XLSX.utils.book_append_sheet(libro, ws, nombre);
 
+    const turnosPeriodo = turnosGlobal
+        .filter(t => enRango(t.fechaApertura, r.desde, r.hasta))
+        .sort((a, b) => String(a.fechaApertura).localeCompare(String(b.fechaApertura)));
+    const cerrados = turnosPeriodo.filter(t => t.estado === "cerrado");
+    const faltantes = suma(cerrados.filter(t => Number(t.diferencia || 0) < 0), t => Math.abs(Number(t.diferencia || 0)));
+    const sobrantes = suma(cerrados.filter(t => Number(t.diferencia || 0) > 0), t => Number(t.diferencia || 0));
+
+    const medios = agrupar(actual.ventas, v => v.medioPago, v => v.total);
+    const items = ventasPorItem(actual.ventas);
     const categorias = agrupar(actual.gastos, g => g.categoria || "Sin categoría", g => g.valor);
-    hoja("Estado de resultados", [
-        ["Concepto", "Valor"],
-        ["INGRESOS OPERACIONALES", ""],
-        ["Venta de productos", redondear(m.ingresosProductos)],
-        ["Venta de servicios", redondear(m.ingresosServicios)],
-        ["(−) Descuentos", -redondear(m.descuentos)],
-        ["Total ingresos", redondear(m.ingresos)],
-        ["GASTOS OPERACIONALES", ""],
-        ...categorias.map(c => [c.clave, redondear(c.total)]),
-        ["Total gastos", redondear(m.egresos)],
-        ["UTILIDAD DEL PERIODO", redondear(m.utilidad)],
-        ["Margen neto %", porcentaje(m.margen)]
-    ], [34, 18]);
+    const anulados = movimientosDelRango(r).filter(mv => mv.anulada);
 
-    hoja("Ventas", [
-        ["Fecha", "Hora", "Cliente", "Productos / servicios", "Medio de pago", "Subtotal", "Descuento", "Total", "Vendedor", "Observaciones"],
-        ...actual.ventas.map(v => [
-            v.fecha, horaDe(v), v.cliente || "", itemsDeVenta(v).map(i => i.nombre).join(", "), v.medioPago || "",
-            redondear(v.subtotal ?? v.total), redondear(v.descuento), redondear(v.total), v.creadoPor || "", v.observaciones || ""
-        ])
-    ], [12, 8, 18, 45, 15, 12, 10, 12, 28, 30]);
+    // ===== Hoja 1: Resumen =====
+    const resumen = hojaExcel(4)
+        .titulo("Servicio Técnico · Reporte gerencial", [periodoTexto, comparadoTexto, generadoTexto])
+        .seccion("Indicadores principales")
+        .encabezado(["Indicador", "Periodo", "Periodo anterior", "Variación"])
+        .fila(["Ventas", redondear(m.ingresos), redondear(mAnt.ingresos), variacionXL(m.ingresos, mAnt.ingresos)], "dato", [null, "moneda", "moneda", "porcentaje"])
+        .fila(["Gastos", redondear(m.egresos), redondear(mAnt.egresos), variacionXL(m.egresos, mAnt.egresos)], "dato", [null, "moneda", "moneda", "porcentaje"])
+        .fila(["Utilidad", redondear(m.utilidad), redondear(mAnt.utilidad), variacionXL(m.utilidad, mAnt.utilidad)], "total", [null, "moneda", "moneda", "porcentaje"])
+        .fila(["Margen neto", m.margen ?? "", mAnt.margen ?? "", ""], "dato", [null, "porcentaje", "porcentaje"])
+        .fila(["N.º de ventas", m.nVentas, mAnt.nVentas, variacionXL(m.nVentas, mAnt.nVentas)], "dato", [null, "entero", "entero", "porcentaje"])
+        .fila(["Ticket promedio", redondear(m.ticket), redondear(mAnt.ticket), variacionXL(m.ticket, mAnt.ticket)], "dato", [null, "moneda", "moneda", "porcentaje"]);
 
-    hoja("Detalle vendido", [
-        ["Fecha", "Código", "Producto / servicio", "Tipo", "Cantidad", "Valor unitario", "Total", "Medio de pago", "Vendedor"],
-        ...actual.ventas.flatMap(v => itemsDeVenta(v).map(i => [
-            v.fecha, i.codigo || "", i.nombre || "", i.tipo || "producto", Number(i.cantidad || 0),
-            redondear(i.valorUnitario), redondear(i.total), v.medioPago || "", v.creadoPor || ""
-        ]))
-    ], [12, 12, 40, 10, 9, 13, 12, 15, 28]);
+    resumen.seccion("Ventas por medio de pago").encabezado(["Medio de pago", "N.º de ventas", "Total", "Participación"]);
+    if (medios.length) {
+        medios.forEach(f => resumen.fila([f.clave, f.n, redondear(f.total), fraccion(f.total, m.ingresos)], "dato", [null, "entero", "moneda", "porcentaje"]));
+        resumen.fila(["Total", m.nVentas, redondear(m.ingresos), 1], "total", [null, "entero", "moneda", "porcentaje"]);
+    } else {
+        resumen.fila(["Sin ventas en este periodo"], "nota");
+    }
 
-    hoja("Gastos", [
-        ["Fecha", "Categoría", "Descripción", "Medio de pago", "Valor", "Registrado por"],
-        ...actual.gastos.map(g => [g.fecha, g.categoria || "", g.descripcion || "", g.medioPago || "", redondear(g.valor), g.creadoPor || ""])
-    ], [12, 20, 40, 15, 12, 28]);
+    const totalTipos = m.ingresosProductos + m.ingresosServicios;
+    resumen.seccion("Productos y servicios").encabezado(["Tipo", "Unidades", "Total", "Participación"]);
+    ["producto", "servicio"].forEach(tipo => {
+        const delTipo = items.filter(i => (i.tipo || "producto") === tipo);
+        const total = tipo === "servicio" ? m.ingresosServicios : m.ingresosProductos;
+        resumen.fila([tipo === "servicio" ? "Servicios" : "Productos", suma(delTipo, i => i.cantidad), redondear(total), fraccion(total, totalTipos)], "dato", [null, "entero", "moneda", "porcentaje"]);
+    });
 
-    hoja("Turnos", [
-        ["Apertura", "Responsable", "Estado", "Inicial", "Ventas efectivo", "Gastos efectivo", "Esperado", "Contado", "Diferencia", "Observación cierre"],
-        ...turnosGlobal
-            .filter(t => enRango(t.fechaApertura, r.desde, r.hasta))
-            .map(t => {
-                const s = resumenDeTurno(t);
-                return [
-                    t.fechaApertura, t.responsable || "", t.estado || "", redondear(s.efectivoInicial), redondear(s.ventasEfectivo),
-                    redondear(s.gastosEfectivo), redondear(s.efectivoEsperado),
-                    s.efectivoContado === null ? "" : redondear(s.efectivoContado),
-                    s.diferencia === null ? "" : redondear(s.diferencia),
-                    t.observacionCierre || ""
-                ];
-            })
-    ], [12, 28, 10, 12, 15, 15, 12, 12, 12, 30]);
+    const totalItems = suma(items, i => i.total);
+    resumen.seccion("Top 10 productos y servicios").encabezado(["Producto / servicio", "Cantidad", "Total vendido", "Participación"]);
+    if (items.length) {
+        items.slice(0, 10).forEach(i => resumen.fila(
+            [`${i.codigo ? i.codigo + " · " : ""}${i.nombre}`, i.cantidad, redondear(i.total), fraccion(i.total, totalItems)],
+            "dato", [null, "entero", "moneda", "porcentaje"]
+        ));
+    } else {
+        resumen.fila(["Sin ventas en este periodo"], "nota");
+    }
 
-    hoja("Medios de pago", [
-        ["Medio", "Entradas", "Salidas", "Neto"],
-        ...flujoPorMedio(actual.ventas, actual.gastos).map(f => [f.medio, redondear(f.entradas), redondear(f.salidas), redondear(f.entradas - f.salidas)])
-    ], [18, 14, 14, 14]);
+    resumen.seccion("Gastos por categoría").encabezado(["Categoría", "N.º de gastos", "Total", "Participación"]);
+    if (categorias.length) {
+        categorias.forEach(c => resumen.fila([c.clave, c.n, redondear(c.total), fraccion(c.total, m.egresos)], "dato", [null, "entero", "moneda", "porcentaje"]));
+        resumen.fila(["Total", actual.gastos.length, redondear(m.egresos), 1], "total", [null, "entero", "moneda", "porcentaje"]);
+    } else {
+        resumen.fila(["Sin gastos en este periodo"], "nota");
+    }
 
-    hoja("Anulados", [
-        ["Tipo", "Fecha", "Descripción", "Valor", "Motivo", "Anulado por"],
-        ...movimientosDelRango(r).filter(mv => mv.anulada).map(mv => {
-            const reg = (mv.tipo === "venta" ? ventasGlobal : gastosGlobal).find(x => x.docId === mv.docId) || {};
-            return [mv.tipo, mv.fecha, mv.descripcion, redondear(mv.valor), mv.motivo, reg.anuladaPor || ""];
-        })
-    ], [8, 12, 45, 12, 35, 28]);
+    resumen.seccion("Caja").encabezado(["Concepto", "Valor"])
+        .fila(["Turnos en el periodo", turnosPeriodo.length], "dato", [null, "entero"])
+        .fila(["Turnos cerrados", cerrados.length], "dato", [null, "entero"])
+        .fila(["Faltantes de caja", redondear(faltantes)], "dato", [null, "moneda"])
+        .fila(["Sobrantes de caja", redondear(sobrantes)], "dato", [null, "moneda"])
+        .fila(["Diferencia neta", redondear(sobrantes - faltantes)], "total", [null, "moneda"]);
 
-    XLSX.writeFile(libro, `Reporte_ServicioTecnico_${r.desde}_a_${r.hasta}.xlsx`);
+    const puntos = [];
+    if (m.utilidad < 0) puntos.push(`El periodo tiene pérdida de ${money(Math.abs(m.utilidad))}: los gastos superan a las ventas.`);
+    if (faltantes) puntos.push(`Faltantes de caja por ${money(faltantes)}. Revisar la hoja Turnos.`);
+    if (sobrantes) puntos.push(`Sobrantes de caja por ${money(sobrantes)}.`);
+    const ventasAnuladas = anulados.filter(a => a.tipo === "venta");
+    if (ventasAnuladas.length) puntos.push(`${ventasAnuladas.length} ${ventasAnuladas.length === 1 ? "venta anulada" : "ventas anuladas"} por ${money(suma(ventasAnuladas, a => a.valor))}. Ver la hoja Anulados.`);
+
+    resumen.seccion("Puntos de atención");
+    if (puntos.length) puntos.forEach(p => resumen.fila([p], "alerta"));
+    else resumen.fila(["Sin novedades en este periodo."], "dato");
+
+    resumen.vacia().fila(["Cifras con base en caja: lo vendido menos lo gastado. No incluye IVA, retenciones ni nómina."], "nota");
+    agregar(resumen.construir([42, 18, 18, 14]), "Resumen");
+
+    // ===== Hoja 2: Estado de resultados =====
+    const catAnt = agrupar(anterior.gastos, g => g.categoria || "Sin categoría", g => g.valor);
+    const nombresCat = [...new Set([...categorias.map(c => c.clave), ...catAnt.map(c => c.clave)])];
+    const valorCat = (lista, clave) => lista.find(c => c.clave === clave)?.total || 0;
+    const filaER = (hoja, concepto, a, b, estilo) =>
+        hoja.fila([concepto, redondear(a), redondear(b), variacionXL(a, b)], estilo, [null, "moneda", "moneda", "porcentaje"]);
+
+    const er = hojaExcel(4)
+        .titulo("Estado de resultados", [periodoTexto, comparadoTexto])
+        .vacia()
+        .encabezado(["Concepto", "Periodo", "Periodo anterior", "Variación"])
+        .fila(["Ingresos operacionales"], "grupo", [], 4);
+    filaER(er, "    Venta de productos", m.ingresosProductos, mAnt.ingresosProductos, "sub");
+    filaER(er, "    Venta de servicios", m.ingresosServicios, mAnt.ingresosServicios, "sub");
+    if (m.descuentos || mAnt.descuentos) filaER(er, "    (−) Descuentos", -m.descuentos, -mAnt.descuentos, "sub");
+    filaER(er, "Total ingresos", m.ingresos, mAnt.ingresos, "total");
+    er.fila(["Gastos operacionales"], "grupo", [], 4);
+    nombresCat.forEach(c => filaER(er, "    " + c, valorCat(categorias, c), valorCat(catAnt, c), "sub"));
+    if (!nombresCat.length) er.fila(["    Sin gastos registrados"], "sub", [], 4);
+    filaER(er, "Total gastos", m.egresos, mAnt.egresos, "total");
+    er.vacia();
+    filaER(er, "UTILIDAD DEL PERIODO", m.utilidad, mAnt.utilidad, "total");
+    er.fila(["Margen neto", m.margen ?? "", mAnt.margen ?? "", ""], "dato", [null, "porcentaje", "porcentaje"]);
+    er.vacia().fila(["Cifras con base en caja. No incluye IVA, retenciones, depreciaciones ni obligaciones laborales."], "nota");
+    agregar(er.construir([42, 18, 18, 14]), "Estado de resultados");
+
+    // ===== Hoja 3: Ventas =====
+    const ventasOrdenadas = [...actual.ventas].sort((a, b) => String(a.fecha).localeCompare(String(b.fecha)) || (milisDe(a) || 0) - (milisDe(b) || 0));
+    const hv = hojaExcel(8)
+        .titulo("Ventas del periodo", [periodoTexto, "No incluye ventas anuladas (ver hoja Anulados)."])
+        .vacia()
+        .conFiltro()
+        .encabezado(["Fecha", "Hora", "N.º venta", "Productos / servicios", "Medio de pago", "Total", "Vendedor", "Observaciones"]);
+    ventasOrdenadas.forEach(v => hv.fila([
+        fechaXL(v.fecha), horaDe(v), numeroVenta(v),
+        itemsDeVenta(v).map(i => `${Number(i.cantidad || 1) > 1 ? i.cantidad + " × " : ""}${i.nombre}`).join(", "),
+        v.medioPago || "", redondear(v.total), v.creadoPor || "", v.observaciones || ""
+    ], "dato", ["fecha", null, null, null, null, "moneda"]));
+    hv.cerrarFiltro();
+    hv.fila(["Total", "", `${ventasOrdenadas.length} ventas`, "", "", redondear(m.ingresos)], "total", [null, null, null, null, null, "moneda"], 8);
+    agregar(hv.construir([12, 10, 12, 50, 15, 15, 30, 30]), "Ventas");
+
+    // ===== Hoja 4: Detalle vendido =====
+    const hd = hojaExcel(9)
+        .titulo("Detalle de lo vendido", [periodoTexto])
+        .vacia()
+        .conFiltro()
+        .encabezado(["Fecha", "N.º venta", "Código", "Producto / servicio", "Tipo", "Cantidad", "Valor unitario", "Total", "Medio de pago"]);
+    ventasOrdenadas.forEach(v => itemsDeVenta(v).forEach(i => hd.fila([
+        fechaXL(v.fecha), numeroVenta(v), i.codigo || "", i.nombre || "",
+        i.tipo === "servicio" ? "Servicio" : "Producto",
+        Number(i.cantidad || 0), redondear(i.valorUnitario), redondear(i.total), v.medioPago || ""
+    ], "dato", ["fecha", null, null, null, null, "entero", "moneda", "moneda"])));
+    hd.cerrarFiltro();
+    hd.fila(["Total", "", "", "", "", suma(items, i => i.cantidad), "", redondear(totalItems)], "total", [null, null, null, null, null, "entero", null, "moneda"], 9);
+    agregar(hd.construir([12, 12, 10, 45, 11, 10, 15, 15, 15]), "Detalle vendido");
+
+    // ===== Hoja 5: Gastos =====
+    const gastosOrdenados = [...actual.gastos].sort((a, b) => String(a.fecha).localeCompare(String(b.fecha)) || (milisDe(a) || 0) - (milisDe(b) || 0));
+    const hg = hojaExcel(6)
+        .titulo("Gastos del periodo", [periodoTexto, "No incluye gastos anulados (ver hoja Anulados)."])
+        .vacia()
+        .conFiltro()
+        .encabezado(["Fecha", "Hora", "Categoría", "Descripción", "Medio de pago", "Valor"]);
+    gastosOrdenados.forEach(g => hg.fila([
+        fechaXL(g.fecha), horaDe(g), g.categoria || "", g.descripcion || "", g.medioPago || "", redondear(g.valor)
+    ], "dato", ["fecha", null, null, null, null, "moneda"]));
+    hg.cerrarFiltro();
+    hg.fila(["Total", "", `${gastosOrdenados.length} gastos`, "", "", redondear(m.egresos)], "total", [null, null, null, null, null, "moneda"], 6);
+    agregar(hg.construir([12, 10, 22, 50, 15, 15]), "Gastos");
+
+    // ===== Hoja 6: Turnos (cuadres de caja) =====
+    const ht = hojaExcel(9)
+        .titulo("Cuadres de caja por turno", [periodoTexto])
+        .vacia()
+        .conFiltro()
+        .encabezado(["Apertura", "Estado", "Efectivo inicial", "Ventas en efectivo", "Gastos en efectivo", "Esperado", "Contado", "Diferencia", "Observación de cierre"]);
+    turnosPeriodo.forEach(t => {
+        const s = resumenDeTurno(t);
+        ht.fila([
+            fechaXL(t.fechaApertura), t.estado === "abierto" ? "Abierto" : "Cerrado",
+            redondear(s.efectivoInicial), redondear(s.ventasEfectivo), redondear(s.gastosEfectivo), redondear(s.efectivoEsperado),
+            s.efectivoContado === null ? "" : redondear(s.efectivoContado),
+            s.diferencia === null ? "" : redondear(s.diferencia),
+            t.observacionCierre || ""
+        ], "dato", ["fecha", null, "moneda", "moneda", "moneda", "moneda", "moneda", "moneda"]);
+    });
+    ht.cerrarFiltro();
+    ht.fila(["Diferencia neta", "", "", "", "", "", "", redondear(sobrantes - faltantes)], "total", [null, null, null, null, null, null, null, "moneda"], 9);
+    agregar(ht.construir([12, 10, 15, 17, 17, 15, 15, 15, 35]), "Turnos");
+
+    // ===== Hoja 7: Medios de pago =====
+    const flujo = flujoPorMedio(actual.ventas, actual.gastos);
+    const hm = hojaExcel(4)
+        .titulo("Flujo por medio de pago", [periodoTexto, "Sirve para conciliar el efectivo y las transferencias recibidas."])
+        .vacia()
+        .encabezado(["Medio de pago", "Entradas (ventas)", "Salidas (gastos)", "Neto"]);
+    flujo.forEach(f => hm.fila([f.medio, redondear(f.entradas), redondear(f.salidas), redondear(f.entradas - f.salidas)], "dato", [null, "moneda", "moneda", "moneda"]));
+    hm.fila(["Total", redondear(suma(flujo, f => f.entradas)), redondear(suma(flujo, f => f.salidas)), redondear(suma(flujo, f => f.entradas - f.salidas))], "total", [null, "moneda", "moneda", "moneda"]);
+    agregar(hm.construir([22, 18, 18, 18]), "Medios de pago");
+
+    // ===== Hoja 8: Anulados =====
+    const ha = hojaExcel(6)
+        .titulo("Ventas y gastos anulados", [periodoTexto, "No suman en ningún total del informe."])
+        .vacia()
+        .conFiltro()
+        .encabezado(["Fecha", "Tipo", "Descripción", "Valor", "Motivo", "Anulado por"]);
+    anulados.forEach(mv => {
+        const reg = (mv.tipo === "venta" ? ventasGlobal : gastosGlobal).find(x => x.docId === mv.docId) || {};
+        ha.fila([fechaXL(mv.fecha), mv.tipo === "venta" ? "Venta" : "Gasto", mv.descripcion, redondear(mv.valor), mv.motivo, reg.anuladaPor || ""],
+            "dato", ["fecha", null, null, "moneda"]);
+    });
+    if (!anulados.length) ha.fila(["Sin anulaciones en este periodo."], "nota");
+    ha.cerrarFiltro();
+    agregar(ha.construir([12, 10, 45, 15, 40, 30]), "Anulados");
+
+    XLSX.writeFile(libro, `Reporte_ServicioTecnico_${r.desde}_a_${r.hasta}.xlsx`, { cellStyles: true });
 }
 
 function imprimirReporte() {
