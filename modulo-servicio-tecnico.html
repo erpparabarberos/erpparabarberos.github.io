@@ -1194,6 +1194,15 @@
         });
     };
 
+    // En los campos de número, girar la rueda del mouse cambia el valor (50.000 → 49.998).
+    // Se quita el foco para que la rueda solo mueva la página.
+    document.addEventListener("wheel", function(e) {
+        const campo = document.activeElement;
+        if (campo && campo.type === "number" && campo === e.target) {
+            campo.blur();
+        }
+    }, { passive: true });
+
     document.getElementById("todayLabel").textContent = "Hoy, " + todayReadable();
     document.getElementById("ventaFecha").value = todayISO();
     document.getElementById("gastoFecha").value = todayISO();
