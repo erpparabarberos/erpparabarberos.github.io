@@ -2506,6 +2506,13 @@ body.modal-abierto {
         margin: 2px 0;
     }
 
+    #comprobante .comprobante-numero {
+        font-size: 16px;
+        font-weight: 800;
+        letter-spacing: .04em;
+        margin: 6px 0;
+    }
+
     #comprobante table {
         width: 100%;
         border-collapse: collapse;
@@ -2530,6 +2537,44 @@ body.modal-abierto {
         font-weight: 800;
         margin: 8px 0;
     }
+}
+
+/* ===== Caja: entradas/retiros y pago mixto ===== */
+
+.movcaja-botones {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.movcaja-botones .secondary-btn {
+    margin: 0;
+}
+
+.movcaja-botones svg.ico {
+    width: 18px;
+    height: 18px;
+}
+
+.movcaja-lista .modal-seccion {
+    margin-top: 4px;
+}
+
+.movcaja-lista .movement-card {
+    box-shadow: none;
+}
+
+.pago-mixto {
+    background: #f8fafc;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 12px 12px 0;
+    margin-bottom: 14px;
+}
+
+.pago-mixto[hidden] {
+    display: none;
 }
 
 /* ===== Catálogo ===== */
@@ -3273,7 +3318,21 @@ body.modal-abierto {
                         <select id="ventaMedio" required>
                             <option value="Efectivo">Efectivo</option>
                             <option value="Transferencia">Transferencia</option>
+                            <option value="Mixto">Mixto (efectivo + transferencia)</option>
                         </select>
+                    </div>
+
+                    <div class="pago-mixto" id="ventaMixtoBox" hidden>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Pagó en efectivo</label>
+                                <input type="number" id="ventaPagoEfectivo" min="0" placeholder="Ej: 20000">
+                            </div>
+                            <div class="form-group">
+                                <label>Pagó por transferencia</label>
+                                <input type="text" id="ventaPagoTransferencia" readonly class="input-bloqueado" value="$ 0">
+                            </div>
+                        </div>
                     </div>
 
                     <div class="form-group">
@@ -3358,6 +3417,36 @@ body.modal-abierto {
                 <div class="form-acciones">
                     <button class="secondary-btn" type="button" data-cerrar-modal>Cancelar</button>
                     <button class="submit-btn" type="submit">Abrir turno</button>
+                </div>
+            </form>
+        </div>
+
+        <div data-panel id="panelMovCaja">
+            <form id="movCajaForm">
+                <input type="hidden" id="movCajaTipo" value="entrada">
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Valor en efectivo</label>
+                        <input type="number" id="movCajaValor" min="1" placeholder="Ej: 100000" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Motivo</label>
+                        <select id="movCajaMotivo" required></select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Nota</label>
+                    <textarea id="movCajaNota" placeholder="Opcional. Ej: consignación en Bancolombia"></textarea>
+                </div>
+
+                <p class="ayuda" id="movCajaAyuda" style="margin:-4px 0 14px;"></p>
+
+                <div class="form-acciones">
+                    <button class="secondary-btn" type="button" data-cerrar-modal>Cancelar</button>
+                    <button class="submit-btn" type="submit" id="movCajaSubmit">Registrar</button>
                 </div>
             </form>
         </div>
@@ -3521,6 +3610,13 @@ body.modal-abierto {
                             </div>
                         </div>
 
+                        <div class="movcaja-botones">
+                            <button type="button" class="secondary-btn" onclick="abrirMovimientoCaja('entrada')"><i data-icon="plus"></i> Entrada de efectivo</button>
+                            <button type="button" class="secondary-btn" onclick="abrirMovimientoCaja('retiro')"><i data-icon="minus"></i> Retiro de efectivo</button>
+                        </div>
+
+                        <div class="movcaja-lista" id="movCajaList"></div>
+
                         <button type="button" class="submit-btn peligro" onclick="abrirModalCerrarTurno()"><i data-icon="lock"></i> Cerrar turno</button>
                     </div>
                 </div>
@@ -3678,6 +3774,10 @@ body.modal-abierto {
     const gastosRef = db.collection("st_gastos");
     const catalogoRef = db.collection("st_catalogo");
     const turnosRef = db.collection("st_turnos");
+    // Entradas y retiros de efectivo de la caja que no son ventas ni gastos (base adicional, consignaciones...).
+    const movCajaRef = db.collection("st_movimientos_caja");
+    // Último número de comprobante de venta asignado (PB-0001, PB-0002...).
+    const contadorComprobanteRef = db.collection("metadata").doc("stComprobanteCounter");
     // Guarda el último código de catálogo asignado, para que dos personas no reciban el mismo.
     const contadorCatalogoRef = db.collection("metadata").doc("stCatalogoCounter");
 
@@ -3687,6 +3787,7 @@ body.modal-abierto {
     let carritoVenta = [];
     let catalogoBusqueda = "";
     let turnosGlobal = [];
+    let movCajaGlobal = [];
     let turnoActivo = null;
     let currentUserEmail = "sin_usuario";
     let currentUserRol = "";
@@ -3941,7 +4042,30 @@ window.showView = function(viewName) {
     renderDashboard();
     renderReportesSiVisible();
 });
+
+        movCajaRef.orderBy("creadoEn", "desc").onSnapshot(snapshot => {
+            movCajaGlobal = [];
+            snapshot.forEach(doc => movCajaGlobal.push({ docId: doc.id, ...doc.data() }));
+            renderDashboard();
+            renderReportesSiVisible();
+        });
     }
+
+// Parte de la venta que entró en efectivo (las ventas mixtas guardan el desglose en `pagos`).
+function efectivoDeVenta(venta) {
+    if (venta.pagos) return Number(venta.pagos.efectivo || 0);
+    return String(venta.medioPago || "").toLowerCase() === "efectivo" ? Number(venta.total || 0) : 0;
+}
+
+function transferenciaDeVenta(venta) {
+    if (venta.pagos) return Number(venta.pagos.transferencia || 0);
+    return Number(venta.total || 0) - efectivoDeVenta(venta);
+}
+
+// Entradas y retiros de efectivo válidos de un turno.
+function movimientosCajaDe(turnoId) {
+    return movCajaGlobal.filter(mc => mc.turnoId === turnoId && noAnulado(mc));
+}
 function obtenerResumenTurno(turno) {
     if (!turno) {
         return {
@@ -3950,6 +4074,8 @@ function obtenerResumenTurno(turno) {
             totalGastos: 0,
             ventasEfectivo: 0,
             gastosEfectivo: 0,
+            entradas: 0,
+            retiros: 0,
             efectivoEsperado: 0,
             utilidad: 0
         };
@@ -3961,16 +4087,19 @@ function obtenerResumenTurno(turno) {
     const totalVentas = ventasTurno.reduce((acc, v) => acc + Number(v.total || 0), 0);
     const totalGastos = gastosTurno.reduce((acc, g) => acc + Number(g.valor || 0), 0);
 
-    const ventasEfectivo = ventasTurno
-        .filter(v => String(v.medioPago || "").toLowerCase() === "efectivo")
-        .reduce((acc, v) => acc + Number(v.total || 0), 0);
+    const ventasEfectivo = ventasTurno.reduce((acc, v) => acc + efectivoDeVenta(v), 0);
 
     const gastosEfectivo = gastosTurno
         .filter(g => String(g.medioPago || "").toLowerCase() === "efectivo")
         .reduce((acc, g) => acc + Number(g.valor || 0), 0);
 
+    // Entradas y retiros mueven el efectivo de la caja, pero no son ventas ni gastos.
+    const movimientos = movimientosCajaDe(turno.docId);
+    const entradas = movimientos.filter(mc => mc.tipo === "entrada").reduce((acc, mc) => acc + Number(mc.valor || 0), 0);
+    const retiros = movimientos.filter(mc => mc.tipo === "retiro").reduce((acc, mc) => acc + Number(mc.valor || 0), 0);
+
     const efectivoInicial = Number(turno.efectivoInicial || 0);
-    const efectivoEsperado = efectivoInicial + ventasEfectivo - gastosEfectivo;
+    const efectivoEsperado = efectivoInicial + ventasEfectivo - gastosEfectivo + entradas - retiros;
     const utilidad = totalVentas - totalGastos;
 
     return {
@@ -3979,6 +4108,8 @@ function obtenerResumenTurno(turno) {
         totalGastos,
         ventasEfectivo,
         gastosEfectivo,
+        entradas,
+        retiros,
         efectivoEsperado,
         utilidad
     };
@@ -4024,7 +4155,7 @@ function renderListasDia() {
 
     const ventasValidas = ventasHoy.filter(noAnulado);
     const totalVentas = sumar(ventasValidas, "total");
-    const ventasEfectivo = sumar(ventasValidas.filter(v => v.medioPago === "Efectivo"), "total");
+    const ventasEfectivo = ventasValidas.reduce((acc, v) => acc + efectivoDeVenta(v), 0);
 
     document.getElementById("ventasDiaFecha").textContent = fechaTexto;
     document.getElementById("ventasDiaKpis").innerHTML =
@@ -4041,7 +4172,7 @@ function renderListasDia() {
                 <div class="movement-card ${v.anulada ? "historial-anulada" : ""}" ${attrDetalle("venta:" + v.docId)}>
                     <div class="movement-icon">${icono("ventas")}</div>
                     <div>
-                        <h3>${v.anulada ? "Venta anulada" : "Venta"}${hora ? " · " + hora : ""}</h3>
+                        <h3>${v.comprobante ? limpiarHTML(v.comprobante) : "Venta"}${v.anulada ? " (anulada)" : ""}${hora ? " · " + hora : ""}</h3>
                         <p>${limpiarHTML(nombres)}</p>
                     </div>
                     <div style="text-align:right;">
@@ -4136,8 +4267,10 @@ window.abrirModalCerrarTurno = function() {
 
     const r = obtenerResumenTurno(turnoActivo);
     document.getElementById("cierreEsperado").textContent = money(r.efectivoEsperado);
-    document.getElementById("cierreDetalle").textContent =
-        `Inicial ${money(r.efectivoInicial)} + ventas en efectivo ${money(r.ventasEfectivo)} − gastos en efectivo ${money(r.gastosEfectivo)}`;
+    let detalleCierre = `Inicial ${money(r.efectivoInicial)} + ventas en efectivo ${money(r.ventasEfectivo)} − gastos en efectivo ${money(r.gastosEfectivo)}`;
+    if (r.entradas) detalleCierre += ` + entradas ${money(r.entradas)}`;
+    if (r.retiros) detalleCierre += ` − retiros ${money(r.retiros)}`;
+    document.getElementById("cierreDetalle").textContent = detalleCierre;
     actualizarDiferenciaCierre();
 
     abrirPanelEnModal("panelCerrarTurno", {
@@ -4178,6 +4311,139 @@ window.accionRapidaTurno = function() {
     else abrirModalAbrirTurno();
 };
 
+// ---------- Entradas y retiros de efectivo (solo con turno abierto) ----------
+
+const MOTIVOS_CAJA = {
+    entrada: ["Base adicional", "Cambio (monedas y billetes)", "Devolución de un retiro", "Otro"],
+    retiro: ["Consignación en banco", "Retiro del dueño", "Traslado a otra sede", "Pago en efectivo fuera de gastos", "Otro"]
+};
+
+window.abrirMovimientoCaja = function(tipo) {
+    if (!exigirTurno()) return;
+
+    const esEntrada = tipo === "entrada";
+    document.getElementById("movCajaForm").reset();
+    document.getElementById("movCajaTipo").value = tipo;
+    document.getElementById("movCajaMotivo").innerHTML = MOTIVOS_CAJA[tipo]
+        .map(m => `<option value="${limpiarHTML(m)}">${limpiarHTML(m)}</option>`).join("");
+    document.getElementById("movCajaSubmit").textContent = esEntrada ? "Registrar entrada" : "Registrar retiro";
+    document.getElementById("movCajaAyuda").textContent = esEntrada
+        ? "Suma al efectivo esperado de la caja. No cuenta como venta."
+        : `Resta del efectivo esperado de la caja. No cuenta como gasto. Efectivo esperado ahora: ${money(obtenerResumenTurno(turnoActivo).efectivoEsperado)}.`;
+
+    abrirPanelEnModal("panelMovCaja", {
+        titulo: esEntrada ? "Entrada de efectivo" : "Retiro de efectivo",
+        sub: esEntrada ? "Dinero que se agrega a la caja" : "Dinero que sale de la caja"
+    });
+    setTimeout(() => document.getElementById("movCajaValor").focus({ preventScroll: true }), 50);
+};
+
+document.getElementById("movCajaForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    guardarConBoton(this, guardarMovimientoCaja);
+});
+
+async function guardarMovimientoCaja() {
+    if (!turnoActivo) {
+        alert("El turno ya no está abierto.");
+        cerrarModal();
+        return;
+    }
+
+    const tipo = document.getElementById("movCajaTipo").value;
+    const valor = Number(document.getElementById("movCajaValor").value || 0);
+
+    if (valor <= 0) {
+        alert("El valor debe ser mayor a cero.");
+        return;
+    }
+
+    if (tipo === "retiro") {
+        const disponible = obtenerResumenTurno(turnoActivo).efectivoEsperado;
+        if (valor > disponible && !confirm(`El retiro (${money(valor)}) es mayor que el efectivo esperado en caja (${money(disponible)}). ¿Registrarlo de todas formas?`)) {
+            return;
+        }
+    }
+
+    await movCajaRef.add({
+        turnoId: turnoActivo.docId,
+        turnoFechaApertura: turnoActivo.fechaApertura || todayISO(),
+        fecha: todayISO(),
+        tipo,
+        valor,
+        motivo: document.getElementById("movCajaMotivo").value,
+        nota: document.getElementById("movCajaNota").value.trim(),
+        creadoPor: currentUserEmail,
+        creadoEn: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    cerrarModal();
+    alert(tipo === "entrada" ? "Entrada de efectivo registrada." : "Retiro de efectivo registrado.");
+}
+
+// Lista de entradas y retiros del turno abierto, en la pantalla de Caja.
+function renderMovimientosCaja(resumen) {
+    const contenedor = document.getElementById("movCajaList");
+    if (!contenedor || !turnoActivo) return;
+
+    const lista = movCajaGlobal
+        .filter(mc => mc.turnoId === turnoActivo.docId)
+        .sort((a, b) => (b.creadoEn?.toMillis?.() || 0) - (a.creadoEn?.toMillis?.() || 0));
+
+    if (!lista.length) {
+        contenedor.innerHTML = "";
+        return;
+    }
+
+    contenedor.innerHTML = `
+        <div class="modal-seccion">Entradas y retiros del turno</div>
+        <div class="movement-list">
+            ${lista.map(mc => {
+                const esEntrada = mc.tipo === "entrada";
+                const hora = mc.creadoEn?.toMillis ? new Date(mc.creadoEn.toMillis()).toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" }) : "";
+                return `
+                    <div class="movement-card ${mc.anulada ? "historial-anulada" : ""}">
+                        <div class="movement-icon">${icono(esEntrada ? "plus" : "minus")}</div>
+                        <div>
+                            <h3>${esEntrada ? "Entrada" : "Retiro"}${mc.anulada ? " (anulado)" : ""} · ${limpiarHTML(mc.motivo)}</h3>
+                            <p>${hora}${mc.nota ? " · " + limpiarHTML(mc.nota) : ""}</p>
+                        </div>
+                        <div class="carrito-lado">
+                            <strong>${esEntrada ? "+" : "−"}${money(mc.valor)}</strong>
+                            ${mc.anulada ? "" : `<div class="carrito-botones"><button type="button" class="mini-btn peligro" onclick="anularMovimientoCaja('${mc.docId}')">Anular</button></div>`}
+                        </div>
+                    </div>`;
+            }).join("")}
+        </div>
+        <p class="ayuda" style="margin:8px 0 14px;">
+            Entradas ${money(resumen.entradas)} · Retiros ${money(resumen.retiros)} · Ya incluidos en el efectivo esperado.
+        </p>`;
+}
+
+window.anularMovimientoCaja = async function(docId) {
+    const mc = movCajaGlobal.find(x => x.docId === docId);
+    if (!mc || mc.anulada) return;
+
+    const motivo = prompt(`Anular ${mc.tipo === "entrada" ? "la entrada" : "el retiro"} de ${money(mc.valor)}.\n\nEscribe el motivo:`);
+    if (motivo === null) return;
+    if (!motivo.trim()) {
+        alert("El motivo es obligatorio para anular.");
+        return;
+    }
+
+    try {
+        await movCajaRef.doc(docId).update({
+            anulada: true,
+            motivoAnulacion: motivo.trim(),
+            anuladaPor: currentUserEmail,
+            anuladaEn: firebase.firestore.FieldValue.serverTimestamp()
+        });
+    } catch (error) {
+        console.error(error);
+        alert("No se pudo anular: " + error.message);
+    }
+};
+
 function renderCaja() {
     actualizarBotonTurno();
 
@@ -4204,6 +4470,8 @@ function renderCaja() {
         document.getElementById("turnoVentasTotal").textContent = money(resumen.totalVentas);
         document.getElementById("turnoGastosTotal").textContent = money(resumen.totalGastos);
         document.getElementById("turnoUtilidad").textContent = money(resumen.utilidad);
+
+        renderMovimientosCaja(resumen);
     }
 
     if (!turnosGlobal.length) {
@@ -4278,7 +4546,7 @@ function renderDashboard() {
 
         const movimientos = [
             ...ventasGlobal.filter(noAnulado).map(v => ({
-                tipo: "Venta",
+                tipo: v.comprobante ? `Venta ${v.comprobante}` : "Venta",
                 nombre: v.items?.map(item => item.nombre).join(", ") || v.itemNombre || "Venta",
                 valor: v.total,
                 medio: v.medioPago,
@@ -4328,7 +4596,7 @@ function renderHistorial() {
 
     const movimientos = [
         ...ventasGlobal.map(v => ({
-            tipo: v.anulada ? "Venta anulada" : "Venta",
+            tipo: `${v.comprobante ? "Venta " + v.comprobante : "Venta"}${v.anulada ? " anulada" : ""}`,
             nombre: v.items?.map(item => item.nombre).join(", ") || v.itemNombre || "Venta",
             detalle: `${v.cliente || "Consumidor final"} · ${v.medioPago || ""}`,
             valor: v.total,
@@ -4601,6 +4869,7 @@ function renderCarritoVenta() {
     if (!carritoVenta.length) {
         container.innerHTML = `<div class="empty-state">Aún no has agregado productos o servicios.</div>`;
         totalText.textContent = money(0);
+        actualizarPagoMixto();
         return;
     }
 
@@ -4651,6 +4920,7 @@ function renderCarritoVenta() {
     }).join("");
 
     totalText.textContent = money(calcularTotalCarrito());
+    actualizarPagoMixto();
 
     if (itemCarritoEditando !== null) {
         const campo = document.getElementById("editItemCantidad");
@@ -4857,6 +5127,8 @@ async function cerrarTurno(form) {
         ventasEfectivo: resumen.ventasEfectivo,
         gastosEfectivo: resumen.gastosEfectivo,
         utilidad: resumen.utilidad,
+        entradasEfectivo: resumen.entradas,
+        retirosEfectivo: resumen.retiros,
         efectivoEsperado: resumen.efectivoEsperado,
         efectivoContado: efectivoContado,
         diferencia: diferencia,
@@ -4889,36 +5161,88 @@ async function guardarVenta(form) {
     }
 
     const total = calcularTotalCarrito();
+    const medioPago = document.getElementById("ventaMedio").value;
 
     const data = {
-    turnoId: turnoActivo.docId,
-    turnoFechaApertura: turnoActivo.fechaApertura || todayISO(),
-    fecha: document.getElementById("ventaFecha").value,
-    cliente: document.getElementById("ventaCliente").value.trim(),
-    items: carritoVenta,
-    cantidadItems: carritoVenta.length,
-    subtotal: total,
-    descuento: 0,
-    total: total,
-    medioPago: document.getElementById("ventaMedio").value,
-    observaciones: document.getElementById("ventaObs").value.trim(),
-    creadoPor: currentUserEmail,
-    creadoEn: firebase.firestore.FieldValue.serverTimestamp()
-};
+        turnoId: turnoActivo.docId,
+        turnoFechaApertura: turnoActivo.fechaApertura || todayISO(),
+        fecha: document.getElementById("ventaFecha").value,
+        cliente: document.getElementById("ventaCliente").value.trim(),
+        items: carritoVenta,
+        cantidadItems: carritoVenta.length,
+        subtotal: total,
+        descuento: 0,
+        total: total,
+        medioPago,
+        observaciones: document.getElementById("ventaObs").value.trim(),
+        creadoPor: currentUserEmail,
+        creadoEn: firebase.firestore.FieldValue.serverTimestamp()
+    };
 
-    await ventasRef.add(data);
+    // Pago mixto: se guarda cuánto entró en efectivo y cuánto por transferencia.
+    if (medioPago === "Mixto") {
+        const efectivo = Number(document.getElementById("ventaPagoEfectivo").value || 0);
+
+        if (efectivo <= 0 || efectivo >= total) {
+            alert("En un pago mixto, lo pagado en efectivo debe ser mayor a cero y menor que el total de la venta.");
+            document.getElementById("ventaPagoEfectivo").focus();
+            return;
+        }
+
+        data.pagos = { efectivo, transferencia: total - efectivo };
+    }
+
+    // En una sola transacción: se toma el siguiente comprobante (PB-0001...) y se crea la venta.
+    const comprobante = await db.runTransaction(async (tx) => {
+        const contador = await tx.get(contadorComprobanteRef);
+        const siguiente = (contador.exists ? Number(contador.data().ultimo || 0) : 0) + 1;
+        const numero = formatoComprobante(siguiente);
+
+        tx.set(contadorComprobanteRef, {
+            ultimo: siguiente,
+            actualizadoPor: currentUserEmail,
+            actualizadoEn: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+        tx.set(ventasRef.doc(), { ...data, comprobante: numero, consecutivo: siguiente });
+
+        return numero;
+    });
 
     carritoVenta = [];
 
     form.reset();
     document.getElementById("ventaFecha").value = todayISO();
     document.getElementById("ventaCantidad").value = 1;
+    actualizarPagoMixto();
 
     renderCarritoVenta();
 
     cerrarModal();
-    alert("Venta guardada correctamente.");
+    alert(`Venta ${comprobante} guardada correctamente.`);
 }
+
+// PB-0001, PB-0002... (sello de la empresa + consecutivo de 4 dígitos).
+function formatoComprobante(numero) {
+    return "PB-" + String(numero).padStart(4, "0");
+}
+
+// Muestra los campos de pago mixto y calcula la parte por transferencia.
+function actualizarPagoMixto() {
+    const esMixto = document.getElementById("ventaMedio").value === "Mixto";
+    const caja = document.getElementById("ventaMixtoBox");
+    caja.hidden = !esMixto;
+    if (!esMixto) return;
+
+    const total = calcularTotalCarrito();
+    const efectivo = Number(document.getElementById("ventaPagoEfectivo").value || 0);
+    const transferencia = Math.max(total - efectivo, 0);
+    const campo = document.getElementById("ventaPagoTransferencia");
+    campo.value = money(transferencia);
+    campo.style.color = efectivo > total ? "var(--danger)" : "";
+}
+
+document.getElementById("ventaMedio").addEventListener("change", actualizarPagoMixto);
+document.getElementById("ventaPagoEfectivo").addEventListener("input", actualizarPagoMixto);
 
     document.getElementById("gastoForm").addEventListener("submit", function(e) {
         e.preventDefault();
@@ -5547,6 +5871,8 @@ function resumenDeTurno(turno) {
             efectivoInicial: Number(turno.efectivoInicial || 0),
             ventasEfectivo: Number(turno.ventasEfectivo || 0),
             gastosEfectivo: Number(turno.gastosEfectivo || 0),
+            entradas: Number(turno.entradasEfectivo || 0),
+            retiros: Number(turno.retirosEfectivo || 0),
             efectivoEsperado: Number(turno.efectivoEsperado || 0),
             efectivoContado: Number(turno.efectivoContado || 0),
             diferencia: Number(turno.diferencia || 0),
@@ -5562,10 +5888,21 @@ function flujoPorMedio(ventas, gastos) {
     const mapa = new Map();
     const fila = (medio) => mapa.get(medio) || { medio, entradas: 0, salidas: 0 };
 
-    ventas.forEach(v => {
-        const f = fila(v.medioPago || "Sin dato");
-        f.entradas += Number(v.total || 0);
+    const sumarEntrada = (medio, valor) => {
+        if (!valor) return;
+        const f = fila(medio);
+        f.entradas += valor;
         mapa.set(f.medio, f);
+    };
+
+    // Las ventas mixtas se reparten entre efectivo y transferencia para poder conciliar cada medio.
+    ventas.forEach(v => {
+        if (v.pagos) {
+            sumarEntrada("Efectivo", Number(v.pagos.efectivo || 0));
+            sumarEntrada("Transferencia", Number(v.pagos.transferencia || 0));
+        } else {
+            sumarEntrada(v.medioPago || "Sin dato", Number(v.total || 0));
+        }
     });
 
     gastos.forEach(g => {
@@ -6219,7 +6556,7 @@ function repCaja(panel, { r, actual }) {
             <h3>Cuadres de caja</h3>
             <p class="rep-sub">Efectivo esperado contra efectivo contado en cada turno</p>
             ${tablaHTML(
-                [{ t: "Apertura" }, { t: "Responsable" }, { t: "Inicial", num: true }, { t: "Ventas ef.", num: true }, { t: "Gastos ef.", num: true }, { t: "Esperado", num: true }, { t: "Contado", num: true }, { t: "Diferencia", num: true }],
+                [{ t: "Apertura" }, { t: "Responsable" }, { t: "Inicial", num: true }, { t: "Ventas ef.", num: true }, { t: "Gastos ef.", num: true }, { t: "Entradas", num: true }, { t: "Retiros", num: true }, { t: "Esperado", num: true }, { t: "Contado", num: true }, { t: "Diferencia", num: true }],
                 turnos.map(t => {
                     const s = resumenDeTurno(t);
                     return { detalle: "turno:" + t.docId, celdas: [
@@ -6228,12 +6565,14 @@ function repCaja(panel, { r, actual }) {
                         money(s.efectivoInicial),
                         money(s.ventasEfectivo),
                         money(s.gastosEfectivo),
+                        money(s.entradas || 0),
+                        money(s.retiros || 0),
                         money(s.efectivoEsperado),
                         s.efectivoContado === null ? "—" : money(s.efectivoContado),
                         textoDiferencia(s.diferencia)
                     ] };
                 }),
-                { apilar: true, pie: ["Diferencia neta", "", "", "", "", "", "", textoDiferencia(sobrantes - faltantes)] }
+                { apilar: true, pie: ["Diferencia neta", "", "", "", "", "", "", "", "", textoDiferencia(sobrantes - faltantes)] }
             )}
         </div>
 
@@ -6644,7 +6983,7 @@ function exportarExcel() {
     ventasOrdenadas.forEach(v => hv.fila([
         fechaXL(v.fecha), horaDe(v), numeroVenta(v),
         itemsDeVenta(v).map(i => `${Number(i.cantidad || 1) > 1 ? i.cantidad + " × " : ""}${i.nombre}`).join(", "),
-        v.medioPago || "", redondear(v.total), v.creadoPor || "", v.observaciones || ""
+        textoMedioPago(v), redondear(v.total), v.creadoPor || "", v.observaciones || ""
     ], "dato", ["fecha", null, null, null, null, "moneda"]));
     hv.cerrarFiltro();
     hv.fila(["Total", "", `${ventasOrdenadas.length} ventas`, "", "", redondear(m.ingresos)], "total", [null, null, null, null, null, "moneda"], 8);
@@ -6680,24 +7019,42 @@ function exportarExcel() {
     agregar(hg.construir([12, 10, 22, 50, 15, 15]), "Gastos");
 
     // ===== Hoja 6: Turnos (cuadres de caja) =====
-    const ht = hojaExcel(9)
-        .titulo("Cuadres de caja por turno", [periodoTexto])
+    const ht = hojaExcel(11)
+        .titulo("Cuadres de caja por turno", [periodoTexto, "Esperado = inicial + ventas en efectivo − gastos en efectivo + entradas − retiros."])
         .vacia()
         .conFiltro()
-        .encabezado(["Apertura", "Estado", "Efectivo inicial", "Ventas en efectivo", "Gastos en efectivo", "Esperado", "Contado", "Diferencia", "Observación de cierre"]);
+        .encabezado(["Apertura", "Estado", "Efectivo inicial", "Ventas en efectivo", "Gastos en efectivo", "Entradas", "Retiros", "Esperado", "Contado", "Diferencia", "Observación de cierre"]);
     turnosPeriodo.forEach(t => {
         const s = resumenDeTurno(t);
         ht.fila([
             fechaXL(t.fechaApertura), t.estado === "abierto" ? "Abierto" : "Cerrado",
-            redondear(s.efectivoInicial), redondear(s.ventasEfectivo), redondear(s.gastosEfectivo), redondear(s.efectivoEsperado),
+            redondear(s.efectivoInicial), redondear(s.ventasEfectivo), redondear(s.gastosEfectivo),
+            redondear(s.entradas), redondear(s.retiros), redondear(s.efectivoEsperado),
             s.efectivoContado === null ? "" : redondear(s.efectivoContado),
             s.diferencia === null ? "" : redondear(s.diferencia),
             t.observacionCierre || ""
-        ], "dato", ["fecha", null, "moneda", "moneda", "moneda", "moneda", "moneda", "moneda"]);
+        ], "dato", ["fecha", null, "moneda", "moneda", "moneda", "moneda", "moneda", "moneda", "moneda", "moneda"]);
     });
     ht.cerrarFiltro();
-    ht.fila(["Diferencia neta", "", "", "", "", "", "", redondear(sobrantes - faltantes)], "total", [null, null, null, null, null, null, null, "moneda"], 9);
-    agregar(ht.construir([12, 10, 15, 17, 17, 15, 15, 15, 35]), "Turnos");
+    ht.fila(["Diferencia neta", "", "", "", "", "", "", "", "", redondear(sobrantes - faltantes)], "total", [null, null, null, null, null, null, null, null, null, "moneda"], 11);
+    agregar(ht.construir([12, 10, 15, 17, 17, 13, 13, 15, 15, 15, 35]), "Turnos");
+
+    // ===== Hoja: Entradas y retiros de efectivo =====
+    const movsPeriodo = movCajaGlobal
+        .filter(mc => enRango(mc.fecha, r.desde, r.hasta))
+        .sort((a, b) => String(a.fecha).localeCompare(String(b.fecha)) || (milisDe(a) || 0) - (milisDe(b) || 0));
+    const hmc = hojaExcel(7)
+        .titulo("Entradas y retiros de efectivo", [periodoTexto, "Dinero que entra o sale de la caja sin ser venta ni gasto. No afecta la utilidad."])
+        .vacia()
+        .conFiltro()
+        .encabezado(["Fecha", "Hora", "Tipo", "Motivo", "Nota", "Valor", "Registrado por"]);
+    movsPeriodo.forEach(mc => hmc.fila([
+        fechaXL(mc.fecha), horaDe(mc), (mc.tipo === "entrada" ? "Entrada" : "Retiro") + (mc.anulada ? " (anulado)" : ""),
+        mc.motivo || "", mc.nota || "", redondear(mc.tipo === "entrada" ? mc.valor : -mc.valor), mc.creadoPor || ""
+    ], mc.anulada ? "anulado" : "dato", ["fecha", null, null, null, null, "moneda"]));
+    if (!movsPeriodo.length) hmc.fila(["Sin entradas ni retiros en este periodo."], "nota");
+    hmc.cerrarFiltro();
+    agregar(hmc.construir([12, 10, 12, 30, 35, 15, 30]), "Entradas y retiros");
 
     // ===== Hoja 7: Medios de pago =====
     const flujo = flujoPorMedio(actual.ventas, actual.gastos);
@@ -6785,8 +7142,17 @@ function fechaHoraDe(ts) {
     });
 }
 
+// Número de comprobante (PB-0001...). Las ventas anteriores al consecutivo usan su código interno.
 function numeroVenta(venta) {
-    return String(venta.docId || "").slice(0, 8).toUpperCase();
+    return venta.comprobante || String(venta.docId || "").slice(0, 8).toUpperCase();
+}
+
+// "Efectivo", "Transferencia" o "Mixto · Ef. $X + Tr. $Y".
+function textoMedioPago(venta) {
+    if (venta.pagos) {
+        return `Mixto · Ef. ${money(venta.pagos.efectivo)} + Tr. ${money(venta.pagos.transferencia)}`;
+    }
+    return venta.medioPago || "";
 }
 
 function datosHTML(pares) {
@@ -6832,7 +7198,7 @@ function filaMovimientoHTML(tipo, registro) {
         <div class="movement-card ${registro.anulada ? "historial-anulada" : ""}" data-detalle="${tipo}:${registro.docId}" data-apilar="1" tabindex="0" role="button">
             <div class="movement-icon">${icono(esVenta ? "ventas" : "gastos")}</div>
             <div>
-                <h3>${esVenta ? "Venta" : "Gasto"}${estado}</h3>
+                <h3>${esVenta ? (registro.comprobante ? limpiarHTML(registro.comprobante) : "Venta") : "Gasto"}${estado}</h3>
                 <p>${limpiarHTML(descripcion)}${horaDe(registro) ? " · " + limpiarHTML(horaDe(registro)) : ""}</p>
             </div>
             <div style="text-align:right;">
@@ -6859,12 +7225,12 @@ function detalleVenta(id) {
     acciones.push(botonCerrarModal);
 
     return {
-        titulo: "Venta",
-        sub: `${fechaCorta(v.fecha)}${horaDe(v) ? " · " + horaDe(v) : ""} · N.º ${numeroVenta(v)}`,
+        titulo: v.comprobante ? `Venta ${v.comprobante}` : "Venta",
+        sub: `${fechaCorta(v.fecha)}${horaDe(v) ? " · " + horaDe(v) : ""}${v.comprobante ? "" : " · N.º " + numeroVenta(v)}`,
         etiqueta: v.anulada ? "Anulada" : (v.medioPago || ""),
         etiquetaPeligro: !!v.anulada,
         cuerpo: `
-            ${cifraHTML("Total de la venta", money(v.total), `${items.length} ${items.length === 1 ? "ítem" : "ítems"} · ${limpiarHTML(v.medioPago || "")}`)}
+            ${cifraHTML("Total de la venta", money(v.total), `${items.length} ${items.length === 1 ? "ítem" : "ítems"} · ${limpiarHTML(textoMedioPago(v))}`)}
             ${bloqueAnulacion(v)}
 
             <div class="modal-seccion">Productos y servicios</div>
@@ -6881,8 +7247,11 @@ function detalleVenta(id) {
 
             <div class="modal-seccion">Datos de la venta</div>
             ${datosHTML([
+                ["Comprobante", limpiarHTML(numeroVenta(v))],
                 ["Cliente", limpiarHTML(v.cliente || "Consumidor final")],
                 ["Medio de pago", limpiarHTML(v.medioPago)],
+                v.pagos ? ["Pagó en efectivo", money(v.pagos.efectivo)] : null,
+                v.pagos ? ["Pagó por transferencia", money(v.pagos.transferencia)] : null,
                 ["Registrada por", limpiarHTML(v.creadoPor)],
                 ["Fecha de registro", fechaHoraDe(v.creadoEn)],
                 ["Turno", enlaceTurno(v.turnoId)],
@@ -6939,6 +7308,9 @@ function detalleTurno(id) {
     const totalVentas = suma(ventasValidas, v => v.total);
     const totalGastos = suma(gastosValidos, g => g.valor);
     const flujo = flujoPorMedio(ventasValidas, gastosValidos);
+    const movimientosCaja = movCajaGlobal
+        .filter(mc => mc.turnoId === t.docId)
+        .sort((a, b) => (milisDe(a) || 0) - (milisDe(b) || 0));
 
     const movimientos = [
         ...ventas.map(v => ({ tipo: "venta", registro: v })),
@@ -6972,6 +7344,9 @@ function detalleTurno(id) {
                 ["Efectivo inicial", money(s.efectivoInicial)],
                 ["Ventas en efectivo", money(s.ventasEfectivo)],
                 ["Gastos en efectivo", money(s.gastosEfectivo)],
+                ["Entradas de efectivo", money(s.entradas || 0)],
+                ["Retiros de efectivo", money(s.retiros || 0)],
+                ["Efectivo esperado", money(s.efectivoEsperado)],
                 ["Ventas totales", money(totalVentas)],
                 ["Gastos totales", money(totalGastos)],
                 ["Utilidad", money(totalVentas - totalGastos)]
@@ -6993,6 +7368,22 @@ function detalleTurno(id) {
                 flujo.map(f => [limpiarHTML(f.medio), money(f.entradas), money(f.salidas), money(f.entradas - f.salidas)]),
                 { apilar: true }
             )}
+
+            ${movimientosCaja.length ? `
+                <div class="modal-seccion">Entradas y retiros de efectivo</div>
+                ${tablaHTML(
+                    [{ t: "Hora" }, { t: "Tipo" }, { t: "Motivo" }, { t: "Valor", num: true }],
+                    movimientosCaja.map(mc => ({
+                        clase: mc.anulada ? "anulada" : "",
+                        celdas: [
+                            limpiarHTML(horaDe(mc)),
+                            mc.tipo === "entrada" ? "Entrada" : "Retiro",
+                            limpiarHTML(mc.motivo) + (mc.nota ? `<br><span style="color:#64748b;">${limpiarHTML(mc.nota)}</span>` : ""),
+                            (mc.tipo === "entrada" ? "+" : "−") + money(mc.valor)
+                        ]
+                    })),
+                    { apilar: true }
+                )}` : ""}
 
             <div class="modal-seccion">Movimientos del turno (${movimientos.length})</div>
             <div class="modal-lista">
@@ -7175,7 +7566,8 @@ window.imprimirComprobante = function(id) {
     document.getElementById("comprobante").innerHTML = `
         <h1>Servicio Técnico</h1>
         <p class="centro">Comprobante de venta</p>
-        <p class="centro">N.º ${numeroVenta(v)} · ${fechaCorta(v.fecha)} ${limpiarHTML(horaDe(v))}</p>
+        <p class="centro comprobante-numero">${limpiarHTML(numeroVenta(v))}</p>
+        <p class="centro">${fechaCorta(v.fecha)} · ${limpiarHTML(horaDe(v))}</p>
         ${v.anulada ? `<p class="centro"><b>VENTA ANULADA</b></p>` : ""}
         <table>
             <thead><tr><th>Descripción</th><th class="num">Cant.</th><th class="num">Total</th></tr></thead>
@@ -7190,6 +7582,7 @@ window.imprimirComprobante = function(id) {
         </table>
         <div class="total"><span>Total</span><span>${money(v.total)}</span></div>
         <p>Medio de pago: ${limpiarHTML(v.medioPago)}</p>
+        ${v.pagos ? `<p>Efectivo: ${money(v.pagos.efectivo)} · Transferencia: ${money(v.pagos.transferencia)}</p>` : ""}
         <p>Cliente: ${limpiarHTML(v.cliente || "Consumidor final")}</p>
         <p>Atendido por: ${limpiarHTML(v.creadoPor)}</p>
         <p class="centro" style="margin-top:14px;">Gracias por su compra</p>`;
