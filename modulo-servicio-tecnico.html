@@ -2525,6 +2525,252 @@ body.modal-abierto {
     }
 }
 
+/* ===== Catálogo ===== */
+
+.catalogo-barra {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+}
+
+.catalogo-crear {
+    display: flex;
+    gap: 10px;
+    flex: 1 1 auto;
+}
+
+.catalogo-crear .submit-btn,
+.catalogo-crear .secondary-btn {
+    width: auto;
+    margin: 0;
+    padding: 0 18px;
+    min-height: 44px;
+    flex: 1 1 auto;
+}
+
+.boton-discreto {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 4px;
+    cursor: pointer;
+}
+
+.boton-discreto:hover {
+    color: var(--ink);
+}
+
+.boton-discreto svg.ico,
+.catalogo-crear svg.ico {
+    width: 16px;
+    height: 16px;
+}
+
+.catalogo-filtros {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.catalogo-filtros input {
+    margin: 0;
+}
+
+#catalogoConteo {
+    margin: 12px 0;
+}
+
+.catalogo-lista {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+}
+
+.prod-card {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 14px 16px;
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    transition: border-color .15s, box-shadow .15s;
+    min-width: 0;
+}
+
+.prod-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, .06);
+}
+
+.prod-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.prod-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.prod-codigo {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.prod-nombre {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+    overflow-wrap: anywhere;
+}
+
+.prod-cat {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+}
+
+.prod-lado {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 4px;
+    flex: 0 0 auto;
+    text-align: right;
+}
+
+.prod-precio {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--ink);
+    white-space: nowrap;
+}
+
+.prod-margen {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+}
+
+.prod-botones {
+    display: flex;
+    gap: 6px;
+    margin-top: 6px;
+}
+
+.mini-btn {
+    border: 1px solid var(--line);
+    background: white;
+    color: var(--ink-2);
+    border-radius: 8px;
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.mini-btn:hover {
+    background: #f8fafc;
+}
+
+.mini-btn.peligro {
+    color: var(--danger);
+}
+
+/* Formularios dentro de la ventana */
+.form-acciones {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.form-acciones .submit-btn,
+.form-acciones .secondary-btn {
+    flex: 1 1 0;
+    margin: 0;
+}
+
+#panelFormCatalogo .catalog-tabs {
+    margin-bottom: 16px;
+}
+
+.codigo-ejemplo {
+    margin: 0;
+    padding: 12px 14px;
+    background: #0f172a;
+    color: #e2e8f0;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    line-height: 1.5;
+    overflow-x: auto;
+    white-space: pre;
+}
+
+.zona-archivo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 24px 16px;
+    border: 1.5px dashed #cbd5e1;
+    border-radius: var(--radius);
+    background: #f8fafc;
+    color: var(--ink-2);
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+    overflow-wrap: anywhere;
+}
+
+.zona-archivo:hover {
+    border-color: var(--ink-2);
+}
+
+.zona-archivo input {
+    display: none;
+}
+
+#importCatalogResult {
+    margin: 12px 0 4px;
+}
+
+@media (min-width: 1024px) {
+    .catalogo-crear {
+        flex: 0 0 auto;
+    }
+
+    .catalogo-filtros {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .catalogo-filtros input {
+        max-width: 480px;
+    }
+
+    .catalogo-lista {
+        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+        gap: 12px;
+    }
+}
+
 /* Sin títulos de sección: el menú ya indica dónde se está y así se gana espacio */
 .view > .st-header {
     display: none;
@@ -2616,7 +2862,7 @@ body.modal-abierto {
                 </div>
             </button>
 
-            <button class="quick-btn" onclick="showView('catalogo'); setCatalogType('producto')">
+            <button class="quick-btn" onclick="abrirFormCatalogo('producto')">
                 <div class="quick-icon"><i data-icon="catalogo"></i></div>
                 <div>
                     <strong>Producto</strong>
@@ -2624,7 +2870,7 @@ body.modal-abierto {
                 </div>
             </button>
 
-            <button class="quick-btn" onclick="showView('catalogo'); setCatalogType('servicio')">
+            <button class="quick-btn" onclick="abrirFormCatalogo('servicio')">
                 <div class="quick-icon"><i data-icon="servicio"></i></div>
                 <div>
                     <strong>Servicio</strong>
@@ -2828,82 +3074,114 @@ body.modal-abierto {
             </div>
         </div>
 
-        <div class="catalogo-layout">
-            <div class="catalogo-col-form">
-                <div class="catalog-tabs">
-                    <button id="tabProducto" class="active" onclick="setCatalogType('producto')">Producto</button>
-                    <button id="tabServicio" onclick="setCatalogType('servicio')">Servicio</button>
-                </div>
+        <div class="catalogo-barra">
+            <div class="catalogo-crear">
+                <button type="button" class="submit-btn" onclick="abrirFormCatalogo('producto')"><i data-icon="plus"></i> Nuevo producto</button>
+                <button type="button" class="secondary-btn" onclick="abrirFormCatalogo('servicio')"><i data-icon="plus"></i> Nuevo servicio</button>
+            </div>
+            <button type="button" class="boton-discreto" onclick="abrirCargaMasiva()"><i data-icon="subir"></i> Carga masiva</button>
+        </div>
 
-                <div class="form-card">
-                    <form id="catalogoForm">
-                        <input type="hidden" id="catalogoTipo" value="producto">
-                        <input type="hidden" id="catalogoEditId" value="">
+        <div class="form-card">
+            <div class="catalogo-filtros">
+                <input type="search" id="catalogSearchInput" placeholder="Buscar por código, nombre o categoría" autocomplete="off">
 
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Código</label>
-                                <input type="text" id="catalogoCodigo" placeholder="Opcional. Ej: REP-001">
-                            </div>
-
-                            <div class="form-group">
-                                <label>Categoría</label>
-                                <input type="text" id="catalogoCategoria" placeholder="Ej: Repuestos">
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Nombre</label>
-                            <input type="text" id="catalogoNombre" placeholder="Ej: Mantenimiento general" required>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Precio de venta</label>
-                                <input type="number" id="catalogoPrecio" min="0" placeholder="Ej: 25000" required>
-                            </div>
-
-                            <div class="form-group">
-                                <label>Costo aproximado</label>
-                                <input type="number" id="catalogoCosto" min="0" placeholder="Opcional">
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Observaciones</label>
-                            <textarea id="catalogoObs" placeholder="Opcional"></textarea>
-                        </div>
-
-                        <button class="submit-btn" type="submit" id="catalogoSubmitBtn">Guardar en catálogo</button>
-                        <button class="secondary-btn" type="button" id="cancelarEdicionCatalogoBtn" style="display:none;">Cancelar edición</button>
-                    </form>
-                </div>
-
-                <div class="form-card">
-                    <h2 class="card-title">Carga masiva</h2>
-                    <p class="card-sub">Sube un archivo JSON con productos y servicios para actualizar el catálogo.</p>
-
-                    <input type="file" id="jsonCatalogInput" accept=".json,application/json" class="input-archivo">
-
-                    <button type="button" class="secondary-btn" id="btnImportCatalog">Subir JSON al catálogo</button>
-
-                    <div id="importCatalogResult" class="ayuda"></div>
+                <div class="rep-chips" id="catalogoFiltroTipo">
+                    <button type="button" data-tipo="" class="active">Todos</button>
+                    <button type="button" data-tipo="producto">Productos</button>
+                    <button type="button" data-tipo="servicio">Servicios</button>
                 </div>
             </div>
 
-            <div class="form-card catalogo-col-lista">
-                <h2 class="card-title">Catálogo actual</h2>
+            <p class="ayuda" id="catalogoConteo"></p>
 
-                <div class="form-group">
-                    <input type="search" id="catalogSearchInput" placeholder="Buscar por código, nombre o categoría" autocomplete="off">
-                </div>
-
-                <div class="catalog-scroll-box">
-                    <div class="frequent-list" id="catalogList"></div>
-                </div>
-            </div>
+            <div class="catalogo-lista" id="catalogList"></div>
         </div>
     </section>
+
+    <!-- Contenido de las ventanas del catálogo: se muestra dentro de la ventana emergente -->
+    <div id="plantillasModal" hidden>
+        <div data-panel id="panelFormCatalogo">
+            <div class="catalog-tabs">
+                <button type="button" id="tabProducto" class="active" onclick="setCatalogType('producto')">Producto</button>
+                <button type="button" id="tabServicio" onclick="setCatalogType('servicio')">Servicio</button>
+            </div>
+
+            <form id="catalogoForm">
+                <input type="hidden" id="catalogoTipo" value="producto">
+                <input type="hidden" id="catalogoEditId" value="">
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Código</label>
+                        <input type="text" id="catalogoCodigo" placeholder="Opcional. Ej: REP-001">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Categoría</label>
+                        <input type="text" id="catalogoCategoria" placeholder="Ej: Repuestos">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Nombre</label>
+                    <input type="text" id="catalogoNombre" placeholder="Ej: Mantenimiento general" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Precio de venta</label>
+                        <input type="number" id="catalogoPrecio" min="0" placeholder="Ej: 25000" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Costo aproximado</label>
+                        <input type="number" id="catalogoCosto" min="0" placeholder="Opcional">
+                    </div>
+                </div>
+
+                <p class="ayuda" id="catalogoMargen" style="margin:-4px 0 14px;"></p>
+
+                <div class="form-group">
+                    <label>Observaciones</label>
+                    <textarea id="catalogoObs" placeholder="Opcional"></textarea>
+                </div>
+
+                <div class="form-acciones">
+                    <button class="secondary-btn" type="button" id="cancelarEdicionCatalogoBtn">Cancelar</button>
+                    <button class="submit-btn" type="submit" id="catalogoSubmitBtn">Guardar en catálogo</button>
+                </div>
+            </form>
+        </div>
+
+        <div data-panel id="panelCargaMasiva">
+            <p class="card-sub" style="margin-top:0;">
+                Sube un archivo <b>.json</b> con una lista de productos y servicios. Cada registro se crea como uno nuevo en el catálogo.
+            </p>
+
+            <div class="modal-seccion" style="margin-top:0;">Formato del archivo</div>
+            <pre class="codigo-ejemplo">[
+  { "codigo": "REP-001", "nombre": "Batería para máquina", "categoria": "Repuestos", "precio": 85000, "costo": 45000 },
+  { "codigo": "SRV-01", "nombre": "Mantenimiento general", "categoria": "Servicios", "precio": 35000 }
+]</pre>
+            <p class="ayuda" style="margin:6px 0 16px;">
+                Obligatorio: <b>nombre</b>. Opcionales: codigo, categoria, precio, costo. Si la categoría dice "servicio", se registra como servicio.
+            </p>
+
+            <label class="zona-archivo" for="jsonCatalogInput">
+                <i data-icon="subir"></i>
+                <span id="nombreArchivoCatalogo">Seleccionar archivo JSON</span>
+                <input type="file" id="jsonCatalogInput" accept=".json,application/json">
+            </label>
+
+            <div id="importCatalogResult" class="ayuda"></div>
+
+            <div class="form-acciones">
+                <button type="button" class="secondary-btn" data-cerrar-modal>Cerrar</button>
+                <button type="button" class="submit-btn" id="btnImportCatalog">Subir al catálogo</button>
+            </div>
+        </div>
+    </div>
 
     <section id="view-caja" class="view">
         <div class="st-header">
@@ -3175,6 +3453,7 @@ body.modal-abierto {
         lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
         unlock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.6-1.7"/>',
         descargar: '<path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 19h16"/>',
+        subir: '<path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 20h16"/>',
         imprimir: '<path d="M7 9V3h10v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M7 14h10v7H7z"/>',
         alerta: '<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>',
         info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',
@@ -3304,6 +3583,12 @@ window.showView = function(viewName) {
 
         document.getElementById("catalogoNombre").placeholder =
             type === "producto" ? "Ej: Batería para máquina" : "Ej: Mantenimiento general";
+
+        // Si se está creando uno nuevo, el título de la ventana sigue al tipo elegido.
+        const enVentana = document.getElementById("panelFormCatalogo").closest("#modalCuerpo");
+        if (enVentana && !document.getElementById("catalogoEditId").value) {
+            document.getElementById("modalTitulo").textContent = type === "servicio" ? "Nuevo servicio" : "Nuevo producto";
+        }
     };
 
     const ROLES_PERMITIDOS = [
@@ -3701,46 +3986,24 @@ function renderHistorial() {
 }
 function renderCatalogo() {
     const container = document.getElementById("catalogList");
+    const conteo = document.getElementById("catalogoConteo");
 
     if (!container) return;
 
-    let lista = [...catalogoGlobal];
+    const texto = normalizarBusqueda(catalogoBusqueda);
 
-    const texto = String(catalogoBusqueda || "")
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .trim();
+    const lista = catalogoGlobal.filter(item => {
+        if (catalogoFiltroTipo && (item.tipo || "producto") !== catalogoFiltroTipo) return false;
+        if (!texto) return true;
+        return normalizarBusqueda(`${item.codigo || ""} ${item.nombre || ""} ${item.categoria || ""} ${item.tipo || ""}`).includes(texto);
+    });
 
-    if (texto) {
-        lista = lista.filter(item => {
-            const codigo = String(item.codigo || "")
-                .toLowerCase()
-                .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "");
-
-            const nombre = String(item.nombre || "")
-                .toLowerCase()
-                .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "");
-
-            const categoria = String(item.categoria || "")
-                .toLowerCase()
-                .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "");
-
-            const tipo = String(item.tipo || "")
-                .toLowerCase()
-                .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "");
-
-            return (
-                codigo.includes(texto) ||
-                nombre.includes(texto) ||
-                categoria.includes(texto) ||
-                tipo.includes(texto)
-            );
-        });
+    if (conteo) {
+        const productos = catalogoGlobal.filter(i => (i.tipo || "producto") === "producto").length;
+        const servicios = catalogoGlobal.length - productos;
+        conteo.textContent = lista.length === catalogoGlobal.length
+            ? `${productos} productos · ${servicios} servicios`
+            : `${lista.length} de ${catalogoGlobal.length} resultados`;
     }
 
     if (!lista.length) {
@@ -3748,39 +4011,34 @@ function renderCatalogo() {
         return;
     }
 
-    container.innerHTML = lista.map(item => `
-        <div class="mini-card" style="align-items:flex-start; gap:12px;" ${attrDetalle("producto:" + item.docId)}>
-            <div style="flex:1;">
-                <strong>
-                    ${item.codigo ? limpiarHTML(item.codigo) + ' · ' : ''}${limpiarHTML(item.nombre)}
-                </strong>
+    container.innerHTML = lista.map(item => {
+        const precio = Number(item.precio || 0);
+        const costo = Number(item.costoAproximado || 0);
+        const margen = precio > 0 && costo > 0
+            ? `Margen ${((precio - costo) / precio * 100).toLocaleString("es-CO", { maximumFractionDigits: 1 })}%`
+            : "Sin costo";
 
-                <p style="margin:4px 0 0; color:#64748b; font-size:12px; font-weight:700;">
-                    ${limpiarHTML(item.tipo || "producto")} · ${limpiarHTML(item.categoria || "Sin categoría")}
-                </p>
+        return `
+            <div class="prod-card" ${attrDetalle("producto:" + item.docId)}>
+                <div class="prod-info">
+                    <div class="prod-top">
+                        <span class="rep-etiqueta">${item.tipo === "servicio" ? "Servicio" : "Producto"}</span>
+                        ${item.codigo ? `<span class="prod-codigo">${limpiarHTML(item.codigo)}</span>` : ""}
+                    </div>
+                    <strong class="prod-nombre">${limpiarHTML(item.nombre)}</strong>
+                    <span class="prod-cat">${limpiarHTML(item.categoria || "Sin categoría")}</span>
+                </div>
 
-                <p style="margin:6px 0 0; color:#0f172a; font-size:14px; font-weight:900;">
-                    ${money(item.precio || 0)}
-                </p>
-            </div>
-
-            <div style="display:flex; flex-direction:column; gap:6px;">
-                <button 
-                    type="button"
-                    onclick="editarCatalogo('${item.docId}')"
-                    style="border:none; background:#dbeafe; color:#1d4ed8; border-radius:10px; padding:7px 10px; font-size:12px; font-weight:900;">
-                    Editar
-                </button>
-
-                <button 
-                    type="button"
-                    onclick="eliminarCatalogo('${item.docId}')"
-                    style="border:none; background:#fee2e2; color:#dc2626; border-radius:10px; padding:7px 10px; font-size:12px; font-weight:900;">
-                    Eliminar
-                </button>
-            </div>
-        </div>
-    `).join("");
+                <div class="prod-lado">
+                    <strong class="prod-precio">${money(precio)}</strong>
+                    <span class="prod-margen">${margen}</span>
+                    <div class="prod-botones">
+                        <button type="button" class="mini-btn" onclick="editarCatalogo('${item.docId}')">Editar</button>
+                        <button type="button" class="mini-btn peligro" onclick="eliminarCatalogo('${item.docId}')">Eliminar</button>
+                    </div>
+                </div>
+            </div>`;
+    }).join("");
 }
 
     function renderFrecuentes() {
@@ -4272,7 +4530,7 @@ async function guardarVenta(form) {
 
     } finally {
         this.disabled = false;
-        this.textContent = "Subir JSON al catálogo";
+        this.textContent = "Subir al catálogo";
     }
 });
     function normalizarTipoCategoria(valor) {
@@ -4381,7 +4639,19 @@ async function importarCatalogoDesdeJSON(items) {
         omitidos: totalOmitidos
     };
 }
-    window.editarCatalogo = function(docId) {
+// Abre la ventana para crear un producto/servicio nuevo.
+window.abrirFormCatalogo = function(tipo = "producto") {
+    cancelarEdicionCatalogo();
+    setCatalogType(tipo);
+    abrirPanelEnModal("panelFormCatalogo", {
+        titulo: tipo === "servicio" ? "Nuevo servicio" : "Nuevo producto",
+        sub: "Se agrega al catálogo para poder venderlo"
+    });
+    setTimeout(() => document.getElementById("catalogoNombre").focus({ preventScroll: true }), 50);
+};
+
+// Abre la misma ventana con los datos del producto para editarlo.
+window.editarCatalogo = function(docId) {
     const item = catalogoGlobal.find(p => p.docId === docId);
 
     if (!item) {
@@ -4389,27 +4659,24 @@ async function importarCatalogoDesdeJSON(items) {
         return;
     }
 
+    cancelarEdicionCatalogo();
+
     document.getElementById("catalogoEditId").value = item.docId;
-
-    if (document.getElementById("catalogoCodigo")) {
-        document.getElementById("catalogoCodigo").value = item.codigo || "";
-    }
-
-    document.getElementById("catalogoTipo").value = item.tipo || "producto";
+    document.getElementById("catalogoCodigo").value = item.codigo || "";
     document.getElementById("catalogoNombre").value = item.nombre || "";
     document.getElementById("catalogoCategoria").value = item.categoria || "";
     document.getElementById("catalogoPrecio").value = item.precio || 0;
-    document.getElementById("catalogoCosto").value = item.costoAproximado || 0;
+    document.getElementById("catalogoCosto").value = item.costoAproximado || "";
     document.getElementById("catalogoObs").value = item.observaciones || "";
 
     setCatalogType(item.tipo || "producto");
+    actualizarMargenCatalogo();
 
-    document.getElementById("catalogoSubmitBtn").textContent = "Actualizar catálogo";
-    document.getElementById("cancelarEdicionCatalogoBtn").style.display = "block";
+    document.getElementById("catalogoSubmitBtn").textContent = "Guardar cambios";
 
-    document.getElementById("catalogoForm").scrollIntoView({
-        behavior: "smooth",
-        block: "start"
+    abrirPanelEnModal("panelFormCatalogo", {
+        titulo: `Editar ${item.tipo === "servicio" ? "servicio" : "producto"}`,
+        sub: item.nombre || ""
     });
 };
 
@@ -4419,12 +4686,56 @@ function cancelarEdicionCatalogo() {
     document.getElementById("catalogoTipo").value = "producto";
 
     setCatalogType("producto");
+    actualizarMargenCatalogo();
 
     document.getElementById("catalogoSubmitBtn").textContent = "Guardar en catálogo";
-    document.getElementById("cancelarEdicionCatalogoBtn").style.display = "none";
 }
 
-document.getElementById("cancelarEdicionCatalogoBtn").addEventListener("click", cancelarEdicionCatalogo);
+// Mientras se escribe precio y costo, muestra el margen que quedaría.
+function actualizarMargenCatalogo() {
+    const precio = Number(document.getElementById("catalogoPrecio").value || 0);
+    const costo = Number(document.getElementById("catalogoCosto").value || 0);
+    const texto = document.getElementById("catalogoMargen");
+
+    if (precio > 0 && costo > 0) {
+        const margen = (precio - costo) / precio;
+        texto.textContent = `Ganancia por unidad: ${money(precio - costo)} · Margen ${(margen * 100).toLocaleString("es-CO", { maximumFractionDigits: 1 })}%`;
+        texto.style.color = margen < 0 ? "var(--danger)" : "";
+    } else {
+        texto.textContent = "Registra el costo para ver el margen en los reportes.";
+        texto.style.color = "";
+    }
+}
+
+["catalogoPrecio", "catalogoCosto"].forEach(id => {
+    document.getElementById(id).addEventListener("input", actualizarMargenCatalogo);
+});
+
+document.getElementById("cancelarEdicionCatalogoBtn").addEventListener("click", () => cerrarModal());
+
+window.abrirCargaMasiva = function() {
+    document.getElementById("importCatalogResult").textContent = "";
+    abrirPanelEnModal("panelCargaMasiva", {
+        titulo: "Carga masiva",
+        sub: "Agrega muchos productos y servicios desde un archivo"
+    });
+};
+
+document.getElementById("jsonCatalogInput").addEventListener("change", function() {
+    document.getElementById("nombreArchivoCatalogo").textContent =
+        this.files && this.files[0] ? this.files[0].name : "Seleccionar archivo JSON";
+});
+
+let catalogoFiltroTipo = "";
+
+document.getElementById("catalogoFiltroTipo").addEventListener("click", function(e) {
+    const boton = e.target.closest("button[data-tipo]");
+    if (!boton) return;
+
+    catalogoFiltroTipo = boton.dataset.tipo;
+    this.querySelectorAll("button").forEach(b => b.classList.toggle("active", b === boton));
+    renderCatalogo();
+});
 
 window.eliminarCatalogo = async function(docId) {
     const item = catalogoGlobal.find(p => p.docId === docId);
@@ -4495,7 +4806,7 @@ async function guardarCatalogo() {
         alert("Guardado en catálogo correctamente.");
     }
 
-    cancelarEdicionCatalogo();
+    cerrarModal();
 }
 
 // =====================================================================
@@ -6087,7 +6398,7 @@ function detalleProducto(id) {
             </div>`,
         acciones: [
             `<button type="button" class="secondary-btn" style="color:var(--danger);" onclick="cerrarModal(); eliminarCatalogo('${p.docId}')">Eliminar</button>`,
-            `<button type="button" class="secondary-btn" onclick="cerrarModal(); showView('catalogo'); editarCatalogo('${p.docId}')">Editar</button>`,
+            `<button type="button" class="secondary-btn" onclick="editarCatalogo('${p.docId}')">Editar</button>`,
             botonCerrarModal
         ]
     };
@@ -6100,15 +6411,41 @@ const DETALLES = {
     producto: detalleProducto
 };
 
+// Los formularios (catálogo, carga masiva) se mueven dentro de la ventana en lugar de copiarse,
+// así conservan sus eventos. Al cerrar o cambiar de ventana vuelven a su contenedor oculto.
+function devolverPaneles(excepto = null) {
+    const contenedor = document.getElementById("plantillasModal");
+
+    document.querySelectorAll("#modalCuerpo [data-panel]").forEach(panel => {
+        if (panel === excepto) return;
+        contenedor.appendChild(panel);
+        if (panel.id === "panelFormCatalogo") cancelarEdicionCatalogo();
+    });
+}
+
+function abrirPanelEnModal(idPanel, { titulo, sub = "" }) {
+    modalPila.length = 0;
+    pintarModal({ titulo, sub, nodo: document.getElementById(idPanel), acciones: [] });
+}
+
 function pintarModal(d, enfocar = true) {
     const modal = document.getElementById("modalDetalle");
     const etiqueta = document.getElementById("modalEtiqueta");
+    const cuerpo = document.getElementById("modalCuerpo");
 
     document.getElementById("modalTitulo").textContent = d.titulo;
     document.getElementById("modalSub").textContent = d.sub || "";
     etiqueta.textContent = d.etiqueta || "";
     etiqueta.classList.toggle("peligro", !!d.etiquetaPeligro);
-    document.getElementById("modalCuerpo").innerHTML = d.cuerpo;
+
+    devolverPaneles(d.nodo || null);
+
+    if (d.nodo) {
+        [...cuerpo.children].forEach(hijo => { if (hijo !== d.nodo) hijo.remove(); });
+        if (d.nodo.parentElement !== cuerpo) cuerpo.appendChild(d.nodo);
+    } else {
+        cuerpo.innerHTML = d.cuerpo;
+    }
     document.getElementById("modalPie").innerHTML = (d.acciones || []).join("");
     document.getElementById("modalVolver").hidden = modalPila.length < 2;
     modal.querySelector(".modal-caja").classList.toggle("ancha", !!d.ancha);
@@ -6148,6 +6485,7 @@ function cerrarModal() {
     modal.hidden = true;
     modalPila.length = 0;
     document.body.classList.remove("modal-abierto");
+    devolverPaneles();
 
     if (modalFocoPrevio && document.contains(modalFocoPrevio)) {
         modalFocoPrevio.focus({ preventScroll: true });
