@@ -2104,6 +2104,17 @@ textarea {
     }
 }
 
+/* Sin títulos de sección: el menú ya indica dónde se está y así se gana espacio */
+.view > .st-header {
+    display: none;
+}
+
+@media (min-width: 1024px) {
+    .st-app {
+        padding-top: 88px;
+    }
+}
+
 /* Fuera del computador, las secciones van una debajo de la otra */
 @media (max-width: 1023px) {
     .panel {
