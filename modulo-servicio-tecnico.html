@@ -3343,10 +3343,6 @@ body.modal-abierto {
         </div>
 
         <div data-panel id="panelFormCatalogo">
-            <div class="catalog-tabs">
-                <button type="button" id="tabProducto" class="active" onclick="setCatalogType('producto')">Producto</button>
-                <button type="button" id="tabServicio" onclick="setCatalogType('servicio')">Servicio</button>
-            </div>
 
             <form id="catalogoForm">
                 <input type="hidden" id="catalogoTipo" value="producto">
@@ -3360,7 +3356,10 @@ body.modal-abierto {
 
                     <div class="form-group">
                         <label>Categoría</label>
-                        <input type="text" id="catalogoCategoria" placeholder="Ej: Repuestos">
+                        <select id="catalogoCategoria" onchange="setCatalogType(this.value)">
+                            <option value="producto">Producto</option>
+                            <option value="servicio">Servicio</option>
+                        </select>
                     </div>
                 </div>
 
@@ -3402,11 +3401,11 @@ body.modal-abierto {
 
             <div class="modal-seccion" style="margin-top:0;">Formato del archivo</div>
             <pre class="codigo-ejemplo">[
-  { "nombre": "Batería para máquina", "categoria": "Repuestos", "precio": 85000, "costo": 45000 },
-  { "nombre": "Mantenimiento general", "categoria": "Servicios", "precio": 35000 }
+  { "nombre": "Batería para máquina", "categoria": "Producto", "precio": 85000, "costo": 45000 },
+  { "nombre": "Mantenimiento general", "categoria": "Servicio", "precio": 35000 }
 ]</pre>
             <p class="ayuda" style="margin:6px 0 16px;">
-                Obligatorio: <b>nombre</b>. Opcionales: categoria, precio, costo y codigo. Si un registro no trae código, el sistema le asigna el siguiente consecutivo. Si la categoría dice "servicio", se registra como servicio.
+                Obligatorio: <b>nombre</b>. Opcionales: categoria (Producto o Servicio), precio, costo y codigo. Si un registro no trae código, el sistema le asigna el siguiente consecutivo. Si no dice "Servicio", se registra como producto.
             </p>
 
             <label class="zona-archivo" for="jsonCatalogInput">
@@ -3793,8 +3792,8 @@ window.showView = function(viewName) {
     window.setCatalogType = function(type) {
         document.getElementById("catalogoTipo").value = type;
 
-        document.getElementById("tabProducto").classList.toggle("active", type === "producto");
-        document.getElementById("tabServicio").classList.toggle("active", type === "servicio");
+        // La categoría (Producto / Servicio) es la que define el tipo.
+        document.getElementById("catalogoCategoria").value = type;
 
         document.getElementById("catalogoNombre").placeholder =
             type === "producto" ? "Ej: Batería para máquina" : "Ej: Mantenimiento general";
@@ -4372,7 +4371,6 @@ function renderCatalogo() {
                         ${item.codigo ? `<span class="prod-codigo">${limpiarHTML(item.codigo)}</span>` : ""}
                     </div>
                     <strong class="prod-nombre">${limpiarHTML(item.nombre)}</strong>
-                    <span class="prod-cat">${limpiarHTML(item.categoria || "Sin categoría")}</span>
                 </div>
 
                 <div class="prod-lado">
@@ -5058,7 +5056,7 @@ async function importarCatalogoDesdeJSON(items) {
             codigo: codigo || String(siguienteCodigo++),
             tipo: tipo,
             nombre: nombre,
-            categoria: categoriaOriginal || (tipo === 'servicio' ? 'Servicios' : 'Producto'),
+            categoria: tipo === 'servicio' ? 'Servicio' : 'Producto',
             precio: precio,
             costoAproximado: costo,
             observaciones: 'Creado por carga masiva JSON',
@@ -5136,7 +5134,6 @@ window.editarCatalogo = function(docId) {
     document.getElementById("catalogoCodigo").value = item.codigo || "";
     document.getElementById("catalogoCodigo").placeholder = "Sin código";
     document.getElementById("catalogoNombre").value = item.nombre || "";
-    document.getElementById("catalogoCategoria").value = item.categoria || "";
     document.getElementById("catalogoPrecio").value = item.precio || 0;
     document.getElementById("catalogoCosto").value = item.costoAproximado || "";
     document.getElementById("catalogoObs").value = item.observaciones || "";
@@ -5251,7 +5248,7 @@ async function guardarCatalogo() {
     const data = {
         tipo: document.getElementById("catalogoTipo").value,
         nombre: document.getElementById("catalogoNombre").value.trim(),
-        categoria: document.getElementById("catalogoCategoria").value.trim(),
+        categoria: document.getElementById("catalogoTipo").value === "servicio" ? "Servicio" : "Producto",
         precio: Number(document.getElementById("catalogoPrecio").value || 0),
         costoAproximado: Number(document.getElementById("catalogoCosto").value || 0),
         observaciones: document.getElementById("catalogoObs").value.trim(),
