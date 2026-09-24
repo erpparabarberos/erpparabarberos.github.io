@@ -2,11 +2,8 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Servicio Técnico Admin</title>
-
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
 
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
@@ -644,7 +641,181 @@
     margin-top: 0 !important;
     padding-top: 0 !important;
 }
-        
+
+/* ===== Celular y tablet ===== */
+
+/* Que la página no se corra hacia los lados ni rebote, y sin zoom con doble toque */
+html,
+body {
+    overflow-x: hidden;
+    overscroll-behavior-y: none;
+    -webkit-text-size-adjust: 100%;
+    touch-action: manipulation;
+}
+
+.st-app {
+    padding-bottom: calc(130px + env(safe-area-inset-bottom));
+}
+
+button,
+input,
+select,
+textarea {
+    font-family: inherit;
+}
+
+/* 16px evita que el iPhone haga zoom al tocar un campo */
+input,
+select,
+textarea {
+    font-size: 16px;
+    max-width: 100%;
+}
+
+/* Dentro de la app ya se muestra el usuario arriba */
+html.embebido .st-avatar {
+    display: none;
+}
+
+.balance-value {
+    font-size: clamp(30px, 10vw, 38px);
+    overflow-wrap: anywhere;
+}
+
+/* Acciones rápidas: ícono arriba, título y descripción uno debajo del otro */
+.quick-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+    text-align: left;
+    cursor: pointer;
+    min-width: 0;
+}
+
+.quick-btn strong,
+.quick-btn small {
+    display: block;
+}
+
+.quick-btn small {
+    margin-top: 2px;
+    line-height: 1.3;
+}
+
+.quick-btn.turno-btn {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+/* Textos largos bajan de línea en vez de salirse */
+.movement-card,
+.history-card {
+    grid-template-columns: 42px minmax(0, 1fr) auto;
+}
+
+.movement-card h3,
+.movement-card p,
+.history-card h3,
+.history-card p,
+.mini-card strong,
+.mini-card p,
+.search-result-item strong {
+    overflow-wrap: anywhere;
+}
+
+.mini-card > div {
+    min-width: 0;
+}
+
+.money-item {
+    min-width: 0;
+}
+
+.bottom-nav {
+    bottom: calc(12px + env(safe-area-inset-bottom));
+    transition: transform .2s ease;
+}
+
+.bottom-nav button {
+    min-width: 0;
+    padding: 0;
+}
+
+/* Mientras se escribe en el celular, el menú se esconde para no tapar el teclado */
+body.escribiendo .bottom-nav {
+    transform: translate(-50%, calc(100% + 40px));
+}
+
+@media (max-width: 480px) {
+    .st-app {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .st-header h1 {
+        font-size: 26px;
+    }
+
+    /* Ventas / Gastos / Utilidad en filas: el monto siempre cabe */
+    .money-row {
+        grid-template-columns: 1fr;
+    }
+
+    .money-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 13px 16px;
+    }
+
+    .money-item span {
+        margin-bottom: 0;
+    }
+
+    .quick-btn {
+        min-height: 96px;
+    }
+
+    .quick-btn strong {
+        font-size: 16px;
+    }
+
+    .movement-card strong,
+    .history-card strong {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 380px) {
+    .bottom-nav button {
+        font-size: 9px;
+    }
+
+    .bottom-nav button span {
+        font-size: 17px;
+    }
+}
+
+/* Tablet vertical: aprovecha el ancho */
+@media (min-width: 600px) and (max-width: 899px) {
+    .st-app {
+        max-width: 760px;
+        padding-left: 28px;
+        padding-right: 28px;
+    }
+
+    .quick-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .bottom-nav {
+        max-width: 620px;
+    }
+}
     </style>
 </head>
 
@@ -780,7 +951,7 @@
         <input 
             type="text" 
             id="ventaBuscadorItem" 
-            placeholder="Escribe el código o el nombre del producto"
+            placeholder="Código o nombre del producto"
             autocomplete="off"
         >
 
@@ -1202,6 +1373,27 @@
             campo.blur();
         }
     }, { passive: true });
+
+    if (window.self !== window.top) {
+        document.documentElement.classList.add("embebido");
+    }
+
+    // En pantallas táctiles, esconde el menú inferior mientras el teclado está abierto.
+    const esTactil = window.matchMedia("(pointer: coarse)").matches;
+    const esCampoDeTexto = (el) =>
+        el && (el.tagName === "TEXTAREA" || el.tagName === "SELECT" ||
+            (el.tagName === "INPUT" && !["file", "button", "submit", "checkbox", "radio"].includes(el.type)));
+
+    if (esTactil) {
+        document.addEventListener("focusin", (e) => {
+            if (esCampoDeTexto(e.target)) document.body.classList.add("escribiendo");
+        });
+        document.addEventListener("focusout", () => {
+            setTimeout(() => {
+                if (!esCampoDeTexto(document.activeElement)) document.body.classList.remove("escribiendo");
+            }, 100);
+        });
+    }
 
     document.getElementById("todayLabel").textContent = "Hoy, " + todayReadable();
     document.getElementById("ventaFecha").value = todayISO();
