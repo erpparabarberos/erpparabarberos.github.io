@@ -4482,7 +4482,7 @@ function renderCaja() {
 
     turnosList.innerHTML = turnosGlobal.slice(0, 20).map(turno => {
         const resumen = obtenerResumenTurno(turno);
-        const estado = turno.estado === "abierto" ? "Abierto" : "Cerrado";
+        const estado = turno.estado === "abierto" ? "abierto" : "cerrado";
         const diferencia = Number(turno.diferencia || 0);
 
         let diferenciaTexto = "";
@@ -5824,6 +5824,37 @@ function agrupar(lista, claveFn, valorFn) {
     return [...mapa.values()].sort((a, b) => b.total - a.total);
 }
 
+// Ventas por medio de pago con las mixtas repartidas: su parte en efectivo suma a Efectivo y la otra a Transferencia.
+// Así el efectivo coincide en todos los reportes. Una venta mixta cuenta en los dos medios.
+function ventasPorMedio(ventas) {
+    const mapa = new Map();
+    const sumar = (clave, valor) => {
+        const fila = mapa.get(clave) || { clave, n: 0, total: 0 };
+        fila.n++;
+        fila.total += valor;
+        mapa.set(clave, fila);
+    };
+
+    ventas.forEach(v => {
+        if (v.pagos) {
+            sumar("Efectivo", Number(v.pagos.efectivo || 0));
+            sumar("Transferencia", Number(v.pagos.transferencia || 0));
+        } else {
+            sumar(v.medioPago || "Sin dato", Number(v.total || 0));
+        }
+    });
+
+    return [...mapa.values()].sort((a, b) => b.total - a.total);
+}
+
+function notaMixtas(ventas) {
+    const n = ventas.filter(v => v.pagos).length;
+    if (!n) return "";
+    return n === 1
+        ? "La venta mixta se reparte entre efectivo y transferencia y cuenta en los dos."
+        : `Las ${n} ventas mixtas se reparten entre efectivo y transferencia y cuentan en los dos.`;
+}
+
 function ventasPorItem(ventas) {
     const mapa = new Map();
 
@@ -6204,7 +6235,7 @@ function alertasDelPeriodo(r, m) {
 
 function repResumen(panel, { r, actual, m }) {
     const serie = serieTemporal(r, actual.ventas, actual.gastos);
-    const medios = agrupar(actual.ventas, v => v.medioPago, v => v.total);
+    const medios = ventasPorMedio(actual.ventas);
     const tipos = [
         { clave: "Productos", total: m.ingresosProductos },
         { clave: "Servicios", total: m.ingresosServicios }
@@ -6227,7 +6258,7 @@ function repResumen(panel, { r, actual, m }) {
         <div class="rep-dos-col">
             <div class="rep-card">
                 <h3>Ventas por medio de pago</h3>
-                <p class="rep-sub">Cómo pagan los clientes · número de ventas</p>
+                <p class="rep-sub">Cómo pagan los clientes · número de ventas${notaMixtas(actual.ventas) ? "<br>" + notaMixtas(actual.ventas) : ""}</p>
                 ${barrasHTML(medios, m.ingresos, REP_COLOR.ventas)}
             </div>
 
@@ -6296,7 +6327,7 @@ function repVentas(panel, { actual, m }) {
     const items = ventasPorItem(actual.ventas);
     const top = items.slice(0, 10);
     const totalItems = suma(items, i => i.total);
-    const medios = agrupar(actual.ventas, v => v.medioPago, v => v.total);
+    const medios = ventasPorMedio(actual.ventas);
     const vendedores = agrupar(actual.ventas, v => v.creadoPor, v => v.total);
 
     const orden = [1, 2, 3, 4, 5, 6, 0];
@@ -6337,7 +6368,7 @@ function repVentas(panel, { actual, m }) {
                 [{ t: "Producto / servicio" }, { t: "Tipo" }, { t: "Cant.", num: true }, { t: "Vendido", num: true }, { t: "Part.", num: true }],
                 items.map(i => ({ detalle: catalogoGlobal.some(c => c.docId === i.itemId) ? "producto:" + i.itemId : "", celdas: [
                     `${i.codigo ? `<span style="color:#64748b;">${limpiarHTML(i.codigo)}</span> · ` : ""}${limpiarHTML(i.nombre)}`,
-                    limpiarHTML(i.tipo),
+                    i.tipo === "servicio" ? "Servicio" : "Producto",
                     i.cantidad.toLocaleString("es-CO"),
                     money(i.total),
                     pct(totalItems ? i.total / totalItems : null)
@@ -6349,6 +6380,7 @@ function repVentas(panel, { actual, m }) {
         <div class="rep-dos-col">
             <div class="rep-card">
                 <h3>Por medio de pago</h3>
+                ${notaMixtas(actual.ventas) ? `<p class="rep-sub">${notaMixtas(actual.ventas)}</p>` : ""}
                 ${tablaHTML(
                     [{ t: "Medio" }, { t: "N.º", num: true }, { t: "Total", num: true }, { t: "%", num: true }],
                     medios.map(f => [limpiarHTML(f.clave), f.n, money(f.total), pct(m.ingresos ? f.total / m.ingresos : null)]),
@@ -6476,7 +6508,7 @@ function repCaja(panel, { r, actual }) {
 
     panel.innerHTML = `
         <div class="rep-kpis">
-            ${kpiHTML("Turnos", turnos.length.toLocaleString("es-CO"), `<span class="rep-delta">${cerrados.length} cerrados · ${turnos.length - cerrados.length} abiertos</span>`)}
+            ${kpiHTML("Turnos", turnos.length.toLocaleString("es-CO"), `<span class="rep-delta">${cerrados.length} ${cerrados.length === 1 ? "cerrado" : "cerrados"} · ${turnos.length - cerrados.length} ${turnos.length - cerrados.length === 1 ? "abierto" : "abiertos"}</span>`)}
             ${kpiHTML("Faltantes", money(faltantes))}
             ${kpiHTML("Sobrantes", money(sobrantes))}
         </div>
@@ -6507,7 +6539,7 @@ function repCaja(panel, { r, actual }) {
 
         <div class="rep-card">
             <h3>Flujo por medio de pago</h3>
-            <p class="rep-sub">Para conciliar con Nequi, Daviplata, bancos y datáfono</p>
+            <p class="rep-sub">Para conciliar el efectivo de la caja y las transferencias recibidas</p>
             ${tablaHTML(
                 [{ t: "Medio" }, { t: "Entradas", num: true }, { t: "Salidas", num: true }, { t: "Neto", num: true }],
                 flujo.map(f => [limpiarHTML(f.medio), money(f.entradas), money(f.salidas), money(f.entradas - f.salidas)]),
@@ -6525,7 +6557,7 @@ function movimientosDelRango(r) {
             fecha: v.fecha,
             ms: milisDe(v) || 0,
             hora: horaDe(v),
-            descripcion: itemsDeVenta(v).map(i => `${i.cantidad > 1 ? i.cantidad + "× " : ""}${i.nombre}`).join(", "),
+            descripcion: (v.comprobante ? v.comprobante + " · " : "") + itemsDeVenta(v).map(i => `${i.cantidad > 1 ? i.cantidad + "× " : ""}${i.nombre}`).join(", "),
             medio: v.medioPago || "",
             usuario: v.creadoPor || "",
             valor: Number(v.total || 0),
@@ -6799,7 +6831,7 @@ function exportarExcel() {
     const faltantes = suma(cerrados.filter(t => Number(t.diferencia || 0) < 0), t => Math.abs(Number(t.diferencia || 0)));
     const sobrantes = suma(cerrados.filter(t => Number(t.diferencia || 0) > 0), t => Number(t.diferencia || 0));
 
-    const medios = agrupar(actual.ventas, v => v.medioPago, v => v.total);
+    const medios = ventasPorMedio(actual.ventas);
     const items = ventasPorItem(actual.ventas);
     const categorias = agrupar(actual.gastos, g => g.categoria || "Sin categoría", g => g.valor);
     const anulados = movimientosDelRango(r).filter(mv => mv.anulada);
@@ -6818,6 +6850,7 @@ function exportarExcel() {
     if (medios.length) {
         medios.forEach(f => resumen.fila([f.clave, f.n, redondear(f.total), fraccion(f.total, m.ingresos)], "dato", [null, "entero", "moneda", "porcentaje"]));
         resumen.fila(["Total", m.nVentas, redondear(m.ingresos), 1], "total", [null, "entero", "moneda", "porcentaje"]);
+        if (notaMixtas(actual.ventas)) resumen.fila([notaMixtas(actual.ventas)], "nota");
     } else {
         resumen.fila(["Sin ventas en este periodo"], "nota");
     }
