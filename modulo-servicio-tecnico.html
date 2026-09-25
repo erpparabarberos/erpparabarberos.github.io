@@ -5767,7 +5767,8 @@ const suma = (lista, fn) => lista.reduce((acc, x) => acc + Number(fn(x) || 0), 0
 function datosDelRango(desde, hasta) {
     return {
         ventas: ventasGlobal.filter(v => noAnulado(v) && enRango(v.fecha, desde, hasta)),
-        gastos: gastosGlobal.filter(g => noAnulado(g) && enRango(g.fecha, desde, hasta))
+        gastos: gastosGlobal.filter(g => noAnulado(g) && enRango(g.fecha, desde, hasta)),
+        turnosCerrados: turnosGlobal.filter(t => t.estado === "cerrado" && enRango(t.fechaApertura, desde, hasta))
     };
 }
 
@@ -5783,9 +5784,13 @@ function itemsDeVenta(venta) {
     }];
 }
 
-function calcularMetricas(ventas, gastos) {
+// La utilidad real descuenta los faltantes y suma los sobrantes de los cierres de caja:
+// lo que se vendió pero no está en la caja no es plata que se tenga.
+function calcularMetricas(ventas, gastos, turnosCerrados = []) {
     const ingresos = suma(ventas, v => v.total);
     const egresos = suma(gastos, g => g.valor);
+    const faltantes = suma(turnosCerrados.filter(t => Number(t.diferencia || 0) < 0), t => Math.abs(Number(t.diferencia || 0)));
+    const sobrantes = suma(turnosCerrados.filter(t => Number(t.diferencia || 0) > 0), t => Number(t.diferencia || 0));
 
     let ingresosProductos = 0;
     let ingresosServicios = 0;
@@ -5803,6 +5808,9 @@ function calcularMetricas(ventas, gastos) {
         ingresos,
         egresos,
         utilidad: ingresos - egresos,
+        faltantes,
+        sobrantes,
+        utilidadReal: ingresos - egresos - faltantes + sobrantes,
         nVentas: ventas.length,
         ingresosProductos,
         ingresosServicios,
@@ -6162,7 +6170,7 @@ function renderReportes() {
     const ctx = {
         r,
         actual,
-        m: calcularMetricas(actual.ventas, actual.gastos)
+        m: calcularMetricas(actual.ventas, actual.gastos, actual.turnosCerrados)
     };
 
     const pintar = {
@@ -6246,6 +6254,7 @@ function repResumen(panel, { r, actual, m }) {
             ${kpiHTML("Ventas", money(m.ingresos))}
             ${kpiHTML("Gastos", money(m.egresos))}
             ${kpiHTML("Utilidad", money(m.utilidad))}
+            ${kpiHTML("Utilidad real", money(m.utilidadReal), `<span class="rep-delta">Descontando diferencias de caja</span>`)}
             ${kpiHTML("N.º de ventas", m.nVentas.toLocaleString("es-CO"))}
         </div>
 
@@ -6307,6 +6316,10 @@ function repResultados(panel, { actual, m }) {
 
     filas.push(fila("Total gastos", m.egresos, "total"));
     filas.push(fila("Utilidad del periodo", m.utilidad, "total"));
+    filas.push({ clase: "seccion", celdas: ["Diferencias de caja", ""] });
+    filas.push(fila("(−) Faltantes de caja", -m.faltantes, "sub"));
+    filas.push(fila("(+) Sobrantes de caja", m.sobrantes, "sub"));
+    filas.push(fila("Utilidad real", m.utilidadReal, "total"));
 
     panel.innerHTML = `
         <div class="rep-card">
@@ -6317,7 +6330,8 @@ function repResultados(panel, { actual, m }) {
                 filas
             )}
             <p class="rep-nota">
-                Se calcula con base en caja: lo vendido menos lo gastado en el periodo. No incluye IVA, retenciones,
+                Se calcula con base en caja: lo vendido menos lo gastado en el periodo. La utilidad real además descuenta
+                los faltantes y suma los sobrantes de los cierres de caja. No incluye IVA, retenciones,
                 depreciaciones ni obligaciones laborales; para la contabilidad oficial valide las cifras con su contador.
             </p>
         </div>`;
@@ -6813,7 +6827,7 @@ function exportarExcel() {
 
     const r = rangoDelPeriodo();
     const actual = datosDelRango(r.desde, r.hasta);
-    const m = calcularMetricas(actual.ventas, actual.gastos);
+    const m = calcularMetricas(actual.ventas, actual.gastos, actual.turnosCerrados);
     const libro = XLSX.utils.book_new();
 
     const redondear = (n) => Math.round(Number(n || 0));
@@ -6844,6 +6858,7 @@ function exportarExcel() {
         .fila(["Ventas", redondear(m.ingresos)], "dato", [null, "moneda"])
         .fila(["Gastos", redondear(m.egresos)], "dato", [null, "moneda"])
         .fila(["Utilidad", redondear(m.utilidad)], "total", [null, "moneda"])
+        .fila(["Utilidad real (descontando diferencias de caja)", redondear(m.utilidadReal)], "total", [null, "moneda"])
         .fila(["N.º de ventas", m.nVentas], "dato", [null, "entero"]);
 
     resumen.seccion("Ventas por medio de pago").encabezado(["Medio de pago", "N.º de ventas", "Total", "Participación"]);
@@ -6920,8 +6935,13 @@ function exportarExcel() {
     if (!categorias.length) er.fila(["    Sin gastos registrados"], "sub", [], 2);
     filaER(er, "Total gastos", m.egresos, "total");
     er.vacia();
-    filaER(er, "UTILIDAD DEL PERIODO", m.utilidad, "total");
-    er.vacia().fila(["Cifras con base en caja. No incluye IVA, retenciones, depreciaciones ni obligaciones laborales."], "nota");
+    filaER(er, "Utilidad del periodo", m.utilidad, "total");
+    er.fila(["Diferencias de caja"], "grupo", [], 2);
+    filaER(er, "    (−) Faltantes de caja", -m.faltantes, "sub");
+    filaER(er, "    (+) Sobrantes de caja", m.sobrantes, "sub");
+    er.vacia();
+    filaER(er, "UTILIDAD REAL", m.utilidadReal, "total");
+    er.vacia().fila(["Cifras con base en caja. La utilidad real descuenta los faltantes y suma los sobrantes de caja. No incluye IVA, retenciones, depreciaciones ni obligaciones laborales."], "nota");
     agregar(er.construir([48, 20]), "Estado de resultados");
 
     // ===== Hoja 3: Ventas =====
