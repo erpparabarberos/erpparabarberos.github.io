@@ -6279,14 +6279,6 @@ function ventasPorMedio(ventas) {
     return [...mapa.values()].sort((a, b) => b.total - a.total);
 }
 
-function notaMixtas(ventas) {
-    const n = ventas.filter(v => v.pagos).length;
-    if (!n) return "";
-    return n === 1
-        ? "La venta mixta se reparte entre efectivo y transferencia y cuenta en los dos."
-        : `Las ${n} ventas mixtas se reparten entre efectivo y transferencia y cuentan en los dos.`;
-}
-
 function ventasPorItem(ventas) {
     const mapa = new Map();
 
@@ -6739,7 +6731,7 @@ function repResumen(panel, { r, actual, m }) {
         <div class="rep-dos-col">
             <div class="rep-card">
                 <h3>Ventas por medio de pago</h3>
-                <p class="rep-sub">Cómo pagan los clientes · número de ventas${notaMixtas(actual.ventas) ? "<br>" + notaMixtas(actual.ventas) : ""}</p>
+                <p class="rep-sub">Cómo pagan los clientes · número de ventas</p>
                 ${barrasHTML(medios, m.ingresos, REP_COLOR.ventas)}
             </div>
 
@@ -6866,7 +6858,6 @@ function repVentas(panel, { actual, m }) {
         <div class="rep-dos-col">
             <div class="rep-card">
                 <h3>Por medio de pago</h3>
-                ${notaMixtas(actual.ventas) ? `<p class="rep-sub">${notaMixtas(actual.ventas)}</p>` : ""}
                 ${tablaHTML(
                     [{ t: "Medio" }, { t: "N.º", num: true }, { t: "Total", num: true }, { t: "%", num: true }],
                     medios.map(f => [limpiarHTML(f.clave), f.n, money(f.total), pct(m.ingresos ? f.total / m.ingresos : null)]),
@@ -7353,9 +7344,7 @@ function exportarExcel() {
     resumen.seccion("Ventas por medio de pago").encabezado(["Medio de pago", "N.º de ventas", "Total", "Participación"]);
     if (medios.length) {
         medios.forEach(f => resumen.fila([f.clave, f.n, redondear(f.total), fraccion(f.total, m.ingresos)], "dato", [null, "entero", "moneda", "porcentaje"]));
-        resumen.fila(["Total", m.nVentas, redondear(m.ingresos), 1], "total", [null, "entero", "moneda", "porcentaje"]);
-        if (notaMixtas(actual.ventas)) resumen.fila([notaMixtas(actual.ventas)], "nota");
-    } else {
+        resumen.fila(["Total", m.nVentas, redondear(m.ingresos), 1], "total", [null, "entero", "moneda", "porcentaje"]);    } else {
         resumen.fila(["Sin ventas en este periodo"], "nota");
     }
 
@@ -7959,7 +7948,6 @@ function detalleRepVentas() {
                 ["En transferencia", money(medio("Transferencia"))],
                 ["N.º de ventas", ventas.length.toLocaleString("es-CO")]
             ])}
-            ${notaMixtas(ventas) ? `<div class="modal-nota">${notaMixtas(ventas)}</div>` : ""}
             ${ventas.length
                 ? listaPorDiaHTML(ventas, "venta", v => v.total)
                 : `<div class="empty-state">No hay ventas en este periodo.</div>`}`,
