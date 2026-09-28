@@ -2131,6 +2131,43 @@ textarea {
     box-shadow: 0 4px 12px rgba(15, 23, 42, .06);
 }
 
+.rep-kpi-clic {
+    position: relative;
+    transition: border-color .15s, box-shadow .15s;
+}
+
+.rep-kpi-clic:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, .06);
+}
+
+.rep-kpi .rep-kpi-ver {
+    display: block;
+    margin-top: 6px;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.modal-seccion-dia {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.modal-seccion-dia span:last-child {
+    color: var(--ink, #0f172a);
+}
+
+@media print {
+    .rep-kpi .rep-kpi-ver {
+        display: none;
+    }
+}
+
 .rep-tabla tr[data-detalle]:hover td {
     background: #f8fafc;
 }
@@ -6194,8 +6231,9 @@ function centrarChipActivo(idContenedor) {
     contenedor.scrollLeft = activo.offsetLeft - (contenedor.clientWidth - activo.offsetWidth) / 2;
 }
 
-function kpiHTML(titulo, valor, delta = "") {
-    return `<div class="rep-kpi"><span>${titulo}</span><strong>${valor}</strong>${delta}</div>`;
+// Con "clave", el indicador se puede tocar y abre la ventana con su desglose.
+function kpiHTML(titulo, valor, delta = "", clave = "") {
+    return `<div class="rep-kpi${clave ? " rep-kpi-clic" : ""}" ${attrDetalle(clave)}><span>${titulo}</span><strong>${valor}</strong>${delta}${clave ? `<em class="rep-kpi-ver">Ver detalle ›</em>` : ""}</div>`;
 }
 
 function marcaAlerta(nombre, color) {
@@ -6251,11 +6289,11 @@ function repResumen(panel, { r, actual, m }) {
 
     panel.innerHTML = `
         <div class="rep-kpis">
-            ${kpiHTML("Ventas", money(m.ingresos))}
-            ${kpiHTML("Gastos", money(m.egresos))}
+            ${kpiHTML("Ventas", money(m.ingresos), "", "repventas:")}
+            ${kpiHTML("Gastos", money(m.egresos), "", "repgastos:")}
             ${kpiHTML("Utilidad", money(m.utilidad))}
-            ${kpiHTML("Utilidad real", money(m.utilidadReal), `<span class="rep-delta">Descontando diferencias de caja</span>`)}
-            ${kpiHTML("N.º de ventas", m.nVentas.toLocaleString("es-CO"))}
+            ${kpiHTML("Utilidad real", money(m.utilidadReal), `<span class="rep-delta">Descontando diferencias de caja</span>`, "repdiferencias:")}
+            ${kpiHTML("N.º de ventas", m.nVentas.toLocaleString("es-CO"), "", "repventas:")}
         </div>
 
         <div class="rep-card">
@@ -6363,8 +6401,8 @@ function repVentas(panel, { actual, m }) {
 
     panel.innerHTML = `
         <div class="rep-kpis">
-            ${kpiHTML("Ventas", money(m.ingresos))}
-            ${kpiHTML("N.º de ventas", m.nVentas.toLocaleString("es-CO"))}
+            ${kpiHTML("Ventas", money(m.ingresos), "", "repventas:")}
+            ${kpiHTML("N.º de ventas", m.nVentas.toLocaleString("es-CO"), "", "repventas:")}
         </div>
 
         <div class="rep-card">
@@ -6453,8 +6491,8 @@ function repGastos(panel, { actual, m }) {
 
     panel.innerHTML = `
         <div class="rep-kpis">
-            ${kpiHTML("Gastos", money(m.egresos))}
-            ${kpiHTML("N.º de gastos", actual.gastos.length.toLocaleString("es-CO"))}
+            ${kpiHTML("Gastos", money(m.egresos), "", "repgastos:")}
+            ${kpiHTML("N.º de gastos", actual.gastos.length.toLocaleString("es-CO"), "", "repgastos:")}
             ${kpiHTML("Gastos / ventas", pct(m.ingresos ? m.egresos / m.ingresos : null))}
         </div>
 
@@ -6523,8 +6561,8 @@ function repCaja(panel, { r, actual }) {
     panel.innerHTML = `
         <div class="rep-kpis">
             ${kpiHTML("Turnos", turnos.length.toLocaleString("es-CO"), `<span class="rep-delta">${cerrados.length} ${cerrados.length === 1 ? "cerrado" : "cerrados"} · ${turnos.length - cerrados.length} ${turnos.length - cerrados.length === 1 ? "abierto" : "abiertos"}</span>`)}
-            ${kpiHTML("Faltantes", money(faltantes))}
-            ${kpiHTML("Sobrantes", money(sobrantes))}
+            ${kpiHTML("Faltantes", money(faltantes), "", "repdiferencias:")}
+            ${kpiHTML("Sobrantes", money(sobrantes), "", "repdiferencias:")}
         </div>
 
         <div class="rep-card">
@@ -7427,11 +7465,130 @@ function detalleProducto(id) {
     };
 }
 
+// ---------- Desglose de los indicadores de Reportes (usan el periodo filtrado) ----------
+
+const DIAS_SEMANA_CORTOS = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+
+// Agrupa los registros por día, del más reciente al más antiguo, con el subtotal de cada día.
+function listaPorDiaHTML(registros, tipo, valorFn) {
+    const dias = new Map();
+    [...registros]
+        .sort((a, b) => String(b.fecha).localeCompare(String(a.fecha)) || (milisDe(b) || 0) - (milisDe(a) || 0))
+        .forEach(x => {
+            if (!dias.has(x.fecha)) dias.set(x.fecha, []);
+            dias.get(x.fecha).push(x);
+        });
+
+    return [...dias].map(([fecha, lista]) => `
+        <div class="modal-seccion modal-seccion-dia">
+            <span>${DIAS_SEMANA_CORTOS[fechaDesdeIso(fecha).getDay()]} ${fechaCorta(fecha)} · ${lista.length}</span>
+            <span>${money(suma(lista, valorFn))}</span>
+        </div>
+        <div class="modal-lista">${lista.map(x => filaMovimientoHTML(tipo, x)).join("")}</div>`).join("");
+}
+
+function detalleRepVentas() {
+    const r = rangoDelPeriodo();
+    const { ventas } = datosDelRango(r.desde, r.hasta);
+    const total = suma(ventas, v => v.total);
+    const medios = ventasPorMedio(ventas);
+    const medio = (nombre) => medios.find(f => f.clave === nombre)?.total || 0;
+
+    return {
+        ancha: true,
+        titulo: "Ventas del periodo",
+        sub: `${r.nombre} · ${textoRango(r.desde, r.hasta)}`,
+        cuerpo: `
+            ${cifraHTML("Total vendido", money(total), `${ventas.length} ${ventas.length === 1 ? "venta" : "ventas"} · sin anuladas`)}
+            ${kpisModalHTML([
+                ["En efectivo", money(medio("Efectivo"))],
+                ["En transferencia", money(medio("Transferencia"))],
+                ["N.º de ventas", ventas.length.toLocaleString("es-CO")]
+            ])}
+            ${notaMixtas(ventas) ? `<div class="modal-nota">${notaMixtas(ventas)}</div>` : ""}
+            ${ventas.length
+                ? listaPorDiaHTML(ventas, "venta", v => v.total)
+                : `<div class="empty-state">No hay ventas en este periodo.</div>`}`,
+        acciones: [botonCerrarModal]
+    };
+}
+
+function detalleRepGastos() {
+    const r = rangoDelPeriodo();
+    const { gastos } = datosDelRango(r.desde, r.hasta);
+    const total = suma(gastos, g => g.valor);
+    const efectivo = suma(gastos.filter(g => String(g.medioPago || "").toLowerCase() === "efectivo"), g => g.valor);
+
+    return {
+        ancha: true,
+        titulo: "Gastos del periodo",
+        sub: `${r.nombre} · ${textoRango(r.desde, r.hasta)}`,
+        cuerpo: `
+            ${cifraHTML("Total gastado", money(total), `${gastos.length} ${gastos.length === 1 ? "gasto" : "gastos"} · sin anulados`)}
+            ${kpisModalHTML([
+                ["En efectivo", money(efectivo)],
+                ["En transferencia", money(total - efectivo)],
+                ["N.º de gastos", gastos.length.toLocaleString("es-CO")]
+            ])}
+            ${gastos.length
+                ? listaPorDiaHTML(gastos, "gasto", g => g.valor)
+                : `<div class="empty-state">No hay gastos en este periodo.</div>`}`,
+        acciones: [botonCerrarModal]
+    };
+}
+
+// Turnos con faltante o sobrante: explican la diferencia entre la utilidad y la utilidad real.
+function detalleRepDiferencias() {
+    const r = rangoDelPeriodo();
+    const actual = datosDelRango(r.desde, r.hasta);
+    const m = calcularMetricas(actual.ventas, actual.gastos, actual.turnosCerrados);
+    const turnos = actual.turnosCerrados
+        .filter(t => Number(t.diferencia || 0) !== 0)
+        .sort((a, b) => String(b.fechaApertura).localeCompare(String(a.fechaApertura)));
+
+    return {
+        ancha: true,
+        titulo: "Diferencias de caja",
+        sub: `${r.nombre} · ${textoRango(r.desde, r.hasta)}`,
+        cuerpo: `
+            ${cifraHTML("Utilidad real", money(m.utilidadReal), "Utilidad menos faltantes más sobrantes")}
+            ${kpisModalHTML([
+                ["Utilidad", money(m.utilidad)],
+                ["(−) Faltantes", money(m.faltantes)],
+                ["(+) Sobrantes", money(m.sobrantes)]
+            ])}
+            <div class="modal-seccion">Turnos con diferencia (${turnos.length})</div>
+            <div class="modal-lista">
+                ${turnos.length
+                    ? turnos.map(t => {
+                        const dif = Number(t.diferencia || 0);
+                        return `
+                            <div class="movement-card" data-detalle="turno:${t.docId}" data-apilar="1" tabindex="0" role="button">
+                                <div class="movement-icon">${icono("lock")}</div>
+                                <div>
+                                    <h3>Turno ${fechaCorta(t.fechaApertura)}</h3>
+                                    <p>${limpiarHTML(t.observacionCierre || t.responsable || "")}</p>
+                                </div>
+                                <div style="text-align:right;">
+                                    <strong style="color:${dif < 0 ? "var(--danger)" : "var(--accent)"};">${dif < 0 ? "−" : "+"}${money(Math.abs(dif))}</strong>
+                                    <p>${dif < 0 ? "Faltante" : "Sobrante"}</p>
+                                </div>
+                            </div>`;
+                    }).join("")
+                    : `<div class="empty-state">Todos los turnos cerrados del periodo cuadraron.</div>`}
+            </div>`,
+        acciones: [botonCerrarModal]
+    };
+}
+
 const DETALLES = {
     venta: detalleVenta,
     gasto: detalleGasto,
     turno: detalleTurno,
-    producto: detalleProducto
+    producto: detalleProducto,
+    repventas: detalleRepVentas,
+    repgastos: detalleRepGastos,
+    repdiferencias: detalleRepDiferencias
 };
 
 // Los formularios (catálogo, carga masiva) se mueven dentro de la ventana en lugar de copiarse,
