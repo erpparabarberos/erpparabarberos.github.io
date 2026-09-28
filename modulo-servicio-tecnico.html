@@ -2972,6 +2972,26 @@ body.modal-abierto {
     height: 18px;
 }
 
+/* Filtro de periodo y buscador de las pantallas de Ventas y Gastos */
+.filtro-lista {
+    margin-bottom: 14px;
+}
+
+.filtro-lista .rep-rango {
+    margin-top: 10px;
+}
+
+.filtro-lista .filtro-buscar {
+    width: 100%;
+    margin-top: 10px;
+    padding: 12px 14px;
+    border: 1px solid #dbe4f0;
+    border-radius: 14px;
+    background: white;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
 .dia-kpis {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -3337,10 +3357,12 @@ body.modal-abierto {
             <button type="button" class="submit-btn" onclick="abrirRegistroVenta()"><i data-icon="plus"></i> Registrar venta</button>
         </div>
 
+        <div class="filtro-lista" id="ventasFiltro" data-lista="ventas"></div>
+
         <div class="dia-kpis" id="ventasDiaKpis"></div>
 
         <div class="form-card">
-            <h2 class="card-title">Ventas del día</h2>
+            <h2 class="card-title" id="ventasListaTitulo">Ventas de hoy</h2>
             <p class="card-sub" id="ventasDiaFecha"></p>
             <div class="lista-scroll">
                 <div class="movement-list" id="ventasDiaList"></div>
@@ -3360,10 +3382,12 @@ body.modal-abierto {
             <button type="button" class="submit-btn" onclick="abrirRegistroGasto()"><i data-icon="plus"></i> Registrar gasto</button>
         </div>
 
+        <div class="filtro-lista" id="gastosFiltro" data-lista="gastos"></div>
+
         <div class="dia-kpis" id="gastosDiaKpis"></div>
 
         <div class="form-card">
-            <h2 class="card-title">Gastos del día</h2>
+            <h2 class="card-title" id="gastosListaTitulo">Gastos de hoy</h2>
             <p class="card-sub" id="gastosDiaFecha"></p>
             <div class="lista-scroll">
                 <div class="movement-list" id="gastosDiaList"></div>
@@ -4403,18 +4427,130 @@ function actualizarBotonTurno() {
     renderListasDia();
 }
 
-// Pantallas de Ventas y Gastos: lo registrado hoy, con sus totales.
-function renderListasDia() {
+// ---------- Historial en Ventas y Gastos: periodo y búsqueda ----------
+
+const PERIODOS_LISTA = [
+    ["hoy", "Hoy"],
+    ["ayer", "Ayer"],
+    ["7d", "Últimos 7 días"],
+    ["mes", "Este mes"],
+    ["mesAnterior", "Mes anterior"],
+    ["custom", "Personalizado"]
+];
+
+const filtrosLista = {
+    ventas: { periodo: "hoy", desde: "", hasta: "", busqueda: "" },
+    gastos: { periodo: "hoy", desde: "", hasta: "", busqueda: "" }
+};
+
+function rangoFiltroLista(f) {
     const hoy = todayISO();
-    const fechaTexto = "Hoy, " + todayReadable();
+    const [y, m] = hoy.split("-").map(Number);
 
-    const ventasHoy = ventasGlobal
-        .filter(v => v.fecha === hoy)
-        .sort((a, b) => (b.creadoEn?.toMillis?.() || 0) - (a.creadoEn?.toMillis?.() || 0));
+    switch (f.periodo) {
+        case "ayer": { const d = sumarDias(hoy, -1); return { desde: d, hasta: d, nombre: "de ayer" }; }
+        case "7d": return { desde: sumarDias(hoy, -6), hasta: hoy, nombre: "de los últimos 7 días" };
+        case "mes": return { desde: `${y}-${String(m).padStart(2, "0")}-01`, hasta: hoy, nombre: "de este mes" };
+        case "mesAnterior": return {
+            desde: isoDesdeFecha(new Date(y, m - 2, 1, 12)),
+            hasta: isoDesdeFecha(new Date(y, m - 1, 0, 12)),
+            nombre: "del mes anterior"
+        };
+        case "custom": {
+            let desde = f.desde || hoy;
+            let hasta = f.hasta || hoy;
+            if (desde > hasta) [desde, hasta] = [hasta, desde];
+            return { desde, hasta, nombre: "del periodo" };
+        }
+        default: return { desde: hoy, hasta: hoy, nombre: "de hoy" };
+    }
+}
 
-    const gastosHoy = gastosGlobal
-        .filter(g => g.fecha === hoy)
-        .sort((a, b) => (b.creadoEn?.toMillis?.() || 0) - (a.creadoEn?.toMillis?.() || 0));
+// Chips de periodo, fechas y buscador arriba de la lista (se pintan una vez; luego solo se actualiza el estado).
+function pintarFiltroLista(tipo) {
+    const caja = document.getElementById(tipo + "Filtro");
+    const f = filtrosLista[tipo];
+    if (!caja) return;
+
+    if (!caja.dataset.listo) {
+        caja.dataset.listo = "1";
+        caja.innerHTML = `
+            <div class="rep-chips">
+                ${PERIODOS_LISTA.map(([clave, texto]) => `<button type="button" data-periodo="${clave}">${texto}</button>`).join("")}
+            </div>
+            <div class="rep-rango" hidden>
+                <div><label>Desde</label><input type="date" data-campo="desde"></div>
+                <div><label>Hasta</label><input type="date" data-campo="hasta"></div>
+            </div>
+            <input type="search" class="filtro-buscar" data-campo="busqueda" autocomplete="off"
+                placeholder="${tipo === "ventas" ? "Buscar por N.º de venta, producto o cliente" : "Buscar por descripción o categoría"}">`;
+
+        caja.addEventListener("click", e => {
+            const boton = e.target.closest("[data-periodo]");
+            if (!boton) return;
+            f.periodo = boton.dataset.periodo;
+            if (f.periodo === "custom") {
+                f.hasta = f.hasta || todayISO();
+                f.desde = f.desde || sumarDias(todayISO(), -6);
+            }
+            renderListasDia();
+        });
+
+        caja.addEventListener("input", e => {
+            const campo = e.target.dataset.campo;
+            if (!campo) return;
+            f[campo] = e.target.value;
+            renderListasDia();
+        });
+    }
+
+    caja.querySelectorAll("[data-periodo]").forEach(b => b.classList.toggle("active", b.dataset.periodo === f.periodo));
+    caja.querySelector(".rep-rango").hidden = f.periodo !== "custom";
+    caja.querySelectorAll("input[data-campo]").forEach(input => {
+        if (document.activeElement !== input) input.value = f[input.dataset.campo] || "";
+    });
+}
+
+const textoBusquedaVenta = (v) =>
+    `${numeroVenta(v)} ${itemsDeVenta(v).map(i => i.nombre).join(" ")} ${v.cliente || ""} ${v.observaciones || ""} ${v.medioPago || ""}`;
+const textoBusquedaGasto = (g) =>
+    `${g.descripcion || ""} ${g.categoria || ""} ${g.medioPago || ""}`;
+
+// Pantallas de Ventas y Gastos: lo registrado en el periodo elegido (por defecto hoy), con sus totales.
+function renderListasDia() {
+    pintarFiltroLista("ventas");
+    pintarFiltroLista("gastos");
+
+    const recientesPrimero = (a, b) =>
+        String(b.fecha).localeCompare(String(a.fecha)) || (b.creadoEn?.toMillis?.() || 0) - (a.creadoEn?.toMillis?.() || 0);
+
+    const filtrar = (lista, tipo, textoFn) => {
+        const f = filtrosLista[tipo];
+        const r = rangoFiltroLista(f);
+        const texto = normalizarBusqueda(f.busqueda || "");
+        return {
+            r,
+            buscando: !!texto,
+            lista: lista
+                .filter(x => enRango(x.fecha, r.desde, r.hasta))
+                .filter(x => !texto || normalizarBusqueda(textoFn(x)).includes(texto))
+                .sort(recientesPrimero)
+        };
+    };
+
+    const subtitulo = (r, buscando) => {
+        const base = r.desde === r.hasta && r.desde === todayISO()
+            ? "Hoy, " + todayReadable()
+            : textoRango(r.desde, r.hasta);
+        return base + (buscando ? " · resultados de la búsqueda" : "");
+    };
+
+    const fv = filtrar(ventasGlobal, "ventas", textoBusquedaVenta);
+    const fg = filtrar(gastosGlobal, "gastos", textoBusquedaGasto);
+    const ventasHoy = fv.lista;
+    const gastosHoy = fg.lista;
+    const variosDiasVentas = fv.r.desde !== fv.r.hasta;
+    const variosDiasGastos = fg.r.desde !== fg.r.hasta;
 
     const sumar = (lista, campo) => lista.reduce((acc, x) => acc + Number(x[campo] || 0), 0);
     const kpi = (titulo, valor) => `<div><span>${titulo}</span><strong>${valor}</strong></div>`;
@@ -4423,15 +4559,22 @@ function renderListasDia() {
     const totalVentas = sumar(ventasValidas, "total");
     const ventasEfectivo = ventasValidas.reduce((acc, v) => acc + efectivoDeVenta(v), 0);
 
-    document.getElementById("ventasDiaFecha").textContent = fechaTexto;
+    document.getElementById("ventasListaTitulo").textContent = "Ventas " + fv.r.nombre;
+    document.getElementById("gastosListaTitulo").textContent = "Gastos " + fg.r.nombre;
+    document.getElementById("ventasDiaFecha").textContent = subtitulo(fv.r, fv.buscando);
     document.getElementById("ventasDiaKpis").innerHTML =
         kpi("Ventas", ventasValidas.length) +
         kpi("Total vendido", money(totalVentas)) +
         kpi("En efectivo", money(ventasEfectivo)) +
         kpi("En transferencia", money(totalVentas - ventasEfectivo));
 
-    document.getElementById("ventasDiaList").innerHTML = ventasHoy.length
-        ? ventasHoy.map(v => {
+    const sinVentas = fv.buscando ? "No hay ventas que coincidan con la búsqueda." : `No hay ventas ${fv.r.nombre}.`;
+
+    document.getElementById("ventasDiaList").innerHTML = !ventasHoy.length
+        ? `<div class="empty-state">${sinVentas}</div>`
+        : variosDiasVentas
+        ? listaPorDiaHTML(ventasHoy, "venta", v => (v.anulada ? 0 : v.total))
+        : ventasHoy.map(v => {
             const nombres = (v.items || []).map(i => i.nombre).join(", ") || v.itemNombre || "Venta";
             const hora = v.creadoEn?.toMillis ? new Date(v.creadoEn.toMillis()).toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" }) : "";
             return `
@@ -4446,22 +4589,26 @@ function renderListasDia() {
                         <p>${limpiarHTML(v.medioPago)}</p>
                     </div>
                 </div>`;
-        }).join("")
-        : `<div class="empty-state">Todavía no hay ventas hoy.</div>`;
+        }).join("");
 
     const gastosValidos = gastosHoy.filter(noAnulado);
     const totalGastos = sumar(gastosValidos, "valor");
     const gastosEfectivo = sumar(gastosValidos.filter(g => g.medioPago === "Efectivo"), "valor");
 
-    document.getElementById("gastosDiaFecha").textContent = fechaTexto;
+    document.getElementById("gastosDiaFecha").textContent = subtitulo(fg.r, fg.buscando);
     document.getElementById("gastosDiaKpis").innerHTML =
         kpi("Gastos", gastosValidos.length) +
         kpi("Total gastado", money(totalGastos)) +
         kpi("En efectivo", money(gastosEfectivo)) +
         kpi("En transferencia", money(totalGastos - gastosEfectivo));
 
-    document.getElementById("gastosDiaList").innerHTML = gastosHoy.length
-        ? gastosHoy.map(g => `
+    const sinGastos = fg.buscando ? "No hay gastos que coincidan con la búsqueda." : `No hay gastos ${fg.r.nombre}.`;
+
+    document.getElementById("gastosDiaList").innerHTML = !gastosHoy.length
+        ? `<div class="empty-state">${sinGastos}</div>`
+        : variosDiasGastos
+        ? listaPorDiaHTML(gastosHoy, "gasto", g => (g.anulada ? 0 : g.valor))
+        : gastosHoy.map(g => `
             <div class="movement-card ${g.anulada ? "historial-anulada" : ""}" ${attrDetalle("gasto:" + g.docId)}>
                 <div class="movement-icon">${icono("gastos")}</div>
                 <div>
@@ -4469,8 +4616,7 @@ function renderListasDia() {
                     <p>${limpiarHTML(g.categoria || "Sin categoría")} · ${limpiarHTML(g.medioPago)}</p>
                 </div>
                 <strong>${money(g.valor)}</strong>
-            </div>`).join("")
-        : `<div class="empty-state">Todavía no hay gastos hoy.</div>`;
+            </div>`).join("");
 }
 
 // ---------- Ventanas de registro ----------
@@ -7513,7 +7659,7 @@ function filaMovimientoHTML(tipo, registro) {
         <div class="movement-card ${registro.anulada ? "historial-anulada" : ""}" data-detalle="${tipo}:${registro.docId}" data-apilar="1" tabindex="0" role="button">
             <div class="movement-icon">${icono(esVenta ? "ventas" : "gastos")}</div>
             <div>
-                <h3>${esVenta ? (registro.comprobante ? limpiarHTML(registro.comprobante) : "Venta") : "Gasto"}${estado}</h3>
+                <h3>${esVenta ? (registro.comprobante ? limpiarHTML(registro.comprobante) : "Venta") : limpiarHTML(registro.categoria || "Gasto")}${estado}</h3>
                 <p>${limpiarHTML(descripcion)}${horaDe(registro) ? " · " + limpiarHTML(horaDe(registro)) : ""}</p>
             </div>
             <div style="text-align:right;">
