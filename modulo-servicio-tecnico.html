@@ -4595,7 +4595,7 @@ function renderListasDia() {
         : variosDiasVentas
         ? listaPorDiaHTML(ventasHoy, "venta", v => (v.anulada ? 0 : v.total))
         : ventasHoy.map(v => {
-            const nombres = (v.items || []).map(i => i.nombre).join(", ") || v.itemNombre || "Venta";
+            const nombres = textoItems(v);
             const hora = v.creadoEn?.toMillis ? new Date(v.creadoEn.toMillis()).toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" }) : "";
             return `
                 <div class="movement-card ${v.anulada ? "historial-anulada" : ""}" ${attrDetalle("venta:" + v.docId)}>
@@ -4980,7 +4980,7 @@ function renderDashboard() {
         const movimientos = [
             ...ventasGlobal.filter(noAnulado).map(v => ({
                 tipo: v.comprobante ? `Venta ${v.comprobante}` : "Venta",
-                nombre: v.items?.map(item => item.nombre).join(", ") || v.itemNombre || "Venta",
+                nombre: textoItems(v),
                 valor: v.total,
                 medio: v.medioPago,
                 fecha: v.creadoEn,
@@ -5030,7 +5030,7 @@ function renderHistorial() {
     const movimientos = [
         ...ventasGlobal.map(v => ({
             tipo: `${v.comprobante ? "Venta " + v.comprobante : "Venta"}${v.anulada ? " anulada" : ""}`,
-            nombre: v.items?.map(item => item.nombre).join(", ") || v.itemNombre || "Venta",
+            nombre: textoItems(v),
             detalle: `${v.cliente || "Consumidor final"} · ${v.medioPago || ""}`,
             valor: v.total,
             icon: icono("ventas"),
@@ -6736,7 +6736,7 @@ function repResumen(panel, { r, actual, m }) {
             ${kpiHTML("Ventas", money(m.ingresos), "", "repventas:")}
             ${kpiHTML("Gastos", money(m.egresos), "", "repgastos:")}
             ${kpiHTML("Utilidad", money(m.utilidad))}
-            ${kpiHTML("Utilidad real", money(m.utilidadReal), `<span class="rep-delta">Descontando diferencias de caja</span>`, "repdiferencias:")}
+            ${kpiHTML("Descuadres de caja", money(m.sobrantes - m.faltantes), `<span class="rep-delta">Faltantes ${money(m.faltantes)} · Sobrantes ${money(m.sobrantes)}</span>`, "repdiferencias:")}
             ${kpiHTML("N.º de ventas", m.nVentas.toLocaleString("es-CO"), "", "repventas:")}
         </div>
 
@@ -7660,9 +7660,15 @@ function bloqueAnulacion(registro) {
 Motivo: ${limpiarHTML(registro.motivoAnulacion || "Sin motivo registrado")}</div>`;
 }
 
+// En las listas la venta se muestra corta (número, cuántos ítems, hora); el detalle completo está en su ventana.
+function textoItems(venta) {
+    const n = itemsDeVenta(venta).length;
+    return `${n} ${n === 1 ? "ítem" : "ítems"}`;
+}
+
 function filaMovimientoHTML(tipo, registro) {
     const esVenta = tipo === "venta";
-    const descripcion = esVenta ? itemsDeVenta(registro).map(i => i.nombre).join(", ") : (registro.descripcion || "Gasto");
+    const descripcion = esVenta ? textoItems(registro) : (registro.descripcion || "Gasto");
     const estado = registro.anulada ? (esVenta ? " anulada" : " anulado") : "";
 
     return `
@@ -8011,16 +8017,16 @@ function detalleRepDiferencias() {
 
     return {
         ancha: true,
-        titulo: "Diferencias de caja",
+        titulo: "Descuadres de caja",
         sub: `${nombreSede(sedeVista)} · ${r.nombre} · ${textoRango(r.desde, r.hasta)}`,
         cuerpo: `
-            ${cifraHTML("Utilidad real", money(m.utilidadReal), "Utilidad menos faltantes más sobrantes")}
+            ${cifraHTML("Descuadre total", money(m.sobrantes - m.faltantes), "Sobrantes menos faltantes de los cierres de caja")}
             ${kpisModalHTML([
-                ["Utilidad", money(m.utilidad)],
-                ["(−) Faltantes", money(m.faltantes)],
-                ["(+) Sobrantes", money(m.sobrantes)]
+                ["Faltantes", money(m.faltantes)],
+                ["Sobrantes", money(m.sobrantes)],
+                ["Turnos con descuadre", turnos.length.toLocaleString("es-CO")]
             ])}
-            <div class="modal-seccion">Turnos con diferencia (${turnos.length})</div>
+            <div class="modal-seccion">Turnos con descuadre (${turnos.length})</div>
             <div class="modal-lista">
                 ${turnos.length
                     ? turnos.map(t => {
