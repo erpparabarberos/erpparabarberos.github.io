@@ -1803,7 +1803,8 @@ textarea {
 }
 
 .nav-brand,
-.nav-user {
+.nav-user,
+.nav-sede {
     display: none;
 }
 
@@ -1912,6 +1913,25 @@ textarea {
     .bottom-nav .nav-items button svg.ico {
         width: 18px;
         height: 18px;
+    }
+
+    /* En computador el selector de sede va en la barra superior, no encima del contenido */
+    .nav-sede:not(:empty) {
+        display: flex;
+        margin-left: auto;
+    }
+
+    .nav-sede .sede-control {
+        padding: 3px 3px 3px 12px;
+        box-shadow: none;
+    }
+
+    .nav-sede .sede-opciones button {
+        padding: 7px 14px;
+    }
+
+    .nav-sede:not(:empty) + .nav-user {
+        margin-left: 0;
     }
 
     .nav-user {
@@ -2155,8 +2175,7 @@ textarea {
     box-shadow: 0 1px 2px rgba(15, 23, 42, .04);
 }
 
-.sede-control-titulo,
-.sede-fija {
+.sede-control-titulo {
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -2166,8 +2185,7 @@ textarea {
     white-space: nowrap;
 }
 
-.sede-control-titulo svg.ico,
-.sede-fija svg.ico {
+.sede-control-titulo svg.ico {
     width: 16px;
     height: 16px;
 }
@@ -2208,12 +2226,10 @@ textarea {
     color: white;
 }
 
-.sede-fija {
-    padding: 8px 14px;
-    border: 1px solid #e2e8f0;
-    border-radius: 999px;
-    background: white;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, .04);
+@media (min-width: 1024px) {
+    .sede-barra {
+        display: none;
+    }
 }
 
 @media (max-width: 599px) {
@@ -3907,6 +3923,8 @@ body.modal-abierto {
         <button class="nav-btn" onclick="showView('reportes')" data-view="reportes" id="navReportes" style="display:none;"><i data-icon="reportes"></i>Reportes</button>
     </div>
 
+    <div class="nav-sede" id="sedeSelectorNav"></div>
+
     <div class="nav-user" id="navUsuario"></div>
 </nav>
 
@@ -4288,34 +4306,36 @@ window.showView = function(viewName) {
         });
     }
 
-    // Selector de sede del administrador (en el encabezado). El técnico ve el nombre de su sede.
+    // Selector de sede, solo para el administrador: en computador va en la barra superior
+    // y en celular encima del contenido. El técnico no lo ve (solo trabaja con su sede).
     function pintarSelectorSede() {
-        const caja = document.getElementById("sedeSelector");
-        if (!caja) return;
+        const cajas = ["sedeSelectorNav", "sedeSelector"].map(id => document.getElementById(id)).filter(Boolean);
 
         if (!esAdmin()) {
-            caja.innerHTML = `<span class="sede-fija">${icono("sede")} Sede ${limpiarHTML(nombreSede(sedeUsuario))}</span>`;
+            cajas.forEach(caja => { caja.innerHTML = ""; });
             return;
         }
 
         const opciones = [["todas", "Todas"], ...Object.entries(SEDES).map(([clave, s]) => [clave, s.nombre])];
-        caja.innerHTML = `
-            <div class="sede-control" role="group" aria-label="Sede">
-                <span class="sede-control-titulo">${icono("sede")} Sede</span>
-                <div class="sede-opciones">
-                    ${opciones.map(([clave, texto]) => `
-                        <button type="button" data-sede="${clave}" class="${clave === sedeVista ? "active" : ""}" aria-pressed="${clave === sedeVista}">${texto}</button>`).join("")}
-                </div>
-            </div>`;
-        caja.querySelectorAll("[data-sede]").forEach(boton =>
-            boton.addEventListener("click", () => cambiarSedeVista(boton.dataset.sede)));
+        cajas.forEach(caja => {
+            caja.innerHTML = `
+                <div class="sede-control" role="group" aria-label="Sede">
+                    <span class="sede-control-titulo">${icono("sede")} Sede</span>
+                    <div class="sede-opciones">
+                        ${opciones.map(([clave, texto]) => `
+                            <button type="button" data-sede="${clave}" class="${clave === sedeVista ? "active" : ""}" aria-pressed="${clave === sedeVista}">${texto}</button>`).join("")}
+                    </div>
+                </div>`;
+            caja.querySelectorAll("[data-sede]").forEach(boton =>
+                boton.addEventListener("click", () => cambiarSedeVista(boton.dataset.sede)));
+        });
     }
 
     function cambiarSedeVista(sede) {
         sedeVista = sede;
         try { localStorage.setItem("stSedeVista", sede); } catch (e) {}
 
-        document.querySelectorAll("#sedeSelector [data-sede]").forEach(boton => {
+        document.querySelectorAll(".sede-opciones [data-sede]").forEach(boton => {
             const activo = boton.dataset.sede === sede;
             boton.classList.toggle("active", activo);
             boton.setAttribute("aria-pressed", activo);
