@@ -2131,6 +2131,61 @@ textarea {
     box-shadow: 0 4px 12px rgba(15, 23, 42, .06);
 }
 
+/* Sede: selector del administrador o nombre de la sede del técnico */
+.sede-barra {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.sede-barra:empty {
+    display: none;
+}
+
+.sede-barra select {
+    width: auto;
+    min-width: 190px;
+    padding: 9px 36px 9px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    background-color: white;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink, #0f172a);
+}
+
+.sede-fija {
+    display: inline-block;
+    padding: 6px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 999px;
+    background: white;
+    font-size: 13px;
+    font-weight: 700;
+    color: #475569;
+}
+
+.rep-sedes-botones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.rep-sedes-botones .secondary-btn {
+    width: auto;
+    margin: 0;
+    padding: 9px 16px;
+}
+
+@media print {
+    .sede-barra,
+    .rep-sedes-botones {
+        display: none;
+    }
+}
+
 .rep-kpi-clic {
     position: relative;
     transition: border-color .15s, box-shadow .15s;
@@ -3103,6 +3158,8 @@ body.modal-abierto {
 
 <div class="st-app">
 
+    <div class="sede-barra" id="sedeSelector"></div>
+
     <section id="view-inicio" class="view active">
 
         <div class="st-header">
@@ -3814,8 +3871,8 @@ body.modal-abierto {
     const turnosRef = db.collection("st_turnos");
     // Entradas y retiros de efectivo de la caja que no son ventas ni gastos (base adicional, consignaciones...).
     const movCajaRef = db.collection("st_movimientos_caja");
-    // Último número de comprobante de venta asignado (PB-0001, PB-0002...).
-    const contadorComprobanteRef = db.collection("metadata").doc("stComprobanteCounter");
+    // Último número de comprobante de venta asignado en cada sede (PB-CLO-0001, PB-BAQ-0001...).
+    const contadorComprobanteRef = (sede) => db.collection("metadata").doc("stComprobanteCounter_" + sede);
     // Guarda el último código de catálogo asignado, para que dos personas no reciban el mismo.
     const contadorCatalogoRef = db.collection("metadata").doc("stCatalogoCounter");
 
@@ -3829,6 +3886,39 @@ body.modal-abierto {
     let turnoActivo = null;
     let currentUserEmail = "sin_usuario";
     let currentUserRol = "";
+
+    // ---------- Sedes ----------
+    // Cada venta, gasto, turno y movimiento de caja queda marcado con la sede de quien lo registra.
+    // El técnico solo ve su sede; el administrador elige ver todas o una.
+    const SEDES = {
+        cali: { nombre: "Cali", prefijo: "CLO" },
+        barranquilla: { nombre: "Barranquilla", prefijo: "BAQ" }
+    };
+    // Respaldo por si el usuario no tiene el campo "sede" en Firebase.
+    const SEDE_POR_CORREO = {
+        "serviciotecnico.parabarberos@gmail.com": "cali",
+        "stbarranquilla.parabarberos@gmail.com": "barranquilla"
+    };
+    // Los registros creados antes de manejar sedes pertenecen a Cali.
+    const SEDE_ANTERIOR = "cali";
+
+    let sedeUsuario = null;
+    let sedeVista = "todas";
+    let ventasTodas = [];
+    let gastosTodos = [];
+    let turnosTodos = [];
+    let movCajaTodos = [];
+
+    const sedeDe = (registro) => registro.sede || SEDE_ANTERIOR;
+    const nombreSede = (sede) => SEDES[sede]?.nombre || "Todas las sedes";
+    const enSedeVista = (registro) => sedeVista === "todas" || sedeDe(registro) === sedeVista;
+
+    function normalizarSede(valor) {
+        const texto = String(valor || "").toLowerCase().trim();
+        if (texto.startsWith("cal")) return "cali";
+        if (texto.startsWith("barr") || texto === "baq") return "barranquilla";
+        return null;
+    }
 
     const esAdmin = () => currentUserRol === "admin";
     const noAnulado = (registro) => !registro.anulada;
@@ -4016,6 +4106,22 @@ window.showView = function(viewName) {
 
             currentUserEmail = user.email || "sin_usuario";
             currentUserRol = rol;
+            sedeUsuario = normalizarSede(userDoc.data().sede) || SEDE_POR_CORREO[email] || null;
+
+            if (!esAdmin() && !sedeUsuario) {
+                alert("Tu usuario no tiene una sede asignada (Cali o Barranquilla). Pide al administrador que la configure.");
+                salirAlLogin();
+                return;
+            }
+
+            if (esAdmin()) {
+                let guardada = null;
+                try { guardada = localStorage.getItem("stSedeVista"); } catch (e) {}
+                sedeVista = guardada === "todas" || SEDES[guardada] ? guardada : "todas";
+            } else {
+                sedeVista = sedeUsuario;
+            }
+            pintarSelectorSede();
             document.getElementById("userInitial").textContent = currentUserEmail.charAt(0).toUpperCase();
 
             // Los reportes gerenciales solo los ve el administrador; ocupan el lugar de Historial en el menú.
@@ -4049,9 +4155,11 @@ window.showView = function(viewName) {
             renderReportesSiVisible();
         });
 
+        // Se guarda todo lo que llega y las listas "Global" quedan solo con la sede que se está viendo.
         ventasRef.orderBy("creadoEn", "desc").onSnapshot(snapshot => {
-            ventasGlobal = [];
-            snapshot.forEach(doc => ventasGlobal.push({ docId: doc.id, ...doc.data() }));
+            ventasTodas = [];
+            snapshot.forEach(doc => ventasTodas.push({ docId: doc.id, ...doc.data() }));
+            ventasGlobal = ventasTodas.filter(enSedeVista);
             renderFrecuentes();
             renderDashboard();
             renderMovimientos();
@@ -4060,33 +4168,80 @@ window.showView = function(viewName) {
         });
 
         gastosRef.orderBy("creadoEn", "desc").onSnapshot(snapshot => {
-            gastosGlobal = [];
-            snapshot.forEach(doc => gastosGlobal.push({ docId: doc.id, ...doc.data() }));
+            gastosTodos = [];
+            snapshot.forEach(doc => gastosTodos.push({ docId: doc.id, ...doc.data() }));
+            gastosGlobal = gastosTodos.filter(enSedeVista);
             renderDashboard();
             renderMovimientos();
             renderHistorial();
             renderReportesSiVisible();
         });
+
         turnosRef.orderBy("creadoEn", "desc").onSnapshot(snapshot => {
-    turnosGlobal = [];
-    snapshot.forEach(doc => turnosGlobal.push({ docId: doc.id, ...doc.data() }));
+            turnosTodos = [];
+            snapshot.forEach(doc => turnosTodos.push({ docId: doc.id, ...doc.data() }));
+            turnosGlobal = turnosTodos.filter(enSedeVista);
 
-    turnoActivo = turnosGlobal.find(t => 
-        t.estado === "abierto" && 
-        t.responsable === currentUserEmail
-    ) || null;
+            // El turno abierto es el de quien usa el sistema, sin importar la sede que esté viendo.
+            turnoActivo = turnosTodos.find(t =>
+                t.estado === "abierto" &&
+                t.responsable === currentUserEmail
+            ) || null;
 
-    renderCaja();
-    renderDashboard();
-    renderReportesSiVisible();
-});
-
-        movCajaRef.orderBy("creadoEn", "desc").onSnapshot(snapshot => {
-            movCajaGlobal = [];
-            snapshot.forEach(doc => movCajaGlobal.push({ docId: doc.id, ...doc.data() }));
+            renderCaja();
             renderDashboard();
             renderReportesSiVisible();
         });
+
+        movCajaRef.orderBy("creadoEn", "desc").onSnapshot(snapshot => {
+            movCajaTodos = [];
+            snapshot.forEach(doc => movCajaTodos.push({ docId: doc.id, ...doc.data() }));
+            movCajaGlobal = movCajaTodos.filter(enSedeVista);
+            renderDashboard();
+            renderReportesSiVisible();
+        });
+    }
+
+    // Selector de sede del administrador (en el encabezado). El técnico ve el nombre de su sede.
+    function pintarSelectorSede() {
+        const caja = document.getElementById("sedeSelector");
+        if (!caja) return;
+
+        if (!esAdmin()) {
+            caja.innerHTML = `<span class="sede-fija">Sede ${limpiarHTML(nombreSede(sedeUsuario))}</span>`;
+            return;
+        }
+
+        const opciones = [["todas", "Todas las sedes"], ...Object.entries(SEDES).map(([clave, s]) => [clave, s.nombre])];
+        caja.innerHTML = `
+            <select id="sedeVistaSelect" aria-label="Sede">
+                ${opciones.map(([clave, texto]) => `<option value="${clave}" ${clave === sedeVista ? "selected" : ""}>${texto}</option>`).join("")}
+            </select>`;
+        document.getElementById("sedeVistaSelect").addEventListener("change", e => cambiarSedeVista(e.target.value));
+    }
+
+    function cambiarSedeVista(sede) {
+        sedeVista = sede;
+        try { localStorage.setItem("stSedeVista", sede); } catch (e) {}
+
+        ventasGlobal = ventasTodas.filter(enSedeVista);
+        gastosGlobal = gastosTodos.filter(enSedeVista);
+        turnosGlobal = turnosTodos.filter(enSedeVista);
+        movCajaGlobal = movCajaTodos.filter(enSedeVista);
+
+        renderFrecuentes();
+        renderDashboard();
+        renderMovimientos();
+        renderHistorial();
+        renderCaja();
+        renderReportesSiVisible();
+    }
+
+    // Sede en la que se registra algo nuevo: la del técnico, o la que el administrador tenga elegida.
+    function sedeParaRegistrar() {
+        if (turnoActivo) return sedeDe(turnoActivo);
+        if (sedeUsuario) return sedeUsuario;
+        return SEDES[sedeVista] ? sedeVista : null;
     }
 
 // Parte de la venta que entró en efectivo (las ventas mixtas guardan el desglose en `pagos`).
@@ -4404,6 +4559,7 @@ async function guardarMovimientoCaja() {
     }
 
     await movCajaRef.add({
+        sede: sedeDe(turnoActivo),
         turnoId: turnoActivo.docId,
         turnoFechaApertura: turnoActivo.fechaApertura || todayISO(),
         fecha: todayISO(),
@@ -5113,9 +5269,16 @@ async function abrirTurno(form) {
         return;
     }
 
+    const sede = sedeParaRegistrar();
+    if (!sede) {
+        alert("Elige la sede (Cali o Barranquilla) en el selector de arriba antes de abrir el turno.");
+        return;
+    }
+
     const efectivoInicial = Number(document.getElementById("turnoEfectivoInicial").value || 0);
 
     const data = {
+        sede,
         estado: "abierto",
         responsable: currentUserEmail,
         fechaApertura: document.getElementById("turnoFechaApertura").value || todayISO(),
@@ -5201,7 +5364,10 @@ async function guardarVenta(form) {
     const total = calcularTotalCarrito();
     const medioPago = document.getElementById("ventaMedio").value;
 
+    const sede = sedeDe(turnoActivo);
+
     const data = {
+        sede,
         turnoId: turnoActivo.docId,
         turnoFechaApertura: turnoActivo.fechaApertura || todayISO(),
         fecha: document.getElementById("ventaFecha").value,
@@ -5230,13 +5396,14 @@ async function guardarVenta(form) {
         data.pagos = { efectivo, transferencia: total - efectivo };
     }
 
-    // En una sola transacción: se toma el siguiente comprobante (PB-0001...) y se crea la venta.
+    // En una sola transacción: se toma el siguiente comprobante de la sede (PB-CLO-0001...) y se crea la venta.
+    const contadorRef = contadorComprobanteRef(sede);
     const comprobante = await db.runTransaction(async (tx) => {
-        const contador = await tx.get(contadorComprobanteRef);
+        const contador = await tx.get(contadorRef);
         const siguiente = (contador.exists ? Number(contador.data().ultimo || 0) : 0) + 1;
-        const numero = formatoComprobante(siguiente);
+        const numero = formatoComprobante(siguiente, sede);
 
-        tx.set(contadorComprobanteRef, {
+        tx.set(contadorRef, {
             ultimo: siguiente,
             actualizadoPor: currentUserEmail,
             actualizadoEn: firebase.firestore.FieldValue.serverTimestamp()
@@ -5259,9 +5426,9 @@ async function guardarVenta(form) {
     alert(`Venta ${comprobante} guardada correctamente.`);
 }
 
-// PB-0001, PB-0002... (sello de la empresa + consecutivo de 4 dígitos).
-function formatoComprobante(numero) {
-    return "PB-" + String(numero).padStart(4, "0");
+// PB-CLO-0001, PB-BAQ-0001... (sello de la empresa + sede + consecutivo de 4 dígitos de esa sede).
+function formatoComprobante(numero, sede) {
+    return `PB-${SEDES[sede].prefijo}-${String(numero).padStart(4, "0")}`;
 }
 
 // Muestra los campos de pago mixto y calcula la parte por transferencia.
@@ -5295,6 +5462,7 @@ document.getElementById("ventaPagoEfectivo").addEventListener("input", actualiza
         }
 
         const data = {
+            sede: sedeDe(turnoActivo),
             turnoId: turnoActivo.docId,
             turnoFechaApertura: turnoActivo.fechaApertura || todayISO(),
             fecha: document.getElementById("gastoFecha").value,
@@ -6193,11 +6361,11 @@ function renderReportes() {
     centrarChipActivo("repTabs");
 
     document.getElementById("repPeriodoTexto").innerHTML =
-        `${r.nombre}: ${textoRango(r.desde, r.hasta)}`;
+        `${r.nombre}: ${textoRango(r.desde, r.hasta)} · ${nombreSede(sedeVista)}`;
 
     document.getElementById("repPrintHeader").innerHTML = `
         <h1>Servicio Técnico · ${REP_TABS[repEstado.tab]}</h1>
-        <p>Periodo: ${textoRango(r.desde, r.hasta)}</p>
+        <p>Sede: ${nombreSede(sedeVista)} · Periodo: ${textoRango(r.desde, r.hasta)}</p>
         <p>Generado el ${new Date().toLocaleString("es-CO")} por ${limpiarHTML(currentUserEmail)}</p>`;
 
     destruirGraficos();
@@ -6279,6 +6447,53 @@ function alertasDelPeriodo(r, m) {
     return alertas.map(a => `<li>${a}</li>`).join("");
 }
 
+// Métricas de cada sede en el periodo, para comparar los puntos cuando se ven todas las sedes.
+function metricasPorSede(actual) {
+    return Object.keys(SEDES).map(sede => {
+        const deSede = (x) => sedeDe(x) === sede;
+        return {
+            sede,
+            m: calcularMetricas(actual.ventas.filter(deSede), actual.gastos.filter(deSede), actual.turnosCerrados.filter(deSede))
+        };
+    });
+}
+
+function comparativoSedesHTML(actual, m) {
+    const sedes = metricasPorSede(actual);
+    const fila = (concepto, fn, clase = "") => ({
+        clase,
+        celdas: [concepto, ...sedes.map(s => money(fn(s.m))), money(fn(m))]
+    });
+
+    return `
+        <div class="rep-card">
+            <h3>Comparativo por sede</h3>
+            <p class="rep-sub">Toca el nombre de una sede para ver solo sus reportes</p>
+            <div class="rep-sedes-botones">
+                ${sedes.map(s => `<button type="button" class="secondary-btn" onclick="verSede('${s.sede}')">Ver solo ${nombreSede(s.sede)}</button>`).join("")}
+            </div>
+            ${tablaHTML(
+                [{ t: "Concepto" }, ...sedes.map(s => ({ t: nombreSede(s.sede), num: true })), { t: "Total", num: true }],
+                [
+                    fila("Ventas", x => x.ingresos),
+                    fila("Gastos", x => x.egresos),
+                    fila("Utilidad", x => x.utilidad),
+                    fila("(−) Faltantes de caja", x => -x.faltantes),
+                    fila("(+) Sobrantes de caja", x => x.sobrantes),
+                    fila("Utilidad real", x => x.utilidadReal, "total"),
+                    { celdas: ["N.º de ventas", ...sedes.map(s => s.m.nVentas.toLocaleString("es-CO")), m.nVentas.toLocaleString("es-CO")] },
+                    { celdas: ["Participación en ventas", ...sedes.map(s => pct(m.ingresos ? s.m.ingresos / m.ingresos : null)), pct(m.ingresos ? 1 : null)] }
+                ]
+            )}
+        </div>`;
+}
+
+window.verSede = function(sede) {
+    const selector = document.getElementById("sedeVistaSelect");
+    if (selector) selector.value = sede;
+    cambiarSedeVista(sede);
+};
+
 function repResumen(panel, { r, actual, m }) {
     const serie = serieTemporal(r, actual.ventas, actual.gastos);
     const medios = ventasPorMedio(actual.ventas);
@@ -6295,6 +6510,8 @@ function repResumen(panel, { r, actual, m }) {
             ${kpiHTML("Utilidad real", money(m.utilidadReal), `<span class="rep-delta">Descontando diferencias de caja</span>`, "repdiferencias:")}
             ${kpiHTML("N.º de ventas", m.nVentas.toLocaleString("es-CO"), "", "repventas:")}
         </div>
+
+        ${sedeVista === "todas" ? comparativoSedesHTML(actual, m) : ""}
 
         <div class="rep-card">
             <h3>Ventas y gastos ${serie.unidad}</h3>
@@ -6872,7 +7089,7 @@ function exportarExcel() {
     const fraccion = (parte, total) => (total ? parte / total : 0);
     const fechaXL = (iso) => (iso ? fechaDesdeIso(iso) : "");
 
-    const periodoTexto = `Periodo: ${textoRango(r.desde, r.hasta)} (${r.nombre})`;
+    const periodoTexto = `Sede: ${nombreSede(sedeVista)} · Periodo: ${textoRango(r.desde, r.hasta)} (${r.nombre})`;
     const generadoTexto = `Generado el ${new Date().toLocaleString("es-CO")} por ${currentUserEmail}`;
     const agregar = (ws, nombre) => XLSX.utils.book_append_sheet(libro, ws, nombre);
 
@@ -6898,6 +7115,23 @@ function exportarExcel() {
         .fila(["Utilidad", redondear(m.utilidad)], "total", [null, "moneda"])
         .fila(["Utilidad real (descontando diferencias de caja)", redondear(m.utilidadReal)], "total", [null, "moneda"])
         .fila(["N.º de ventas", m.nVentas], "dato", [null, "entero"]);
+
+    if (sedeVista === "todas") {
+        const sedes = metricasPorSede(actual);
+        const filaSedes = (concepto, fn, estilo = "dato", formato = "moneda") => resumen.fila(
+            [concepto, ...sedes.map(s => formato === "moneda" ? redondear(fn(s.m)) : fn(s.m)), formato === "moneda" ? redondear(fn(m)) : fn(m)],
+            estilo, [null, formato, formato, formato]
+        );
+        resumen.seccion("Comparativo por sede").encabezado(["Concepto", ...sedes.map(s => nombreSede(s.sede)), "Total"]);
+        filaSedes("Ventas", x => x.ingresos);
+        filaSedes("Gastos", x => x.egresos);
+        filaSedes("Utilidad", x => x.utilidad);
+        filaSedes("(−) Faltantes de caja", x => -x.faltantes);
+        filaSedes("(+) Sobrantes de caja", x => x.sobrantes);
+        filaSedes("Utilidad real", x => x.utilidadReal, "total");
+        filaSedes("N.º de ventas", x => x.nVentas, "dato", "entero");
+        filaSedes("Participación en ventas", x => fraccion(x.ingresos, m.ingresos), "dato", "porcentaje");
+    }
 
     resumen.seccion("Ventas por medio de pago").encabezado(["Medio de pago", "N.º de ventas", "Total", "Participación"]);
     if (medios.length) {
@@ -6984,19 +7218,19 @@ function exportarExcel() {
 
     // ===== Hoja 3: Ventas =====
     const ventasOrdenadas = [...actual.ventas].sort((a, b) => String(a.fecha).localeCompare(String(b.fecha)) || (milisDe(a) || 0) - (milisDe(b) || 0));
-    const hv = hojaExcel(8)
+    const hv = hojaExcel(9)
         .titulo("Ventas del periodo", [periodoTexto, "No incluye ventas anuladas (ver hoja Anulados)."])
         .vacia()
         .conFiltro()
-        .encabezado(["Fecha", "Hora", "N.º venta", "Productos / servicios", "Medio de pago", "Total", "Vendedor", "Observaciones"]);
+        .encabezado(["Fecha", "Hora", "N.º venta", "Sede", "Productos / servicios", "Medio de pago", "Total", "Vendedor", "Observaciones"]);
     ventasOrdenadas.forEach(v => hv.fila([
-        fechaXL(v.fecha), horaDe(v), numeroVenta(v),
+        fechaXL(v.fecha), horaDe(v), numeroVenta(v), nombreSede(sedeDe(v)),
         itemsDeVenta(v).map(i => `${Number(i.cantidad || 1) > 1 ? i.cantidad + " × " : ""}${i.nombre}`).join(", "),
         textoMedioPago(v), redondear(v.total), v.creadoPor || "", v.observaciones || ""
-    ], "dato", ["fecha", null, null, null, null, "moneda"]));
+    ], "dato", ["fecha", null, null, null, null, null, "moneda"]));
     hv.cerrarFiltro();
-    hv.fila(["Total", "", `${ventasOrdenadas.length} ventas`, "", "", redondear(m.ingresos)], "total", [null, null, null, null, null, "moneda"], 8);
-    agregar(hv.construir([12, 10, 12, 50, 15, 15, 30, 30]), "Ventas");
+    hv.fila(["Total", "", `${ventasOrdenadas.length} ventas`, "", "", "", redondear(m.ingresos)], "total", [null, null, null, null, null, null, "moneda"], 9);
+    agregar(hv.construir([12, 10, 14, 14, 50, 15, 15, 30, 30]), "Ventas");
 
     // ===== Hoja 4: Detalle vendido =====
     const hd = hojaExcel(9)
@@ -7015,55 +7249,55 @@ function exportarExcel() {
 
     // ===== Hoja 5: Gastos =====
     const gastosOrdenados = [...actual.gastos].sort((a, b) => String(a.fecha).localeCompare(String(b.fecha)) || (milisDe(a) || 0) - (milisDe(b) || 0));
-    const hg = hojaExcel(6)
+    const hg = hojaExcel(7)
         .titulo("Gastos del periodo", [periodoTexto, "No incluye gastos anulados (ver hoja Anulados)."])
         .vacia()
         .conFiltro()
-        .encabezado(["Fecha", "Hora", "Categoría", "Descripción", "Medio de pago", "Valor"]);
+        .encabezado(["Fecha", "Hora", "Sede", "Categoría", "Descripción", "Medio de pago", "Valor"]);
     gastosOrdenados.forEach(g => hg.fila([
-        fechaXL(g.fecha), horaDe(g), g.categoria || "", g.descripcion || "", g.medioPago || "", redondear(g.valor)
-    ], "dato", ["fecha", null, null, null, null, "moneda"]));
+        fechaXL(g.fecha), horaDe(g), nombreSede(sedeDe(g)), g.categoria || "", g.descripcion || "", g.medioPago || "", redondear(g.valor)
+    ], "dato", ["fecha", null, null, null, null, null, "moneda"]));
     hg.cerrarFiltro();
-    hg.fila(["Total", "", `${gastosOrdenados.length} gastos`, "", "", redondear(m.egresos)], "total", [null, null, null, null, null, "moneda"], 6);
-    agregar(hg.construir([12, 10, 22, 50, 15, 15]), "Gastos");
+    hg.fila(["Total", "", "", `${gastosOrdenados.length} gastos`, "", "", redondear(m.egresos)], "total", [null, null, null, null, null, null, "moneda"], 7);
+    agregar(hg.construir([12, 10, 14, 22, 50, 15, 15]), "Gastos");
 
     // ===== Hoja 6: Turnos (cuadres de caja) =====
-    const ht = hojaExcel(11)
+    const ht = hojaExcel(12)
         .titulo("Cuadres de caja por turno", [periodoTexto, "Esperado = inicial + ventas en efectivo − gastos en efectivo + entradas − retiros."])
         .vacia()
         .conFiltro()
-        .encabezado(["Apertura", "Estado", "Efectivo inicial", "Ventas en efectivo", "Gastos en efectivo", "Entradas", "Retiros", "Esperado", "Contado", "Diferencia", "Observación de cierre"]);
+        .encabezado(["Apertura", "Sede", "Estado", "Efectivo inicial", "Ventas en efectivo", "Gastos en efectivo", "Entradas", "Retiros", "Esperado", "Contado", "Diferencia", "Observación de cierre"]);
     turnosPeriodo.forEach(t => {
         const s = resumenDeTurno(t);
         ht.fila([
-            fechaXL(t.fechaApertura), t.estado === "abierto" ? "Abierto" : "Cerrado",
+            fechaXL(t.fechaApertura), nombreSede(sedeDe(t)), t.estado === "abierto" ? "Abierto" : "Cerrado",
             redondear(s.efectivoInicial), redondear(s.ventasEfectivo), redondear(s.gastosEfectivo),
             redondear(s.entradas), redondear(s.retiros), redondear(s.efectivoEsperado),
             s.efectivoContado === null ? "" : redondear(s.efectivoContado),
             s.diferencia === null ? "" : redondear(s.diferencia),
             t.observacionCierre || ""
-        ], "dato", ["fecha", null, "moneda", "moneda", "moneda", "moneda", "moneda", "moneda", "moneda", "moneda"]);
+        ], "dato", ["fecha", null, null, "moneda", "moneda", "moneda", "moneda", "moneda", "moneda", "moneda", "moneda"]);
     });
     ht.cerrarFiltro();
-    ht.fila(["Diferencia neta", "", "", "", "", "", "", "", "", redondear(sobrantes - faltantes)], "total", [null, null, null, null, null, null, null, null, null, "moneda"], 11);
-    agregar(ht.construir([12, 10, 15, 17, 17, 13, 13, 15, 15, 15, 35]), "Turnos");
+    ht.fila(["Diferencia neta", "", "", "", "", "", "", "", "", "", redondear(sobrantes - faltantes)], "total", [null, null, null, null, null, null, null, null, null, null, "moneda"], 12);
+    agregar(ht.construir([12, 14, 10, 15, 17, 17, 13, 13, 15, 15, 15, 35]), "Turnos");
 
     // ===== Hoja: Entradas y retiros de efectivo =====
     const movsPeriodo = movCajaGlobal
         .filter(mc => enRango(mc.fecha, r.desde, r.hasta))
         .sort((a, b) => String(a.fecha).localeCompare(String(b.fecha)) || (milisDe(a) || 0) - (milisDe(b) || 0));
-    const hmc = hojaExcel(7)
+    const hmc = hojaExcel(8)
         .titulo("Entradas y retiros de efectivo", [periodoTexto, "Dinero que entra o sale de la caja sin ser venta ni gasto. No afecta la utilidad."])
         .vacia()
         .conFiltro()
-        .encabezado(["Fecha", "Hora", "Tipo", "Motivo", "Nota", "Valor", "Registrado por"]);
+        .encabezado(["Fecha", "Hora", "Sede", "Tipo", "Motivo", "Nota", "Valor", "Registrado por"]);
     movsPeriodo.forEach(mc => hmc.fila([
-        fechaXL(mc.fecha), horaDe(mc), (mc.tipo === "entrada" ? "Entrada" : "Retiro") + (mc.anulada ? " (anulado)" : ""),
+        fechaXL(mc.fecha), horaDe(mc), nombreSede(sedeDe(mc)), (mc.tipo === "entrada" ? "Entrada" : "Retiro") + (mc.anulada ? " (anulado)" : ""),
         mc.motivo || "", mc.nota || "", redondear(mc.tipo === "entrada" ? mc.valor : -mc.valor), mc.creadoPor || ""
-    ], mc.anulada ? "anulado" : "dato", ["fecha", null, null, null, null, "moneda"]));
+    ], mc.anulada ? "anulado" : "dato", ["fecha", null, null, null, null, null, "moneda"]));
     if (!movsPeriodo.length) hmc.fila(["Sin entradas ni retiros en este periodo."], "nota");
     hmc.cerrarFiltro();
-    agregar(hmc.construir([12, 10, 12, 30, 35, 15, 30]), "Entradas y retiros");
+    agregar(hmc.construir([12, 10, 14, 12, 30, 35, 15, 30]), "Entradas y retiros");
 
     // ===== Hoja 7: Medios de pago =====
     const flujo = flujoPorMedio(actual.ventas, actual.gastos);
@@ -7090,7 +7324,8 @@ function exportarExcel() {
     ha.cerrarFiltro();
     agregar(ha.construir([12, 10, 45, 15, 40, 30]), "Anulados");
 
-    XLSX.writeFile(libro, `Reporte_ServicioTecnico_${r.desde}_a_${r.hasta}.xlsx`, { cellStyles: true });
+    const sufijoSede = sedeVista === "todas" ? "TodasLasSedes" : nombreSede(sedeVista);
+    XLSX.writeFile(libro, `Reporte_ServicioTecnico_${sufijoSede}_${r.desde}_a_${r.hasta}.xlsx`, { cellStyles: true });
 }
 
 function imprimirReporte() {
@@ -7257,6 +7492,7 @@ function detalleVenta(id) {
             <div class="modal-seccion">Datos de la venta</div>
             ${datosHTML([
                 ["Comprobante", limpiarHTML(numeroVenta(v))],
+                ["Sede", nombreSede(sedeDe(v))],
                 ["Cliente", limpiarHTML(v.cliente || "Consumidor final")],
                 ["Medio de pago", limpiarHTML(v.medioPago)],
                 v.pagos ? ["Pagó en efectivo", money(v.pagos.efectivo)] : null,
@@ -7296,6 +7532,7 @@ function detalleGasto(id) {
                 ["Descripción", limpiarHTML(g.descripcion || "—")],
                 ["Categoría", limpiarHTML(g.categoria || "Sin categoría")],
                 ["Medio de pago", limpiarHTML(g.medioPago)],
+                ["Sede", nombreSede(sedeDe(g))],
                 ["Registrado por", limpiarHTML(g.creadoPor)],
                 ["Fecha de registro", fechaHoraDe(g.creadoEn)],
                 ["Turno", enlaceTurno(g.turnoId)]
@@ -7344,7 +7581,7 @@ function detalleTurno(id) {
     return {
         ancha: true,
         titulo: abierto ? "Turno abierto" : "Turno cerrado",
-        sub: `${t.responsable || ""} · ${fechaCorta(t.fechaApertura)}`,
+        sub: `Sede ${nombreSede(sedeDe(t))} · ${t.responsable || ""} · ${fechaCorta(t.fechaApertura)}`,
         etiqueta: abierto ? "En curso" : (s.diferencia < 0 ? "Con faltante" : "Cerrado"),
         etiquetaPeligro: !abierto && s.diferencia < 0,
         cuerpo: `
@@ -7497,7 +7734,7 @@ function detalleRepVentas() {
     return {
         ancha: true,
         titulo: "Ventas del periodo",
-        sub: `${r.nombre} · ${textoRango(r.desde, r.hasta)}`,
+        sub: `${nombreSede(sedeVista)} · ${r.nombre} · ${textoRango(r.desde, r.hasta)}`,
         cuerpo: `
             ${cifraHTML("Total vendido", money(total), `${ventas.length} ${ventas.length === 1 ? "venta" : "ventas"} · sin anuladas`)}
             ${kpisModalHTML([
@@ -7522,7 +7759,7 @@ function detalleRepGastos() {
     return {
         ancha: true,
         titulo: "Gastos del periodo",
-        sub: `${r.nombre} · ${textoRango(r.desde, r.hasta)}`,
+        sub: `${nombreSede(sedeVista)} · ${r.nombre} · ${textoRango(r.desde, r.hasta)}`,
         cuerpo: `
             ${cifraHTML("Total gastado", money(total), `${gastos.length} ${gastos.length === 1 ? "gasto" : "gastos"} · sin anulados`)}
             ${kpisModalHTML([
@@ -7549,7 +7786,7 @@ function detalleRepDiferencias() {
     return {
         ancha: true,
         titulo: "Diferencias de caja",
-        sub: `${r.nombre} · ${textoRango(r.desde, r.hasta)}`,
+        sub: `${nombreSede(sedeVista)} · ${r.nombre} · ${textoRango(r.desde, r.hasta)}`,
         cuerpo: `
             ${cifraHTML("Utilidad real", money(m.utilidadReal), "Utilidad menos faltantes más sobrantes")}
             ${kpisModalHTML([
@@ -7693,6 +7930,7 @@ window.imprimirComprobante = function(id) {
 
     document.getElementById("comprobante").innerHTML = `
         <h1>Servicio Técnico</h1>
+        <p class="centro">Sede ${limpiarHTML(nombreSede(sedeDe(v)))}</p>
         <p class="centro">Comprobante de venta</p>
         <p class="centro comprobante-numero">${limpiarHTML(numeroVenta(v))}</p>
         <p class="centro">${fechaCorta(v.fecha)} · ${limpiarHTML(horaDe(v))}</p>
