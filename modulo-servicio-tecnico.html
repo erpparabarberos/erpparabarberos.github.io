@@ -7344,7 +7344,8 @@ function exportarExcel() {
     resumen.seccion("Ventas por medio de pago").encabezado(["Medio de pago", "N.º de ventas", "Total", "Participación"]);
     if (medios.length) {
         medios.forEach(f => resumen.fila([f.clave, f.n, redondear(f.total), fraccion(f.total, m.ingresos)], "dato", [null, "entero", "moneda", "porcentaje"]));
-        resumen.fila(["Total", m.nVentas, redondear(m.ingresos), 1], "total", [null, "entero", "moneda", "porcentaje"]);    } else {
+        resumen.fila(["Total", m.nVentas, redondear(m.ingresos), 1], "total", [null, "entero", "moneda", "porcentaje"]);
+    } else {
         resumen.fila(["Sin ventas en este periodo"], "nota");
     }
 
