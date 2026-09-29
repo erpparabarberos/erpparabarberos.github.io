@@ -3283,7 +3283,7 @@ body.modal-abierto {
                     <strong id="gastosHoy">$0</strong>
                 </div>
                 <div class="money-item">
-                    <span>Utilidad</span>
+                    <span>Total</span>
                     <strong id="utilidadHoy">$0</strong>
                 </div>
             </div>
@@ -3801,7 +3801,7 @@ body.modal-abierto {
                                 <strong id="turnoGastosTotal">$0</strong>
                             </div>
                             <div class="money-item">
-                                <span>Utilidad</span>
+                                <span>Total</span>
                                 <strong id="turnoUtilidad">$0</strong>
                             </div>
                         </div>
@@ -6735,7 +6735,7 @@ function repResumen(panel, { r, actual, m }) {
         <div class="rep-kpis">
             ${kpiHTML("Ventas", money(m.ingresos), "", "repventas:")}
             ${kpiHTML("Gastos", money(m.egresos), "", "repgastos:")}
-            ${kpiHTML("Utilidad", money(m.utilidad))}
+            ${kpiHTML("Total", money(m.utilidad))}
             ${kpiHTML("Descuadres de caja", money(m.sobrantes - m.faltantes), `<span class="rep-delta">Faltantes ${money(m.faltantes)} · Sobrantes ${money(m.sobrantes)}</span>`, "repdiferencias:")}
             ${kpiHTML("N.º de ventas", m.nVentas.toLocaleString("es-CO"), "", "repventas:")}
         </div>
