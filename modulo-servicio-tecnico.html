@@ -4259,10 +4259,20 @@ window.showView = function(viewName) {
             renderReportesSiVisible();
         });
 
-        // Se guarda todo lo que llega y las listas "Global" quedan solo con la sede que se está viendo.
-        ventasRef.orderBy("creadoEn", "desc").onSnapshot(snapshot => {
-            ventasTodas = [];
-            snapshot.forEach(doc => ventasTodas.push({ docId: doc.id, ...doc.data() }));
+        // El técnico solo le pide a Firebase los registros de su sede (las reglas de seguridad rechazan
+        // cualquier consulta más amplia). Se ordena en el navegador para no necesitar un índice compuesto.
+        // El administrador recibe todo y las listas "Global" quedan con la sede que esté viendo.
+        const consultaSede = (ref) => (esAdmin() ? ref.orderBy("creadoEn", "desc") : ref.where("sede", "==", sedeUsuario));
+        const recientesPrimero = (snapshot) => {
+            const docs = [];
+            snapshot.forEach(doc => docs.push({ docId: doc.id, ...doc.data() }));
+            // Lo recién guardado aún no tiene hora del servidor: va de primero.
+            const ms = (d) => (d.creadoEn && typeof d.creadoEn.toMillis === "function" ? d.creadoEn.toMillis() : Infinity);
+            return docs.sort((a, b) => ms(b) - ms(a));
+        };
+
+        consultaSede(ventasRef).onSnapshot(snapshot => {
+            ventasTodas = recientesPrimero(snapshot);
             ventasGlobal = ventasTodas.filter(enSedeVista);
             renderFrecuentes();
             renderDashboard();
@@ -4271,9 +4281,8 @@ window.showView = function(viewName) {
             renderReportesSiVisible();
         });
 
-        gastosRef.orderBy("creadoEn", "desc").onSnapshot(snapshot => {
-            gastosTodos = [];
-            snapshot.forEach(doc => gastosTodos.push({ docId: doc.id, ...doc.data() }));
+        consultaSede(gastosRef).onSnapshot(snapshot => {
+            gastosTodos = recientesPrimero(snapshot);
             gastosGlobal = gastosTodos.filter(enSedeVista);
             renderDashboard();
             renderMovimientos();
@@ -4281,9 +4290,8 @@ window.showView = function(viewName) {
             renderReportesSiVisible();
         });
 
-        turnosRef.orderBy("creadoEn", "desc").onSnapshot(snapshot => {
-            turnosTodos = [];
-            snapshot.forEach(doc => turnosTodos.push({ docId: doc.id, ...doc.data() }));
+        consultaSede(turnosRef).onSnapshot(snapshot => {
+            turnosTodos = recientesPrimero(snapshot);
             turnosGlobal = turnosTodos.filter(enSedeVista);
 
             // El turno abierto es el de quien usa el sistema, sin importar la sede que esté viendo.
@@ -4297,9 +4305,8 @@ window.showView = function(viewName) {
             renderReportesSiVisible();
         });
 
-        movCajaRef.orderBy("creadoEn", "desc").onSnapshot(snapshot => {
-            movCajaTodos = [];
-            snapshot.forEach(doc => movCajaTodos.push({ docId: doc.id, ...doc.data() }));
+        consultaSede(movCajaRef).onSnapshot(snapshot => {
+            movCajaTodos = recientesPrimero(snapshot);
             movCajaGlobal = movCajaTodos.filter(enSedeVista);
             renderDashboard();
             renderReportesSiVisible();
