@@ -483,7 +483,7 @@
 
         @media (min-width: 900px) {
             .st-app {
-                max-width: 1180px;
+                max-width: none;
                 padding: 30px 30px 110px;
             }
 
@@ -1862,7 +1862,7 @@ textarea {
         display: flex;
         align-items: center;
         gap: 28px;
-        padding: 0 40px;
+        padding: 0 32px;
     }
 
     .nav-brand {
@@ -1968,11 +1968,12 @@ textarea {
         flex: 0 0 auto;
     }
 
+    /* A todo el ancho de la pantalla, sin importar el tamaño del monitor ni el zoom */
     .st-app {
         width: 100%;
-        max-width: 1680px;
-        margin: 0 auto;
-        padding: 96px 40px 48px;
+        max-width: none;
+        margin: 0;
+        padding: 96px 32px 48px;
     }
 
     .st-header {
