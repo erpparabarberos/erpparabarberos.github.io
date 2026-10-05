@@ -2244,6 +2244,18 @@ textarea {
     }
 }
 
+.rep-aviso-sede {
+    border-color: #fcd9a8;
+    background: #fffaf2;
+}
+
+.rep-aviso-sede .submit-btn {
+    width: auto;
+    margin-top: 6px;
+    padding: 0 20px;
+    min-height: 42px;
+}
+
 .rep-sedes-botones {
     display: flex;
     flex-wrap: wrap;
@@ -4250,6 +4262,22 @@ window.showView = function(viewName) {
         }
     });
 
+    // Si Firebase rechaza una lectura (por ejemplo, por las reglas de seguridad), se avisa en vez de
+    // mostrar las listas vacías como si no hubiera datos.
+    let avisoLecturaMostrado = false;
+    const errorLectura = (que) => (error) => {
+        console.error(`No se pudo leer ${que}:`, error);
+        if (avisoLecturaMostrado) return;
+        avisoLecturaMostrado = true;
+        const permiso = error && error.code === "permission-denied";
+        alert(
+            `No se pudieron cargar ${que}. Los datos siguen guardados, pero Firebase no dejó leerlos.\n\n` +
+            (permiso
+                ? "Motivo: permisos. Revisa en Firebase › usuarios que tu usuario tenga el rol correcto (admin en minúscula) y, si eres técnico, el campo sede (cali o barranquilla)."
+                : "Motivo: " + (error && error.message ? error.message : "desconocido") + ". Revisa la conexión a internet.")
+        );
+    };
+
     function cargarDatos() {
         catalogoRef.orderBy("creadoEn", "desc").onSnapshot(snapshot => {
             catalogoGlobal = [];
@@ -4258,7 +4286,7 @@ window.showView = function(viewName) {
             llenarSelectVenta();
             renderFrecuentes();
             renderReportesSiVisible();
-        });
+        }, errorLectura("el catálogo"));
 
         // El técnico solo le pide a Firebase los registros de su sede (las reglas de seguridad rechazan
         // cualquier consulta más amplia). Se ordena en el navegador para no necesitar un índice compuesto.
@@ -4280,7 +4308,7 @@ window.showView = function(viewName) {
             renderMovimientos();
             renderHistorial();
             renderReportesSiVisible();
-        });
+        }, errorLectura("las ventas"));
 
         consultaSede(gastosRef).onSnapshot(snapshot => {
             gastosTodos = recientesPrimero(snapshot);
@@ -4289,7 +4317,7 @@ window.showView = function(viewName) {
             renderMovimientos();
             renderHistorial();
             renderReportesSiVisible();
-        });
+        }, errorLectura("los gastos"));
 
         consultaSede(turnosRef).onSnapshot(snapshot => {
             turnosTodos = recientesPrimero(snapshot);
@@ -4304,14 +4332,14 @@ window.showView = function(viewName) {
             renderCaja();
             renderDashboard();
             renderReportesSiVisible();
-        });
+        }, errorLectura("los turnos"));
 
         consultaSede(movCajaRef).onSnapshot(snapshot => {
             movCajaTodos = recientesPrimero(snapshot);
             movCajaGlobal = movCajaTodos.filter(enSedeVista);
             renderDashboard();
             renderReportesSiVisible();
-        });
+        }, errorLectura("las entradas y retiros de caja"));
     }
 
     // Selector de sede, solo para el administrador: en computador va en la barra superior
@@ -6731,6 +6759,52 @@ window.verSede = function(sede) {
     cambiarSedeVista(sede);
 };
 
+// ---------- Registros creados antes de manejar sedes ----------
+// No tienen el campo "sede": el administrador los ve como Cali, pero el técnico de Cali no los recibe
+// (su consulta pide sede == "cali"). Con un botón se les guarda la sede Cali de una vez.
+function registrosSinSede() {
+    const sin = (lista, ref) => lista.filter(x => !x.sede).map(x => ({ ref, docId: x.docId }));
+    return [
+        ...sin(ventasTodas, ventasRef),
+        ...sin(gastosTodos, gastosRef),
+        ...sin(turnosTodos, turnosRef),
+        ...sin(movCajaTodos, movCajaRef)
+    ];
+}
+
+function avisoRegistrosSinSedeHTML() {
+    if (!esAdmin()) return "";
+    const n = registrosSinSede().length;
+    if (!n) return "";
+    return `
+        <div class="rep-card rep-aviso-sede">
+            <h3>Hay ${n.toLocaleString("es-CO")} registros anteriores sin sede</h3>
+            <p class="rep-sub">Son ventas, gastos, turnos o movimientos de caja creados antes de manejar sedes. Tú los ves como de Cali,
+                pero el técnico de Cali no los ve en su historial. Al asignarlos a Cali, él podrá consultarlos.</p>
+            <button type="button" class="submit-btn" onclick="asignarSedeAntiguos()">Asignar estos registros a Cali</button>
+        </div>`;
+}
+
+window.asignarSedeAntiguos = async function() {
+    if (!esAdmin()) return;
+    const pendientes = registrosSinSede();
+    if (!pendientes.length) return;
+    if (!confirm(`Se marcarán ${pendientes.length} registros anteriores como de la sede Cali. ¿Continuar?`)) return;
+
+    try {
+        // Firestore admite hasta 500 escrituras por lote.
+        for (let i = 0; i < pendientes.length; i += 400) {
+            const lote = db.batch();
+            pendientes.slice(i, i + 400).forEach(p => lote.update(p.ref.doc(p.docId), { sede: SEDE_ANTERIOR }));
+            await lote.commit();
+        }
+        alert(`Listo: ${pendientes.length} registros quedaron en la sede Cali.`);
+    } catch (error) {
+        console.error(error);
+        alert("No se pudieron actualizar los registros: " + error.message);
+    }
+};
+
 function repResumen(panel, { r, actual, m }) {
     const serie = serieTemporal(r, actual.ventas, actual.gastos);
     const medios = ventasPorMedio(actual.ventas);
@@ -6740,6 +6814,8 @@ function repResumen(panel, { r, actual, m }) {
     ];
 
     panel.innerHTML = `
+        ${avisoRegistrosSinSedeHTML()}
+
         <div class="rep-kpis">
             ${kpiHTML("Ventas", money(m.ingresos), "", "repventas:")}
             ${kpiHTML("Gastos", money(m.egresos), "", "repgastos:")}
