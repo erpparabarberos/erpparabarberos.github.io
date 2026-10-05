@@ -4879,7 +4879,7 @@ function renderMovimientosCaja(resumen) {
                         </div>
                         <div class="carrito-lado">
                             <strong>${esEntrada ? "+" : "−"}${money(mc.valor)}</strong>
-                            ${mc.anulada ? "" : `<div class="carrito-botones"><button type="button" class="mini-btn peligro" onclick="anularMovimientoCaja('${mc.docId}')">Anular</button></div>`}
+                            ${mc.anulada || !esAdmin() ? "" : `<div class="carrito-botones"><button type="button" class="mini-btn peligro" onclick="anularMovimientoCaja('${mc.docId}')">Anular</button></div>`}
                         </div>
                     </div>`;
             }).join("")}
@@ -4890,6 +4890,8 @@ function renderMovimientosCaja(resumen) {
 }
 
 window.anularMovimientoCaja = async function(docId) {
+    // Solo el administrador anula; el técnico no puede cambiar nada después de registrarlo.
+    if (!esAdmin()) return;
     const mc = movCajaGlobal.find(x => x.docId === docId);
     if (!mc || mc.anulada) return;
 
@@ -5151,7 +5153,7 @@ function renderCatalogo() {
                     <strong class="prod-precio">${money(precio)}</strong>
                     <div class="prod-botones">
                         <button type="button" class="mini-btn" onclick="editarCatalogo('${item.docId}')">Editar</button>
-                        <button type="button" class="mini-btn peligro" onclick="eliminarCatalogo('${item.docId}')">Eliminar</button>
+                        ${esAdmin() ? `<button type="button" class="mini-btn peligro" onclick="eliminarCatalogo('${item.docId}')">Eliminar</button>` : ""}
                     </div>
                 </div>
             </div>`;
@@ -6014,6 +6016,8 @@ document.getElementById("catalogoFiltroTipo").addEventListener("click", function
 });
 
 window.eliminarCatalogo = async function(docId) {
+    // Eliminar del catálogo es solo del administrador; el técnico puede crear y editar.
+    if (!esAdmin()) return;
     const item = catalogoGlobal.find(p => p.docId === docId);
 
     if (!item) {
@@ -8012,7 +8016,7 @@ function detalleProducto(id) {
                     : `<div class="empty-state">Todavía no se ha vendido.</div>`}
             </div>`,
         acciones: [
-            `<button type="button" class="secondary-btn" style="color:var(--danger);" onclick="cerrarModal(); eliminarCatalogo('${p.docId}')">Eliminar</button>`,
+            esAdmin() ? `<button type="button" class="secondary-btn" style="color:var(--danger);" onclick="cerrarModal(); eliminarCatalogo('${p.docId}')">Eliminar</button>` : "",
             `<button type="button" class="secondary-btn" onclick="editarCatalogo('${p.docId}')">Editar</button>`,
             botonCerrarModal
         ]
