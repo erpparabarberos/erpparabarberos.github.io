@@ -1734,6 +1734,24 @@ textarea {
     font-weight: 700;
 }
 
+/* Buscador de la venta: aviso de "parecidos" y botón para crear el producto */
+.search-aviso {
+    padding: 10px 12px 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+}
+
+.search-result-item.search-crear {
+    margin-top: 4px;
+    border-top: 1px solid var(--line);
+    border-radius: 0 0 12px 12px;
+}
+
+.search-result-item.search-crear strong {
+    color: var(--accent);
+}
+
 /* Reportes */
 .rep-chips button {
     border-radius: var(--radius-sm);
@@ -5608,19 +5626,18 @@ function renderCatalogo() {
 
     if (!container) return;
 
-    const texto = normalizarBusqueda(catalogoBusqueda);
-
-    const lista = catalogoGlobal.filter(item => {
-        if (catalogoFiltroTipo && (item.tipo || "producto") !== catalogoFiltroTipo) return false;
-        if (!texto) return true;
-        return normalizarBusqueda(`${item.codigo || ""} ${item.nombre || ""} ${item.categoria || ""} ${item.tipo || ""}`).includes(texto);
-    });
+    const delTipo = catalogoGlobal.filter(item => !catalogoFiltroTipo || (item.tipo || "producto") === catalogoFiltroTipo);
+    const busqueda = normalizarBusqueda(catalogoBusqueda) ? buscarEnCatalogo(catalogoBusqueda, delTipo) : null;
+    const soloParecidos = !!busqueda && !busqueda.exactos.length && busqueda.parecidos.length > 0;
+    const lista = !busqueda ? delTipo : (soloParecidos ? busqueda.parecidos : busqueda.exactos);
 
     if (conteo) {
         const productos = catalogoGlobal.filter(i => (i.tipo || "producto") === "producto").length;
         const servicios = catalogoGlobal.length - productos;
         conteo.textContent = lista.length === catalogoGlobal.length
             ? `${productos} productos · ${servicios} servicios`
+            : soloParecidos
+            ? `No hay uno igual · ${lista.length} parecidos`
             : `${lista.length} de ${catalogoGlobal.length} resultados`;
     }
 
@@ -5691,8 +5708,12 @@ function renderCatalogo() {
         `).join("");
     }
 
+// Cuando cambia el catálogo (alguien crea o edita un producto) no se borra lo que se está eligiendo en la venta:
+// si el producto elegido sigue existiendo, se toma su versión actualizada.
 function llenarSelectVenta() {
-    limpiarBusquedaVenta();
+    if (!itemVentaSeleccionado) return;
+    const actualizado = catalogoGlobal.find(i => i.docId === itemVentaSeleccionado.docId);
+    if (actualizado) itemVentaSeleccionado = actualizado;
 }
     let itemVentaSeleccionado = null;
 
@@ -5702,6 +5723,94 @@ function normalizarBusqueda(texto) {
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
         .trim();
+}
+
+// ---------- Búsqueda tolerante en el catálogo ----------
+// Encuentra el producto aunque se escriba sin tildes, con las palabras en otro orden, en plural o singular,
+// con una letra de más, de menos o cambiada, o con las palabras pegadas ("portacuchillas" = "porta cuchillas").
+
+const PALABRAS_VACIAS = new Set(["de", "del", "la", "el", "los", "las", "para", "con", "y", "en", "a", "x", "por", "un", "una"]);
+
+function palabrasBusqueda(texto) {
+    return normalizarBusqueda(texto)
+        .replace(/([a-z])(\d)/g, "$1 $2")
+        .replace(/(\d)([a-z])/g, "$1 $2")
+        .split(/[^a-z0-9]+/)
+        .filter(Boolean);
+}
+
+// Plural a singular, lo justo para comparar: "baterias" → "bateria", "motores" → "motor".
+const raizPalabra = (p) => (p.length > 4 && p.endsWith("es") ? p.slice(0, -2) : p.length > 3 && p.endsWith("s") ? p.slice(0, -1) : p);
+
+// Cuántas letras hay que cambiar para pasar de una palabra a otra (contando dos letras volteadas como un cambio).
+function distanciaPalabras(a, b) {
+    if (Math.abs(a.length - b.length) > 2) return 99;
+    const d = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)]);
+    for (let j = 1; j <= b.length; j++) d[0][j] = j;
+    for (let i = 1; i <= a.length; i++) {
+        for (let j = 1; j <= b.length; j++) {
+            const costo = a[i - 1] === b[j - 1] ? 0 : 1;
+            d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + costo);
+            if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + 1);
+        }
+    }
+    return d[a.length][b.length];
+}
+
+// 4 = palabra igual, 3 = empieza igual, 2 = la contiene o es su plural/singular, 1 = parecida (error de digitación), 0 = nada.
+function puntajePalabra(token, palabras) {
+    const raiz = raizPalabra(token);
+    const tope = token.length >= 7 ? 2 : 1;
+    let mejor = 0;
+
+    for (const palabra of palabras) {
+        if (palabra === token) return 4;
+        if (palabra.startsWith(token)) mejor = Math.max(mejor, 3);
+        else if (palabra.includes(token) || palabra.startsWith(raiz) || raizPalabra(palabra) === raiz) mejor = Math.max(mejor, 2);
+        else if (token.length >= 4 && !/^\d+$/.test(token) && (
+            distanciaPalabras(raiz, raizPalabra(palabra)) <= tope ||
+            distanciaPalabras(token, palabra.slice(0, token.length)) <= tope
+        )) mejor = Math.max(mejor, 1);
+    }
+    return mejor;
+}
+
+// Devuelve { completo, puntaje }: completo si todas las palabras importantes de la búsqueda aparecen.
+function puntajeBusqueda(consulta, textoItem) {
+    const tokens = palabrasBusqueda(consulta);
+    if (!tokens.length) return { completo: true, puntaje: 1 };
+
+    const palabras = palabrasBusqueda(textoItem);
+    const pegadoConsulta = tokens.join("");
+    const pegadoItem = palabras.join("");
+
+    if (pegadoConsulta.length >= 3 && pegadoItem.includes(pegadoConsulta)) {
+        return { completo: true, puntaje: 100 + (pegadoItem.startsWith(pegadoConsulta) ? 10 : 0) };
+    }
+
+    let puntaje = 0;
+    let faltan = 0;
+    tokens.forEach(token => {
+        const p = puntajePalabra(token, palabras);
+        if (p) puntaje += p;
+        else if (!PALABRAS_VACIAS.has(token) && token.length > 1) faltan++;
+    });
+
+    return { completo: faltan === 0 && puntaje > 0, puntaje };
+}
+
+const textoBusquedaItem = (item) => `${item.codigo || ""} ${item.nombre || ""} ${item.categoria || ""}`;
+
+// exactos: tienen todas las palabras. parecidos: solo si no hay exactos, los que tienen alguna.
+function buscarEnCatalogo(consulta, lista = catalogoGlobal) {
+    const conPuntaje = lista
+        .map(item => ({ item, ...puntajeBusqueda(consulta, textoBusquedaItem(item)) }))
+        .filter(r => r.puntaje > 0)
+        .sort((a, b) => b.puntaje - a.puntaje || String(a.item.nombre).localeCompare(String(b.item.nombre)));
+
+    const exactos = conPuntaje.filter(r => r.completo).map(r => r.item);
+    const parecidos = exactos.length ? [] : conPuntaje.map(r => r.item);
+    return { exactos, parecidos };
 }
 
 function limpiarHTML(texto) {
@@ -5742,39 +5851,32 @@ function renderResultadosVenta(query) {
         return;
     }
 
-    const coincidencias = catalogoGlobal
-        .filter(item => {
-            const codigo = normalizarBusqueda(item.codigo);
-            const nombre = normalizarBusqueda(item.nombre);
-            const categoria = normalizarBusqueda(item.categoria);
+    const { exactos, parecidos } = buscarEnCatalogo(query);
+    const lista = (exactos.length ? exactos : parecidos).slice(0, 12);
 
-            return (
-                codigo.includes(texto) ||
-                nombre.includes(texto) ||
-                categoria.includes(texto)
-            );
-        })
-        .slice(0, 12);
-
-    if (!coincidencias.length) {
-        resultados.innerHTML = `
-            <div class="empty-state" style="padding:14px;">
-                No se encontraron coincidencias.
-            </div>
-        `;
-        resultados.classList.remove("hidden");
-        return;
-    }
-
-    resultados.innerHTML = coincidencias.map(item => `
-        <button 
-            type="button" 
+    const filaItem = (item) => `
+        <button
+            type="button"
             class="search-result-item"
             onclick="seleccionarItemVenta('${item.docId}')">
             <strong>${limpiarHTML(item.nombre)}</strong>
-            <span>${limpiarHTML(item.tipo || "producto")} · ${money(item.precio || 0)}</span>
-        </button>
-    `).join("");
+            <span>${item.codigo ? limpiarHTML(item.codigo) + " · " : ""}${limpiarHTML(item.tipo || "producto")} · ${money(item.precio || 0)}</span>
+        </button>`;
+
+    // Si no está (o lo que sale no es), se puede crear ahí mismo y volver a la venta.
+    const crear = `
+        <button type="button" class="search-result-item search-crear" onclick="crearProductoDesdeVenta()">
+            <strong>+ Crear "${limpiarHTML(query.trim())}" en el catálogo</strong>
+            <span>Al guardarlo vuelves a esta venta con el producto listo</span>
+        </button>`;
+
+    const aviso = (texto) => `<div class="search-aviso">${texto}</div>`;
+
+    resultados.innerHTML = exactos.length
+        ? lista.map(filaItem).join("") + crear
+        : parecidos.length
+        ? aviso("No hay uno igual. ¿Es alguno de estos?") + lista.map(filaItem).join("") + crear
+        : aviso(`No se encontró "${limpiarHTML(query.trim())}" en el catálogo.`) + crear;
 
     resultados.classList.remove("hidden");
 }
@@ -5787,6 +5889,38 @@ window.seleccionarItemVenta = function(docId) {
         return;
     }
 
+    elegirItemVenta(item);
+};
+
+// Crear desde la venta: abre el formulario del catálogo con el nombre buscado; al guardar, vuelve a la venta.
+let crearDesdeVenta = false;
+
+window.crearProductoDesdeVenta = function() {
+    const texto = document.getElementById("ventaBuscadorItem").value.trim().replace(/\s+/g, " ");
+
+    abrirFormCatalogo("producto");
+    crearDesdeVenta = true;
+
+    document.getElementById("catalogoNombre").value = texto ? texto.charAt(0).toUpperCase() + texto.slice(1) : "";
+    document.getElementById("modalSub").textContent = "Al guardarlo vuelves a la venta con el producto listo";
+    document.getElementById("cancelarEdicionCatalogoBtn").textContent = "Volver a la venta";
+    setTimeout(() => document.getElementById(texto ? "catalogoPrecio" : "catalogoNombre").focus({ preventScroll: true }), 80);
+};
+
+function volverALaVenta(item) {
+    crearDesdeVenta = false;
+    abrirRegistroVenta();
+
+    if (!item) return;
+    elegirItemVenta(item);
+    // abrirRegistroVenta enfoca el buscador (y abre la lista): aquí se cierra y se pasa a la cantidad.
+    setTimeout(() => {
+        document.getElementById("ventaSearchResults").classList.add("hidden");
+        document.getElementById("ventaCantidad").focus({ preventScroll: true });
+    }, 120);
+}
+
+function elegirItemVenta(item) {
     itemVentaSeleccionado = item;
 
     document.getElementById("ventaItem").value = item.docId;
@@ -5797,7 +5931,7 @@ window.seleccionarItemVenta = function(docId) {
         `${item.nombre} · ${money(item.precio || 0)}`;
 
     document.getElementById("ventaSearchResults").classList.add("hidden");
-};
+}
 
 document.getElementById("ventaBuscadorItem").addEventListener("input", function() {
     itemVentaSeleccionado = null;
@@ -6438,6 +6572,7 @@ async function reservarCodigosCatalogo(cantidad, minimo = 0) {
 
 // Abre la ventana para crear un producto/servicio nuevo.
 window.abrirFormCatalogo = function(tipo = "producto") {
+    crearDesdeVenta = false;
     cancelarEdicionCatalogo();
     setCatalogType(tipo);
     // Se muestra el código que tendrá; al guardar se confirma el consecutivo definitivo.
@@ -6458,6 +6593,7 @@ window.editarCatalogo = function(docId) {
         return;
     }
 
+    crearDesdeVenta = false;
     cancelarEdicionCatalogo();
 
     document.getElementById("catalogoEditId").value = item.docId;
@@ -6485,9 +6621,13 @@ function cancelarEdicionCatalogo() {
     setCatalogType("producto");
 
     document.getElementById("catalogoSubmitBtn").textContent = "Guardar en catálogo";
+    document.getElementById("cancelarEdicionCatalogoBtn").textContent = "Cancelar";
 }
 
-document.getElementById("cancelarEdicionCatalogoBtn").addEventListener("click", () => cerrarModal());
+document.getElementById("cancelarEdicionCatalogoBtn").addEventListener("click", () => {
+    if (crearDesdeVenta) volverALaVenta(null);
+    else cerrarModal();
+});
 
 window.abrirCargaMasiva = function() {
     document.getElementById("importCatalogResult").textContent = "";
@@ -6587,6 +6727,7 @@ async function guardarCatalogo() {
         data.creadoEn = firebase.firestore.FieldValue.serverTimestamp();
 
         // En una sola transacción: se toma el siguiente consecutivo y se crea el producto.
+        const nuevoRef = catalogoRef.doc();
         const codigo = await db.runTransaction(async (tx) => {
             const contador = await tx.get(contadorCatalogoRef);
             const ultimoContador = contador.exists ? Number(contador.data().ultimo || 0) : 0;
@@ -6597,10 +6738,16 @@ async function guardarCatalogo() {
                 actualizadoPor: currentUserEmail,
                 actualizadoEn: firebase.firestore.FieldValue.serverTimestamp()
             }, { merge: true });
-            tx.set(catalogoRef.doc(), { ...data, codigo: String(siguiente) });
+            tx.set(nuevoRef, { ...data, codigo: String(siguiente) });
 
             return siguiente;
         });
+
+        if (crearDesdeVenta) {
+            volverALaVenta({ docId: nuevoRef.id, ...data, codigo: String(codigo) });
+            alert(`"${data.nombre}" quedó en el catálogo con el código ${codigo} y ya está seleccionado. Revisa la cantidad y dale "Agregar a la venta".`);
+            return;
+        }
 
         alert(`Guardado en catálogo con el código ${codigo}.`);
     }
