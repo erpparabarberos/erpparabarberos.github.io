@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>NEXUS PB</title>
     <link rel="icon" type="image/jpeg" href="https://erpparabarberos.github.io/logo-nexus.jpg">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -599,6 +599,15 @@ header .inline-block {
 
 @media (max-width: 768px) {
 
+    /* Desde el acceso directo de la pantalla de inicio, Android dibuja la página detrás de su barra
+       de estado y de su barra de botones. --barra-arriba y --barra-abajo miden esas barras (en el
+       navegador valen 0) y se dejan libres para que nada del módulo quede tapado. */
+    :root {
+        --barra-arriba: env(safe-area-inset-top, 0px);
+        --barra-abajo: env(safe-area-inset-bottom, 0px);
+        --alto-visible: calc(100dvh - var(--barra-arriba) - var(--barra-abajo));
+    }
+
     html,
     body {
         width: 100% !important;
@@ -607,17 +616,23 @@ header .inline-block {
         overflow: hidden !important;
     }
 
+    body {
+        padding-top: var(--barra-arriba) !important;
+        padding-bottom: var(--barra-abajo) !important;
+        box-sizing: border-box !important;
+    }
+
     body > .flex-1,
     body > div.flex-1 {
-        height: 100dvh !important;
-        min-height: 100dvh !important;
-        max-height: 100dvh !important;
+        height: var(--alto-visible) !important;
+        min-height: var(--alto-visible) !important;
+        max-height: var(--alto-visible) !important;
     }
 
     main {
-        height: calc(100dvh - 64px) !important;
-        min-height: calc(100dvh - 64px) !important;
-        max-height: calc(100dvh - 64px) !important;
+        height: calc(var(--alto-visible) - 64px) !important;
+        min-height: calc(var(--alto-visible) - 64px) !important;
+        max-height: calc(var(--alto-visible) - 64px) !important;
         overflow: hidden !important;
         padding-bottom: 72px !important;
         box-sizing: border-box !important;
@@ -625,9 +640,9 @@ header .inline-block {
 
     #mainFrame,
     .nexus-main-frame {
-        height: calc(100dvh - 64px) !important;
-        min-height: calc(100dvh - 64px) !important;
-        max-height: calc(100dvh - 64px) !important;
+        height: calc(var(--alto-visible) - 64px) !important;
+        min-height: calc(var(--alto-visible) - 64px) !important;
+        max-height: calc(var(--alto-visible) - 64px) !important;
         overflow: auto !important;
         -webkit-overflow-scrolling: touch !important;
     }
@@ -691,7 +706,7 @@ header .inline-block {
         position: fixed !important;
         left: auto !important;
         right: 16px !important;
-        bottom: 96px !important;
+        bottom: calc(96px + var(--barra-abajo, 0px)) !important;
         top: auto !important;
 
         transform: none !important;
@@ -735,7 +750,7 @@ header .inline-block {
         position: fixed !important;
         left: 50% !important;
         right: auto !important;
-        bottom: 96px !important;
+        bottom: calc(96px + var(--barra-abajo, 0px)) !important;
         top: auto !important;
 
         transform: translateX(-50%) !important;
