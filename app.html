@@ -605,7 +605,8 @@ header .inline-block {
     :root {
         --barra-arriba: env(safe-area-inset-top, 0px);
         --barra-abajo: env(safe-area-inset-bottom, 0px);
-        --alto-visible: calc(100dvh - var(--barra-arriba) - var(--barra-abajo));
+        /* --vh-real lo pone el script de abajo con el alto que reporta el teléfono; si no hay script, 100dvh */
+        --alto-visible: calc(var(--vh-real, 100dvh) - var(--barra-arriba) - var(--barra-abajo));
     }
 
     html,
@@ -1111,6 +1112,77 @@ if (mainSideRail) {
         configurarMenuPorRol(rol);
     });
 });
+</script>
+
+<script>
+// Alto real de la pantalla: algunos navegadores (sobre todo abiertos desde el acceso directo)
+// calculan mal 100dvh. Se usa el alto que reporta el teléfono.
+(function () {
+    const raiz = document.documentElement;
+    function ajustarAlto() {
+        raiz.style.setProperty('--vh-real', window.innerHeight + 'px');
+    }
+    ajustarAlto();
+    window.addEventListener('resize', ajustarAlto);
+    window.addEventListener('orientationchange', () => setTimeout(ajustarAlto, 300));
+    window.addEventListener('pageshow', ajustarAlto);
+})();
+
+// Diagnóstico de pantalla: tocar 3 veces la etiqueta del rol muestra las medidas del teléfono.
+(function () {
+    const VERSION_MARCO = '2026-10-06b';
+    let toques = [];
+
+    function medir(css) {
+        const sonda = document.createElement('div');
+        sonda.style.cssText = 'position:fixed;left:0;top:0;width:1px;visibility:hidden;pointer-events:none;' + css;
+        document.body.appendChild(sonda);
+        const r = getComputedStyle(sonda);
+        const datos = { alto: Math.round(sonda.getBoundingClientRect().height), arriba: r.paddingTop, abajo: r.paddingBottom };
+        sonda.remove();
+        return datos;
+    }
+
+    function mostrar() {
+        const modo = ['fullscreen', 'standalone', 'minimal-ui', 'browser']
+            .find(m => window.matchMedia('(display-mode: ' + m + ')').matches) || '?';
+        const env = medir('padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);');
+        const dvh = medir('height:100dvh;').alto;
+        const vh = medir('height:100vh;').alto;
+        const marco = document.getElementById('mainFrame');
+        const rf = marco ? marco.getBoundingClientRect() : { top: 0, bottom: 0 };
+        const vv = window.visualViewport ? Math.round(window.visualViewport.height) : '-';
+        const lineas = [
+            'Versión marco: ' + VERSION_MARCO,
+            'Modo: ' + modo,
+            'innerHeight: ' + window.innerHeight + ' · visualViewport: ' + vv,
+            '100dvh: ' + dvh + ' · 100vh: ' + vh,
+            'screen: ' + screen.height + ' · disponible: ' + screen.availHeight + ' · outer: ' + window.outerHeight,
+            'barra arriba: ' + env.arriba + ' · barra abajo: ' + env.abajo,
+            'módulo: ' + Math.round(rf.top) + ' → ' + Math.round(rf.bottom),
+            'pixel ratio: ' + window.devicePixelRatio,
+            navigator.userAgent
+        ];
+        let caja = document.getElementById('diagnosticoPantalla');
+        if (!caja) {
+            caja = document.createElement('div');
+            caja.id = 'diagnosticoPantalla';
+            caja.style.cssText = 'position:fixed;left:12px;right:12px;top:90px;z-index:2147483647;background:#fff;color:#0f172a;' +
+                'border:2px solid #0f172a;border-radius:14px;padding:14px;font:13px/1.5 monospace;box-shadow:0 10px 30px rgba(0,0,0,.25);word-break:break-word;';
+            caja.addEventListener('click', () => caja.remove());
+            document.body.appendChild(caja);
+        }
+        caja.innerHTML = lineas.map(l => '<div>' + l.replace(/</g, '&lt;') + '</div>').join('') +
+            '<div style="margin-top:8px;font-weight:bold">Toca este recuadro para cerrarlo</div>';
+    }
+
+    document.addEventListener('click', e => {
+        if (!e.target.closest('#roleBadge')) return;
+        const ahora = Date.now();
+        toques = toques.filter(t => ahora - t < 1500).concat(ahora);
+        if (toques.length >= 3) { toques = []; mostrar(); }
+    });
+})();
 </script>
 
 </body>
