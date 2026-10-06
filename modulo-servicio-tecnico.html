@@ -1968,6 +1968,10 @@ textarea {
         flex: 0 0 auto;
     }
 
+    .bottom-nav .nav-items button {
+        white-space: nowrap;
+    }
+
     /* A todo el ancho de la pantalla, sin importar el tamaño del monitor ni el zoom */
     .st-app {
         width: 100%;
@@ -2746,6 +2750,83 @@ body.modal-abierto {
 
 .movcaja-lista .movement-card {
     box-shadow: none;
+}
+
+/* ===== Caja menor ===== */
+
+/* Computador angosto (o con zoom): la barra superior se compacta para que quepan todos los botones y el selector de sede */
+@media (min-width: 1024px) and (max-width: 1439px) {
+    .nav-brand {
+        display: none;
+    }
+
+    .bottom-nav {
+        gap: 16px;
+        padding: 0 20px;
+    }
+
+    .bottom-nav .nav-items button {
+        padding: 0 10px;
+    }
+
+    .nav-sede .sede-control-titulo {
+        display: none;
+    }
+}
+
+@media (min-width: 1024px) and (max-width: 1199px) {
+    .bottom-nav .nav-items button svg.ico {
+        display: none;
+    }
+}
+
+.money-row.money-row-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 480px) {
+    .money-row.money-row-2 {
+        grid-template-columns: 1fr;
+    }
+}
+
+.cm-botones {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-top: 16px;
+}
+
+/* En celular: dos botones arriba y el de efectivo ↔ banco a todo el ancho */
+@media (max-width: 640px) {
+    .cm-botones {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .cm-botones .secondary-btn:last-child {
+        grid-column: 1 / -1;
+    }
+}
+
+.cm-aviso {
+    margin-top: 16px;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: #f8fafc;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--ink-2);
+}
+
+.cm-aviso b {
+    color: var(--ink);
+}
+
+.cm-mas {
+    color: var(--accent);
+}
+
+.cm-menos {
+    color: var(--danger);
 }
 
 .pago-mixto {
@@ -3615,6 +3696,7 @@ body.modal-abierto {
                     <div class="form-group">
                         <label>Efectivo inicial en caja</label>
                         <input type="number" id="turnoEfectivoInicial" min="0" placeholder="Ej: 50000" required>
+                        <small class="ayuda" id="turnoAperturaAyuda"></small>
                     </div>
                 </div>
 
@@ -3660,6 +3742,41 @@ body.modal-abierto {
             </form>
         </div>
 
+        <div data-panel id="panelCajaMenor">
+            <form id="cajaMenorForm">
+                <input type="hidden" id="cmTipo" value="ingreso">
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label id="cmMedioLabel">Dónde</label>
+                        <select id="cmMedio" required></select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Valor</label>
+                        <input type="number" id="cmValor" min="1" placeholder="Ej: 100000" required>
+                    </div>
+                </div>
+
+                <div class="form-group" id="cmMotivoGrupo">
+                    <label>Motivo</label>
+                    <select id="cmMotivo"></select>
+                </div>
+
+                <div class="form-group">
+                    <label>Nota</label>
+                    <textarea id="cmNota" placeholder="Opcional. Ej: pago a proveedor de repuestos"></textarea>
+                </div>
+
+                <p class="ayuda" id="cmAyuda" style="margin:-4px 0 14px;"></p>
+
+                <div class="form-acciones">
+                    <button class="secondary-btn" type="button" data-cerrar-modal>Cancelar</button>
+                    <button class="submit-btn" type="submit" id="cmSubmit">Registrar</button>
+                </div>
+            </form>
+        </div>
+
         <div data-panel id="panelCerrarTurno">
             <div class="modal-cifra">
                 <span>Efectivo esperado en caja</span>
@@ -3673,6 +3790,8 @@ body.modal-abierto {
                     <input type="number" id="turnoEfectivoContado" min="0" placeholder="Cuenta los billetes y monedas" required>
                     <small class="ayuda" id="cierreDiferencia">Escribe el efectivo contado para ver la diferencia.</small>
                 </div>
+
+                <p class="cm-aviso" id="cierreCajaMenor" hidden style="margin:0 0 16px;"></p>
 
                 <div class="form-group">
                     <label>Observación de cierre</label>
@@ -3842,6 +3961,52 @@ body.modal-abierto {
         </div>
     </section>
 
+    <section id="view-cajamenor" class="view">
+        <div class="st-header">
+            <div>
+                <h1>Caja menor</h1>
+                <p>Dinero del negocio por fuera del turno: efectivo guardado y banco</p>
+            </div>
+        </div>
+
+        <div class="kpi-top">
+            <div class="balance-card">
+                <div class="balance-label">Saldo de la caja menor</div>
+                <div class="balance-value" id="cmSaldoTotal">$0</div>
+                <div class="balance-sub" id="cmSaldoSub">Efectivo + banco</div>
+            </div>
+
+            <div class="money-row money-row-2">
+                <div class="money-item">
+                    <span>Efectivo</span>
+                    <strong id="cmSaldoEfectivo">$0</strong>
+                </div>
+                <div class="money-item">
+                    <span>Banco</span>
+                    <strong id="cmSaldoBanco">$0</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="cm-aviso" id="cmAvisoTurno" hidden></div>
+
+        <div class="movcaja-botones cm-botones">
+            <button type="button" class="secondary-btn" onclick="abrirCajaMenor('ingreso')"><i data-icon="plus"></i> Ingresar dinero</button>
+            <button type="button" class="secondary-btn" onclick="abrirCajaMenor('retiro')"><i data-icon="minus"></i> Retirar o pagar</button>
+            <button type="button" class="secondary-btn" onclick="abrirCajaMenor('traslado')"><i data-icon="traslado"></i> Efectivo ↔ banco</button>
+        </div>
+
+        <div class="filtro-lista" id="cajamenorFiltro" data-lista="cajamenor"></div>
+
+        <div class="form-card">
+            <h2 class="card-title" id="cmListaTitulo">Movimientos de este mes</h2>
+            <p class="card-sub" id="cmListaFecha"></p>
+            <div class="lista-scroll">
+                <div class="movement-list" id="cmLista"></div>
+            </div>
+        </div>
+    </section>
+
     <section id="view-historial" class="view">
         <div class="st-header">
             <div>
@@ -3905,6 +4070,7 @@ body.modal-abierto {
             <button type="button" data-tab="ventas">Ventas</button>
             <button type="button" data-tab="gastos">Gastos</button>
             <button type="button" data-tab="caja">Caja y turnos</button>
+            <button type="button" data-tab="cajamenor">Caja menor</button>
             <button type="button" data-tab="movimientos">Movimientos</button>
         </div>
 
@@ -3915,6 +4081,7 @@ body.modal-abierto {
         <div class="rep-panel" id="repPanel-ventas"></div>
         <div class="rep-panel" id="repPanel-gastos"></div>
         <div class="rep-panel" id="repPanel-caja"></div>
+        <div class="rep-panel" id="repPanel-cajamenor"></div>
         <div class="rep-panel" id="repPanel-movimientos"></div>
     </section>
 
@@ -3929,6 +4096,7 @@ body.modal-abierto {
     <div class="nav-items">
         <button class="nav-btn active" onclick="showView('inicio')" data-view="inicio"><i data-icon="inicio"></i>Inicio</button>
         <button class="nav-btn" onclick="showView('caja')" data-view="caja"><i data-icon="caja"></i>Caja</button>
+        <button class="nav-btn" onclick="showView('cajamenor')" data-view="cajamenor"><i data-icon="cajamenor"></i>Caja menor</button>
         <button class="nav-btn" onclick="showView('ventas')" data-view="ventas"><i data-icon="ventas"></i>Ventas</button>
         <button class="nav-btn" onclick="showView('gastos')" data-view="gastos"><i data-icon="gastos"></i>Gastos</button>
         <button class="nav-btn" onclick="showView('catalogo')" data-view="catalogo"><i data-icon="catalogo"></i>Catálogo</button>
@@ -3987,6 +4155,8 @@ body.modal-abierto {
     const turnosRef = db.collection("st_turnos");
     // Entradas y retiros de efectivo de la caja que no son ventas ni gastos (base adicional, consignaciones...).
     const movCajaRef = db.collection("st_movimientos_caja");
+    // Caja menor: ingresos, retiros y traslados del dinero del negocio que está por fuera del turno.
+    const cajaMenorRef = db.collection("st_caja_menor");
     // Último número de comprobante de venta asignado en cada sede (PB-CLO-0001, PB-BAQ-0001...).
     const contadorComprobanteRef = (sede) => db.collection("metadata").doc("stComprobanteCounter_" + sede);
     // Guarda el último código de catálogo asignado, para que dos personas no reciban el mismo.
@@ -3999,6 +4169,7 @@ body.modal-abierto {
     let catalogoBusqueda = "";
     let turnosGlobal = [];
     let movCajaGlobal = [];
+    let cajaMenorGlobal = [];
     let turnoActivo = null;
     let currentUserEmail = "sin_usuario";
     let currentUserRol = "";
@@ -4024,6 +4195,7 @@ body.modal-abierto {
     let gastosTodos = [];
     let turnosTodos = [];
     let movCajaTodos = [];
+    let cajaMenorTodos = [];
 
     const sedeDe = (registro) => registro.sede || SEDE_ANTERIOR;
     const nombreSede = (sede) => SEDES[sede]?.nombre || "Todas las sedes";
@@ -4062,7 +4234,9 @@ body.modal-abierto {
         check: '<circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/>',
         baja: '<path d="m3 7 6 6 4-4 8 8"/><path d="M21 11v6h-6"/>',
         reloj: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
-        sede: '<path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>'
+        sede: '<path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>',
+        cajamenor: '<ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6"/><path d="M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/>',
+        traslado: '<path d="M4 8h15l-4-4M20 16H5l4 4"/>'
     };
 
     function icono(nombre) {
@@ -4159,6 +4333,10 @@ window.showView = function(viewName) {
 
     if (viewName === "reportes") {
         renderReportes();
+    }
+
+    if (viewName === "cajamenor") {
+        renderCajaMenor();
     }
 
     document.documentElement.scrollTop = 0;
@@ -4331,6 +4509,7 @@ window.showView = function(viewName) {
 
             renderCaja();
             renderDashboard();
+            renderCajaMenor();
             renderReportesSiVisible();
         }, errorLectura("los turnos"));
 
@@ -4338,8 +4517,16 @@ window.showView = function(viewName) {
             movCajaTodos = recientesPrimero(snapshot);
             movCajaGlobal = movCajaTodos.filter(enSedeVista);
             renderDashboard();
+            renderCajaMenor();
             renderReportesSiVisible();
         }, errorLectura("las entradas y retiros de caja"));
+
+        consultaSede(cajaMenorRef).onSnapshot(snapshot => {
+            cajaMenorTodos = recientesPrimero(snapshot);
+            cajaMenorGlobal = cajaMenorTodos.filter(enSedeVista);
+            renderCajaMenor();
+            renderReportesSiVisible();
+        }, errorLectura("la caja menor"));
     }
 
     // Selector de sede, solo para el administrador: en computador va en la barra superior
@@ -4381,12 +4568,14 @@ window.showView = function(viewName) {
         gastosGlobal = gastosTodos.filter(enSedeVista);
         turnosGlobal = turnosTodos.filter(enSedeVista);
         movCajaGlobal = movCajaTodos.filter(enSedeVista);
+        cajaMenorGlobal = cajaMenorTodos.filter(enSedeVista);
 
         renderFrecuentes();
         renderDashboard();
         renderMovimientos();
         renderHistorial();
         renderCaja();
+        renderCajaMenor();
         renderReportesSiVisible();
     }
 
@@ -4496,7 +4685,16 @@ const PERIODOS_LISTA = [
 
 const filtrosLista = {
     ventas: { periodo: "hoy", desde: "", hasta: "", busqueda: "" },
-    gastos: { periodo: "hoy", desde: "", hasta: "", busqueda: "" }
+    gastos: { periodo: "hoy", desde: "", hasta: "", busqueda: "" },
+    cajamenor: { periodo: "mes", desde: "", hasta: "", busqueda: "" }
+};
+
+// Qué se vuelve a pintar cuando cambia el filtro de cada lista.
+const pintarLista = (tipo) => (tipo === "cajamenor" ? renderCajaMenor() : renderListasDia());
+const PLACEHOLDER_BUSQUEDA = {
+    ventas: "Buscar por N.º de venta, producto o cliente",
+    gastos: "Buscar por descripción o categoría",
+    cajamenor: "Buscar por motivo, nota o usuario"
 };
 
 function rangoFiltroLista(f) {
@@ -4539,7 +4737,7 @@ function pintarFiltroLista(tipo) {
                 <div><label>Hasta</label><input type="date" data-campo="hasta"></div>
             </div>
             <input type="search" class="filtro-buscar" data-campo="busqueda" autocomplete="off"
-                placeholder="${tipo === "ventas" ? "Buscar por N.º de venta, producto o cliente" : "Buscar por descripción o categoría"}">`;
+                placeholder="${PLACEHOLDER_BUSQUEDA[tipo]}">`;
 
         caja.addEventListener("click", e => {
             const boton = e.target.closest("[data-periodo]");
@@ -4549,14 +4747,14 @@ function pintarFiltroLista(tipo) {
                 f.hasta = f.hasta || todayISO();
                 f.desde = f.desde || sumarDias(todayISO(), -6);
             }
-            renderListasDia();
+            pintarLista(tipo);
         });
 
         caja.addEventListener("input", e => {
             const campo = e.target.dataset.campo;
             if (!campo) return;
             f[campo] = e.target.value;
-            renderListasDia();
+            pintarLista(tipo);
         });
     }
 
@@ -4720,6 +4918,10 @@ window.abrirModalAbrirTurno = function() {
     }
 
     document.getElementById("turnoFechaApertura").value = todayISO();
+    const sede = sedeParaRegistrar();
+    document.getElementById("turnoAperturaAyuda").textContent = sede
+        ? `Sale del efectivo de la caja menor (disponible: ${money(saldosCajaMenor(sede).efectivo)}).`
+        : "";
     abrirPanelEnModal("panelAbrirTurno", {
         titulo: "Abrir turno",
         sub: "Registra el efectivo con el que empieza la caja"
@@ -4739,6 +4941,9 @@ window.abrirModalCerrarTurno = function() {
     if (r.entradas) detalleCierre += ` + entradas ${money(r.entradas)}`;
     if (r.retiros) detalleCierre += ` − retiros ${money(r.retiros)}`;
     document.getElementById("cierreDetalle").textContent = detalleCierre;
+    const avisoCajaMenor = document.getElementById("cierreCajaMenor");
+    avisoCajaMenor.hidden = !turnoActivo.cajaMenor;
+    avisoCajaMenor.innerHTML = `Al cerrar, <b>el efectivo contado</b> pasa a la caja menor y las transferencias netas del turno (<b>${money(transferenciasNetas(r))}</b>) suman a su saldo en banco.`;
     actualizarDiferenciaCierre();
 
     abrirPanelEnModal("panelCerrarTurno", {
@@ -4782,8 +4987,16 @@ window.accionRapidaTurno = function() {
 // ---------- Entradas y retiros de efectivo (solo con turno abierto) ----------
 
 const MOTIVOS_CAJA = {
-    entrada: ["Base adicional", "Cambio (monedas y billetes)", "Devolución de un retiro", "Otro"],
-    retiro: ["Consignación en banco", "Retiro del dueño", "Traslado a otra sede", "Pago en efectivo fuera de gastos", "Otro"]
+    entrada: ["Base adicional", "Desde la caja menor", "Cambio (monedas y billetes)", "Devolución de un retiro", "Otro"],
+    retiro: ["Consignación en banco", "Pasar a la caja menor", "Retiro del dueño", "Traslado a otra sede", "Pago en efectivo fuera de gastos", "Otro"]
+};
+
+// Entradas y retiros del turno que también mueven la caja menor: el efectivo sale de ella o vuelve a ella,
+// y lo consignado llega a su saldo en banco.
+const CAJA_MENOR_POR_MOTIVO = {
+    "entrada|Desde la caja menor": "efectivo",
+    "retiro|Pasar a la caja menor": "efectivo",
+    "retiro|Consignación en banco": "banco"
 };
 
 window.abrirMovimientoCaja = function(tipo) {
@@ -4826,9 +5039,19 @@ async function guardarMovimientoCaja() {
         return;
     }
 
+    const motivo = document.getElementById("movCajaMotivo").value;
+    const cajaMenor = turnoActivo.cajaMenor ? CAJA_MENOR_POR_MOTIVO[tipo + "|" + motivo] : undefined;
+
     if (tipo === "retiro") {
         const disponible = obtenerResumenTurno(turnoActivo).efectivoEsperado;
         if (valor > disponible && !confirm(`El retiro (${money(valor)}) es mayor que el efectivo esperado en caja (${money(disponible)}). ¿Registrarlo de todas formas?`)) {
+            return;
+        }
+    }
+
+    if (tipo === "entrada" && cajaMenor) {
+        const disponible = saldosCajaMenor(sedeDe(turnoActivo)).efectivo;
+        if (valor > disponible && !confirm(`La caja menor solo tiene ${money(disponible)} en efectivo y vas a sacar ${money(valor)}. ¿Registrarlo de todas formas?`)) {
             return;
         }
     }
@@ -4840,8 +5063,9 @@ async function guardarMovimientoCaja() {
         fecha: todayISO(),
         tipo,
         valor,
-        motivo: document.getElementById("movCajaMotivo").value,
+        motivo,
         nota: document.getElementById("movCajaNota").value.trim(),
+        ...(cajaMenor ? { cajaMenor } : {}),
         creadoPor: currentUserEmail,
         creadoEn: firebase.firestore.FieldValue.serverTimestamp()
     });
@@ -4909,6 +5133,275 @@ window.anularMovimientoCaja = async function(docId) {
             anuladaPor: currentUserEmail,
             anuladaEn: firebase.firestore.FieldValue.serverTimestamp()
         });
+    } catch (error) {
+        console.error(error);
+        alert("No se pudo anular: " + error.message);
+    }
+};
+
+// ---------- Caja menor: dinero del negocio por fuera del turno ----------
+// Cada sede tiene un saldo en efectivo y otro en banco. Se arma con:
+// · lo registrado en la caja menor (ingresos, retiros o pagos, y traslados entre efectivo y banco);
+// · los turnos: al abrir, la base sale del efectivo; al cerrar, entran el efectivo contado y las transferencias netas;
+// · las entradas y retiros del turno marcados con la caja menor (ver CAJA_MENOR_POR_MOTIVO).
+// Solo cuentan los turnos abiertos desde que existe la caja menor (los que tienen el campo cajaMenor).
+
+const MOTIVOS_CAJA_MENOR = {
+    ingreso: ["Saldo inicial", "Aporte del dueño", "Préstamo", "Otro"],
+    retiro: ["Retiro del dueño", "Pago a proveedor", "Compra de mercancía", "Nómina", "Arriendo y servicios", "Traslado a otra sede", "Otro"]
+};
+
+const NOMBRE_MEDIO_CM = { efectivo: "Efectivo", banco: "Banco" };
+
+// Ventas por transferencia menos gastos por transferencia del turno: lo que llega al banco.
+function transferenciasNetas(resumen) {
+    return (Number(resumen.totalVentas || 0) - Number(resumen.ventasEfectivo || 0)) -
+        (Number(resumen.totalGastos || 0) - Number(resumen.gastosEfectivo || 0));
+}
+
+const isoDeTimestamp = (ts) => (ts && typeof ts.toMillis === "function" ? isoDesdeFecha(new Date(ts.toMillis())) : null);
+const horaDeMs = (ms) => (ms ? new Date(ms).toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" }) : "");
+
+// Movimientos de la caja menor con lo que cambia en efectivo y en banco (positivo entra, negativo sale),
+// del más reciente al más antiguo.
+function movimientosCajaMenor(sede = sedeVista) {
+    const deSede = (x) => sede === "todas" || sedeDe(x) === sede;
+    const lista = [];
+
+    cajaMenorTodos.filter(deSede).forEach(cm => {
+        const valor = Number(cm.valor || 0);
+        const base = {
+            origen: "manual", docId: cm.docId, sede: sedeDe(cm), fecha: cm.fecha, ms: milisDe(cm),
+            anulada: !!cm.anulada, usuario: cm.creadoPor || "", nota: cm.nota || "", detalle: "cajamenor:" + cm.docId
+        };
+
+        if (cm.tipo === "traslado") {
+            const aBanco = cm.medio === "efectivo";
+            lista.push({ ...base, tipo: "traslado", titulo: aBanco ? "Consignación en banco" : "Retiro del banco",
+                efectivo: aBanco ? -valor : valor, banco: aBanco ? valor : -valor });
+        } else {
+            const signo = cm.tipo === "retiro" ? -1 : 1;
+            lista.push({ ...base, tipo: cm.tipo, titulo: cm.motivo || (signo > 0 ? "Ingreso" : "Retiro"),
+                efectivo: cm.medio === "efectivo" ? signo * valor : 0, banco: cm.medio === "banco" ? signo * valor : 0 });
+        }
+    });
+
+    turnosTodos.filter(t => t.cajaMenor && deSede(t)).forEach(t => {
+        const base = { origen: "turno", docId: t.docId, sede: sedeDe(t), anulada: false, usuario: t.responsable || "", detalle: "turno:" + t.docId };
+        const inicial = Number(t.efectivoInicial || 0);
+
+        if (inicial) {
+            lista.push({ ...base, tipo: "apertura", titulo: "Base para abrir turno", nota: "",
+                fecha: t.fechaApertura, ms: milisDe(t), efectivo: -inicial, banco: 0 });
+        }
+
+        if (t.estado === "cerrado") {
+            const banco = transferenciasNetas(t);
+            lista.push({ ...base, tipo: "cierre", titulo: "Cierre de turno",
+                nota: `Efectivo contado ${money(t.efectivoContado)} · transferencias netas ${money(banco)}`,
+                fecha: isoDeTimestamp(t.cerradoEn) || t.fechaApertura, ms: t.cerradoEn?.toMillis ? t.cerradoEn.toMillis() : null,
+                efectivo: Number(t.efectivoContado || 0), banco });
+        }
+    });
+
+    movCajaTodos.filter(mc => mc.cajaMenor && deSede(mc)).forEach(mc => {
+        const valor = Number(mc.valor || 0);
+        // Lo que sale del turno entra a la caja menor, y lo que entra al turno sale de ella.
+        const signo = mc.tipo === "entrada" ? -1 : 1;
+        const titulo = mc.tipo === "entrada"
+            ? "Efectivo llevado al turno"
+            : (mc.cajaMenor === "banco" ? "Consignación desde el turno" : "Efectivo recibido del turno");
+
+        lista.push({
+            origen: "turno", docId: mc.docId, sede: sedeDe(mc), anulada: !!mc.anulada, usuario: mc.creadoPor || "",
+            detalle: "turno:" + mc.turnoId, tipo: mc.tipo === "entrada" ? "alturno" : "delturno", titulo, nota: mc.nota || "",
+            fecha: mc.fecha, ms: milisDe(mc),
+            efectivo: mc.cajaMenor === "efectivo" ? signo * valor : 0,
+            banco: mc.cajaMenor === "banco" ? signo * valor : 0
+        });
+    });
+
+    // Lo recién guardado aún no tiene hora del servidor: va de primero.
+    const ms = (m) => (m.ms === null || m.ms === undefined ? Number.MAX_SAFE_INTEGER : m.ms);
+    return lista.sort((a, b) => String(b.fecha).localeCompare(String(a.fecha)) || ms(b) - ms(a));
+}
+
+function saldosCajaMenor(sede = sedeVista) {
+    const validos = movimientosCajaMenor(sede).filter(m => !m.anulada);
+    const efectivo = validos.reduce((acc, m) => acc + m.efectivo, 0);
+    const banco = validos.reduce((acc, m) => acc + m.banco, 0);
+    return { efectivo, banco, total: efectivo + banco };
+}
+
+const ICONO_MOV_CM = { ingreso: "plus", retiro: "minus", traslado: "traslado", apertura: "unlock", cierre: "lock", alturno: "minus", delturno: "plus" };
+
+// Una fila de la lista: título, fecha y nota; a la derecha lo que cambió en efectivo y en banco.
+function filaCajaMenorHTML(m, conSede) {
+    const cifra = (valor, medio) => valor
+        ? `<strong class="${valor > 0 ? "cm-mas" : "cm-menos"}">${valor > 0 ? "+" : "−"}${money(Math.abs(valor))}</strong><p>${medio}</p>`
+        : "";
+    const partes = [fechaCorta(m.fecha), horaDeMs(m.ms), conSede ? nombreSede(m.sede) : "", m.nota].filter(Boolean);
+
+    return `
+        <div class="movement-card ${m.anulada ? "historial-anulada" : ""}" ${attrDetalle(m.detalle)}>
+            <div class="movement-icon">${icono(ICONO_MOV_CM[m.tipo] || "cajamenor")}</div>
+            <div>
+                <h3>${limpiarHTML(m.titulo)}${m.anulada ? " (anulado)" : ""}</h3>
+                <p>${limpiarHTML(partes.join(" · "))}</p>
+            </div>
+            <div style="text-align:right;">
+                ${cifra(m.efectivo, "Efectivo")}${cifra(m.banco, "Banco")}
+            </div>
+        </div>`;
+}
+
+function renderCajaMenor() {
+    if (!document.getElementById("view-cajamenor")) return;
+
+    pintarFiltroLista("cajamenor");
+
+    const s = saldosCajaMenor();
+    document.getElementById("cmSaldoTotal").textContent = money(s.total);
+    document.getElementById("cmSaldoEfectivo").textContent = money(s.efectivo);
+    document.getElementById("cmSaldoBanco").textContent = money(s.banco);
+    document.getElementById("cmSaldoSub").textContent = !esAdmin()
+        ? "Efectivo + banco"
+        : sedeVista === "todas"
+        ? Object.keys(SEDES).map(k => `${SEDES[k].nombre} ${money(saldosCajaMenor(k).total)}`).join(" · ")
+        : `Efectivo + banco · Sede ${nombreSede(sedeVista)}`;
+
+    // El efectivo de un turno abierto todavía no está en la caja menor: entra al cerrarlo.
+    const aviso = document.getElementById("cmAvisoTurno");
+    const abiertos = turnosGlobal.filter(t => t.estado === "abierto");
+    aviso.hidden = !abiertos.length;
+    aviso.innerHTML = abiertos.map(t => {
+        const quien = `${limpiarHTML(t.responsable || "")}${esAdmin() && sedeVista === "todas" ? " · " + nombreSede(sedeDe(t)) : ""}`;
+        return t.cajaMenor
+            ? `Turno abierto (${quien}): hay <b>${money(obtenerResumenTurno(t).efectivoEsperado)}</b> de efectivo esperado en la caja del turno. Entra a la caja menor cuando se cierre.`
+            : `El turno abierto de ${quien} empezó antes de la caja menor: al cerrarlo, su efectivo no se suma aquí. Regístralo con <b>Ingresar dinero</b>.`;
+    }).join("<br>");
+
+    const f = filtrosLista.cajamenor;
+    const r = rangoFiltroLista(f);
+    const texto = normalizarBusqueda(f.busqueda || "");
+    const lista = movimientosCajaMenor()
+        .filter(m => enRango(m.fecha, r.desde, r.hasta))
+        .filter(m => !texto || normalizarBusqueda(`${m.titulo} ${m.nota} ${m.usuario}`).includes(texto));
+
+    const netos = lista.filter(m => !m.anulada).map(m => m.efectivo + m.banco);
+    const entro = netos.filter(n => n > 0).reduce((a, n) => a + n, 0);
+    const salio = netos.filter(n => n < 0).reduce((a, n) => a - n, 0);
+
+    document.getElementById("cmListaTitulo").textContent = "Movimientos " + r.nombre;
+    document.getElementById("cmListaFecha").textContent =
+        `${textoRango(r.desde, r.hasta)}${texto ? " · resultados de la búsqueda" : ""} · Entró ${money(entro)} · Salió ${money(salio)}`;
+    document.getElementById("cmLista").innerHTML = lista.length
+        ? lista.map(m => filaCajaMenorHTML(m, esAdmin() && sedeVista === "todas")).join("")
+        : `<div class="empty-state">${texto ? "No hay movimientos que coincidan con la búsqueda." : `No hay movimientos ${r.nombre}.`}</div>`;
+}
+
+window.abrirCajaMenor = function(tipo) {
+    const sede = sedeParaRegistrar();
+    if (!sede) {
+        alert("Elige la sede (Cali o Barranquilla) en el selector de arriba antes de registrar en la caja menor.");
+        return;
+    }
+
+    const esTraslado = tipo === "traslado";
+    const s = saldosCajaMenor(sede);
+
+    document.getElementById("cajaMenorForm").reset();
+    document.getElementById("cmTipo").value = tipo;
+    document.getElementById("cmMedioLabel").textContent = esTraslado ? "Movimiento" : (tipo === "ingreso" ? "Entra a" : "Sale de");
+    document.getElementById("cmMedio").innerHTML = (esTraslado
+        ? [["efectivo", "Del efectivo al banco (consignación)"], ["banco", "Del banco al efectivo (retiro del banco)"]]
+        : [["efectivo", "Efectivo"], ["banco", "Banco (transferencia)"]]
+    ).map(([valor, texto]) => `<option value="${valor}">${texto}</option>`).join("");
+
+    document.getElementById("cmMotivoGrupo").hidden = esTraslado;
+    document.getElementById("cmMotivo").innerHTML = esTraslado ? "" : MOTIVOS_CAJA_MENOR[tipo]
+        .map(m => `<option value="${limpiarHTML(m)}">${limpiarHTML(m)}</option>`).join("");
+
+    document.getElementById("cmSubmit").textContent =
+        { ingreso: "Registrar ingreso", retiro: "Registrar retiro", traslado: "Registrar traslado" }[tipo];
+    document.getElementById("cmAyuda").textContent =
+        `Saldo${esAdmin() ? " en " + nombreSede(sede) : ""}: efectivo ${money(s.efectivo)} · banco ${money(s.banco)}.` +
+        (tipo === "retiro" ? " No afecta la caja del turno ni sus gastos." : "");
+
+    abrirPanelEnModal("panelCajaMenor", {
+        titulo: { ingreso: "Ingresar dinero", retiro: "Retirar o pagar", traslado: "Efectivo ↔ banco" }[tipo],
+        sub: "Caja menor" + (esAdmin() ? " · " + nombreSede(sede) : "")
+    });
+    setTimeout(() => document.getElementById("cmValor").focus({ preventScroll: true }), 50);
+};
+
+document.getElementById("cajaMenorForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    guardarConBoton(this, guardarCajaMenor);
+});
+
+async function guardarCajaMenor() {
+    const sede = sedeParaRegistrar();
+    if (!sede) return;
+
+    const tipo = document.getElementById("cmTipo").value;
+    const medio = document.getElementById("cmMedio").value;
+    const valor = Number(document.getElementById("cmValor").value || 0);
+
+    if (valor <= 0) {
+        alert("El valor debe ser mayor a cero.");
+        return;
+    }
+
+    // En un retiro o traslado, "medio" es de dónde sale la plata.
+    if (tipo !== "ingreso") {
+        const disponible = saldosCajaMenor(sede)[medio];
+        if (valor > disponible && !confirm(
+            `Vas a sacar ${money(valor)} del ${medio === "efectivo" ? "efectivo" : "banco"} de la caja menor, pero su saldo es ${money(disponible)}.\n\n¿Registrarlo de todas formas?`
+        )) {
+            return;
+        }
+    }
+
+    await cajaMenorRef.add({
+        sede,
+        tipo,
+        medio,
+        valor,
+        motivo: tipo === "traslado"
+            ? (medio === "efectivo" ? "Consignación en banco" : "Retiro del banco")
+            : document.getElementById("cmMotivo").value,
+        nota: document.getElementById("cmNota").value.trim(),
+        fecha: todayISO(),
+        creadoPor: currentUserEmail,
+        creadoEn: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    cerrarModal();
+    alert({ ingreso: "Ingreso registrado en la caja menor.", retiro: "Retiro registrado en la caja menor.", traslado: "Traslado registrado en la caja menor." }[tipo]);
+}
+
+window.anularCajaMenor = async function(docId) {
+    // Como en el resto del módulo, solo el administrador anula.
+    if (!esAdmin()) return;
+    const cm = cajaMenorGlobal.find(x => x.docId === docId);
+    if (!cm || cm.anulada) return;
+
+    const motivo = prompt(`Anular el movimiento de caja menor de ${money(cm.valor)} del ${cm.fecha}.\n\nEscribe el motivo:`);
+    if (motivo === null) return;
+    if (!motivo.trim()) {
+        alert("El motivo es obligatorio para anular.");
+        return;
+    }
+
+    try {
+        await cajaMenorRef.doc(docId).update({
+            anulada: true,
+            motivoAnulacion: motivo.trim(),
+            anuladaPor: currentUserEmail,
+            anuladaEn: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        cerrarModal();
     } catch (error) {
         console.error(error);
         alert("No se pudo anular: " + error.message);
@@ -5560,6 +6053,8 @@ async function abrirTurno(form) {
         responsable: currentUserEmail,
         fechaApertura: document.getElementById("turnoFechaApertura").value || todayISO(),
         efectivoInicial: efectivoInicial,
+        // La base sale de la caja menor y, al cerrar, lo contado y las transferencias vuelven a ella.
+        cajaMenor: true,
         observacionApertura: document.getElementById("turnoObsApertura").value.trim(),
         creadoPor: currentUserEmail,
         creadoEn: firebase.firestore.FieldValue.serverTimestamp()
@@ -5593,6 +6088,9 @@ async function cerrarTurno(form) {
         `Caja esperada: ${money(resumen.efectivoEsperado)}\n` +
         `Efectivo contado: ${money(efectivoContado)}\n` +
         `Diferencia: ${money(diferencia)}\n\n` +
+        (turnoActivo.cajaMenor
+            ? `Pasan a la caja menor: ${money(efectivoContado)} en efectivo y ${money(transferenciasNetas(resumen))} al banco.\n\n`
+            : "") +
         `¿Deseas cerrar el turno?`
     );
 
@@ -6130,6 +6628,7 @@ const REP_TABS = {
     ventas: "Ventas",
     gastos: "Gastos",
     caja: "Caja y turnos",
+    cajamenor: "Caja menor",
     movimientos: "Movimientos"
 };
 
@@ -6655,6 +7154,7 @@ function renderReportes() {
         ventas: repVentas,
         gastos: repGastos,
         caja: repCaja,
+        cajamenor: repCajaMenor,
         movimientos: repMovimientos
     }[repEstado.tab];
 
@@ -7129,6 +7629,75 @@ function repCaja(panel, { r, actual }) {
                 [{ t: "Medio" }, { t: "Entradas", num: true }, { t: "Salidas", num: true }, { t: "Neto", num: true }],
                 flujo.map(f => [limpiarHTML(f.medio), money(f.entradas), money(f.salidas), money(f.entradas - f.salidas)]),
                 { apilar: true, pie: ["Total", money(suma(flujo, f => f.entradas)), money(suma(flujo, f => f.salidas)), money(suma(flujo, f => f.entradas - f.salidas))] }
+            )}
+        </div>`;
+}
+
+// Caja menor en el periodo: lo que entró por cierres de turno, los ingresos y los retiros por motivo.
+// Los saldos son los de hoy (no dependen del periodo).
+function repCajaMenor(panel, { r }) {
+    const saldos = saldosCajaMenor();
+    const lista = movimientosCajaMenor().filter(m => enRango(m.fecha, r.desde, r.hasta));
+    const validos = lista.filter(m => !m.anulada);
+    const neto = (m) => m.efectivo + m.banco;
+    const conSede = sedeVista === "todas";
+
+    const deTurnos = suma(validos.filter(m => m.origen === "turno"), neto);
+    const ingresos = suma(validos.filter(m => m.tipo === "ingreso"), neto);
+    const retiros = validos.filter(m => m.tipo === "retiro");
+    const totalRetiros = -suma(retiros, neto);
+    const porMotivo = agrupar(retiros, m => m.titulo, m => -neto(m));
+
+    const porSede = conSede
+        ? `<div class="rep-card">
+            <h3>Saldo por sede</h3>
+            <p class="rep-sub">Lo que tiene hoy cada sede en su caja menor</p>
+            ${tablaHTML(
+                [{ t: "Sede" }, { t: "Efectivo", num: true }, { t: "Banco", num: true }, { t: "Total", num: true }],
+                Object.keys(SEDES).map(k => {
+                    const s = saldosCajaMenor(k);
+                    return [SEDES[k].nombre, money(s.efectivo), money(s.banco), money(s.total)];
+                }),
+                { apilar: true, pie: ["Total", money(saldos.efectivo), money(saldos.banco), money(saldos.total)] }
+            )}
+        </div>`
+        : "";
+
+    panel.innerHTML = `
+        <div class="rep-kpis">
+            ${kpiHTML("Saldo hoy en efectivo", money(saldos.efectivo))}
+            ${kpiHTML("Saldo hoy en banco", money(saldos.banco))}
+            ${kpiHTML("Neto de los turnos", money(deTurnos), `<span class="rep-delta">Cierres menos bases del periodo</span>`)}
+            ${kpiHTML("Retiros y pagos", money(totalRetiros), `<span class="rep-delta">Ingresos del periodo: ${money(ingresos)}</span>`)}
+        </div>
+
+        ${porSede}
+
+        <div class="rep-card">
+            <h3>Retiros y pagos por motivo</h3>
+            <p class="rep-sub">Salidas de la caja menor en el periodo. No son gastos del turno.</p>
+            ${barrasHTML(porMotivo, totalRetiros, REP_COLOR.gastos)}
+        </div>
+
+        <div class="rep-card">
+            <h3>Movimientos de la caja menor</h3>
+            <p class="rep-sub">Incluye los que salen solos de abrir y cerrar turnos. Los anulados aparecen tachados y no suman.</p>
+            ${tablaHTML(
+                [{ t: "Fecha" }, { t: "Movimiento" }, { t: "Nota" }, ...(conSede ? [{ t: "Sede" }] : []), { t: "Usuario" }, { t: "Efectivo", num: true }, { t: "Banco", num: true }],
+                lista.map(m => ({
+                    clase: m.anulada ? "anulada" : "",
+                    detalle: m.detalle,
+                    celdas: [
+                        `${limpiarHTML(m.fecha)}<br><span style="color:#94a3b8; font-size:11px;">${limpiarHTML(horaDeMs(m.ms))}</span>`,
+                        limpiarHTML(m.titulo),
+                        limpiarHTML(m.nota),
+                        ...(conSede ? [nombreSede(m.sede)] : []),
+                        limpiarHTML(m.usuario),
+                        m.efectivo ? money(m.efectivo) : "",
+                        m.banco ? money(m.banco) : ""
+                    ]
+                })),
+                { apilar: true, pie: ["Neto del periodo", "", "", ...(conSede ? [""] : []), "", money(suma(validos, m => m.efectivo)), money(suma(validos, m => m.banco))] }
             )}
         </div>`;
 }
@@ -7613,6 +8182,27 @@ function exportarExcel() {
     if (!movsPeriodo.length) hmc.fila(["Sin entradas ni retiros en este periodo."], "nota");
     hmc.cerrarFiltro();
     agregar(hmc.construir([12, 10, 14, 12, 30, 35, 15, 30]), "Entradas y retiros");
+
+    // ===== Hoja: Caja menor =====
+    const cajaMenorPeriodo = movimientosCajaMenor()
+        .filter(m => enRango(m.fecha, r.desde, r.hasta))
+        .reverse();
+    const cajaMenorValidos = cajaMenorPeriodo.filter(m => !m.anulada);
+    const saldosHoy = saldosCajaMenor();
+    const hcm = hojaExcel(8)
+        .titulo("Caja menor", [periodoTexto, `Dinero del negocio por fuera del turno. Saldo hoy: efectivo ${money(saldosHoy.efectivo)} · banco ${money(saldosHoy.banco)}.`])
+        .vacia()
+        .conFiltro()
+        .encabezado(["Fecha", "Hora", "Sede", "Movimiento", "Nota", "Usuario", "Efectivo", "Banco"]);
+    cajaMenorPeriodo.forEach(m => hcm.fila([
+        fechaXL(m.fecha), horaDeMs(m.ms), nombreSede(m.sede), m.titulo + (m.anulada ? " (anulado)" : ""),
+        m.nota, m.usuario, redondear(m.efectivo), redondear(m.banco)
+    ], m.anulada ? "anulado" : "dato", ["fecha", null, null, null, null, null, "moneda", "moneda"]));
+    if (!cajaMenorPeriodo.length) hcm.fila(["Sin movimientos de caja menor en este periodo."], "nota");
+    hcm.cerrarFiltro();
+    hcm.fila(["Neto del periodo", "", "", "", "", "", redondear(suma(cajaMenorValidos, m => m.efectivo)), redondear(suma(cajaMenorValidos, m => m.banco))],
+        "total", [null, null, null, null, null, null, "moneda", "moneda"], 8);
+    agregar(hcm.construir([12, 10, 14, 30, 45, 30, 15, 15]), "Caja menor");
 
     // ===== Hoja 7: Medios de pago =====
     const flujo = flujoPorMedio(actual.ventas, actual.gastos);
@@ -8138,9 +8728,49 @@ function detalleRepDiferencias() {
     };
 }
 
+function detalleCajaMenor(id) {
+    const cm = cajaMenorGlobal.find(x => x.docId === id);
+    if (!cm) return null;
+
+    const esTraslado = cm.tipo === "traslado";
+    const tipoTexto = { ingreso: "Ingreso", retiro: "Retiro o pago", traslado: "Traslado" }[cm.tipo] || "Movimiento";
+    const donde = esTraslado
+        ? (cm.medio === "efectivo" ? "Del efectivo al banco" : "Del banco al efectivo")
+        : NOMBRE_MEDIO_CM[cm.medio] || "";
+
+    const acciones = [];
+    if (esAdmin() && !cm.anulada) {
+        acciones.push(`<button type="button" class="secondary-btn" style="color:var(--danger);" onclick="anularCajaMenor('${cm.docId}')">Anular</button>`);
+    }
+    acciones.push(botonCerrarModal);
+
+    return {
+        titulo: `${tipoTexto} de caja menor`,
+        sub: `${fechaCorta(cm.fecha)}${horaDe(cm) ? " · " + horaDe(cm) : ""}`,
+        etiqueta: cm.anulada ? "Anulado" : (esTraslado ? "Traslado" : NOMBRE_MEDIO_CM[cm.medio] || ""),
+        etiquetaPeligro: !!cm.anulada,
+        cuerpo: `
+            ${cifraHTML("Valor", money(cm.valor), limpiarHTML(cm.motivo || ""))}
+            ${bloqueAnulacion(cm)}
+
+            <div class="modal-seccion">Datos del movimiento</div>
+            ${datosHTML([
+                ["Tipo", tipoTexto],
+                ["Motivo", limpiarHTML(cm.motivo || "—")],
+                [esTraslado ? "Movimiento" : (cm.tipo === "ingreso" ? "Entró a" : "Salió de"), limpiarHTML(donde)],
+                ["Nota", limpiarHTML(cm.nota || "—")],
+                ["Sede", nombreSede(sedeDe(cm))],
+                ["Registrado por", limpiarHTML(cm.creadoPor)],
+                ["Fecha de registro", fechaHoraDe(cm.creadoEn)]
+            ])}`,
+        acciones
+    };
+}
+
 const DETALLES = {
     venta: detalleVenta,
     gasto: detalleGasto,
+    cajamenor: detalleCajaMenor,
     turno: detalleTurno,
     producto: detalleProducto,
     repventas: detalleRepVentas,
