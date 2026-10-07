@@ -7067,6 +7067,17 @@ function ventasPorItem(ventas) {
 
 function resumenDeTurno(turno) {
     if (turno.estado === "cerrado") {
+        // Si al turno le falta algún total guardado (turnos muy antiguos), se calcula con sus ventas y gastos.
+        if (turno.totalVentas === undefined || turno.totalGastos === undefined) {
+            const vivo = obtenerResumenTurno(turno);
+            turno = {
+                ...turno,
+                totalVentas: turno.totalVentas ?? vivo.totalVentas,
+                totalGastos: turno.totalGastos ?? vivo.totalGastos,
+                ventasEfectivo: turno.ventasEfectivo ?? vivo.ventasEfectivo,
+                gastosEfectivo: turno.gastosEfectivo ?? vivo.gastosEfectivo
+            };
+        }
         return {
             efectivoInicial: Number(turno.efectivoInicial || 0),
             ventasEfectivo: Number(turno.ventasEfectivo || 0),
@@ -8709,6 +8720,8 @@ function detalleTurno(id) {
         etiquetaPeligro: !abierto && s.diferencia < 0,
         cuerpo: `
             ${cifra}
+
+            <div class="modal-seccion">Efectivo del turno</div>
             ${kpisModalHTML([
                 ["Efectivo inicial", money(s.efectivoInicial)],
                 ["Ventas en efectivo", money(s.ventasEfectivo)],
@@ -8716,13 +8729,22 @@ function detalleTurno(id) {
                 ["Entradas de efectivo", money(s.entradas || 0)],
                 ["Retiros de efectivo", money(s.retiros || 0)],
                 ["Efectivo esperado", money(s.efectivoEsperado)],
-                ["Ventas totales", money(totalVentas)],
-                ["Gastos totales", money(totalGastos)],
-                ["Total", money(totalVentas - totalGastos)]
+                ...(abierto ? [] : [
+                    ["Efectivo contado", money(s.efectivoContado)],
+                    ["Diferencia", money(s.diferencia)],
+                    ["Neto en efectivo", money(s.ventasEfectivo - s.gastosEfectivo)]
+                ])
             ])}
 
             <div class="modal-seccion">Transferencias del turno</div>
             ${transferenciasTurnoHTML(s)}
+
+            <div class="modal-seccion">Total del turno</div>
+            ${kpisModalHTML([
+                ["Ventas totales", money(totalVentas)],
+                ["Gastos totales", money(totalGastos)],
+                ["Total", money(totalVentas - totalGastos)]
+            ])}
 
             <div class="modal-seccion">Apertura y cierre</div>
             ${datosHTML([
