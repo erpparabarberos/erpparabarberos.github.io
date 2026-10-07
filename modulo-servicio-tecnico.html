@@ -3802,7 +3802,6 @@ body.modal-abierto {
                 <small id="cierreDetalle"></small>
             </div>
 
-            <div class="modal-seccion">Transferencias del turno</div>
             <div id="cierreTransferencias"></div>
 
             <form id="turnoCierreForm">
@@ -4991,7 +4990,22 @@ window.abrirModalCerrarTurno = function() {
     if (r.entradas) detalleCierre += ` + entradas ${money(r.entradas)}`;
     if (r.retiros) detalleCierre += ` − retiros ${money(r.retiros)}`;
     document.getElementById("cierreDetalle").textContent = detalleCierre;
-    document.getElementById("cierreTransferencias").innerHTML = transferenciasTurnoHTML(r);
+    // Efectivo, transferencia y total del turno, cada uno con sus ventas, gastos y neto.
+    document.getElementById("cierreTransferencias").innerHTML = `
+        <div class="modal-seccion">Efectivo del turno</div>
+        ${kpisModalHTML([
+            ["Ventas en efectivo", money(r.ventasEfectivo)],
+            ["Gastos en efectivo", money(r.gastosEfectivo)],
+            ["Neto en efectivo", money(r.ventasEfectivo - r.gastosEfectivo)]
+        ])}
+        <div class="modal-seccion">Transferencias del turno</div>
+        ${transferenciasTurnoHTML(r)}
+        <div class="modal-seccion">Total del turno</div>
+        ${kpisModalHTML([
+            ["Ventas totales", money(r.totalVentas)],
+            ["Gastos totales", money(r.totalGastos)],
+            ["Total", money(r.totalVentas - r.totalGastos)]
+        ])}`;
     const avisoCajaMenor = document.getElementById("cierreCajaMenor");
     avisoCajaMenor.hidden = !turnoActivo.cajaMenor;
     avisoCajaMenor.innerHTML = `Al cerrar, <b>el efectivo contado</b> pasa a la caja menor y las transferencias netas del turno (<b>${money(transferenciasNetas(r))}</b>) suman a su saldo en banco.`;
