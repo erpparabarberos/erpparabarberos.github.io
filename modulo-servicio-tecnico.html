@@ -3802,6 +3802,9 @@ body.modal-abierto {
                 <small id="cierreDetalle"></small>
             </div>
 
+            <div class="modal-seccion">Transferencias del turno</div>
+            <div id="cierreTransferencias"></div>
+
             <form id="turnoCierreForm">
                 <div class="form-group">
                     <label>Efectivo contado en caja</label>
@@ -3953,6 +3956,21 @@ body.modal-abierto {
                             <div class="money-item">
                                 <span>Total</span>
                                 <strong id="turnoUtilidad">$0</strong>
+                            </div>
+                        </div>
+
+                        <div class="money-row money-row-interna">
+                            <div class="money-item">
+                                <span>Ventas transferencia</span>
+                                <strong id="turnoVentasTransf">$0</strong>
+                            </div>
+                            <div class="money-item">
+                                <span>Gastos transferencia</span>
+                                <strong id="turnoGastosTransf">$0</strong>
+                            </div>
+                            <div class="money-item">
+                                <span>Neto transferencia</span>
+                                <strong id="turnoNetoTransf">$0</strong>
                             </div>
                         </div>
 
@@ -4630,7 +4648,9 @@ function obtenerResumenTurno(turno) {
             entradas: 0,
             retiros: 0,
             efectivoEsperado: 0,
-            utilidad: 0
+            utilidad: 0,
+            ventasTransferencia: 0,
+            gastosTransferencia: 0
         };
     }
 
@@ -4664,8 +4684,20 @@ function obtenerResumenTurno(turno) {
         entradas,
         retiros,
         efectivoEsperado,
-        utilidad
+        utilidad,
+        // Lo que no fue en efectivo entró o salió por transferencia (incluye la parte transferida de las ventas mixtas).
+        ventasTransferencia: totalVentas - ventasEfectivo,
+        gastosTransferencia: totalGastos - gastosEfectivo
     };
+}
+
+// Ventas, gastos y neto por transferencia de un turno, como tarjetas para las ventanas de cierre y de detalle.
+function transferenciasTurnoHTML(s) {
+    return kpisModalHTML([
+        ["Ventas por transferencia", money(s.ventasTransferencia)],
+        ["Gastos por transferencia", money(s.gastosTransferencia)],
+        ["Neto en transferencia", money(s.ventasTransferencia - s.gastosTransferencia)]
+    ]);
 }
 
 function actualizarBotonTurno() {
@@ -4959,6 +4991,7 @@ window.abrirModalCerrarTurno = function() {
     if (r.entradas) detalleCierre += ` + entradas ${money(r.entradas)}`;
     if (r.retiros) detalleCierre += ` − retiros ${money(r.retiros)}`;
     document.getElementById("cierreDetalle").textContent = detalleCierre;
+    document.getElementById("cierreTransferencias").innerHTML = transferenciasTurnoHTML(r);
     const avisoCajaMenor = document.getElementById("cierreCajaMenor");
     avisoCajaMenor.hidden = !turnoActivo.cajaMenor;
     avisoCajaMenor.innerHTML = `Al cerrar, <b>el efectivo contado</b> pasa a la caja menor y las transferencias netas del turno (<b>${money(transferenciasNetas(r))}</b>) suman a su saldo en banco.`;
@@ -5452,6 +5485,9 @@ function renderCaja() {
         document.getElementById("turnoVentasTotal").textContent = money(resumen.totalVentas);
         document.getElementById("turnoGastosTotal").textContent = money(resumen.totalGastos);
         document.getElementById("turnoUtilidad").textContent = money(resumen.utilidad);
+        document.getElementById("turnoVentasTransf").textContent = money(resumen.ventasTransferencia);
+        document.getElementById("turnoGastosTransf").textContent = money(resumen.gastosTransferencia);
+        document.getElementById("turnoNetoTransf").textContent = money(resumen.ventasTransferencia - resumen.gastosTransferencia);
 
         renderMovimientosCaja(resumen);
     }
@@ -5462,7 +5498,8 @@ function renderCaja() {
     }
 
     turnosList.innerHTML = turnosGlobal.slice(0, 20).map(turno => {
-        const resumen = obtenerResumenTurno(turno);
+        const resumen = resumenDeTurno(turno);
+        const netoTransf = resumen.ventasTransferencia - resumen.gastosTransferencia;
         const estado = turno.estado === "abierto" ? "abierto" : "cerrado";
         const diferencia = Number(turno.diferencia || 0);
 
@@ -5488,6 +5525,9 @@ function renderCaja() {
 
                 <div style="text-align:right;">
                     <strong>${money(turno.estado === "cerrado" ? turno.efectivoContado : resumen.efectivoEsperado)}</strong>
+                    <p>Efectivo</p>
+                    <strong>${money(netoTransf)}</strong>
+                    <p>Transferencia</p>
                 </div>
             </div>
         `;
@@ -6222,6 +6262,7 @@ async function cerrarTurno(form) {
         `Caja esperada: ${money(resumen.efectivoEsperado)}\n` +
         `Efectivo contado: ${money(efectivoContado)}\n` +
         `Diferencia: ${money(diferencia)}\n\n` +
+        `Transferencias: ventas ${money(resumen.ventasTransferencia)} − gastos ${money(resumen.gastosTransferencia)} = ${money(resumen.ventasTransferencia - resumen.gastosTransferencia)}\n\n` +
         (turnoActivo.cajaMenor
             ? `Pasan a la caja menor: ${money(efectivoContado)} en efectivo y ${money(transferenciasNetas(resumen))} al banco.\n\n`
             : "") +
@@ -6236,6 +6277,8 @@ async function cerrarTurno(form) {
         totalGastos: resumen.totalGastos,
         ventasEfectivo: resumen.ventasEfectivo,
         gastosEfectivo: resumen.gastosEfectivo,
+        ventasTransferencia: resumen.ventasTransferencia,
+        gastosTransferencia: resumen.gastosTransferencia,
         utilidad: resumen.utilidad,
         entradasEfectivo: resumen.entradas,
         retirosEfectivo: resumen.retiros,
@@ -7019,7 +7062,9 @@ function resumenDeTurno(turno) {
             efectivoEsperado: Number(turno.efectivoEsperado || 0),
             efectivoContado: Number(turno.efectivoContado || 0),
             diferencia: Number(turno.diferencia || 0),
-            totalVentas: Number(turno.totalVentas || 0)
+            totalVentas: Number(turno.totalVentas || 0),
+            ventasTransferencia: Number(turno.totalVentas || 0) - Number(turno.ventasEfectivo || 0),
+            gastosTransferencia: Number(turno.totalGastos || 0) - Number(turno.gastosEfectivo || 0)
         };
     }
 
@@ -7749,7 +7794,7 @@ function repCaja(panel, { r, actual }) {
             <h3>Cuadres de caja</h3>
             <p class="rep-sub">Efectivo esperado contra efectivo contado en cada turno</p>
             ${tablaHTML(
-                [{ t: "Apertura" }, { t: "Responsable" }, { t: "Inicial", num: true }, { t: "Ventas ef.", num: true }, { t: "Gastos ef.", num: true }, { t: "Entradas", num: true }, { t: "Retiros", num: true }, { t: "Esperado", num: true }, { t: "Contado", num: true }, { t: "Diferencia", num: true }],
+                [{ t: "Apertura" }, { t: "Responsable" }, { t: "Inicial", num: true }, { t: "Ventas ef.", num: true }, { t: "Gastos ef.", num: true }, { t: "Entradas", num: true }, { t: "Retiros", num: true }, { t: "Esperado", num: true }, { t: "Contado", num: true }, { t: "Diferencia", num: true }, { t: "Transferencia neta", num: true }],
                 turnos.map(t => {
                     const s = resumenDeTurno(t);
                     return { detalle: "turno:" + t.docId, celdas: [
@@ -7762,10 +7807,12 @@ function repCaja(panel, { r, actual }) {
                         money(s.retiros || 0),
                         money(s.efectivoEsperado),
                         s.efectivoContado === null ? "—" : money(s.efectivoContado),
-                        textoDiferencia(s.diferencia)
+                        textoDiferencia(s.diferencia),
+                        money(s.ventasTransferencia - s.gastosTransferencia)
                     ] };
                 }),
-                { apilar: true, pie: ["Diferencia neta", "", "", "", "", "", "", "", "", textoDiferencia(sobrantes - faltantes)] }
+                { apilar: true, pie: ["Diferencia neta", "", "", "", "", "", "", "", "", textoDiferencia(sobrantes - faltantes),
+                    money(suma(turnos, t => { const s = resumenDeTurno(t); return s.ventasTransferencia - s.gastosTransferencia; }))] }
             )}
         </div>
 
@@ -8293,11 +8340,12 @@ function exportarExcel() {
     agregar(hg.construir([12, 10, 14, 22, 50, 15, 15]), "Gastos");
 
     // ===== Hoja 6: Turnos (cuadres de caja) =====
-    const ht = hojaExcel(12)
-        .titulo("Cuadres de caja por turno", [periodoTexto, "Esperado = inicial + ventas en efectivo − gastos en efectivo + entradas − retiros."])
+    const ht = hojaExcel(15)
+        .titulo("Cuadres de caja por turno", [periodoTexto, "Esperado = inicial + ventas en efectivo − gastos en efectivo + entradas − retiros. Transferencia neta = ventas − gastos por transferencia."])
         .vacia()
         .conFiltro()
-        .encabezado(["Apertura", "Sede", "Estado", "Efectivo inicial", "Ventas en efectivo", "Gastos en efectivo", "Entradas", "Retiros", "Esperado", "Contado", "Diferencia", "Observación de cierre"]);
+        .encabezado(["Apertura", "Sede", "Estado", "Efectivo inicial", "Ventas en efectivo", "Gastos en efectivo", "Entradas", "Retiros", "Esperado", "Contado", "Diferencia",
+            "Ventas por transferencia", "Gastos por transferencia", "Transferencia neta", "Observación de cierre"]);
     turnosPeriodo.forEach(t => {
         const s = resumenDeTurno(t);
         ht.fila([
@@ -8306,12 +8354,15 @@ function exportarExcel() {
             redondear(s.entradas), redondear(s.retiros), redondear(s.efectivoEsperado),
             s.efectivoContado === null ? "" : redondear(s.efectivoContado),
             s.diferencia === null ? "" : redondear(s.diferencia),
+            redondear(s.ventasTransferencia), redondear(s.gastosTransferencia), redondear(s.ventasTransferencia - s.gastosTransferencia),
             t.observacionCierre || ""
-        ], "dato", ["fecha", null, null, "moneda", "moneda", "moneda", "moneda", "moneda", "moneda", "moneda", "moneda"]);
+        ], "dato", ["fecha", null, null, "moneda", "moneda", "moneda", "moneda", "moneda", "moneda", "moneda", "moneda", "moneda", "moneda", "moneda"]);
     });
     ht.cerrarFiltro();
-    ht.fila(["Diferencia neta", "", "", "", "", "", "", "", "", "", redondear(sobrantes - faltantes)], "total", [null, null, null, null, null, null, null, null, null, null, "moneda"], 12);
-    agregar(ht.construir([12, 14, 10, 15, 17, 17, 13, 13, 15, 15, 15, 35]), "Turnos");
+    const netoTransfPeriodo = suma(turnosPeriodo, t => { const s = resumenDeTurno(t); return s.ventasTransferencia - s.gastosTransferencia; });
+    ht.fila(["Diferencia neta", "", "", "", "", "", "", "", "", "", redondear(sobrantes - faltantes), "", "", redondear(netoTransfPeriodo)], "total",
+        [null, null, null, null, null, null, null, null, null, null, "moneda", null, null, "moneda"], 15);
+    agregar(ht.construir([12, 14, 10, 15, 17, 17, 13, 13, 15, 15, 15, 17, 17, 17, 35]), "Turnos");
 
     // ===== Hoja: Entradas y retiros de efectivo =====
     const movsPeriodo = movCajaGlobal
@@ -8653,8 +8704,11 @@ function detalleTurno(id) {
                 ["Efectivo esperado", money(s.efectivoEsperado)],
                 ["Ventas totales", money(totalVentas)],
                 ["Gastos totales", money(totalGastos)],
-                ["Utilidad", money(totalVentas - totalGastos)]
+                ["Total", money(totalVentas - totalGastos)]
             ])}
+
+            <div class="modal-seccion">Transferencias del turno</div>
+            ${transferenciasTurnoHTML(s)}
 
             <div class="modal-seccion">Apertura y cierre</div>
             ${datosHTML([
