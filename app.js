@@ -1039,40 +1039,38 @@ const newTITicketFormHTML = `
 
 </section>
 `;
+    // Categorías de la base de conocimiento: las mismas en los filtros y en los formularios de artículo y manual.
+    const KB_CATEGORIAS = ['Redes', 'Impresoras', 'Equipos', 'Dispositivos', 'Cámaras', 'Velocity', 'Siigo', 'Programas', 'Bases de Datos', 'Otro'];
+    const kbOpcionesCategoria = (actual) =>
+        `<option value="" ${!actual ? 'selected' : ''} disabled>Selecciona una categoría</option>` +
+        [...KB_CATEGORIAS, ...(actual && !KB_CATEGORIAS.includes(actual) ? [actual] : [])]
+            .map(c => `<option value="${c}" ${actual === c ? 'selected' : ''}>${c}</option>`).join('');
     const knowledgeBaseHTML = `
 <section class="kb-modern-page">
 
     <div class="kb-modern-header">
         <div class="kb-header-left">
-            <div class="kb-main-icon">📘</div>
-            <div>
-                <h1>BASE DE CONOCIMIENTO</h1>
-            </div>
+            <h1>Base de conocimiento</h1>
         </div>
 
         <div class="kb-header-actions">
-            <button id="add-manual-btn" class="kb-action-btn primary">📘 Crear manual</button>
-            <button id="add-kb-article-btn" class="kb-action-btn secondary">📄 Crear artículo</button>
+            <button id="add-kb-article-btn" class="kb-action-btn secondary">Crear artículo</button>
+            <button id="add-manual-btn" class="kb-action-btn primary">Crear manual</button>
         </div>
     </div>
 
     <div class="kb-search-box">
-        <span>🔍</span>
+        <span class="kb-search-icono">${tiIcono('buscar')}</span>
         <input type="text" id="kb-search-input" placeholder="Buscar en artículos y manuales...">
         <small>Ctrl K</small>
     </div>
 
     <div class="kb-category-chips">
-        <button type="button" class="kb-chip active" data-category="">▦ Todos</button>
-        <button type="button" class="kb-chip" data-category="Redes">☍ Redes</button>
-        <button type="button" class="kb-chip" data-category="Impresoras">▣ Impresoras</button>
-        <button type="button" class="kb-chip" data-category="Velocity">Ⅴ Velocity</button>
-        <button type="button" class="kb-chip" data-category="Siigo">$ Siigo</button>
-        <button type="button" class="kb-chip" data-category="Dispositivos">▯ Dispositivos</button>
-        <button type="button" class="kb-chip" data-category="Equipos">▭ Equipos</button>
-        <button type="button" class="kb-chip" data-category="Cámaras">▣ Cámaras</button>
-        <button type="button" class="kb-chip" data-category="Manual">📖 Manuales</button>
-        <button type="button" class="kb-chip" data-category="Artículo">📄 Artículos</button>
+        <button type="button" class="kb-chip active" data-category="">Todos</button>
+        ${KB_CATEGORIAS.map(c => `<button type="button" class="kb-chip" data-category="${c}">${c}</button>`).join('')}
+        <span class="kb-chip-separador"></span>
+        <button type="button" class="kb-chip" data-category="Manual">Manuales</button>
+        <button type="button" class="kb-chip" data-category="Artículo">Artículos</button>
     </div>
 
     <div id="kb-results-info" class="kb-results-info">
@@ -8991,16 +8989,18 @@ if (createKbBtn) {
     function getCategoryIcon(category, type) {
         const cleanCategory = (category || '').toLowerCase();
 
-        if (type === 'manual') return '📘';
-        if (cleanCategory.includes('red')) return '☍';
-        if (cleanCategory.includes('impres')) return '▣';
-        if (cleanCategory.includes('velocity')) return 'Ⅴ';
-        if (cleanCategory.includes('siigo')) return '$';
-        if (cleanCategory.includes('cam')) return '▣';
-        if (cleanCategory.includes('dispositivo')) return '▯';
-        if (cleanCategory.includes('equipo')) return '▭';
+        if (type === 'manual') return tiIcono('conocimiento');
+        if (cleanCategory.includes('red')) return tiIcono('servicios');
+        if (cleanCategory.includes('impres')) return tiIcono('impresora');
+        if (cleanCategory.includes('velocity')) return tiIcono('rayo');
+        if (cleanCategory.includes('siigo')) return tiIcono('factura');
+        if (cleanCategory.includes('cám') || cleanCategory.includes('cam')) return tiIcono('camara');
+        if (cleanCategory.includes('dispositivo')) return tiIcono('celular');
+        if (cleanCategory.includes('equipo')) return tiIcono('inventario');
+        if (cleanCategory.includes('programa')) return tiIcono('programa');
+        if (cleanCategory.includes('base')) return tiIcono('basedatos');
 
-        return '📄';
+        return tiIcono('nota');
     }
 
     function matchesCategory(article) {
@@ -9066,9 +9066,9 @@ if (createKbBtn) {
                         <p>${description}</p>
 
                         <div class="kb-card-footer">
-                            <span>📅 Actualizado: ${getUpdatedDate(article)}</span>
+                            <span>Actualizado: ${getUpdatedDate(article)}</span>
                             <button type="button" class="kb-view-detail" data-id="${article.id}">
-                                Ver detalle →
+                                Ver detalle ›
                             </button>
                         </div>
                     </div>
@@ -9106,6 +9106,20 @@ if (createKbBtn) {
 
     searchInput.addEventListener('input', displayArticles);
 
+    // Ctrl + K (o Cmd + K) lleva al buscador de la base de conocimiento
+    if (!window.kbAtajoBuscar) {
+        window.kbAtajoBuscar = true;
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+                const buscador = document.getElementById('kb-search-input');
+                if (!buscador) return;
+                e.preventDefault();
+                buscador.focus();
+                buscador.select();
+            }
+        });
+    }
+
     chips.forEach(chip => {
         chip.addEventListener('click', () => {
             chips.forEach(item => item.classList.remove('active'));
@@ -9123,9 +9137,9 @@ if (createKbBtn) {
         showManualFormModal();
     });
 }
-    async function showKnowledgeBaseFormModal(docId = null, prefillData = {}) { const formModal = document.getElementById('form-modal'); const modalBody = formModal.querySelector('#form-modal-body'); const isEditing = docId !== null; let existingData = {}; if (isEditing) { const docSnap = await db.collection('knowledge_base').doc(docId).get(); if (docSnap.exists) { existingData = docSnap.data(); } } else { existingData = prefillData; } const { title = '', category = '', problem = '', solution = '' } = existingData; modalBody.innerHTML = `<h2>${isEditing ? 'Editar' : 'Crear'} Artículo de Conocimiento</h2><form id="kb-form"><div class="form-group"><label for="kb-title">Título</label><input type="text" id="kb-title" value="${title}" required></div><div class="form-group"><label for="kb-category">Categoría</label><select id="kb-category" required><option value="" ${!category ? 'selected' : ''} disabled>Selecciona una categoría</option><option value="Redes" ${category === 'Redes' ? 'selected' : ''}>Redes</option><option value="Dispositivos" ${category === 'Dispositivos' ? 'selected' : ''}>Dispositivos</option><option value="Bases de Datos" ${category === 'Bases de Datos' ? 'selected' : ''}>Bases de Datos</option><option value="Programas" ${category === 'Programas' ? 'selected' : ''}>Programas</option></select></div><div class="form-group"><label>Descripción del Problema/Síntoma</label><div id="kb-problem-editor" style="height: 150px;"></div></div><div class="form-group"><label>Solución Paso a Paso</label><div id="kb-solution-editor" style="height: 250px;"></div></div><div style="text-align: right; margin-top: 20px;"><button type="submit" class="primary">${isEditing ? 'Guardar Cambios' : 'Guardar Artículo'}</button></div></form>`; const problemEditor = new Quill('#kb-problem-editor', { theme: 'snow' }); problemEditor.root.innerHTML = problem; const solutionEditor = new Quill('#kb-solution-editor', { theme: 'snow' }); solutionEditor.root.innerHTML = solution; formModal.classList.remove('hidden'); document.getElementById('kb-form').addEventListener('submit', async (e) => { e.preventDefault(); const formData = { title: document.getElementById('kb-title').value, category: document.getElementById('kb-category').value, problem: problemEditor.root.innerHTML, solution: solutionEditor.root.innerHTML, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), type: 'article' }; try { if (isEditing) { await db.collection('knowledge_base').doc(docId).update(formData); } else { formData.createdAt = firebase.firestore.FieldValue.serverTimestamp(); await db.collection('knowledge_base').add(formData); } formModal.classList.add('hidden'); if (window.location.hash === '#knowledge-base') { renderKnowledgeBase(document.getElementById('app-content')); } } catch (error) { console.error("Error guardando artículo:", error); alert("No se pudo guardar el artículo."); } }); }
-    async function showManualFormModal(docId = null) { const formModal = document.getElementById('form-modal'); const modalBody = formModal.querySelector('#form-modal-body'); const isEditing = docId !== null; let existingData = {}; if (isEditing) { const docSnap = await db.collection('knowledge_base').doc(docId).get(); if (docSnap.exists) { existingData = docSnap.data(); } } const { title = '', category = '', solution = '' } = existingData; modalBody.innerHTML = `<h2>${isEditing ? 'Editar' : 'Crear'} Manual</h2><form id="manual-form"><div class="form-group"><label for="manual-title">Título del Manual</label><input type="text" id="manual-title" value="${title}" required></div><div class="form-group"><label for="manual-category">Categoría</label><select id="manual-category" required><option value="" ${!category ? 'selected' : ''} disabled>Selecciona una categoría</option><option value="Redes" ${category === 'Redes' ? 'selected' : ''}>Redes</option><option value="Dispositivos" ${category === 'Dispositivos' ? 'selected' : ''}>Dispositivos</option><option value="Bases de Datos" ${category === 'Bases de Datos' ? 'selected' : ''}>Bases de Datos</option><option value="Programas" ${category === 'Programas' ? 'selected' : ''}>Programas</option></select></div><div class="form-group"><label>Paso a Paso</label><div id="manual-solution-editor" style="height: 400px;"></div></div><div style="text-align: right; margin-top: 20px;"><button type="submit" class="primary">${isEditing ? 'Guardar Cambios' : 'Guardar Manual'}</button></div></form>`; const solutionEditor = new Quill('#manual-solution-editor', { theme: 'snow' }); solutionEditor.root.innerHTML = solution; formModal.classList.remove('hidden'); document.getElementById('manual-form').addEventListener('submit', async (e) => { e.preventDefault(); const formData = { title: document.getElementById('manual-title').value, category: document.getElementById('manual-category').value, solution: solutionEditor.root.innerHTML, problem: '', updatedAt: firebase.firestore.FieldValue.serverTimestamp(), type: 'manual' }; try { if (isEditing) { await db.collection('knowledge_base').doc(docId).update(formData); } else { formData.createdAt = firebase.firestore.FieldValue.serverTimestamp(); await db.collection('knowledge_base').add(formData); } formModal.classList.add('hidden'); if (window.location.hash === '#knowledge-base') { renderKnowledgeBase(document.getElementById('app-content')); } } catch (error) { console.error("Error guardando manual:", error); alert("No se pudo guardar el manual."); } }); }
-    async function showKnowledgeBaseArticleModal(docId) { const actionModal = document.getElementById('action-modal'); const modalBody = actionModal.querySelector('#action-modal-body'); actionModal.classList.remove('hidden'); modalBody.innerHTML = '<p>Cargando...</p>'; try { const docSnap = await db.collection('knowledge_base').doc(docId).get(); if (!docSnap.exists) { modalBody.innerHTML = '<p>Error: No encontrado.</p>'; return; } const article = docSnap.data(); const isManual = article.type === 'manual'; let contentHTML = ''; if (isManual) { contentHTML = `<h3>Paso a Paso</h3><div class="card">${article.solution}</div>`; } else { contentHTML = `<h3>Problema</h3><div class="card">${article.problem}</div><h3>Solución</h3><div class="card">${article.solution}</div>`; } modalBody.innerHTML = `<h2>${article.title}</h2><p><span class="kb-category">${article.category}</span></p><div class="kb-article-content">${contentHTML}</div><div style="text-align: right; margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;"><button id="edit-kb-btn" class="btn-secondary">✏️ Editar</button><button id="delete-kb-btn" class="danger">🗑️ Eliminar</button></div>`; document.getElementById('edit-kb-btn').addEventListener('click', () => { actionModal.classList.add('hidden'); if (isManual) { showManualFormModal(docId); } else { showKnowledgeBaseFormModal(docId); } }); document.getElementById('delete-kb-btn').addEventListener('click', async () => { if (confirm(`¿Estás seguro de que quieres eliminar est${isManual ? 'e manual' : 'e artículo'}?`)) { await db.collection('knowledge_base').doc(docId).delete(); actionModal.classList.add('hidden'); renderKnowledgeBase(document.getElementById('app-content')); } }); } catch (error) { console.error("Error cargando:", error); modalBody.innerHTML = '<p>Error al cargar.</p>'; } }
+    async function showKnowledgeBaseFormModal(docId = null, prefillData = {}) { const formModal = document.getElementById('form-modal'); const modalBody = formModal.querySelector('#form-modal-body'); const isEditing = docId !== null; let existingData = {}; if (isEditing) { const docSnap = await db.collection('knowledge_base').doc(docId).get(); if (docSnap.exists) { existingData = docSnap.data(); } } else { existingData = prefillData; } const { title = '', category = '', problem = '', solution = '' } = existingData; modalBody.innerHTML = `<h2>${isEditing ? 'Editar' : 'Crear'} Artículo de Conocimiento</h2><form id="kb-form"><div class="form-group"><label for="kb-title">Título</label><input type="text" id="kb-title" value="${title}" required></div><div class="form-group"><label for="kb-category">Categoría</label><select id="kb-category" required>${kbOpcionesCategoria(category)}</select></div><div class="form-group"><label>Descripción del Problema/Síntoma</label><div id="kb-problem-editor" style="height: 150px;"></div></div><div class="form-group"><label>Solución Paso a Paso</label><div id="kb-solution-editor" style="height: 250px;"></div></div><div style="text-align: right; margin-top: 20px;"><button type="submit" class="primary">${isEditing ? 'Guardar Cambios' : 'Guardar Artículo'}</button></div></form>`; const problemEditor = new Quill('#kb-problem-editor', { theme: 'snow' }); problemEditor.root.innerHTML = problem; const solutionEditor = new Quill('#kb-solution-editor', { theme: 'snow' }); solutionEditor.root.innerHTML = solution; formModal.classList.remove('hidden'); document.getElementById('kb-form').addEventListener('submit', async (e) => { e.preventDefault(); const formData = { title: document.getElementById('kb-title').value, category: document.getElementById('kb-category').value, problem: problemEditor.root.innerHTML, solution: solutionEditor.root.innerHTML, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), type: 'article' }; try { if (isEditing) { await db.collection('knowledge_base').doc(docId).update(formData); } else { formData.createdAt = firebase.firestore.FieldValue.serverTimestamp(); await db.collection('knowledge_base').add(formData); } formModal.classList.add('hidden'); if (window.location.hash === '#knowledge-base') { renderKnowledgeBase(document.getElementById('app-content')); } } catch (error) { console.error("Error guardando artículo:", error); alert("No se pudo guardar el artículo."); } }); }
+    async function showManualFormModal(docId = null) { const formModal = document.getElementById('form-modal'); const modalBody = formModal.querySelector('#form-modal-body'); const isEditing = docId !== null; let existingData = {}; if (isEditing) { const docSnap = await db.collection('knowledge_base').doc(docId).get(); if (docSnap.exists) { existingData = docSnap.data(); } } const { title = '', category = '', solution = '' } = existingData; modalBody.innerHTML = `<h2>${isEditing ? 'Editar' : 'Crear'} Manual</h2><form id="manual-form"><div class="form-group"><label for="manual-title">Título del Manual</label><input type="text" id="manual-title" value="${title}" required></div><div class="form-group"><label for="manual-category">Categoría</label><select id="manual-category" required>${kbOpcionesCategoria(category)}</select></div><div class="form-group"><label>Paso a Paso</label><div id="manual-solution-editor" style="height: 400px;"></div></div><div style="text-align: right; margin-top: 20px;"><button type="submit" class="primary">${isEditing ? 'Guardar Cambios' : 'Guardar Manual'}</button></div></form>`; const solutionEditor = new Quill('#manual-solution-editor', { theme: 'snow' }); solutionEditor.root.innerHTML = solution; formModal.classList.remove('hidden'); document.getElementById('manual-form').addEventListener('submit', async (e) => { e.preventDefault(); const formData = { title: document.getElementById('manual-title').value, category: document.getElementById('manual-category').value, solution: solutionEditor.root.innerHTML, problem: '', updatedAt: firebase.firestore.FieldValue.serverTimestamp(), type: 'manual' }; try { if (isEditing) { await db.collection('knowledge_base').doc(docId).update(formData); } else { formData.createdAt = firebase.firestore.FieldValue.serverTimestamp(); await db.collection('knowledge_base').add(formData); } formModal.classList.add('hidden'); if (window.location.hash === '#knowledge-base') { renderKnowledgeBase(document.getElementById('app-content')); } } catch (error) { console.error("Error guardando manual:", error); alert("No se pudo guardar el manual."); } }); }
+    async function showKnowledgeBaseArticleModal(docId) { const actionModal = document.getElementById('action-modal'); const modalBody = actionModal.querySelector('#action-modal-body'); actionModal.classList.remove('hidden'); modalBody.innerHTML = '<p>Cargando...</p>'; try { const docSnap = await db.collection('knowledge_base').doc(docId).get(); if (!docSnap.exists) { modalBody.innerHTML = '<p>Error: No encontrado.</p>'; return; } const article = docSnap.data(); const isManual = article.type === 'manual'; let contentHTML = ''; if (isManual) { contentHTML = `<h3>Paso a Paso</h3><div class="card">${article.solution}</div>`; } else { contentHTML = `<h3>Problema</h3><div class="card">${article.problem}</div><h3>Solución</h3><div class="card">${article.solution}</div>`; } modalBody.innerHTML = `<h2>${article.title}</h2><p><span class="kb-category">${article.category}</span></p><div class="kb-article-content">${contentHTML}</div><div style="text-align: right; margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;"><button id="edit-kb-btn" class="kb-modal-btn">${tiIcono('editar')} Editar</button><button id="delete-kb-btn" class="kb-modal-btn peligro">${tiIcono('eliminar')} Eliminar</button></div>`; document.getElementById('edit-kb-btn').addEventListener('click', () => { actionModal.classList.add('hidden'); if (isManual) { showManualFormModal(docId); } else { showKnowledgeBaseFormModal(docId); } }); document.getElementById('delete-kb-btn').addEventListener('click', async () => { if (confirm(`¿Estás seguro de que quieres eliminar est${isManual ? 'e manual' : 'e artículo'}?`)) { await db.collection('knowledge_base').doc(docId).delete(); actionModal.classList.add('hidden'); renderKnowledgeBase(document.getElementById('app-content')); } }); } catch (error) { console.error("Error cargando:", error); modalBody.innerHTML = '<p>Error al cargar.</p>'; } }
 
     // --- 6. PUNTO DE ENTRADA AL MÓDULO Y HERENCIA DE SESIÓN ---
     function iniciarAppGLPI() {

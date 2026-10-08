@@ -13563,3 +13563,523 @@ body.ti-sobrio .submenu.dropdown,
 body.ti-sobrio .submenu.dropdown li a {
     border-radius: 4px !important;
 }
+
+/* =====================================================
+   BASE DE CONOCIMIENTO
+===================================================== */
+
+body.ti-sobrio .kb-modern-page {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+}
+
+body.ti-sobrio .kb-modern-page,
+body.ti-sobrio .kb-modern-page * {
+    text-transform: none !important;
+    letter-spacing: normal !important;
+}
+
+body.ti-sobrio .kb-modern-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 16px !important;
+    flex-wrap: wrap !important;
+    margin: 0 0 16px !important;
+    padding: 0 !important;
+}
+
+body.ti-sobrio .kb-main-icon {
+    display: none !important;
+}
+
+body.ti-sobrio .kb-modern-header h1 {
+    margin: 0 !important;
+    font-size: 26px !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.02em !important;
+    color: var(--ti-tinta) !important;
+}
+
+body.ti-sobrio .kb-header-actions {
+    display: flex !important;
+    gap: 8px !important;
+}
+
+body.ti-sobrio .kb-action-btn,
+body.ti-sobrio .kb-action-btn:hover {
+    height: 40px !important;
+    padding: 0 18px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 6px !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+}
+
+body.ti-sobrio .kb-action-btn.primary,
+body.ti-sobrio .kb-action-btn.primary:hover {
+    background: var(--ti-tinta) !important;
+    border: 1px solid var(--ti-tinta) !important;
+    color: #fff !important;
+}
+
+body.ti-sobrio .kb-action-btn.primary:hover {
+    background: #1e293b !important;
+}
+
+body.ti-sobrio .kb-action-btn.secondary,
+body.ti-sobrio .kb-action-btn.secondary:hover {
+    background: #fff !important;
+    border: 1px solid var(--ti-linea) !important;
+    color: var(--ti-tinta) !important;
+}
+
+body.ti-sobrio .kb-action-btn.secondary:hover {
+    border-color: #cbd5e1 !important;
+    background: #f8fafc !important;
+}
+
+/* Buscador */
+body.ti-sobrio .kb-search-box {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    height: 46px !important;
+    margin: 0 0 14px !important;
+    padding: 0 14px !important;
+    background: #fff !important;
+    border: 1px solid var(--ti-linea) !important;
+    border-radius: 6px !important;
+    box-shadow: var(--ti-sombra) !important;
+}
+
+body.ti-sobrio .kb-search-box:focus-within {
+    border-color: #94a3b8 !important;
+    box-shadow: 0 0 0 3px rgba(15, 23, 42, .06) !important;
+}
+
+body.ti-sobrio .kb-search-icono {
+    display: inline-flex !important;
+    color: var(--ti-gris-claro) !important;
+}
+
+body.ti-sobrio .kb-search-box input {
+    flex: 1 1 auto !important;
+    height: 100% !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    color: var(--ti-tinta) !important;
+    outline: none !important;
+}
+
+body.ti-sobrio .kb-search-box small {
+    padding: 2px 6px !important;
+    background: #f8fafc !important;
+    border: 1px solid var(--ti-linea) !important;
+    border-radius: 4px !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    color: var(--ti-gris) !important;
+}
+
+/* Filtros por categoría y tipo */
+body.ti-sobrio .kb-category-chips {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    gap: 6px !important;
+    margin: 0 0 14px !important;
+}
+
+body.ti-sobrio .kb-chip,
+body.ti-sobrio .kb-chip:hover {
+    height: 34px !important;
+    padding: 0 12px !important;
+    background: #fff !important;
+    border: 1px solid var(--ti-linea) !important;
+    border-radius: 6px !important;
+    box-shadow: none !important;
+    color: #475569 !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+}
+
+body.ti-sobrio .kb-chip:hover {
+    border-color: #cbd5e1 !important;
+    color: var(--ti-tinta) !important;
+}
+
+body.ti-sobrio .kb-chip.active,
+body.ti-sobrio .kb-chip.active:hover {
+    background: var(--ti-tinta) !important;
+    border-color: var(--ti-tinta) !important;
+    color: #fff !important;
+}
+
+body.ti-sobrio .kb-chip-separador {
+    width: 1px;
+    height: 22px;
+    margin: 0 4px;
+    background: var(--ti-linea);
+}
+
+body.ti-sobrio .kb-results-info,
+body.ti-sobrio .kb-pagination-info {
+    margin: 0 0 12px !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    color: var(--ti-gris) !important;
+}
+
+body.ti-sobrio .kb-pagination-info {
+    margin: 12px 0 0 !important;
+}
+
+/* Tarjetas de artículos */
+body.ti-sobrio .kb-modern-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)) !important;
+    gap: 16px !important;
+}
+
+body.ti-sobrio .kb-modern-card {
+    display: flex !important;
+    gap: 14px !important;
+    padding: 18px !important;
+    background: #fff !important;
+    border: 1px solid var(--ti-linea) !important;
+    border-radius: 6px !important;
+    box-shadow: var(--ti-sombra) !important;
+    cursor: pointer;
+    transition: border-color .15s;
+}
+
+body.ti-sobrio .kb-modern-card:hover {
+    border-color: #cbd5e1 !important;
+    transform: none !important;
+}
+
+body.ti-sobrio .kb-card-icon {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    display: grid !important;
+    place-items: center !important;
+    background: #f1f5f9 !important;
+    border: 1px solid var(--ti-linea-2) !important;
+    border-radius: 6px !important;
+    color: var(--ti-gris) !important;
+    font-size: 0 !important;
+}
+
+body.ti-sobrio .kb-card-icon svg.ti-ico {
+    width: 19px;
+    height: 19px;
+}
+
+body.ti-sobrio .kb-card-content {
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+body.ti-sobrio .kb-card-category {
+    align-self: flex-start !important;
+    margin: 0 0 6px !important;
+    padding: 2px 8px !important;
+    background: #f8fafc !important;
+    border: 1px solid var(--ti-linea) !important;
+    border-radius: 4px !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    color: var(--ti-tinta-2) !important;
+}
+
+body.ti-sobrio .kb-card-content h3 {
+    margin: 0 0 6px !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    line-height: 1.35 !important;
+    color: var(--ti-tinta) !important;
+}
+
+body.ti-sobrio .kb-card-content p {
+    margin: 0 0 12px !important;
+    font-size: 13px !important;
+    line-height: 1.5 !important;
+    color: var(--ti-gris) !important;
+}
+
+body.ti-sobrio .kb-card-footer {
+    margin-top: auto !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 10px !important;
+    padding-top: 10px !important;
+    border-top: 1px solid var(--ti-linea-2) !important;
+}
+
+body.ti-sobrio .kb-card-footer span {
+    font-size: 12px !important;
+    color: var(--ti-gris-claro) !important;
+}
+
+body.ti-sobrio .kb-view-detail,
+body.ti-sobrio .kb-view-detail:hover {
+    height: auto !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    color: var(--ti-acento) !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+}
+
+body.ti-sobrio .kb-empty-state {
+    grid-column: 1 / -1 !important;
+    padding: 28px !important;
+    background: #fff !important;
+    border: 1px dashed var(--ti-linea) !important;
+    border-radius: 6px !important;
+    text-align: center !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    color: var(--ti-gris) !important;
+}
+
+/* Ventana del artículo y formularios de artículo / manual */
+body.ti-sobrio #action-modal-body h2,
+body.ti-sobrio #form-modal-body h2 {
+    margin: 0 0 12px !important;
+    font-size: 20px !important;
+    font-weight: 800 !important;
+    text-transform: none !important;
+    color: var(--ti-tinta) !important;
+}
+
+body.ti-sobrio .kb-article-content h3 {
+    margin: 16px 0 8px !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    text-transform: none !important;
+    color: var(--ti-tinta-2) !important;
+}
+
+body.ti-sobrio .kb-article-content .card {
+    padding: 14px !important;
+    background: #f8fafc !important;
+    border: 1px solid var(--ti-linea) !important;
+    border-radius: 6px !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    line-height: 1.6 !important;
+}
+
+body.ti-sobrio .kb-category {
+    display: inline-block !important;
+    padding: 2px 8px !important;
+    background: #f8fafc !important;
+    border: 1px solid var(--ti-linea) !important;
+    border-radius: 4px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    color: var(--ti-tinta-2) !important;
+}
+
+body.ti-sobrio .kb-modal-btn,
+body.ti-sobrio .kb-modal-btn:hover {
+    height: 40px !important;
+    padding: 0 16px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    background: #fff !important;
+    border: 1px solid var(--ti-linea) !important;
+    border-radius: 6px !important;
+    box-shadow: none !important;
+    color: var(--ti-tinta) !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    text-transform: none !important;
+}
+
+body.ti-sobrio .kb-modal-btn svg.ti-ico {
+    width: 16px;
+    height: 16px;
+}
+
+body.ti-sobrio .kb-modal-btn.peligro,
+body.ti-sobrio .kb-modal-btn.peligro:hover {
+    color: var(--ti-peligro) !important;
+}
+
+body.ti-sobrio .kb-modal-btn:hover {
+    border-color: #cbd5e1 !important;
+    background: #f8fafc !important;
+}
+
+body.ti-sobrio #form-modal-body #kb-form button[type="submit"],
+body.ti-sobrio #form-modal-body #manual-form button[type="submit"] {
+    height: 42px !important;
+    padding: 0 22px !important;
+    background: var(--ti-tinta) !important;
+    border: 1px solid var(--ti-tinta) !important;
+    border-radius: 6px !important;
+    color: #fff !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    text-transform: none !important;
+}
+
+body.ti-sobrio #kb-form label,
+body.ti-sobrio #manual-form label {
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    text-transform: none !important;
+    color: var(--ti-tinta-2) !important;
+}
+
+body.ti-sobrio #kb-form input,
+body.ti-sobrio #kb-form select,
+body.ti-sobrio #manual-form input,
+body.ti-sobrio #manual-form select {
+    height: 42px !important;
+    border: 1px solid var(--ti-linea) !important;
+    border-radius: 6px !important;
+    background: #fff !important;
+    font-size: 14px !important;
+}
+
+body.ti-sobrio .ql-toolbar.ql-snow,
+body.ti-sobrio .ql-container.ql-snow {
+    border-color: var(--ti-linea) !important;
+}
+
+body.ti-sobrio .ql-toolbar.ql-snow {
+    border-radius: 6px 6px 0 0 !important;
+    background: #f8fafc !important;
+}
+
+body.ti-sobrio .ql-container.ql-snow {
+    border-radius: 0 0 6px 6px !important;
+}
+
+@media (max-width: 768px) {
+    body.ti-sobrio .kb-header-actions {
+        width: 100% !important;
+    }
+
+    body.ti-sobrio .kb-action-btn {
+        flex: 1 1 0 !important;
+    }
+
+    body.ti-sobrio .kb-search-box small {
+        display: none !important;
+    }
+
+    body.ti-sobrio .kb-category-chips {
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        scrollbar-width: none !important;
+    }
+
+    body.ti-sobrio .kb-chip {
+        flex: 0 0 auto !important;
+    }
+
+    body.ti-sobrio .kb-modern-grid {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+}
+
+/* Base de conocimiento: ajustes finos */
+body.ti-sobrio .kb-search-box small {
+    white-space: nowrap !important;
+}
+
+body.ti-sobrio .kb-category {
+    text-transform: none !important;
+}
+
+/* Formularios de artículo y manual con margen interno */
+body.ti-sobrio #form-modal-body:has(#kb-form),
+body.ti-sobrio #form-modal-body:has(#manual-form) {
+    padding: 28px 28px 24px !important;
+}
+
+body.ti-sobrio #kb-form .form-group,
+body.ti-sobrio #manual-form .form-group {
+    margin-bottom: 16px !important;
+}
+
+body.ti-sobrio #kb-form label,
+body.ti-sobrio #manual-form label {
+    display: block !important;
+    margin-bottom: 6px !important;
+}
+
+body.ti-sobrio #kb-form input,
+body.ti-sobrio #kb-form select,
+body.ti-sobrio #manual-form input,
+body.ti-sobrio #manual-form select {
+    width: 100% !important;
+    padding: 0 12px !important;
+}
+
+body.ti-sobrio #kb-form select,
+body.ti-sobrio #manual-form select {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    padding-right: 34px !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 10px center !important;
+    background-size: 16px !important;
+}
+
+@media (max-width: 768px) {
+    body.ti-sobrio .kb-modern-header,
+    body.ti-sobrio .kb-header-left {
+        justify-content: flex-start !important;
+        text-align: left !important;
+        width: 100% !important;
+    }
+
+    body.ti-sobrio .kb-modern-header h1 {
+        text-align: left !important;
+    }
+
+    body.ti-sobrio .kb-chip,
+    body.ti-sobrio .kb-chip:hover {
+        width: auto !important;
+        min-width: 0 !important;
+    }
+
+    body.ti-sobrio .kb-card-footer {
+        flex-direction: row !important;
+        text-align: left !important;
+    }
+
+    body.ti-sobrio #form-modal-body:has(#kb-form),
+    body.ti-sobrio #form-modal-body:has(#manual-form) {
+        padding: 20px 16px !important;
+    }
+}
+
+@media (max-width: 768px) {
+    body.ti-sobrio .kb-header-actions {
+        flex-direction: row !important;
+    }
+}
