@@ -10,7 +10,7 @@
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
     
-    <link rel="stylesheet" href="style.css?v=20261008-7">
+    <link rel="stylesheet" href="style.css?v=20261008-8">
     
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
@@ -113,13 +113,15 @@
             rayo: '<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
             factura: '<path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h7M9 17h5"/>',
             nota: '<path d="M4 4h16v11l-5 5H4z"/><path d="M15 20v-5h5M8 9h8M8 13h4"/>',
-            reloj: '<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/>'
+            reloj: '<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/>',
+            ver: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+            descargar: '<path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 19h16"/>'
         };
         window.tiIcono = (nombre) =>
             `<svg class="ti-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${window.TI_ICONOS[nombre] || ""}</svg>`;
         document.querySelectorAll("[data-ico]").forEach(el => { el.innerHTML = window.tiIcono(el.dataset.ico); });
     </script>
-    <script src="app.js?v=20261008-7"></script>
+    <script src="app.js?v=20261008-8"></script>
 </body>
 </html>
 

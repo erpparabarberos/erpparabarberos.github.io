@@ -40,28 +40,36 @@
 
     <div class="ti-kpis">
         <button type="button" class="ti-kpi" data-detalle-kpi="todos">
-            <span class="ti-kpi-titulo">${window.tiIcono ? tiIcono('soportes') : ''} Soportes del mes</span>
-            <strong id="kpi-total-month">0</strong>
-            <small id="kpi-total-sub">Registrados en el mes</small>
-            <em>Ver detalle ›</em>
+            <span class="ti-kpi-icono">${window.tiIcono ? tiIcono('soportes') : ''}</span>
+            <span class="ti-kpi-texto">
+                <strong id="kpi-total-month">0</strong>
+                <span>Soportes del mes</span>
+                <small id="kpi-total-sub">Registrados en el mes</small>
+            </span>
         </button>
         <button type="button" class="ti-kpi" data-detalle-kpi="todos">
-            <span class="ti-kpi-titulo">${window.tiIcono ? tiIcono('tiempo') : ''} Tiempo invertido</span>
-            <strong id="kpi-time-month">0h 0m</strong>
-            <small id="kpi-time-sub">Tiempo total registrado</small>
-            <em>Ver detalle ›</em>
+            <span class="ti-kpi-icono">${window.tiIcono ? tiIcono('tiempo') : ''}</span>
+            <span class="ti-kpi-texto">
+                <strong id="kpi-time-month">0h 0m</strong>
+                <span>Tiempo invertido</span>
+                <small id="kpi-time-sub">Tiempo total registrado</small>
+            </span>
         </button>
         <button type="button" class="ti-kpi" data-detalle-kpi="cerrados">
-            <span class="ti-kpi-titulo">${window.tiIcono ? tiIcono('cerrado') : ''} Casos cerrados</span>
-            <strong id="kpi-closed-month">0</strong>
-            <small id="kpi-closed-sub">Finalizados en el mes</small>
-            <em>Ver detalle ›</em>
+            <span class="ti-kpi-icono">${window.tiIcono ? tiIcono('cerrado') : ''}</span>
+            <span class="ti-kpi-texto">
+                <strong id="kpi-closed-month">0</strong>
+                <span>Casos cerrados</span>
+                <small id="kpi-closed-sub">Finalizados en el mes</small>
+            </span>
         </button>
         <button type="button" class="ti-kpi" data-detalle-kpi="seguimiento">
-            <span class="ti-kpi-titulo">${window.tiIcono ? tiIcono('seguimiento') : ''} En seguimiento</span>
-            <strong id="kpi-followup-month">0</strong>
-            <small>Velocity, Siigo o pendientes</small>
-            <em>Ver detalle ›</em>
+            <span class="ti-kpi-icono">${window.tiIcono ? tiIcono('seguimiento') : ''}</span>
+            <span class="ti-kpi-texto">
+                <strong id="kpi-followup-month">0</strong>
+                <span>En seguimiento</span>
+                <small>Velocity, Siigo o pendientes</small>
+            </span>
         </button>
     </div>
 
@@ -883,9 +891,9 @@ const newTITicketFormHTML = `
 
     <div class="history-modern-header">
         <div class="history-modern-title">
-            <div class="history-title-icon">🔎</div>
+
             <div>
-                <h1>HISTORIAL DE SOPORTES</h1>
+                <h1>Historial de soportes</h1>
             </div>
         </div>
 
@@ -897,7 +905,7 @@ const newTITicketFormHTML = `
 
     <div class="history-kpi-grid">
         <div class="history-kpi-card blue">
-            <div class="history-kpi-icon">🎫</div>
+            <div class="history-kpi-icon">${tiIcono('soportes')}</div>
             <div>
                 <strong id="history-total-count">0</strong>
                 <span>Total de tickets</span>
@@ -906,7 +914,7 @@ const newTITicketFormHTML = `
         </div>
 
         <div class="history-kpi-card green">
-            <div class="history-kpi-icon">✓</div>
+            <div class="history-kpi-icon">${tiIcono('cerrado')}</div>
             <div>
                 <strong id="history-closed-count">0</strong>
                 <span>Cerrados</span>
@@ -915,7 +923,7 @@ const newTITicketFormHTML = `
         </div>
 
         <div class="history-kpi-card orange">
-            <div class="history-kpi-icon">◷</div>
+            <div class="history-kpi-icon">${tiIcono('seguimiento')}</div>
             <div>
                 <strong id="history-progress-count">0</strong>
                 <span>En curso</span>
@@ -924,7 +932,7 @@ const newTITicketFormHTML = `
         </div>
 
         <div class="history-kpi-card purple">
-            <div class="history-kpi-icon">⌛</div>
+            <div class="history-kpi-icon">${tiIcono('tiempo')}</div>
             <div>
                 <strong id="history-pending-count">0</strong>
                 <span>Pendientes</span>
@@ -3226,10 +3234,10 @@ if (quickNoteRawAfterSave) {
     }
 
     function getTypeIcon(type) {
-        if (type === 'velocity') return '⚡';
-        if (type === 'siigo') return 'S';
-        if (type === 'nota') return '📝';
-        return '🎧';
+        if (type === 'velocity') return tiIcono('rayo');
+        if (type === 'siigo') return tiIcono('factura');
+        if (type === 'nota') return tiIcono('nota');
+        return tiIcono('auricular');
     }
 
     function getTypeClass(type) {
@@ -3415,7 +3423,7 @@ if (quickNoteRawAfterSave) {
                                 </span>
                             </div>
 
-                            <button class="history-view-btn btn-accion-ticket" data-id="${ticket.id}" title="Ver detalles">👁</button>
+                            <button class="history-view-btn btn-accion-ticket" data-id="${ticket.id}" title="Ver detalles">${tiIcono('ver')}</button>
                         </div>
                     </div>
                 </div>

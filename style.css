@@ -13023,3 +13023,509 @@ body.ti-sobrio .ti-form textarea {
 body.ti-sobrio .ti-form .ti-form-fila .form-group {
     margin-bottom: 0 !important;
 }
+
+/* =====================================================
+   DISEÑO SOBRIO · Estilo cuadrado (como el Historial)
+   Esquinas casi rectas en tarjetas, campos, botones y pestañas
+   del Panel, Registrar soporte e Historial.
+===================================================== */
+
+body.ti-sobrio {
+    --ti-radio: 6px;
+    --ti-radio-control: 6px;
+}
+
+body.ti-sobrio .ti-card,
+body.ti-sobrio button.ti-kpi,
+body.ti-sobrio button.ti-kpi:hover,
+body.ti-sobrio .support-form-card,
+body.ti-sobrio .backlog-table-wrapper {
+    border-radius: 6px !important;
+}
+
+body.ti-sobrio .ti-filtros input,
+body.ti-sobrio .ti-filtros select,
+body.ti-sobrio .ti-card-cab select,
+body.ti-sobrio .support-form-card input,
+body.ti-sobrio .support-form-card select,
+body.ti-sobrio .support-form-card textarea,
+body.ti-sobrio .support-type-card,
+body.ti-sobrio .quick-categories .quick-chip,
+body.ti-sobrio .quick-categories .quick-chip:hover,
+body.ti-sobrio .support-page .support-primary-btn,
+body.ti-sobrio .support-page .support-primary-btn:hover,
+body.ti-sobrio .support-form-card #add-backlog-row,
+body.ti-sobrio .backlog-table td button,
+body.ti-sobrio .ti-dia,
+body.ti-sobrio a.ti-fila.view-ticket-btn,
+body.ti-sobrio .horizontal-list a.nav-link,
+body.ti-sobrio .submenu.dropdown,
+body.ti-sobrio .submenu.dropdown li a {
+    border-radius: 6px !important;
+}
+
+body.ti-sobrio .ti-estado,
+body.ti-sobrio .ti-barra-fondo,
+body.ti-sobrio .ti-barra-fondo i {
+    border-radius: 3px !important;
+}
+
+body.ti-sobrio .modal-content {
+    border-radius: 8px !important;
+}
+
+/* =====================================================
+   HISTORIAL DE SOPORTES
+===================================================== */
+
+body.ti-sobrio .history-modern-page {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+}
+
+body.ti-sobrio .history-modern-page,
+body.ti-sobrio .history-modern-page * {
+    text-transform: none !important;
+    letter-spacing: normal !important;
+}
+
+/* Encabezado: solo el título y las exportaciones */
+body.ti-sobrio .history-modern-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 16px !important;
+    flex-wrap: wrap !important;
+    margin: 0 0 16px !important;
+    padding: 0 !important;
+}
+
+body.ti-sobrio .history-title-icon {
+    display: none !important;
+}
+
+body.ti-sobrio .history-modern-title h1 {
+    margin: 0 !important;
+    font-size: 26px !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.02em !important;
+    color: var(--ti-tinta) !important;
+}
+
+body.ti-sobrio .history-export-actions {
+    display: flex !important;
+    gap: 8px !important;
+}
+
+/* Botones secundarios: borde gris, texto oscuro */
+body.ti-sobrio .history-export-btn,
+body.ti-sobrio .history-export-btn:hover,
+body.ti-sobrio .history-clear-btn,
+body.ti-sobrio .history-clear-btn:hover,
+body.ti-sobrio .history-load-more-btn,
+body.ti-sobrio .history-load-more-btn:hover {
+    height: 40px !important;
+    padding: 0 16px !important;
+    background: #fff !important;
+    border: 1px solid var(--ti-linea) !important;
+    border-radius: 6px !important;
+    box-shadow: none !important;
+    color: var(--ti-tinta) !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+}
+
+body.ti-sobrio .history-export-btn:hover,
+body.ti-sobrio .history-clear-btn:hover,
+body.ti-sobrio .history-load-more-btn:hover {
+    border-color: #cbd5e1 !important;
+    background: #f8fafc !important;
+}
+
+/* Botón principal: oscuro */
+body.ti-sobrio .history-filter-btn,
+body.ti-sobrio .history-filter-btn:hover {
+    height: 42px !important;
+    padding: 0 20px !important;
+    background: var(--ti-tinta) !important;
+    border: 1px solid var(--ti-tinta) !important;
+    border-radius: 6px !important;
+    box-shadow: none !important;
+    color: #fff !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+}
+
+body.ti-sobrio .history-filter-btn:hover {
+    background: #1e293b !important;
+}
+
+/* Indicadores */
+body.ti-sobrio .history-kpi-grid {
+    gap: 16px !important;
+    margin: 0 0 16px !important;
+}
+
+body.ti-sobrio .history-kpi-card {
+    display: flex !important;
+    align-items: center !important;
+    gap: 16px !important;
+    padding: 18px 20px !important;
+    background: #fff !important;
+    border: 1px solid var(--ti-linea) !important;
+    border-radius: 6px !important;
+    box-shadow: var(--ti-sombra) !important;
+}
+
+body.ti-sobrio .history-kpi-card::before,
+body.ti-sobrio .history-kpi-card::after {
+    display: none !important;
+}
+
+body.ti-sobrio .history-kpi-icon {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    display: grid !important;
+    place-items: center !important;
+    background: #f1f5f9 !important;
+    border: 1px solid var(--ti-linea-2) !important;
+    border-radius: 6px !important;
+    color: var(--ti-gris) !important;
+    font-size: 0 !important;
+}
+
+body.ti-sobrio .history-kpi-icon svg.ti-ico {
+    width: 20px;
+    height: 20px;
+}
+
+body.ti-sobrio .history-kpi-card strong {
+    display: block !important;
+    font-size: 28px !important;
+    font-weight: 800 !important;
+    line-height: 1.1 !important;
+    color: var(--ti-tinta) !important;
+}
+
+body.ti-sobrio .history-kpi-card span {
+    display: block !important;
+    margin-top: 2px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    color: var(--ti-tinta-2) !important;
+}
+
+body.ti-sobrio .history-kpi-card small {
+    display: block !important;
+    font-size: 12px !important;
+    color: var(--ti-gris) !important;
+}
+
+/* Filtros */
+body.ti-sobrio .history-filter-card,
+body.ti-sobrio .history-timeline-card {
+    padding: 20px !important;
+    margin: 0 0 16px !important;
+    background: #fff !important;
+    border: 1px solid var(--ti-linea) !important;
+    border-radius: 6px !important;
+    box-shadow: var(--ti-sombra) !important;
+}
+
+body.ti-sobrio .history-filter-group label,
+body.ti-sobrio .history-sort-box label {
+    margin-bottom: 6px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: var(--ti-tinta-2) !important;
+}
+
+body.ti-sobrio .history-filter-card input,
+body.ti-sobrio .history-filter-card select,
+body.ti-sobrio .history-sort-box select {
+    height: 42px !important;
+    min-height: 42px !important;
+    padding: 0 12px !important;
+    background-color: #fff !important;
+    border: 1px solid var(--ti-linea) !important;
+    border-radius: 6px !important;
+    box-shadow: none !important;
+    font-family: inherit !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    color: var(--ti-tinta) !important;
+    outline: none !important;
+}
+
+body.ti-sobrio .history-filter-card select,
+body.ti-sobrio .history-sort-box select {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    padding-right: 34px !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 10px center !important;
+    background-size: 16px !important;
+    cursor: pointer;
+}
+
+body.ti-sobrio .history-filter-card input::-webkit-calendar-picker-indicator {
+    opacity: .45;
+    cursor: pointer;
+}
+
+body.ti-sobrio .history-filter-card input:focus,
+body.ti-sobrio .history-filter-card select:focus,
+body.ti-sobrio .history-sort-box select:focus {
+    border-color: #94a3b8 !important;
+    box-shadow: 0 0 0 3px rgba(15, 23, 42, .06) !important;
+}
+
+/* Línea de tiempo */
+body.ti-sobrio .history-timeline-header h2 {
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    color: var(--ti-tinta) !important;
+}
+
+body.ti-sobrio .history-timeline-header h2::before,
+body.ti-sobrio .history-timeline-header h2::after {
+    display: none !important;
+}
+
+body.ti-sobrio .history-timeline-header p {
+    margin: 3px 0 0 !important;
+    font-size: 13px !important;
+    color: var(--ti-gris) !important;
+}
+
+body.ti-sobrio .history-sort-box {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+body.ti-sobrio .history-sort-box label {
+    margin: 0 !important;
+    white-space: nowrap !important;
+}
+
+body.ti-sobrio .history-day-label strong {
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    color: var(--ti-tinta) !important;
+}
+
+body.ti-sobrio .history-day-label span,
+body.ti-sobrio .history-row-time span {
+    font-size: 12px !important;
+    color: var(--ti-gris) !important;
+}
+
+/* Punto de la línea de tiempo: gris, sin colores por tipo */
+body.ti-sobrio .history-row-time i,
+body.ti-sobrio .history-row-time i.ti,
+body.ti-sobrio .history-row-time i.velocity,
+body.ti-sobrio .history-row-time i.siigo,
+body.ti-sobrio .history-row-time i.nota {
+    background: #fff !important;
+    border: 2px solid #94a3b8 !important;
+    box-shadow: none !important;
+}
+
+body.ti-sobrio .history-row-card {
+    background: #fff !important;
+    border: 1px solid var(--ti-linea) !important;
+    border-radius: 6px !important;
+    box-shadow: none !important;
+    transition: border-color .15s;
+}
+
+body.ti-sobrio .history-row-card:hover {
+    border-color: #cbd5e1 !important;
+}
+
+body.ti-sobrio .history-row-ticket small {
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    color: var(--ti-gris) !important;
+}
+
+body.ti-sobrio .history-row-ticket strong {
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    color: var(--ti-tinta) !important;
+}
+
+body.ti-sobrio .history-row-ticket span {
+    font-size: 13px !important;
+    color: var(--ti-gris) !important;
+}
+
+body.ti-sobrio .history-row-field label {
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    color: var(--ti-gris-claro) !important;
+}
+
+/* Etiquetas de tipo, estado y prioridad: grises y rectas */
+body.ti-sobrio .history-pill,
+body.ti-sobrio .history-pill.type,
+body.ti-sobrio .history-pill.state,
+body.ti-sobrio .history-pill.priority {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    height: 26px !important;
+    padding: 0 10px !important;
+    background: #f8fafc !important;
+    border: 1px solid var(--ti-linea) !important;
+    border-radius: 4px !important;
+    color: var(--ti-tinta-2) !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    box-shadow: none !important;
+}
+
+body.ti-sobrio .history-pill svg.ti-ico {
+    width: 14px;
+    height: 14px;
+    color: var(--ti-gris);
+}
+
+/* Solo lo que necesita atención se distingue: abierto/en curso/pendiente en texto oscuro con borde marcado */
+body.ti-sobrio .history-pill.state.abierto,
+body.ti-sobrio .history-pill.state.en-curso,
+body.ti-sobrio .history-pill.state.pendiente {
+    background: #fff !important;
+    border-color: #94a3b8 !important;
+    color: var(--ti-tinta) !important;
+}
+
+body.ti-sobrio .history-pill.priority.alta,
+body.ti-sobrio .history-pill.priority.urgente,
+body.ti-sobrio .history-pill.priority.critica {
+    background: #fff !important;
+    border-color: #fca5a5 !important;
+    color: var(--ti-peligro) !important;
+}
+
+/* Botón ver */
+body.ti-sobrio .history-view-btn,
+body.ti-sobrio .history-view-btn:hover {
+    width: 40px !important;
+    height: 40px !important;
+    padding: 0 !important;
+    display: grid !important;
+    place-items: center !important;
+    background: #fff !important;
+    border: 1px solid var(--ti-linea) !important;
+    border-radius: 6px !important;
+    box-shadow: none !important;
+    color: var(--ti-gris) !important;
+    font-size: 0 !important;
+}
+
+body.ti-sobrio .history-view-btn:hover {
+    border-color: #cbd5e1 !important;
+    color: var(--ti-tinta) !important;
+}
+
+body.ti-sobrio .history-view-btn svg.ti-ico {
+    width: 18px;
+    height: 18px;
+}
+
+body.ti-sobrio .history-empty-state {
+    padding: 24px !important;
+    background: #f8fafc !important;
+    border: 1px dashed var(--ti-linea) !important;
+    border-radius: 6px !important;
+    color: var(--ti-gris) !important;
+}
+
+@media (max-width: 768px) {
+    body.ti-sobrio .history-export-actions {
+        width: 100% !important;
+    }
+
+    body.ti-sobrio .history-export-btn {
+        flex: 1 1 0 !important;
+    }
+}
+
+/* Indicadores del Panel con el mismo formato del Historial: ícono en cuadro gris + número + nombre */
+body.ti-sobrio button.ti-kpi,
+body.ti-sobrio button.ti-kpi:hover {
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 16px !important;
+}
+
+body.ti-sobrio .ti-kpi-icono {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    display: grid;
+    place-items: center;
+    background: #f1f5f9;
+    border: 1px solid var(--ti-linea-2);
+    border-radius: 6px;
+    color: var(--ti-gris);
+}
+
+body.ti-sobrio .ti-kpi-icono svg.ti-ico {
+    width: 20px;
+    height: 20px;
+}
+
+body.ti-sobrio .ti-kpi-texto {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+body.ti-sobrio .ti-kpi-texto strong {
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1.1;
+    color: var(--ti-tinta);
+}
+
+body.ti-sobrio .ti-kpi-texto span {
+    margin-top: 2px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ti-tinta-2);
+}
+
+body.ti-sobrio .ti-kpi-texto small {
+    font-size: 12px;
+    color: var(--ti-gris);
+}
+
+/* Historial en celular: título alineado a la izquierda */
+@media (max-width: 768px) {
+    body.ti-sobrio .history-modern-header,
+    body.ti-sobrio .history-modern-title {
+        justify-content: flex-start !important;
+        text-align: left !important;
+    }
+}
+
+@media (max-width: 768px) {
+    body.ti-sobrio .history-modern-title {
+        width: 100% !important;
+    }
+
+    body.ti-sobrio .history-modern-title h1 {
+        text-align: left !important;
+    }
+}
