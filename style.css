@@ -13529,3 +13529,37 @@ body.ti-sobrio .ti-kpi-texto small {
         text-align: left !important;
     }
 }
+
+/* "Cargar más" del Historial: texto centrado dentro del botón */
+body.ti-sobrio .history-load-more-wrap {
+    display: flex !important;
+    justify-content: center !important;
+    margin-top: 16px !important;
+}
+
+body.ti-sobrio .history-load-more-btn,
+body.ti-sobrio .history-load-more-btn:hover {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 160px !important;
+    height: 40px !important;
+    padding: 0 20px !important;
+    line-height: 1 !important;
+    text-align: center !important;
+}
+
+/* Panel de control: título centrado verticalmente con los filtros */
+body.ti-sobrio .ti-cabecera {
+    align-items: center !important;
+}
+
+/* Barra superior cuadrada, como el resto */
+body.ti-sobrio .horizontal-list a.nav-link,
+body.ti-sobrio .horizontal-list > li > a,
+body.ti-sobrio .nav-list.horizontal-list a.nav-link,
+body.ti-sobrio .nav-list.horizontal-list > li > a,
+body.ti-sobrio .submenu.dropdown,
+body.ti-sobrio .submenu.dropdown li a {
+    border-radius: 4px !important;
+}
