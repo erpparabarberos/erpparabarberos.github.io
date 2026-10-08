@@ -12877,3 +12877,116 @@ body.ti-sobrio .quick-categories .quick-chip,
 body.ti-sobrio .quick-categories .quick-chip:hover {
     border-radius: 8px !important;
 }
+
+/* Formulario de Soporte TI organizado en bloques: Datos del soporte, Novedad y Cierre */
+body.ti-sobrio .support-form-card .ti-form {
+    display: block;
+}
+
+body.ti-sobrio .ti-form-seccion {
+    padding: 0 0 20px;
+    margin: 0 0 20px;
+    border-bottom: 1px solid var(--ti-linea-2);
+}
+
+body.ti-sobrio .ti-form-seccion.ultima {
+    padding-bottom: 0;
+    margin-bottom: 0;
+    border-bottom: 0;
+}
+
+body.ti-sobrio .ti-form-seccion h4 {
+    margin: 0 0 14px;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ti-tinta);
+}
+
+body.ti-sobrio .ti-form-fila {
+    display: grid;
+    gap: 16px;
+}
+
+body.ti-sobrio .ti-form-fila.cuatro {
+    grid-template-columns: 160px 140px minmax(0, 1fr) minmax(0, 1fr);
+}
+
+body.ti-sobrio .ti-form-fila.dos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+body.ti-sobrio .ti-form-fila.categoria {
+    grid-template-columns: minmax(220px, 300px) minmax(0, 1fr);
+}
+
+body.ti-sobrio .ti-form-fila.cierre {
+    grid-template-columns: minmax(200px, 260px) minmax(0, 1fr) auto;
+    align-items: end;
+}
+
+body.ti-sobrio .ti-form .ti-form-fila .form-group,
+body.ti-sobrio .ti-form-seccion > .form-group {
+    margin: 0 0 16px !important;
+    min-width: 0;
+}
+
+body.ti-sobrio .ti-form-seccion .ti-form-fila:last-child .form-group,
+body.ti-sobrio .ti-form-seccion > .form-group:last-child {
+    margin-bottom: 0 !important;
+}
+
+body.ti-sobrio .ti-form-fila.categoria .quick-categories {
+    margin: 0 !important;
+    min-height: 42px;
+    align-items: center;
+}
+
+body.ti-sobrio .ti-form-fila.categoria .quick-categories .quick-chip {
+    height: 34px !important;
+}
+
+body.ti-sobrio .ti-form textarea {
+    min-height: 64px !important;
+}
+
+body.ti-sobrio .ti-form-fila.cierre .support-actions {
+    margin: 0 !important;
+    align-self: end;
+}
+
+@media (max-width: 1100px) {
+    body.ti-sobrio .ti-form-fila.cuatro {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    body.ti-sobrio .ti-form-fila.cierre {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    body.ti-sobrio .ti-form-fila.cierre .support-actions {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 768px) {
+    body.ti-sobrio .ti-form-fila.cuatro,
+    body.ti-sobrio .ti-form-fila.dos,
+    body.ti-sobrio .ti-form-fila.categoria,
+    body.ti-sobrio .ti-form-fila.cierre {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 14px;
+    }
+
+    body.ti-sobrio .ti-form .ti-form-fila .form-group {
+        margin-bottom: 0 !important;
+    }
+
+    body.ti-sobrio .ti-form-fila.cierre .support-actions {
+        margin-top: 4px !important;
+    }
+}
+
+/* El botón del bloque Cierre con la misma altura de los campos */
+body.ti-sobrio .ti-form-fila.cierre .support-primary-btn {
+    height: 42px !important;
+}

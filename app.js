@@ -179,111 +179,106 @@ const newTITicketFormHTML = `
   <div class="support-layout">
 
     <div class="support-form-card">
-      <form id="new-ticket-form">
+      <form id="new-ticket-form" class="ti-form">
 
-        <div class="support-grid two">
-          <div class="form-group">
-            <label for="support-date">Fecha</label>
-            <input type="date" id="support-date" required>
-          </div>
-
-          <div class="form-group">
-            <label for="support-time">Hora</label>
-            <input type="time" id="support-time" required>
-          </div>
-        </div>
-
-        <div class="support-grid two">
-          <div class="form-group">
-            <label for="requester">Solicitante</label>
-            <select id="requester" required></select>
-          </div>
-
-          <div class="form-group">
-            <label for="location">Sede</label>
-            <select id="location" required></select>
+        <div class="ti-form-seccion">
+          <h4>Datos del soporte</h4>
+          <div class="ti-form-fila cuatro">
+            <div class="form-group">
+              <label for="support-date">Fecha</label>
+              <input type="date" id="support-date" required>
+            </div>
+            <div class="form-group">
+              <label for="support-time">Hora</label>
+              <input type="time" id="support-time" required>
+            </div>
+            <div class="form-group">
+              <label for="requester">Solicitante</label>
+              <select id="requester" required></select>
+            </div>
+            <div class="form-group">
+              <label for="location">Sede</label>
+              <select id="location" required></select>
+            </div>
           </div>
         </div>
 
-        <div class="support-grid two">
-          <div class="form-group">
-            <label for="support-type">Tipo de soporte</label>
-            <select id="support-type" required>
-              <option value="ti">Soporte TI</option>
-            </select>
+        <div class="ti-form-seccion">
+          <h4>Novedad</h4>
+          <div class="ti-form-fila categoria">
+            <div class="form-group">
+              <label for="category">Categoría</label>
+              <select id="category" required>
+                <option value="">Selecciona una categoría</option>
+                <option value="impresora">Impresora</option>
+                <option value="equipo-lento">Equipo lento</option>
+                <option value="internet">Internet</option>
+                <option value="correo">Correo</option>
+                <option value="camara">Cámara</option>
+                <option value="instalacion">Instalación / configuración</option>
+                <option value="usuario-contrasena">Usuario o contraseña</option>
+                <option value="app-interna">App interna</option>
+                <option value="otro">Otro</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Atajos <span>(llenan la categoría y la novedad)</span></label>
+              <div class="quick-categories">
+                <button type="button" class="quick-chip" data-category="impresora" data-text="La impresora presentó fallas al momento de imprimir.">No imprime</button>
+                <button type="button" class="quick-chip" data-category="equipo-lento" data-text="El equipo presentó lentitud durante su uso.">Equipo lento</button>
+                <button type="button" class="quick-chip" data-category="internet" data-text="Se presentó novedad con la conexión a internet.">Sin internet</button>
+                <button type="button" class="quick-chip" data-category="correo" data-text="Se presentó novedad con el correo electrónico.">Correo</button>
+                <button type="button" class="quick-chip" data-category="camara" data-text="Se presentó novedad con una cámara o visualización de cámaras.">Cámara</button>
+                <button type="button" class="quick-chip" data-category="instalacion" data-text="Se realizó instalación o configuración requerida.">Instalación</button>
+              </div>
+            </div>
           </div>
 
           <div class="form-group">
-            <label for="category">Categoría</label>
-            <select id="category" required>
-              <option value="">Selecciona una categoría</option>
-              <option value="impresora">Impresora</option>
-              <option value="equipo-lento">Equipo lento</option>
-              <option value="internet">Internet</option>
-              <option value="correo">Correo</option>
-              <option value="camara">Cámara</option>
-              <option value="instalacion">Instalación / configuración</option>
-              <option value="usuario-contrasena">Usuario o contraseña</option>
-              <option value="app-interna">App interna</option>
-              <option value="otro">Otro</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="quick-categories">
-          <button type="button" class="quick-chip" data-category="impresora" data-text="La impresora presentó fallas al momento de imprimir.">No imprime</button>
-          <button type="button" class="quick-chip" data-category="equipo-lento" data-text="El equipo presentó lentitud durante su uso.">Equipo lento</button>
-          <button type="button" class="quick-chip" data-category="internet" data-text="Se presentó novedad con la conexión a internet.">Sin internet</button>
-          <button type="button" class="quick-chip" data-category="correo" data-text="Se presentó novedad con el correo electrónico.">Correo</button>
-          <button type="button" class="quick-chip" data-category="camara" data-text="Se presentó novedad con una cámara o visualización de cámaras.">Cámara</button>
-          <button type="button" class="quick-chip" data-category="instalacion" data-text="Se realizó instalación o configuración requerida.">Instalación</button>
-          <button type="button" class="quick-chip" data-category="otro" data-text="">Otro</button>
-        </div>
-
-        <div class="form-group">
-          <label for="novelty">Novedad</label>
-          <textarea id="novelty" rows="3" placeholder="Describe brevemente la novedad reportada..." required></textarea>
-        </div>
-
-        <div class="support-grid two">
-          <div class="form-group">
-            <label for="management">Gestión realizada</label>
-            <textarea id="management" rows="4" placeholder="¿Qué acciones realizaste para atender el caso?" required></textarea>
+            <label for="novelty">Qué pasó</label>
+            <textarea id="novelty" rows="2" placeholder="Describe brevemente la novedad reportada..." required></textarea>
           </div>
 
-          <div class="form-group">
-            <label for="solution">Solución aplicada</label>
-            <textarea id="solution" rows="4" placeholder="¿Cuál fue la solución o resultado?" required></textarea>
+          <div class="ti-form-fila dos">
+            <div class="form-group">
+              <label for="management">Gestión realizada</label>
+              <textarea id="management" rows="3" placeholder="¿Qué acciones realizaste para atender el caso?" required></textarea>
+            </div>
+            <div class="form-group">
+              <label for="solution">Solución aplicada</label>
+              <textarea id="solution" rows="3" placeholder="¿Cuál fue la solución o resultado?" required></textarea>
+            </div>
           </div>
         </div>
 
-        <div class="support-grid two">
-          <div class="form-group">
-            <label for="time-spent">Tiempo invertido</label>
-            <select id="time-spent" required>
-              <option value="">Selecciona el tiempo</option>
-              <option value="5">5 minutos</option>
-              <option value="10">10 minutos</option>
-              <option value="15">15 minutos</option>
-              <option value="20">20 minutos</option>
-              <option value="30">30 minutos</option>
-              <option value="45">45 minutos</option>
-              <option value="60">1 hora</option>
-              <option value="90">1 hora 30 minutos</option>
-              <option value="120">2 horas</option>
-            </select>
+        <div class="ti-form-seccion ultima">
+          <h4>Cierre</h4>
+          <div class="ti-form-fila cierre">
+            <div class="form-group">
+              <label for="time-spent">Tiempo invertido</label>
+              <select id="time-spent" required>
+                <option value="">Selecciona el tiempo</option>
+                <option value="5">5 minutos</option>
+                <option value="10">10 minutos</option>
+                <option value="15">15 minutos</option>
+                <option value="20">20 minutos</option>
+                <option value="30">30 minutos</option>
+                <option value="45">45 minutos</option>
+                <option value="60">1 hora</option>
+                <option value="90">1 hora 30 minutos</option>
+                <option value="120">2 horas</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="associated-device">Equipo asociado <span>(opcional)</span></label>
+              <input type="text" id="associated-device" list="device-list" placeholder="Busca por código, usuario o marca...">
+              <datalist id="device-list"></datalist>
+            </div>
+            <div class="support-actions">
+              <button type="submit" class="primary support-primary-btn">Registrar soporte</button>
+              <button type="reset" class="support-secondary-btn">Limpiar formulario</button>
+            </div>
           </div>
-
-          <div class="form-group">
-            <label for="associated-device">Equipo asociado <span>(opcional)</span></label>
-            <input type="text" id="associated-device" list="device-list" placeholder="Busca por código, usuario o marca...">
-            <datalist id="device-list"></datalist>
-          </div>
-        </div>
-
-        <div class="support-actions">
-          <button type="submit" class="primary support-primary-btn">Registrar soporte</button>
-          <button type="reset" class="support-secondary-btn">Limpiar formulario</button>
         </div>
 
       </form>
