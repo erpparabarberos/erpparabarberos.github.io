@@ -10,7 +10,7 @@
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
     
-    <link rel="stylesheet" href="style.css?v=20261008-14">
+    <link rel="stylesheet" href="style.css?v=20261008-15">
     
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
@@ -63,6 +63,7 @@
                     </ul>
                 </li>
                 <li><a href="#maintenance" class="nav-link"><i data-ico="mantenimiento"></i><span>Mantenimiento</span></a></li>
+                <li><a href="#estructuras" class="nav-link"><i data-ico="topologia"></i><span>Estructuras</span></a></li>
                 <li class="nav-item-with-submenu">
                     <a href="#credentials-emails" class="nav-link"><i data-ico="accesos"></i><span>Accesos</span><i data-ico="flecha" class="ti-nav-flecha"></i></a>
                     <ul class="submenu dropdown">
@@ -130,7 +131,16 @@
             radio: '<rect x="4" y="8" width="16" height="13" rx="2"/><path d="M8 8l8-5M8 14h4M8 17h4"/><circle cx="16" cy="15.5" r="1.5"/>',
             prohibido: '<circle cx="12" cy="12" r="9"/><path d="m5.6 5.6 12.8 12.8"/>',
             escudo: '<path d="M12 3 4 6v6c0 5 3.4 8.3 8 9 4.6-.7 8-4 8-9V6z"/>',
-            monitor: '<rect x="2" y="3" width="20" height="13" rx="1.5"/><path d="M12 16v4M7 21h10"/>'
+            monitor: '<rect x="2" y="3" width="20" height="13" rx="1.5"/><path d="M12 16v4M7 21h10"/>',
+            topologia: '<rect x="9" y="2" width="6" height="5" rx="1"/><rect x="2" y="17" width="6" height="5" rx="1"/><rect x="16" y="17" width="6" height="5" rx="1"/><path d="M12 7v5M5 17v-3h14v3"/>',
+            router: '<rect x="2" y="13" width="20" height="7" rx="2"/><path d="M6 16.5h.01M10 16.5h.01M7 13l-2-6M17 13l2-6"/>',
+            switch: '<rect x="2" y="7" width="20" height="10" rx="2"/><path d="M6 12h.01M9 12h.01M12 12h.01M15 12h.01M18 12h.01"/>',
+            ap: '<circle cx="12" cy="16" r="2"/><path d="M8.5 12.5a5 5 0 0 1 7 0M5.5 9.5a9 9 0 0 1 13 0"/><path d="M12 18v3"/>',
+            grabador: '<rect x="2" y="8" width="20" height="8" rx="1.5"/><circle cx="17" cy="12" r="1.5"/><path d="M5 12h6"/>',
+            portatil: '<rect x="4" y="4" width="16" height="11" rx="1.5"/><path d="M2 19h20"/>',
+            torre: '<rect x="7" y="2" width="10" height="20" rx="1.5"/><path d="M10 6h4M10 9h4"/><circle cx="12" cy="17" r="1"/>',
+            tv: '<rect x="2" y="5" width="20" height="13" rx="1.5"/><path d="M8 21h8"/>',
+            grupo: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>'
         };
         window.tiIcono = (nombre) =>
             `<svg class="ti-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${window.TI_ICONOS[nombre] || ""}</svg>`;
@@ -145,7 +155,7 @@
             Chart.defaults.plugins.legend.labels.boxHeight = 10;
         }
     </script>
-    <script src="app.js?v=20261008-14"></script>
+    <script src="app.js?v=20261008-15"></script>
 </body>
 </html>
 

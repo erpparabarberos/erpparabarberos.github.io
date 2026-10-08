@@ -9178,7 +9178,7 @@ if (createKbBtn) {
             '#soportes-atrasados': renderBacklogSupports,
             '#tickets': renderTicketList, '#historial': renderHistoryPage,
             '#knowledge-base': renderKnowledgeBase, '#estadisticas': renderEstadisticas,
-            '#maintenance': renderMaintenanceCalendar, '#configuracion': renderConfiguracion
+            '#maintenance': renderMaintenanceCalendar, '#estructuras': renderEstructuras, '#configuracion': renderConfiguracion
         };
 
         function router() { 
@@ -9308,6 +9308,335 @@ if (exportBtn) {
                     </div>`;
             }
         });
+    }
+
+    // =====================================================
+    // ESTRUCTURAS: diagrama de la red (topología en estrella)
+    // Se guarda en Firestore en network_topology/principal. Si no existe, se muestra la red base.
+    // Cada nodo tiene un "padre" (de quién recibe la conexión) y el diagrama se dibuja de izquierda a derecha.
+    // =====================================================
+
+    const TOPO_TIPOS = {
+        modem: { nombre: 'Módem', icono: 'modem', conIp: true },
+        router: { nombre: 'Router', icono: 'router', conIp: true },
+        switch: { nombre: 'Switch', icono: 'switch', conIp: true },
+        ap: { nombre: 'Access point', icono: 'ap', conIp: true },
+        area: { nombre: 'Área', icono: 'grupo', conIp: false },
+        nvr: { nombre: 'NVR', icono: 'grabador', conIp: true },
+        dvr: { nombre: 'DVR', icono: 'grabador', conIp: true },
+        camaras: { nombre: 'Cámaras IP', icono: 'camara', conIp: false },
+        pc: { nombre: 'Computador', icono: 'inventario', conIp: false },
+        portatil: { nombre: 'Portátil', icono: 'portatil', conIp: false },
+        torre: { nombre: 'Torre', icono: 'torre', conIp: false },
+        impresora: { nombre: 'Impresora', icono: 'impresora', conIp: true },
+        tv: { nombre: 'Televisor', icono: 'tv', conIp: false },
+        celulares: { nombre: 'Celulares', icono: 'celular', conIp: false },
+        otro: { nombre: 'Otro', icono: 'nota', conIp: false }
+    };
+
+    function topologiaBase() {
+        const n = [];
+        const add = (id, tipo, nombre, padre, extra = {}) => n.push({ id, tipo, nombre, padre, conexion: 'cable', ...extra });
+
+        add('modem-emcali', 'modem', 'Módem Emcali', null, { notas: 'Proveedor principal' });
+        add('router-principal', 'router', 'Router principal', 'modem-emcali');
+        add('sw1', 'switch', 'Switch 1 · Cámaras', 'router-principal');
+        add('nvr', 'nvr', 'NVR', 'sw1');
+        add('camaras', 'camaras', 'Cámaras IP', 'sw1');
+        add('sw2', 'switch', 'Switch 2 · Puntos de red', 'router-principal');
+        add('dvr', 'dvr', 'DVR', 'sw2');
+        add('area-ventas', 'area', 'Ventas', 'sw2', { notas: '7 puntos de red' });
+        for (let i = 1; i <= 6; i++) add(`ventas-${i}`, 'pc', `PC Ventas ${i}`, 'area-ventas');
+        add('area-contabilidad', 'area', 'Contabilidad', 'sw2', { notas: '3 puntos de red' });
+        for (let i = 1; i <= 3; i++) add(`contabilidad-${i}`, 'pc', `PC Contabilidad ${i}`, 'area-contabilidad');
+        add('area-marketing', 'area', 'Marketing', 'sw2', { notas: '3 puntos de red' });
+        for (let i = 1; i <= 3; i++) add(`marketing-${i}`, 'pc', `PC Marketing ${i}`, 'area-marketing');
+        add('ap-bodega', 'router', 'Router AP · Bodega', 'sw2', { notas: 'Funciona como access point' });
+        for (let i = 1; i <= 4; i++) add(`bodega-${i}`, 'pc', `PC Bodega ${i}`, 'ap-bodega', { conexion: 'wifi' });
+        add('impresora-bodega', 'impresora', 'Impresora Bodega', 'ap-bodega');
+        add('ap-gerencia', 'ap', 'AP · Gerencia', 'sw2', { notas: 'Cable al fondo, oficina gerencial' });
+        add('gerencia-tv', 'tv', 'Televisor', 'ap-gerencia', { conexion: 'wifi' });
+        add('gerencia-torre', 'torre', 'Torre', 'ap-gerencia', { conexion: 'wifi' });
+        add('gerencia-laptop-1', 'portatil', 'Portátil 1', 'ap-gerencia', { conexion: 'wifi' });
+        add('gerencia-laptop-2', 'portatil', 'Portátil 2', 'ap-gerencia', { conexion: 'wifi' });
+
+        add('modem-tigo', 'modem', 'Módem TIGO', null, { notas: 'Proveedor secundario y respaldo' });
+        add('router-secundario', 'router', 'Router secundario', 'modem-tigo', { notas: 'Cuando se cae Emcali, todo se conecta aquí' });
+        add('celulares', 'celulares', 'Celulares de la empresa', 'router-secundario', { conexion: 'wifi' });
+
+        return {
+            nodos: n,
+            respaldos: [
+                { desde: 'router-secundario', hacia: 'sw1' },
+                { desde: 'router-secundario', hacia: 'sw2' }
+            ]
+        };
+    }
+
+    async function renderEstructuras(container) {
+        container.innerHTML = `
+<section class="topo-page">
+    <div class="topo-header">
+        <h1>Estructuras</h1>
+        <div class="topo-acciones">
+            <button type="button" class="topo-btn" id="topo-zoom-menos" title="Alejar">−</button>
+            <button type="button" class="topo-btn" id="topo-zoom-mas" title="Acercar">+</button>
+            <button type="button" class="topo-btn" id="topo-pdf">Exportar PDF</button>
+        </div>
+    </div>
+
+    <div class="topo-leyenda">
+        <span><i class="linea cable"></i> Cable</span>
+        <span><i class="linea wifi"></i> WiFi</span>
+        <span><i class="linea respaldo"></i> Respaldo TIGO (cuando se cae Emcali)</span>
+        <span class="topo-ayuda">Toca un equipo para ver o editar sus datos</span>
+    </div>
+
+    <div class="topo-lienzo-wrap" id="topo-wrap">
+        <div class="topo-lienzo" id="topo-lienzo"></div>
+    </div>
+</section>`;
+
+        const lienzo = document.getElementById('topo-lienzo');
+        const docRef = db.collection('network_topology').doc('principal');
+        let datos = null;
+        let zoom = 1;
+
+        const NODO_W = 230;
+        const NODO_H = 46;
+        const COL_GAP = 70;
+        const FILA_GAP = 10;
+        const MARGEN = 24;
+
+        const esc = (t) => String(t ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+        function hijosDe(id) {
+            return datos.nodos.filter(n => (n.padre || null) === id);
+        }
+
+        // Posiciones: columna = profundidad; las hojas se apilan y cada padre queda centrado frente a sus hijos.
+        function calcularPosiciones() {
+            const pos = {};
+            let fila = 0;
+
+            function ubicar(nodo, nivel) {
+                const hijos = hijosDe(nodo.id);
+                let y;
+                if (!hijos.length) {
+                    y = fila * (NODO_H + FILA_GAP);
+                    fila++;
+                } else {
+                    const ys = hijos.map(h => ubicar(h, nivel + 1));
+                    y = (ys[0] + ys[ys.length - 1]) / 2;
+                }
+                pos[nodo.id] = { x: nivel * (NODO_W + COL_GAP), y };
+                return y;
+            }
+
+            hijosDe(null).forEach((raiz, i) => {
+                if (i > 0) fila += 1; // espacio entre la red de Emcali y la de TIGO
+                ubicar(raiz, 0);
+            });
+
+            return pos;
+        }
+
+        function dibujar() {
+            const pos = calcularPosiciones();
+            const xs = Object.values(pos).map(p => p.x);
+            const ys = Object.values(pos).map(p => p.y);
+            const ancho = Math.max(...xs) + NODO_W + MARGEN * 2;
+            const alto = Math.max(...ys) + NODO_H + MARGEN * 2;
+
+            const centro = (id) => ({ x: pos[id].x + MARGEN, y: pos[id].y + MARGEN + NODO_H / 2 });
+
+            const lineas = [];
+
+            datos.nodos.forEach(n => {
+                if (!n.padre || !pos[n.padre]) return;
+                const a = centro(n.padre);
+                const b = centro(n.id);
+                const x1 = a.x + NODO_W;
+                const x2 = b.x;
+                const xm = x1 + (x2 - x1) / 2;
+                lineas.push(`<path class="topo-linea ${n.conexion === 'wifi' ? 'wifi' : 'cable'}" d="M${x1},${a.y} H${xm} V${b.y} H${x2}"/>`);
+            });
+
+            (datos.respaldos || []).forEach(r => {
+                if (!pos[r.desde] || !pos[r.hacia]) return;
+                // Va por el espacio entre columnas (a un lado de las líneas de cable) y entra por la parte baja del equipo
+                const a = centro(r.desde);
+                const b = centro(r.hacia);
+                const x1 = a.x + NODO_W;
+                const xv = x1 + COL_GAP * 0.3;
+                const yEntrada = b.y + NODO_H * 0.25;
+                lineas.push(`<path class="topo-linea respaldo" d="M${x1},${a.y + 8} H${xv} V${yEntrada} H${b.x}"/>`);
+            });
+
+            const nodosHTML = datos.nodos.map(n => {
+                if (!pos[n.id]) return '';
+                const tipo = TOPO_TIPOS[n.tipo] || TOPO_TIPOS.otro;
+                const detalle = tipo.conIp
+                    ? (n.ip ? esc(n.ip) : 'IP sin registrar')
+                    : (n.tipo === 'area' ? esc(n.notas || 'Área') : (n.conexion === 'wifi' ? 'WiFi · IP dinámica' : 'IP dinámica'));
+                return `
+                    <button type="button" class="topo-nodo tipo-${esc(n.tipo)}" data-id="${esc(n.id)}"
+                        style="left:${pos[n.id].x + MARGEN}px; top:${pos[n.id].y + MARGEN}px; width:${NODO_W}px; height:${NODO_H}px;">
+                        <span class="topo-nodo-icono">${tiIcono(tipo.icono)}</span>
+                        <span class="topo-nodo-texto">
+                            <strong>${esc(n.nombre)}</strong>
+                            <small>${detalle}</small>
+                        </span>
+                    </button>`;
+            }).join('');
+
+            lienzo.style.width = `${ancho}px`;
+            lienzo.style.height = `${alto}px`;
+            lienzo.style.zoom = zoom; // zoom (a diferencia de transform) también ajusta el espacio que ocupa, así el desplazamiento funciona bien
+            lienzo.innerHTML = `
+                <svg class="topo-svg" width="${ancho}" height="${alto}" viewBox="0 0 ${ancho} ${alto}">${lineas.join('')}</svg>
+                ${nodosHTML}`;
+
+            lienzo.querySelectorAll('.topo-nodo').forEach(b =>
+                b.addEventListener('click', () => abrirNodo(b.dataset.id)));
+        }
+
+        async function guardar() {
+            await docRef.set({
+                nodos: datos.nodos,
+                respaldos: datos.respaldos || [],
+                actualizadoEn: firebase.firestore.FieldValue.serverTimestamp(),
+                actualizadoPor: (auth.currentUser && auth.currentUser.email) || ''
+            });
+        }
+
+        function opcionesTipo(actual) {
+            return Object.entries(TOPO_TIPOS).map(([k, t]) =>
+                `<option value="${k}" ${k === actual ? 'selected' : ''}>${t.nombre}</option>`).join('');
+        }
+
+        function opcionesPadre(nodo) {
+            // No puede colgar de sí mismo ni de sus propios descendientes
+            const prohibidos = new Set();
+            const marcar = (id) => { prohibidos.add(id); hijosDe(id).forEach(h => marcar(h.id)); };
+            if (nodo) marcar(nodo.id);
+            return `<option value="">(Sin conexión: es un proveedor)</option>` +
+                datos.nodos.filter(n => !prohibidos.has(n.id)).map(n =>
+                    `<option value="${esc(n.id)}" ${nodo && nodo.padre === n.id ? 'selected' : ''}>${esc(n.nombre)}</option>`).join('');
+        }
+
+        function abrirNodo(id, nuevoPadre = null) {
+            const nodo = id ? datos.nodos.find(n => n.id === id) : null;
+            const esNuevo = !nodo;
+            const base = nodo || { tipo: 'pc', nombre: '', padre: nuevoPadre, conexion: 'cable' };
+            const tieneHijos = nodo && hijosDe(nodo.id).length > 0;
+
+            const modal = document.getElementById('action-modal');
+            const cuerpo = document.getElementById('action-modal-body');
+
+            cuerpo.innerHTML = `
+                <form id="topo-form" class="topo-form">
+                    <h2>${esNuevo ? 'Agregar equipo' : esc(base.nombre)}</h2>
+                    <div class="topo-form-grid">
+                        <label>Nombre<input type="text" id="topo-nombre" value="${esc(base.nombre)}" required></label>
+                        <label>Tipo<select id="topo-tipo">${opcionesTipo(base.tipo)}</select></label>
+                        <label>Conectado a<select id="topo-padre">${opcionesPadre(nodo || { padre: nuevoPadre })}</select></label>
+                        <label>Conexión<select id="topo-conexion">
+                            <option value="cable" ${base.conexion !== 'wifi' ? 'selected' : ''}>Cable</option>
+                            <option value="wifi" ${base.conexion === 'wifi' ? 'selected' : ''}>WiFi</option>
+                        </select></label>
+                        <label id="topo-ip-campo">IP<input type="text" id="topo-ip" value="${esc(base.ip || '')}" placeholder="Ej: 192.168.1.1"></label>
+                        <label>Código de inventario<input type="text" id="topo-inventario" value="${esc(base.inventario || '')}" placeholder="Ej: PC-3"></label>
+                        <label>Marca<input type="text" id="topo-marca" value="${esc(base.marca || '')}"></label>
+                        <label>Modelo<input type="text" id="topo-modelo" value="${esc(base.modelo || '')}"></label>
+                        <label class="completo">Notas<textarea id="topo-notas" rows="2">${esc(base.notas || '')}</textarea></label>
+                    </div>
+                    <div class="topo-form-pie">
+                        ${esNuevo ? '' : `<button type="button" class="topo-btn peligro" id="topo-eliminar" ${tieneHijos ? 'disabled title="Primero elimina o mueve los equipos conectados a este"' : ''}>${tiIcono('eliminar')} Eliminar</button>`}
+                        ${esNuevo ? '' : `<button type="button" class="topo-btn" id="topo-agregar-hijo">${tiIcono('registrar')} Agregar equipo conectado</button>`}
+                        <button type="submit" class="topo-btn principal">Guardar</button>
+                    </div>
+                </form>`;
+            modal.classList.remove('hidden');
+
+            const tipoSel = document.getElementById('topo-tipo');
+            const campoIp = document.getElementById('topo-ip-campo');
+            const mostrarIp = () => { campoIp.style.display = (TOPO_TIPOS[tipoSel.value] || {}).conIp ? '' : 'none'; };
+            tipoSel.addEventListener('change', mostrarIp);
+            mostrarIp();
+
+            document.getElementById('topo-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const valores = {
+                    nombre: document.getElementById('topo-nombre').value.trim(),
+                    tipo: tipoSel.value,
+                    padre: document.getElementById('topo-padre').value || null,
+                    conexion: document.getElementById('topo-conexion').value,
+                    ip: (TOPO_TIPOS[tipoSel.value] || {}).conIp ? document.getElementById('topo-ip').value.trim() : '',
+                    inventario: document.getElementById('topo-inventario').value.trim(),
+                    marca: document.getElementById('topo-marca').value.trim(),
+                    modelo: document.getElementById('topo-modelo').value.trim(),
+                    notas: document.getElementById('topo-notas').value.trim()
+                };
+                if (!valores.nombre) return;
+
+                if (esNuevo) {
+                    datos.nodos.push({ id: 'nodo-' + Date.now().toString(36), ...valores });
+                } else {
+                    Object.assign(nodo, valores);
+                }
+
+                try {
+                    await guardar();
+                    modal.classList.add('hidden');
+                    dibujar();
+                } catch (error) {
+                    console.error('Error guardando la estructura:', error);
+                    alert('No se pudo guardar: ' + error.message);
+                }
+            });
+
+            const btnHijo = document.getElementById('topo-agregar-hijo');
+            if (btnHijo) btnHijo.addEventListener('click', () => abrirNodo(null, nodo.id));
+
+            const btnEliminar = document.getElementById('topo-eliminar');
+            if (btnEliminar && !tieneHijos) {
+                btnEliminar.addEventListener('click', async () => {
+                    if (!confirm(`¿Eliminar "${nodo.nombre}" del diagrama?`)) return;
+                    datos.nodos = datos.nodos.filter(n => n.id !== nodo.id);
+                    datos.respaldos = (datos.respaldos || []).filter(r => r.desde !== nodo.id && r.hacia !== nodo.id);
+                    try {
+                        await guardar();
+                        modal.classList.add('hidden');
+                        dibujar();
+                    } catch (error) {
+                        console.error('Error eliminando de la estructura:', error);
+                        alert('No se pudo eliminar: ' + error.message);
+                    }
+                });
+            }
+        }
+
+        document.getElementById('topo-zoom-mas').addEventListener('click', () => { zoom = Math.min(1.6, +(zoom + 0.1).toFixed(2)); dibujar(); });
+        document.getElementById('topo-zoom-menos').addEventListener('click', () => { zoom = Math.max(0.5, +(zoom - 0.1).toFixed(2)); dibujar(); });
+        document.getElementById('topo-pdf').addEventListener('click', () => window.print());
+
+        try {
+            const snap = await docRef.get();
+            datos = snap.exists && Array.isArray(snap.data().nodos) && snap.data().nodos.length
+                ? { nodos: snap.data().nodos, respaldos: snap.data().respaldos || [] }
+                : topologiaBase();
+        } catch (error) {
+            console.error('Error cargando la estructura:', error);
+            datos = topologiaBase();
+        }
+
+        // Al abrir, el diagrama se ajusta al ancho disponible (sin agrandarse más del 100 %)
+        const anchoDiagrama = 4 * (NODO_W + COL_GAP) + NODO_W + MARGEN * 2;
+        const anchoDisponible = document.getElementById('topo-wrap').clientWidth - 4;
+        zoom = Math.max(0.5, Math.min(1, +(anchoDisponible / anchoDiagrama).toFixed(2)));
+
+        dibujar();
     }
 
     iniciarAppGLPI();
