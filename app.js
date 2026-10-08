@@ -141,7 +141,6 @@ const newTITicketFormHTML = `
   <div class="support-header">
     <div>
       <h1>Registrar soporte</h1>
-      <p>Registra el soporte que ya realizaste. Queda cerrado al guardarlo.</p>
     </div>
   </div>
 

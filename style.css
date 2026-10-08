@@ -12859,3 +12859,21 @@ body.ti-sobrio .backlog-table td button {
         justify-content: center !important;
     }
 }
+
+/* Encabezados de los módulos: solo el título, sin la línea de explicación */
+body.ti-sobrio .support-header p,
+body.ti-sobrio .ti-cabecera > div > p {
+    display: none !important;
+}
+
+/* Pestañas y atajos con esquinas suaves, no ovalados (igual que el menú) */
+body.ti-sobrio .support-type-card,
+body.ti-sobrio .quick-categories .quick-chip,
+body.ti-sobrio .quick-categories .quick-chip:hover {
+    border-radius: 10px !important;
+}
+
+body.ti-sobrio .quick-categories .quick-chip,
+body.ti-sobrio .quick-categories .quick-chip:hover {
+    border-radius: 8px !important;
+}
