@@ -337,7 +337,7 @@ const newTITicketFormHTML = `
     <div class="computer-edit-modern">
         <div class="computer-edit-header">
             <div class="computer-edit-header-left">
-                <div class="computer-edit-icon">💻</div>
+                <div class="computer-edit-icon">${tiIcono('inventario')}</div>
                 <div>
                     <h2>Editar Computador</h2>
                     <p>Actualiza la información del equipo</p>
@@ -1471,7 +1471,7 @@ const newTITicketFormHTML = `
 <section class="inventory-modern-page">
     <div class="inventory-modern-header">
         <div class="inventory-modern-title-wrap">
-            <div class="inventory-modern-main-icon">💻</div>
+
             <div>
                 <h1 id="inventory-page-title">Inventario</h1>
             </div>
@@ -1479,13 +1479,13 @@ const newTITicketFormHTML = `
     </div>
 
     <div class="inventory-modern-tabs" id="inventory-modern-tabs">
-        <a href="#inventory-computers" class="inventory-modern-tab" data-category="computers">💻 Computadores</a>
-        <a href="#inventory-phones" class="inventory-modern-tab" data-category="phones">📞 Teléfonos</a>
-        <a href="#inventory-cameras" class="inventory-modern-tab" data-category="cameras">📹 DVR</a>
-        <a href="#inventory-modems" class="inventory-modern-tab" data-category="modems">📡 Módems</a>
-        <a href="#inventory-communicators" class="inventory-modern-tab" data-category="communicators">📻 Radios</a>
-        <a href="#inventory-network" class="inventory-modern-tab" data-category="network">🌐 Redes</a>
-        <a href="#inventory-printers" class="inventory-modern-tab" data-category="printers">🖨️ Impresoras</a>
+        <a href="#inventory-computers" class="inventory-modern-tab" data-category="computers">${tiIcono('inventario')} Computadores</a>
+        <a href="#inventory-phones" class="inventory-modern-tab" data-category="phones">${tiIcono('celular')} Teléfonos</a>
+        <a href="#inventory-cameras" class="inventory-modern-tab" data-category="cameras">${tiIcono('camara')} DVR</a>
+        <a href="#inventory-modems" class="inventory-modern-tab" data-category="modems">${tiIcono('modem')} Módems</a>
+        <a href="#inventory-communicators" class="inventory-modern-tab" data-category="communicators">${tiIcono('radio')} Radios</a>
+        <a href="#inventory-network" class="inventory-modern-tab" data-category="network">${tiIcono('servicios')} Redes</a>
+        <a href="#inventory-printers" class="inventory-modern-tab" data-category="printers">${tiIcono('impresora')} Impresoras</a>
     </div>
 
     <div class="inventory-modern-panel">
@@ -1535,7 +1535,7 @@ const newTITicketFormHTML = `
 
         <div class="inventory-kpi-grid">
             <div class="inventory-kpi-card">
-                <div class="inventory-kpi-icon">🖥️</div>
+                <div class="inventory-kpi-icon">${tiIcono('inventario')}</div>
                 <div>
                     <strong id="inventory-kpi-total">0</strong>
                     <span>Total equipos</span>
@@ -1544,7 +1544,7 @@ const newTITicketFormHTML = `
             </div>
 
             <div class="inventory-kpi-card">
-                <div class="inventory-kpi-icon green">✅</div>
+                <div class="inventory-kpi-icon">${tiIcono('cerrado')}</div>
                 <div>
                     <strong id="inventory-kpi-uso">0</strong>
                     <span>En uso</span>
@@ -1553,7 +1553,7 @@ const newTITicketFormHTML = `
             </div>
 
             <div class="inventory-kpi-card">
-                <div class="inventory-kpi-icon orange">🛠️</div>
+                <div class="inventory-kpi-icon">${tiIcono('mantenimiento')}</div>
                 <div>
                     <strong id="inventory-kpi-repair">0</strong>
                     <span>En reparación</span>
@@ -1562,7 +1562,7 @@ const newTITicketFormHTML = `
             </div>
 
             <div class="inventory-kpi-card">
-                <div class="inventory-kpi-icon gray">⛔</div>
+                <div class="inventory-kpi-icon">${tiIcono('prohibido')}</div>
                 <div>
                     <strong id="inventory-kpi-retired">0</strong>
                     <span>Retirados</span>
@@ -1571,7 +1571,7 @@ const newTITicketFormHTML = `
             </div>
 
             <div class="inventory-kpi-card">
-                <div class="inventory-kpi-icon purple">🛡️</div>
+                <div class="inventory-kpi-icon">${tiIcono('escudo')}</div>
                 <div>
                     <strong id="inventory-kpi-warranty">0</strong>
                     <span>Garantías próximas</span>
@@ -4190,9 +4190,9 @@ if (quickNoteRawAfterSave) {
         tab.classList.toggle('active', tab.dataset.category === category);
     });
 
-    const iconEdit = `<svg style="pointer-events:none; width:18px; height:18px; fill:#2563eb;" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>`;
-    const iconView = `<svg style="pointer-events:none; width:18px; height:18px; fill:#475569;" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>`;
-    const iconDelete = `<svg style="pointer-events:none; width:18px; height:18px; fill:#dc2626;" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>`;
+    const iconEdit = tiIcono('editar');
+    const iconView = tiIcono('ver');
+    const iconDelete = tiIcono('eliminar');
 
     const fieldKeys = Object.keys(config.fields);
     const tableHeaders = Object.values(config.fields).map(field => field.label);
@@ -5389,11 +5389,11 @@ const buildTasksForMonth = () => {
     addButton.dataset.category = category;
     addButton.textContent = `+ Añadir ${config.titleSingular}`;
 
-    const iconEdit = `<svg style="pointer-events:none; width:18px; height:18px; fill:#2563eb;" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>`;
+    const iconEdit = tiIcono('editar');
 
-    const iconView = `<svg style="pointer-events:none; width:18px; height:18px; fill:#475569;" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>`;
+    const iconView = tiIcono('ver');
 
-    const iconDelete = `<svg style="pointer-events:none; width:18px; height:18px; fill:#dc2626;" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>`;
+    const iconDelete = tiIcono('eliminar');
 
     let allCredentials = [];
     let filteredCredentials = [];
@@ -5986,9 +5986,9 @@ tableBody.addEventListener('click', (e) => {
         }
     });
 
-    const iconEdit = `<svg style="pointer-events:none; width:18px; height:18px; fill:#2563eb;" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>`;
-    const iconView = `<svg style="pointer-events:none; width:18px; height:18px; fill:#475569;" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>`;
-    const iconDelete = `<svg style="pointer-events:none; width:18px; height:18px; fill:#dc2626;" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>`;
+    const iconEdit = tiIcono('editar');
+    const iconView = tiIcono('ver');
+    const iconDelete = tiIcono('eliminar');
 
     const tableHeaders = Object.values(config.fields).map(field => field.label);
     tableHead.innerHTML = `<tr>${tableHeaders.map(h => `<th>${h}</th>`).join('')}<th>Acciones</th></tr>`;
@@ -6244,7 +6244,7 @@ tableBody.addEventListener('click', (e) => {
                             #${ticket.id}
                         </a>
                         <p>${getTicketTitle(ticket)}</p>
-                        <small>📅 ${formatDate(ticket)}</small>
+                        <small>${formatDate(ticket)}</small>
                     </div>
                 </div>
 
@@ -6330,9 +6330,9 @@ tableBody.addEventListener('click', (e) => {
     let locationsData = [];
     let ticketsData = [];
 
-    const iconEdit = `<svg style="pointer-events:none; width:18px; height:18px; fill:#2563eb;" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>`;
+    const iconEdit = tiIcono('editar');
 
-    const iconDelete = `<svg style="pointer-events:none; width:18px; height:18px; fill:#dc2626;" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>`;
+    const iconDelete = tiIcono('eliminar');
 
     const normalize = (value) => String(value || '').toLowerCase().trim();
 
@@ -6816,7 +6816,7 @@ tableBody.addEventListener('click', (e) => {
                     <div>
                     <a href="#" class="computer-ticket-link" data-id="${ticket.id}">#${ticket.id}</a>
                     <p class="computer-ticket-text">${ticket.title || ticket.novelty || ticket.description || 'Sin descripción'}</p>
-                    <small class="computer-ticket-date">📅 ${formatTicketDate(ticket)}</small>
+                    <small class="computer-ticket-date">${formatTicketDate(ticket)}</small>
                     </div>
                     <span>${ticket.status || 'CERRADO'}</span>
                 </div>
@@ -6827,7 +6827,7 @@ tableBody.addEventListener('click', (e) => {
             <div class="computer-edit-modern">
                 <div class="computer-edit-header">
                     <div class="computer-edit-header-left">
-                        <div class="computer-edit-icon">💻</div>
+                        <div class="computer-edit-icon">${tiIcono('inventario')}</div>
                         <div>
                             <h2>Editar Computador</h2>
                             <p>Actualiza la información del equipo</p>
@@ -6984,7 +6984,7 @@ if (seeAllTicketsBtn) {
                     <div>
                         <a href="#" class="computer-ticket-link" data-id="${ticket.id}">#${ticket.id}</a>
                         <p class="computer-ticket-text">${ticket.title || ticket.novelty || ticket.description || 'Sin descripción'}</p>
-                        <small class="computer-ticket-date">📅 ${formatTicketDate(ticket)}</small>
+                        <small class="computer-ticket-date">${formatTicketDate(ticket)}</small>
                     </div>
                     <span>${ticket.status || 'CERRADO'}</span>
                 </div>
@@ -7078,13 +7078,13 @@ if (seeAllTicketsBtn) {
         });
 
         const categoryIcons = {
-            computers: '💻',
-            phones: '📱',
-            cameras: '📷',
-            modems: '📡',
-            communicators: '📻',
-            network: '🌐',
-            printers: '🖨️'
+            computers: tiIcono('inventario'),
+            phones: tiIcono('celular'),
+            cameras: tiIcono('camara'),
+            modems: tiIcono('modem'),
+            communicators: tiIcono('radio'),
+            network: tiIcono('servicios'),
+            printers: tiIcono('impresora')
         };
 
         const categoryNames = {
@@ -7097,7 +7097,7 @@ if (seeAllTicketsBtn) {
             printers: 'Impresoras'
         };
 
-        const icon = categoryIcons[category] || '💻';
+        const icon = categoryIcons[category] || tiIcono('inventario');
         const categoryName = categoryNames[category] || config.title || 'Inventario';
         const title = `Editar ${config.titleSingular || 'Elemento'}`;
         const statusText = item.lifecycleStatus || item.status || item.estado || 'N/A';
@@ -7192,7 +7192,7 @@ if (seeAllTicketsBtn) {
                     <div>
                         <a href="#" class="computer-ticket-link" data-id="${ticket.id}">#${ticket.id}</a>
                         <p class="computer-ticket-text">${ticket.title || ticket.novelty || ticket.description || 'Sin descripción'}</p>
-                        <small class="computer-ticket-date">📅 ${formatTicketDate(ticket)}</small>
+                        <small class="computer-ticket-date">${formatTicketDate(ticket)}</small>
                     </div>
                     <span>${ticket.status || 'CERRADO'}</span>
                 </div>
@@ -7292,7 +7292,7 @@ if (seeAllTicketsBtn) {
                             <div>
                                 <a href="#" class="computer-ticket-link" data-id="${ticket.id}">#${ticket.id}</a>
                                 <p class="computer-ticket-text">${ticket.title || ticket.novelty || ticket.description || 'Sin descripción'}</p>
-                                <small class="computer-ticket-date">📅 ${formatTicketDate(ticket)}</small>
+                                <small class="computer-ticket-date">${formatTicketDate(ticket)}</small>
                             </div>
                             <span>${ticket.status || 'CERRADO'}</span>
                         </div>
