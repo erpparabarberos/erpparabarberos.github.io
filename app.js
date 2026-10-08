@@ -1972,7 +1972,7 @@ const newTITicketFormHTML = `
 </section>
 `;
     // --- 4. CONFIGURACIONES DE TABLAS ---
-    function capitalizar(str) { if (!str) return str; return str.charAt(0).toUpperCase() + str.slice(1); }
+    function capitalizar(str) { if (!str) return str; str = String(str); return str.charAt(0).toUpperCase() + str.slice(1); }
     function exportToCSV(tableId, filename) { const table = document.getElementById(tableId); if (!table) return; let data = []; const headers = Array.from(table.querySelectorAll('thead th')).map(header => header.innerText).slice(0, -1); const rows = table.querySelectorAll('tbody tr'); rows.forEach(row => { const rowData = Array.from(row.querySelectorAll('td')).map(cell => cell.innerText).slice(0, -1); data.push(rowData); }); const csv = Papa.unparse({ fields: headers, data }, { delimiter: ";" }); const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a"); if (link.download !== undefined) { const url = URL.createObjectURL(blob); link.setAttribute("href", url); link.setAttribute("download", `${filename}.csv`); link.style.visibility = 'hidden'; document.body.appendChild(link); link.click(); document.body.removeChild(link); } }
     function exportToPDF(tableId, filename) { const table = document.getElementById(tableId); if (!table) return; const doc = new jsPDF({ orientation: "landscape" }); const head = [Array.from(table.querySelectorAll('thead th')).map(header => header.innerText).slice(0, -1)]; const body = Array.from(table.querySelectorAll('tbody tr')).map(row => Array.from(row.querySelectorAll('td')).map(cell => cell.innerText).slice(0, -1)); doc.autoTable({ head: head, body: body, startY: 10, styles: { font: "Inter", fontSize: 8 }, headStyles: { fillColor: [41, 128, 186], textColor: 255, fontStyle: 'bold' } }); doc.save(`${filename}.pdf`); }
     async function exportStatsToPDF() { const reportElement = document.getElementById('stats-content'); const canvas = await html2canvas(reportElement, { scale: 2 }); const imgData = canvas.toDataURL('image/png'); const pdf = new jsPDF('p', 'mm', 'a4'); const pdfWidth = pdf.internal.pageSize.getWidth(); const pdfHeight = (canvas.height * pdfWidth) / canvas.width; pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight); pdf.save("reporte-estadisticas.pdf"); }
@@ -2129,15 +2129,26 @@ const newTITicketFormHTML = `
                 seguimiento: followupMonthTickets
             };
 
-            renderTrendChart(tickets);
-            renderMonthlyHeatmap(monthTickets, selectedDate);
-            renderTopRequesters(monthTickets, requestersMap);
-            renderCategoryChart(monthTickets);
-            renderRecentActivity(tickets, requestersMap);
+            // Cada sección se dibuja por separado: si una falla, las demás siguen y esa muestra el motivo.
+            const seccion = (idContenedor, fn) => {
+                try {
+                    fn();
+                } catch (error) {
+                    console.error(`Error en la sección ${idContenedor} del panel:`, error);
+                    const caja = document.getElementById(idContenedor);
+                    if (caja) caja.innerHTML = `<p class="ti-vacio">No se pudo mostrar esta sección: ${escaparHTML(error.message)}</p>`;
+                }
+            };
+
+            seccion('supportTrendChart', () => renderTrendChart(tickets));
+            seccion('monthly-activity-grid', () => renderMonthlyHeatmap(monthTickets, selectedDate));
+            seccion('top-requesters-dashboard', () => renderTopRequesters(monthTickets, requestersMap));
+            seccion('category-dashboard-list', () => renderCategoryChart(monthTickets));
+            seccion('recent-activity-dashboard', () => renderRecentActivity(tickets, requestersMap));
 
         } catch (error) {
             console.error('Error cargando dashboard:', error);
-            container.innerHTML = '<div class="card"><h2>Error cargando dashboard</h2><p>Revisa la consola para más detalles.</p></div>';
+            container.innerHTML = `<div class="ti-card"><h3>No se pudo cargar el panel</h3><p class="ti-vacio">Motivo: ${escaparHTML(error && error.message ? error.message : String(error))}</p></div>`;
         }
     }
 
