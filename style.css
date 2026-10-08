@@ -12457,3 +12457,405 @@ body.ti-sobrio .ti-card-cab select:focus {
         min-width: 0 !important;
     }
 }
+
+/* =====================================================
+   DISEÑO SOBRIO · Etapa 2: Registrar soporte
+   (Soporte TI, Velocity, Siigo, Nota rápida y Soportes atrasados)
+===================================================== */
+
+body.ti-sobrio .support-page {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+}
+
+body.ti-sobrio .support-page,
+body.ti-sobrio .support-page * {
+    text-transform: none !important;
+    letter-spacing: normal !important;
+}
+
+/* Encabezado */
+body.ti-sobrio .support-header {
+    margin: 0 0 16px !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+body.ti-sobrio .support-header h1 {
+    margin: 0 !important;
+    font-size: 26px !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.02em !important;
+    line-height: 1.2 !important;
+    color: var(--ti-tinta) !important;
+}
+
+body.ti-sobrio .support-header p {
+    margin: 4px 0 0 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    color: var(--ti-gris) !important;
+}
+
+/* Pestañas de tipo de registro */
+body.ti-sobrio .support-type-cards {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 8px !important;
+    margin: 0 0 16px !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    overflow-x: auto !important;
+    scrollbar-width: none !important;
+}
+
+body.ti-sobrio .support-type-cards::-webkit-scrollbar {
+    display: none !important;
+}
+
+body.ti-sobrio .support-type-card {
+    flex: 0 0 auto !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    height: 40px !important;
+    min-height: 0 !important;
+    padding: 0 16px !important;
+    margin: 0 !important;
+    background: #fff !important;
+    border: 1px solid var(--ti-linea) !important;
+    border-radius: 999px !important;
+    box-shadow: none !important;
+    color: #475569 !important;
+    text-decoration: none !important;
+    transition: background .15s, border-color .15s;
+}
+
+body.ti-sobrio .support-type-card::after,
+body.ti-sobrio .support-type-card::before {
+    display: none !important;
+}
+
+body.ti-sobrio .support-type-card:hover {
+    border-color: #cbd5e1 !important;
+    color: var(--ti-tinta) !important;
+}
+
+body.ti-sobrio .support-type-card.active {
+    background: var(--ti-tinta) !important;
+    border-color: var(--ti-tinta) !important;
+    color: #fff !important;
+}
+
+body.ti-sobrio .support-type-card small {
+    display: none !important;
+}
+
+body.ti-sobrio .support-type-card strong {
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    color: inherit !important;
+    white-space: nowrap !important;
+}
+
+body.ti-sobrio .support-icon {
+    width: auto !important;
+    height: auto !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    color: inherit !important;
+    font-size: 0 !important;
+}
+
+body.ti-sobrio .support-icon svg.ti-ico {
+    width: 17px;
+    height: 17px;
+    opacity: .85;
+}
+
+/* Tarjeta del formulario */
+body.ti-sobrio .support-layout {
+    display: block !important;
+}
+
+body.ti-sobrio .support-form-card {
+    width: 100% !important;
+    max-width: none !important;
+    padding: 24px !important;
+    background: #fff !important;
+    border: 1px solid var(--ti-linea) !important;
+    border-radius: var(--ti-radio) !important;
+    box-shadow: var(--ti-sombra) !important;
+}
+
+body.ti-sobrio .support-form-card .support-grid {
+    gap: 16px !important;
+}
+
+body.ti-sobrio .support-form-card .form-group {
+    margin: 0 0 16px !important;
+}
+
+/* Etiquetas */
+body.ti-sobrio .support-form-card label {
+    display: block !important;
+    margin: 0 0 6px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: var(--ti-tinta-2) !important;
+}
+
+body.ti-sobrio .support-form-card label span {
+    font-weight: 400 !important;
+    color: var(--ti-gris-claro) !important;
+}
+
+/* Campos */
+body.ti-sobrio .support-form-card input,
+body.ti-sobrio .support-form-card select,
+body.ti-sobrio .support-form-card textarea {
+    width: 100% !important;
+    padding: 0 12px !important;
+    border: 1px solid var(--ti-linea) !important;
+    border-radius: 10px !important;
+    background-color: #fff !important;
+    box-shadow: none !important;
+    font-family: inherit !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    color: var(--ti-tinta) !important;
+    outline: none !important;
+    transition: border-color .15s;
+}
+
+body.ti-sobrio .support-form-card input,
+body.ti-sobrio .support-form-card select {
+    height: 42px !important;
+    min-height: 42px !important;
+}
+
+body.ti-sobrio .support-form-card textarea {
+    min-height: 84px !important;
+    padding: 10px 12px !important;
+    line-height: 1.5 !important;
+    resize: vertical !important;
+}
+
+body.ti-sobrio .support-form-card select {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    padding-right: 34px !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 10px center !important;
+    background-size: 16px !important;
+    cursor: pointer;
+}
+
+body.ti-sobrio .support-form-card input::placeholder,
+body.ti-sobrio .support-form-card textarea::placeholder {
+    color: var(--ti-gris-claro) !important;
+}
+
+body.ti-sobrio .support-form-card input::-webkit-calendar-picker-indicator {
+    opacity: .45;
+    cursor: pointer;
+}
+
+body.ti-sobrio .support-form-card input:hover,
+body.ti-sobrio .support-form-card select:hover,
+body.ti-sobrio .support-form-card textarea:hover {
+    border-color: #cbd5e1 !important;
+}
+
+body.ti-sobrio .support-form-card input:focus,
+body.ti-sobrio .support-form-card select:focus,
+body.ti-sobrio .support-form-card textarea:focus {
+    border-color: #94a3b8 !important;
+    box-shadow: 0 0 0 3px rgba(15, 23, 42, .06) !important;
+}
+
+/* Atajos de categoría */
+body.ti-sobrio .quick-categories {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    margin: 0 0 16px !important;
+}
+
+body.ti-sobrio .quick-categories .quick-chip,
+body.ti-sobrio .quick-categories .quick-chip:hover {
+    height: 32px !important;
+    padding: 0 14px !important;
+    background: #fff !important;
+    border: 1px solid var(--ti-linea) !important;
+    border-radius: 999px !important;
+    box-shadow: none !important;
+    color: #475569 !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+}
+
+body.ti-sobrio .quick-categories .quick-chip:hover {
+    border-color: #cbd5e1 !important;
+    color: var(--ti-tinta) !important;
+}
+
+body.ti-sobrio .quick-categories .quick-chip.active,
+body.ti-sobrio .quick-categories .quick-chip.selected {
+    background: #f1f5f9 !important;
+    border-color: #94a3b8 !important;
+    color: var(--ti-tinta) !important;
+}
+
+/* Botones */
+body.ti-sobrio .support-actions {
+    display: flex !important;
+    justify-content: flex-end !important;
+    gap: 10px !important;
+    margin-top: 8px !important;
+}
+
+body.ti-sobrio .support-page .support-primary-btn,
+body.ti-sobrio .support-page .support-primary-btn:hover {
+    width: auto !important;
+    min-width: 200px !important;
+    height: 44px !important;
+    padding: 0 24px !important;
+    background: var(--ti-tinta) !important;
+    border: 1px solid var(--ti-tinta) !important;
+    border-radius: 12px !important;
+    box-shadow: none !important;
+    color: #fff !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+}
+
+body.ti-sobrio .support-page .support-primary-btn:hover {
+    background: #1e293b !important;
+}
+
+body.ti-sobrio .support-page .support-primary-btn:disabled {
+    opacity: .6 !important;
+    cursor: wait !important;
+}
+
+/* Soportes atrasados: "Agregar fila" vuelve a verse (la regla vieja que oculta "Limpiar" lo escondía) */
+body.ti-sobrio .backlog-actions-top {
+    display: flex !important;
+    justify-content: flex-end !important;
+    gap: 10px !important;
+    margin: 0 0 16px !important;
+}
+
+body.ti-sobrio .support-form-card #add-backlog-row {
+    display: inline-flex !important;
+    align-items: center !important;
+    height: 44px !important;
+    padding: 0 18px !important;
+    background: #fff !important;
+    border: 1px solid var(--ti-linea) !important;
+    border-radius: 12px !important;
+    box-shadow: none !important;
+    color: var(--ti-tinta) !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+}
+
+body.ti-sobrio .support-form-card #add-backlog-row:hover {
+    border-color: #cbd5e1 !important;
+    background: #f8fafc !important;
+}
+
+body.ti-sobrio .backlog-table-wrapper {
+    width: 100% !important;
+    overflow-x: auto !important;
+    border: 1px solid var(--ti-linea) !important;
+    border-radius: 12px !important;
+}
+
+body.ti-sobrio .backlog-table {
+    min-width: 1500px !important;
+    width: 100% !important;
+    border-collapse: collapse !important;
+}
+
+body.ti-sobrio .backlog-table thead th {
+    padding: 10px 8px !important;
+    background: #f8fafc !important;
+    border-bottom: 1px solid var(--ti-linea) !important;
+    color: var(--ti-gris) !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    text-align: left !important;
+    white-space: nowrap !important;
+}
+
+body.ti-sobrio .backlog-table td {
+    padding: 8px !important;
+    border-bottom: 1px solid var(--ti-linea-2) !important;
+    vertical-align: top !important;
+    background: #fff !important;
+}
+
+body.ti-sobrio .backlog-table tr:last-child td {
+    border-bottom: 0 !important;
+}
+
+body.ti-sobrio .backlog-table input,
+body.ti-sobrio .backlog-table select {
+    height: 38px !important;
+    min-height: 38px !important;
+    font-size: 13px !important;
+}
+
+body.ti-sobrio .backlog-table textarea {
+    min-height: 38px !important;
+    font-size: 13px !important;
+}
+
+body.ti-sobrio .backlog-table td button {
+    height: 38px !important;
+    padding: 0 12px !important;
+    background: #fff !important;
+    border: 1px solid var(--ti-linea) !important;
+    border-radius: 10px !important;
+    box-shadow: none !important;
+    color: var(--ti-peligro) !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+}
+
+@media (max-width: 768px) {
+    body.ti-sobrio .support-form-card {
+        padding: 16px !important;
+    }
+
+    body.ti-sobrio .support-form-card .support-grid.two {
+        grid-template-columns: minmax(0, 1fr) !important;
+        gap: 0 !important;
+    }
+
+    body.ti-sobrio .support-actions,
+    body.ti-sobrio .backlog-actions-top {
+        flex-direction: column-reverse !important;
+    }
+
+    body.ti-sobrio .support-page .support-primary-btn,
+    body.ti-sobrio .support-form-card #add-backlog-row {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+}

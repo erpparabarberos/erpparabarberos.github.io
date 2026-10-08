@@ -141,37 +141,37 @@ const newTITicketFormHTML = `
   <div class="support-header">
     <div>
       <h1>Registrar soporte</h1>
-
+      <p>Registra el soporte que ya realizaste. Queda cerrado al guardarlo.</p>
     </div>
   </div>
 
   <div class="support-type-cards">
     <a class="support-type-card active" href="#crear-ticket-ti">
-      <span class="support-icon">🎧</span>
+      <span class="support-icon">${tiIcono('auricular')}</span>
       <strong>Soporte TI</strong>
       <small>Soportes generales de tecnología</small>
     </a>
 
     <a class="support-type-card" href="#crear-ticket-velocity">
-      <span class="support-icon orange">⚡</span>
+      <span class="support-icon">${tiIcono('rayo')}</span>
       <strong>Velocity</strong>
       <small>Casos relacionados con Velocity</small>
     </a>
 
     <a class="support-type-card" href="#crear-ticket-siigo">
-      <span class="support-icon cyan">S</span>
+      <span class="support-icon">${tiIcono('factura')}</span>
       <strong>Siigo</strong>
       <small>Casos relacionados con Siigo</small>
     </a>
 
     <a class="support-type-card" href="#nota-rapida">
-      <span class="support-icon purple">📝</span>
+      <span class="support-icon">${tiIcono('nota')}</span>
       <strong>Nota rápida</strong>
       <small>Guardar una novedad pendiente</small>
     </a>
 
     <a class="support-type-card" href="#soportes-atrasados">
-      <span class="support-icon red">⏱</span>
+      <span class="support-icon">${tiIcono('reloj')}</span>
       <strong>Soportes atrasados</strong>
       <small>Cargar registros pendientes</small>
     </a>
@@ -525,31 +525,31 @@ const newTITicketFormHTML = `
 
   <div class="support-type-cards">
     <a class="support-type-card" href="#crear-ticket-ti">
-      <span class="support-icon">🎧</span>
+      <span class="support-icon">${tiIcono('auricular')}</span>
       <strong>Soporte TI</strong>
       <small>Soportes generales de tecnología</small>
     </a>
 
     <a class="support-type-card" id="card-velocity" href="#crear-ticket-velocity">
-      <span class="support-icon orange">⚡</span>
+      <span class="support-icon">${tiIcono('rayo')}</span>
       <strong>Velocity</strong>
       <small>Casos de plataforma externa</small>
     </a>
 
     <a class="support-type-card" id="card-siigo" href="#crear-ticket-siigo">
-      <span class="support-icon cyan">S</span>
+      <span class="support-icon">${tiIcono('factura')}</span>
       <strong>Siigo</strong>
       <small>Casos de plataforma externa</small>
     </a>
 
     <a class="support-type-card" href="#nota-rapida">
-      <span class="support-icon purple">📝</span>
+      <span class="support-icon">${tiIcono('nota')}</span>
       <strong>Nota rápida</strong>
       <small>Guardar algo pendiente</small>
     </a>
 
     <a class="support-type-card" href="#soportes-atrasados">
-      <span class="support-icon red">⏱</span>
+      <span class="support-icon">${tiIcono('reloj')}</span>
       <strong>Soportes atrasados</strong>
       <small>Cargar pendientes</small>
     </a>
@@ -714,31 +714,31 @@ const newTITicketFormHTML = `
 
   <div class="support-type-cards">
     <a class="support-type-card" href="#crear-ticket-ti">
-      <span class="support-icon">🎧</span>
+      <span class="support-icon">${tiIcono('auricular')}</span>
       <strong>Soporte TI</strong>
       <small>Soportes generales de tecnología</small>
     </a>
 
     <a class="support-type-card" href="#crear-ticket-velocity">
-      <span class="support-icon orange">⚡</span>
+      <span class="support-icon">${tiIcono('rayo')}</span>
       <strong>Velocity</strong>
       <small>Casos de plataforma externa</small>
     </a>
 
     <a class="support-type-card" href="#crear-ticket-siigo">
-      <span class="support-icon cyan">S</span>
+      <span class="support-icon">${tiIcono('factura')}</span>
       <strong>Siigo</strong>
       <small>Casos de plataforma externa</small>
     </a>
 
     <a class="support-type-card active" href="#nota-rapida">
-      <span class="support-icon purple">📝</span>
+      <span class="support-icon">${tiIcono('nota')}</span>
       <strong>Nota rápida</strong>
       <small>Guardar algo pendiente</small>
     </a>
 
     <a class="support-type-card" href="#soportes-atrasados">
-      <span class="support-icon red">⏱</span>
+      <span class="support-icon">${tiIcono('reloj')}</span>
       <strong>Soportes atrasados</strong>
       <small>Cargar pendientes</small>
     </a>
@@ -830,31 +830,31 @@ const newTITicketFormHTML = `
 
   <div class="support-type-cards">
     <a class="support-type-card" href="#crear-ticket-ti">
-      <span class="support-icon">🎧</span>
+      <span class="support-icon">${tiIcono('auricular')}</span>
       <strong>Soporte TI</strong>
       <small>Soportes generales de tecnología</small>
     </a>
 
     <a class="support-type-card" href="#crear-ticket-velocity">
-      <span class="support-icon orange">⚡</span>
+      <span class="support-icon">${tiIcono('rayo')}</span>
       <strong>Velocity</strong>
       <small>Casos de plataforma externa</small>
     </a>
 
     <a class="support-type-card" href="#crear-ticket-siigo">
-      <span class="support-icon cyan">S</span>
+      <span class="support-icon">${tiIcono('factura')}</span>
       <strong>Siigo</strong>
       <small>Casos de plataforma externa</small>
     </a>
 
     <a class="support-type-card" href="#nota-rapida">
-      <span class="support-icon purple">📝</span>
+      <span class="support-icon">${tiIcono('nota')}</span>
       <strong>Nota rápida</strong>
       <small>Guardar algo pendiente</small>
     </a>
 
     <a class="support-type-card active" href="#soportes-atrasados">
-      <span class="support-icon red">⏱</span>
+      <span class="support-icon">${tiIcono('reloj')}</span>
       <strong>Soportes atrasados</strong>
       <small>Cargar pendientes</small>
     </a>
