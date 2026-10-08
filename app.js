@@ -16,148 +16,120 @@
 
     // --- 3. TEMPLATES HTML ---
     const dashboardHTML = `
-<section class="pb-dashboard">
+<section class="ti-panel">
 
-    <div class="pb-dashboard-header">
+    <div class="ti-cabecera">
         <div>
-            <h1>PANEL DE CONTROL</h1>
+            <h1>Panel de control</h1>
+            <p id="dashboard-month-label">Soporte de TI</p>
         </div>
 
-        <div class="pb-dashboard-filters">
-            <input type="date" id="dashboard-date-filter">
-            <select id="dashboard-requester-filter">
-                <option value="">Todos los solicitantes</option>
-            </select>
+        <div class="ti-filtros">
+            <label>
+                <span>Fecha</span>
+                <input type="date" id="dashboard-date-filter">
+            </label>
+            <label>
+                <span>Solicitante</span>
+                <select id="dashboard-requester-filter">
+                    <option value="">Todos los solicitantes</option>
+                </select>
+            </label>
         </div>
     </div>
 
-    <div class="pb-dashboard-grid-top">
+    <div class="ti-kpis">
+        <button type="button" class="ti-kpi" data-detalle-kpi="todos">
+            <span class="ti-kpi-titulo">${window.tiIcono ? tiIcono('soportes') : ''} Soportes del mes</span>
+            <strong id="kpi-total-month">0</strong>
+            <small id="kpi-total-sub">Registrados en el mes</small>
+            <em>Ver detalle ›</em>
+        </button>
+        <button type="button" class="ti-kpi" data-detalle-kpi="todos">
+            <span class="ti-kpi-titulo">${window.tiIcono ? tiIcono('tiempo') : ''} Tiempo invertido</span>
+            <strong id="kpi-time-month">0h 0m</strong>
+            <small id="kpi-time-sub">Tiempo total registrado</small>
+            <em>Ver detalle ›</em>
+        </button>
+        <button type="button" class="ti-kpi" data-detalle-kpi="cerrados">
+            <span class="ti-kpi-titulo">${window.tiIcono ? tiIcono('cerrado') : ''} Casos cerrados</span>
+            <strong id="kpi-closed-month">0</strong>
+            <small id="kpi-closed-sub">Finalizados en el mes</small>
+            <em>Ver detalle ›</em>
+        </button>
+        <button type="button" class="ti-kpi" data-detalle-kpi="seguimiento">
+            <span class="ti-kpi-titulo">${window.tiIcono ? tiIcono('seguimiento') : ''} En seguimiento</span>
+            <strong id="kpi-followup-month">0</strong>
+            <small>Velocity, Siigo o pendientes</small>
+            <em>Ver detalle ›</em>
+        </button>
+    </div>
 
-        <div class="pb-card pb-chart-card">
-            <div class="pb-card-header">
-                <h3>Tendencia de soportes</h3>
+    <div class="ti-grid-2">
+        <div class="ti-card">
+            <div class="ti-card-cab">
+                <div>
+                    <h3>Tendencia de soportes</h3>
+                    <p>Creados y cerrados por día</p>
+                </div>
                 <select id="dashboard-range-filter">
                     <option value="7">Últimos 7 días</option>
                     <option value="15">Últimos 15 días</option>
                     <option value="30">Últimos 30 días</option>
                 </select>
             </div>
-            <div class="pb-chart-container">
+            <div class="ti-grafico">
                 <canvas id="supportTrendChart"></canvas>
             </div>
         </div>
 
-        <div class="pb-card pb-heatmap-card">
-            <div class="pb-card-header">
-                <h3>Actividad mensual</h3>
-                <span id="dashboard-month-label">Mes actual</span>
-            </div>
-            <div id="monthly-activity-grid" class="pb-month-grid"></div>
-            <div class="pb-heatmap-legend">
-                <span><i class="level-0"></i>0</span>
-                <span><i class="level-1"></i>1–5</span>
-                <span><i class="level-2"></i>6–10</span>
-                <span><i class="level-3"></i>11–20</span>
-                <span><i class="level-4"></i>20+</span>
-            </div>
-        </div>
-
-        <div class="pb-card pb-summary-card">
-            <h3>Resumen general</h3>
-
-            <div class="pb-summary-item blue">
-                <div class="pb-summary-icon">▣</div>
+        <div class="ti-card">
+            <div class="ti-card-cab">
                 <div>
-                    <span>Total del mes</span>
-                    <strong id="dash-total-month">0</strong>
+                    <h3>Actividad del mes</h3>
+                    <p>Soportes registrados por día</p>
                 </div>
             </div>
-
-            <div class="pb-summary-item green">
-                <div class="pb-summary-icon">◷</div>
-                <div>
-                    <span>Tiempo invertido</span>
-                    <strong id="dash-time-month">0h 0m</strong>
-                </div>
+            <div id="monthly-activity-grid" class="ti-calendario"></div>
+            <div class="ti-calendario-leyenda">
+                <span>Menos</span>
+                <i class="nivel-0"></i><i class="nivel-1"></i><i class="nivel-2"></i><i class="nivel-3"></i><i class="nivel-4"></i>
+                <span>Más</span>
             </div>
-
-            <div class="pb-summary-item purple">
-                <div class="pb-summary-icon">✓</div>
-                <div>
-                    <span>Casos cerrados</span>
-                    <strong id="dash-closed-month">0</strong>
-                </div>
-            </div>
-
-            <div class="pb-summary-item orange">
-                <div class="pb-summary-icon">⌛</div>
-                <div>
-                    <span>Casos en seguimiento</span>
-                    <strong id="dash-followup-month">0</strong>
-                </div>
-            </div>
-
-            <a href="#estadisticas" class="pb-report-link">Ver reporte completo →</a>
-        </div>
-
-    </div>
-
-    <div class="pb-kpi-row">
-        <div class="pb-kpi-card blue">
-            <span>Total del mes</span>
-            <strong id="kpi-total-month">0</strong>
-            <small>Soportes registrados</small>
-        </div>
-
-        <div class="pb-kpi-card green">
-            <span>Tiempo invertido</span>
-            <strong id="kpi-time-month">0h 0m</strong>
-            <small>Tiempo total registrado</small>
-        </div>
-
-        <div class="pb-kpi-card purple">
-            <span>Casos cerrados</span>
-            <strong id="kpi-closed-month">0</strong>
-            <small>Finalizados este mes</small>
-        </div>
-
-        <div class="pb-kpi-card orange">
-            <span>Casos en seguimiento</span>
-            <strong id="kpi-followup-month">0</strong>
-            <small>Velocity, Siigo o pendientes</small>
         </div>
     </div>
 
-    <div class="pb-dashboard-grid-bottom">
-
-        <div class="pb-card">
-            <div class="pb-card-header">
-                <h3>Solicitantes frecuentes</h3>
-                <a href="#tickets">Ver todos →</a>
-            </div>
-            <div id="top-requesters-dashboard" class="pb-requester-list"></div>
-        </div>
-
-        <div class="pb-card">
-            <div class="pb-card-header">
-                <h3>Categorías más comunes</h3>
-            </div>
-            <div class="pb-category-layout">
-                <div class="pb-donut-wrap">
-                    <canvas id="categoryDashboardChart"></canvas>
+    <div class="ti-grid-3">
+        <div class="ti-card">
+            <div class="ti-card-cab">
+                <div>
+                    <h3>Solicitantes frecuentes</h3>
+                    <p>Quién pidió más soporte en el mes</p>
                 </div>
-                <div id="category-dashboard-list" class="pb-category-list"></div>
             </div>
+            <div id="top-requesters-dashboard" class="ti-barras"></div>
         </div>
 
-        <div class="pb-card">
-            <div class="pb-card-header">
-                <h3>Actividad reciente</h3>
-                <a href="#tickets">Ver todo →</a>
+        <div class="ti-card">
+            <div class="ti-card-cab">
+                <div>
+                    <h3>Tipos de soporte</h3>
+                    <p>Distribución del mes</p>
+                </div>
             </div>
-            <div id="recent-activity-dashboard" class="pb-activity-list"></div>
+            <div id="category-dashboard-list" class="ti-barras"></div>
         </div>
 
+        <div class="ti-card">
+            <div class="ti-card-cab">
+                <div>
+                    <h3>Actividad reciente</h3>
+                    <p>Últimos soportes registrados</p>
+                </div>
+                <a href="#historial" class="ti-enlace">Ver historial ›</a>
+            </div>
+            <div id="recent-activity-dashboard" class="ti-lista"></div>
+        </div>
     </div>
 
 </section>
@@ -2033,6 +2005,7 @@ const newTITicketFormHTML = `
     async function renderDashboard(container) {
     container.innerHTML = dashboardHTML;
 
+    let dashboardDetalle = null;
     const dateFilter = document.getElementById('dashboard-date-filter');
     const requesterFilter = document.getElementById('dashboard-requester-filter');
     const rangeFilter = document.getElementById('dashboard-range-filter');
@@ -2138,20 +2111,29 @@ const newTITicketFormHTML = `
             const followupMonth = followupMonthTickets.length;
             const formattedTime = formatMinutes(totalMinutes);
 
-            document.getElementById('dash-total-month').textContent = totalMonth;
-            document.getElementById('dash-time-month').textContent = formattedTime;
-            document.getElementById('dash-closed-month').textContent = closedMonth;
-            document.getElementById('dash-followup-month').textContent = followupMonth;
-
             document.getElementById('kpi-total-month').textContent = totalMonth;
             document.getElementById('kpi-time-month').textContent = formattedTime;
             document.getElementById('kpi-closed-month').textContent = closedMonth;
             document.getElementById('kpi-followup-month').textContent = followupMonth;
 
-            document.getElementById('dashboard-month-label').textContent = selectedDate.toLocaleDateString('es-ES', {
-                month: 'long',
-                year: 'numeric'
-            });
+            document.getElementById('kpi-time-sub').textContent = totalMonth
+                ? `Promedio ${Math.round(totalMinutes / totalMonth)} min por soporte`
+                : 'Tiempo total registrado';
+            document.getElementById('kpi-closed-sub').textContent = totalMonth
+                ? `${Math.round((closedMonth / totalMonth) * 100)}% de los soportes del mes`
+                : 'Finalizados en el mes';
+
+            const mesTexto = selectedDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+            document.getElementById('dashboard-month-label').textContent = `Soporte de TI · ${mesTexto}`;
+
+            // Datos para las ventanas de detalle de los indicadores
+            dashboardDetalle = {
+                mesTexto,
+                requestersMap,
+                todos: monthTickets,
+                cerrados: closedMonthTickets,
+                seguimiento: followupMonthTickets
+            };
 
             renderTrendChart(tickets);
             renderMonthlyHeatmap(monthTickets, selectedDate);
@@ -2163,6 +2145,13 @@ const newTITicketFormHTML = `
             console.error('Error cargando dashboard:', error);
             container.innerHTML = '<div class="card"><h2>Error cargando dashboard</h2><p>Revisa la consola para más detalles.</p></div>';
         }
+    }
+
+    const escaparHTML = (texto) => String(texto ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const TI_COLOR = { acento: '#1d4ed8', suave: '#94a3b8', linea: '#e2e8f0', texto: '#64748b' };
+    if (window.Chart) {
+        Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
+        Chart.defaults.color = TI_COLOR.texto;
     }
 
     function renderTrendChart(tickets) {
@@ -2181,19 +2170,16 @@ const newTITicketFormHTML = `
 
             labels.push(d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }));
 
-            const createdCount = tickets.filter(ticket => {
+            createdData.push(tickets.filter(ticket => {
                 const ticketDate = getTicketDate(ticket);
                 return ticketDate && ticketDate >= d && ticketDate < next;
-            }).length;
+            }).length);
 
-            const closedCount = tickets.filter(ticket => {
+            closedData.push(tickets.filter(ticket => {
                 if (!ticket.closedAt || !ticket.closedAt.toDate) return false;
                 const closedDate = ticket.closedAt.toDate();
                 return closedDate >= d && closedDate < next;
-            }).length;
-
-            createdData.push(createdCount);
-            closedData.push(closedCount);
+            }).length);
         }
 
         const ctx = document.getElementById('supportTrendChart').getContext('2d');
@@ -2203,49 +2189,35 @@ const newTITicketFormHTML = `
         }
 
         window.supportTrendChartInstance = new Chart(ctx, {
-            type: 'line',
+            type: 'bar',
             data: {
                 labels,
                 datasets: [
-                    {
-                        label: 'Creados',
-                        data: createdData,
-                        borderColor: '#2563eb',
-                        backgroundColor: 'rgba(37, 99, 235, 0.10)',
-                        fill: true,
-                        tension: 0.35,
-                        pointRadius: 4
-                    },
-                    {
-                        label: 'Cerrados',
-                        data: closedData,
-                        borderColor: '#10b981',
-                        backgroundColor: 'rgba(16, 185, 129, 0.10)',
-                        fill: true,
-                        tension: 0.35,
-                        pointRadius: 4
-                    }
+                    { label: 'Creados', data: createdData, backgroundColor: TI_COLOR.acento, borderRadius: 4, maxBarThickness: 22 },
+                    { label: 'Cerrados', data: closedData, backgroundColor: TI_COLOR.suave, borderRadius: 4, maxBarThickness: 22 }
                 ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                animation: false,
                 plugins: {
                     legend: {
                         position: 'top',
-                        align: 'start'
+                        align: 'start',
+                        labels: { boxWidth: 10, boxHeight: 10, color: TI_COLOR.texto, font: { size: 12, weight: '600' } }
                     }
                 },
                 scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            precision: 0
-                        }
-                    }
+                    x: { grid: { display: false }, ticks: { color: TI_COLOR.texto, font: { size: 11 } } },
+                    y: { beginAtZero: true, grid: { color: TI_COLOR.linea }, border: { display: false }, ticks: { precision: 0, color: TI_COLOR.texto, font: { size: 11 } } }
                 }
             }
         });
+
+        // Si la letra Inter termina de cargar después, se redibuja con ella.
+        const grafico = window.supportTrendChartInstance;
+        if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => grafico.update());
     }
 
     function renderMonthlyHeatmap(monthTickets, selectedDate) {
@@ -2253,145 +2225,104 @@ const newTITicketFormHTML = `
         const year = selectedDate.getFullYear();
         const month = selectedDate.getMonth();
         const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const hoy = new Date();
 
         const dayCounts = {};
-
         monthTickets.forEach(ticket => {
             const ticketDate = getTicketDate(ticket);
             if (!ticketDate) return;
-
             const day = ticketDate.getDate();
             dayCounts[day] = (dayCounts[day] || 0) + 1;
         });
 
         const weekDays = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
-
-        let html = weekDays.map(day => `<div class="pb-month-day-name">${day}</div>`).join('');
+        let html = weekDays.map(day => `<div class="ti-dia-nombre">${day}</div>`).join('');
 
         const firstDay = new Date(year, month, 1).getDay();
         const emptyBefore = firstDay === 0 ? 6 : firstDay - 1;
-
-        for (let i = 0; i < emptyBefore; i++) {
-            html += `<div class="pb-month-cell empty"></div>`;
-        }
+        for (let i = 0; i < emptyBefore; i++) html += `<div class="ti-dia vacio"></div>`;
 
         for (let day = 1; day <= daysInMonth; day++) {
             const count = dayCounts[day] || 0;
-
             let level = 0;
-            if (count >= 1 && count <= 5) level = 1;
-            if (count >= 6 && count <= 10) level = 2;
-            if (count >= 11 && count <= 20) level = 3;
-            if (count > 20) level = 4;
+            if (count >= 1) level = 1;
+            if (count >= 3) level = 2;
+            if (count >= 6) level = 3;
+            if (count >= 10) level = 4;
+            const esHoy = hoy.getFullYear() === year && hoy.getMonth() === month && hoy.getDate() === day;
 
             html += `
-                <div class="pb-month-cell level-${level}">
+                <div class="ti-dia nivel-${level}${esHoy ? ' hoy' : ''}" title="${day}: ${count} ${count === 1 ? 'soporte' : 'soportes'}">
                     <strong>${day}</strong>
-                    <span>${count}</span>
-                </div>
-            `;
+                    <span>${count || ''}</span>
+                </div>`;
         }
 
         grid.innerHTML = html;
     }
 
+    // Lista de barras horizontales de un solo color (solicitantes y tipos de soporte)
+    function barrasHTML(filas, total, vacio) {
+        if (!filas.length) return `<p class="ti-vacio">${vacio}</p>`;
+        const max = Math.max(...filas.map(f => f.valor));
+        return filas.map(f => `
+            <div class="ti-barra">
+                <div class="ti-barra-texto">
+                    <span>${escaparHTML(f.nombre)}</span>
+                    <strong>${f.valor}${total ? ` <small>${Math.round((f.valor / total) * 100)}%</small>` : ''}</strong>
+                </div>
+                <div class="ti-barra-fondo"><i style="width:${Math.max(4, Math.round((f.valor / max) * 100))}%"></i></div>
+            </div>`).join('');
+    }
+
     function renderTopRequesters(monthTickets, requestersMap) {
-        const container = document.getElementById('top-requesters-dashboard');
-
         const counts = {};
-
         monthTickets.forEach(ticket => {
             if (!ticket.requesterId) return;
             counts[ticket.requesterId] = (counts[ticket.requesterId] || 0) + 1;
         });
 
-        const top = Object.entries(counts)
+        const filas = Object.entries(counts)
             .sort((a, b) => b[1] - a[1])
-            .slice(0, 5);
+            .slice(0, 6)
+            .map(([id, valor]) => ({ nombre: requestersMap[id] || id, valor }));
 
-        if (top.length === 0) {
-            container.innerHTML = '<p class="pb-empty">Aún no hay solicitantes en este periodo.</p>';
-            return;
-        }
-
-        const max = Math.max(...top.map(item => item[1]));
-
-        container.innerHTML = top.map(([id, count]) => {
-            const percent = Math.round((count / max) * 100);
-
-            return `
-                <div class="pb-requester-row">
-                    <span>${requestersMap[id] || id}</span>
-                    <strong>${count}</strong>
-                    <div class="pb-mini-bar">
-                        <i style="width:${percent}%"></i>
-                    </div>
-                </div>
-            `;
-        }).join('');
+        document.getElementById('top-requesters-dashboard').innerHTML =
+            barrasHTML(filas, monthTickets.length, 'Aún no hay solicitantes en este periodo.');
     }
 
     function renderCategoryChart(monthTickets) {
-        const listContainer = document.getElementById('category-dashboard-list');
         const counts = {};
-
         monthTickets.forEach(ticket => {
             const type = ticket.ticketType || ticket.supportType || 'otro';
             counts[type] = (counts[type] || 0) + 1;
         });
 
-        const labelsMap = {
-            ti: 'Soporte TI',
-            velocity: 'Velocity',
-            siigo: 'Siigo',
-            nota: 'Nota rápida',
-            otro: 'Otro'
-        };
+        const filas = Object.entries(counts)
+            .sort((a, b) => b[1] - a[1])
+            .map(([tipo, valor]) => ({ nombre: tipo === 'otro' ? 'Otro' : getTypeLabel(tipo), valor }));
 
-        const labels = Object.keys(counts).map(key => labelsMap[key] || capitalizar(key));
-        const values = Object.values(counts);
+        document.getElementById('category-dashboard-list').innerHTML =
+            barrasHTML(filas, monthTickets.length, 'No hay soportes en este periodo.');
+    }
 
-        if (window.categoryDashboardChartInstance) {
-            window.categoryDashboardChartInstance.destroy();
-        }
+    // Fila de un soporte: al tocarla abre su detalle (lo maneja el clic global de .view-ticket-btn)
+    function filaTicketHTML(ticket, requestersMap) {
+        const ticketDate = getTicketDate(ticket);
+        const requester = requestersMap[ticket.requesterId] || 'Sin solicitante';
+        const estado = ticket.status || 'abierto';
 
-        const ctx = document.getElementById('categoryDashboardChart').getContext('2d');
-
-        window.categoryDashboardChartInstance = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels,
-                datasets: [{
-                    data: values,
-                    backgroundColor: ['#2563eb', '#f97316', '#14b8a6', '#8b5cf6', '#ef4444'],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                cutout: '65%',
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                }
-            }
-        });
-
-        const total = values.reduce((a, b) => a + b, 0);
-
-        listContainer.innerHTML = Object.entries(counts).map(([key, value], index) => {
-            const percent = total ? Math.round((value / total) * 100) : 0;
-            const colors = ['#2563eb', '#f97316', '#14b8a6', '#8b5cf6', '#ef4444'];
-
-            return `
-                <div class="pb-category-row">
-                    <span><i style="background:${colors[index % colors.length]}"></i>${labelsMap[key] || capitalizar(key)}</span>
-                    <strong>${value} (${percent}%)</strong>
+        return `
+            <a href="#" class="ti-fila view-ticket-btn" data-id="${escaparHTML(ticket.id)}">
+                <div class="ti-fila-texto">
+                    <strong>${escaparHTML(ticket.title || getTypeLabel(ticket.ticketType))}</strong>
+                    <span>${escaparHTML(ticket.id)} · ${escaparHTML(requester)} · ${escaparHTML(getTypeLabel(ticket.ticketType))}</span>
                 </div>
-            `;
-        }).join('') || '<p class="pb-empty">No hay datos.</p>';
+                <div class="ti-fila-lado">
+                    <small>${ticketDate ? ticketDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) : ''}</small>
+                    <em class="ti-estado ${estado === 'cerrado' ? 'cerrado' : ''}">${escaparHTML(getStatusLabel(estado))}</em>
+                </div>
+            </a>`;
     }
 
     function renderRecentActivity(tickets, requestersMap) {
@@ -2400,31 +2331,42 @@ const newTITicketFormHTML = `
         const recent = [...tickets]
             .filter(ticket => getTicketDate(ticket))
             .sort((a, b) => getTicketDate(b) - getTicketDate(a))
-            .slice(0, 5);
+            .slice(0, 6);
 
-        if (recent.length === 0) {
-            container.innerHTML = '<p class="pb-empty">Aún no hay actividad reciente.</p>';
-            return;
-        }
+        container.innerHTML = recent.length
+            ? recent.map(ticket => filaTicketHTML(ticket, requestersMap)).join('')
+            : '<p class="ti-vacio">Aún no hay actividad reciente.</p>';
+    }
 
-        container.innerHTML = recent.map(ticket => {
-            const ticketDate = getTicketDate(ticket);
-            const requester = requestersMap[ticket.requesterId] || 'Sin solicitante';
+    // Ventana con la lista de soportes detrás de cada indicador
+    const TITULOS_DETALLE = { todos: 'Soportes del mes', cerrados: 'Casos cerrados', seguimiento: 'Casos en seguimiento' };
 
-            return `
-                <div class="pb-activity-row">
-                    <div class="pb-activity-icon ${ticket.status || 'abierto'}">•</div>
-                    <div>
-                        <strong>${ticket.id} - ${ticket.title || getTypeLabel(ticket.ticketType)}</strong>
-                        <span>${requester} · ${getTypeLabel(ticket.ticketType)}</span>
-                    </div>
-                    <div class="pb-activity-meta">
-                        <small>${ticketDate.toLocaleDateString('es-ES')}</small>
-                        <em class="status status-${ticket.status || 'abierto'}">${getStatusLabel(ticket.status)}</em>
-                    </div>
+    function abrirDetalleKpi(tipo) {
+        if (!dashboardDetalle) return;
+        const lista = [...(dashboardDetalle[tipo] || [])].sort((a, b) => (getTicketDate(b) || 0) - (getTicketDate(a) || 0));
+        const minutos = lista.reduce((s, t) => s + (Number(t.timeSpentMinutes) || 0), 0);
+
+        document.getElementById('action-modal-body').innerHTML = `
+            <div class="ti-detalle">
+                <h2>${TITULOS_DETALLE[tipo]}</h2>
+                <p class="ti-detalle-sub">${escaparHTML(dashboardDetalle.mesTexto)} · ${lista.length} ${lista.length === 1 ? 'soporte' : 'soportes'} · ${formatMinutes(minutos)}</p>
+                <div class="ti-lista ti-detalle-lista">
+                    ${lista.length ? lista.map(t => filaTicketHTML(t, dashboardDetalle.requestersMap)).join('') : '<p class="ti-vacio">No hay soportes en este grupo.</p>'}
                 </div>
-            `;
-        }).join('');
+            </div>`;
+        document.getElementById('action-modal').classList.remove('hidden');
+    }
+
+    container.querySelectorAll('[data-detalle-kpi]').forEach(boton =>
+        boton.addEventListener('click', () => abrirDetalleKpi(boton.dataset.detalleKpi)));
+
+    // Al abrir un soporte desde la ventana de detalle, se cierra la ventana para que no quede detrás
+    const cuerpoDetalle = document.getElementById('action-modal-body');
+    if (!cuerpoDetalle.dataset.cierreTicket) {
+        cuerpoDetalle.dataset.cierreTicket = '1';
+        cuerpoDetalle.addEventListener('click', e => {
+            if (e.target.closest('.view-ticket-btn')) document.getElementById('action-modal').classList.add('hidden');
+        }, true);
     }
 
     requesterFilter.addEventListener('change', () => {
