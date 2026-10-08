@@ -182,7 +182,6 @@ const newTITicketFormHTML = `
       <form id="new-ticket-form" class="ti-form">
 
         <div class="ti-form-seccion">
-          <h4>Datos del soporte</h4>
           <div class="ti-form-fila cuatro">
             <div class="form-group">
               <label for="support-date">Fecha</label>
@@ -204,7 +203,6 @@ const newTITicketFormHTML = `
         </div>
 
         <div class="ti-form-seccion">
-          <h4>Novedad</h4>
           <div class="ti-form-fila categoria">
             <div class="form-group">
               <label for="category">Categoría</label>
@@ -222,7 +220,7 @@ const newTITicketFormHTML = `
               </select>
             </div>
             <div class="form-group">
-              <label>Atajos <span>(llenan la categoría y la novedad)</span></label>
+              <label>Atajos</label>
               <div class="quick-categories">
                 <button type="button" class="quick-chip" data-category="impresora" data-text="La impresora presentó fallas al momento de imprimir.">No imprime</button>
                 <button type="button" class="quick-chip" data-category="equipo-lento" data-text="El equipo presentó lentitud durante su uso.">Equipo lento</button>
@@ -234,15 +232,10 @@ const newTITicketFormHTML = `
             </div>
           </div>
 
-          <div class="form-group">
-            <label for="novelty">Qué pasó</label>
-            <textarea id="novelty" rows="2" placeholder="Describe brevemente la novedad reportada..." required></textarea>
-          </div>
-
           <div class="ti-form-fila dos">
             <div class="form-group">
-              <label for="management">Gestión realizada</label>
-              <textarea id="management" rows="3" placeholder="¿Qué acciones realizaste para atender el caso?" required></textarea>
+              <label for="novelty">Novedad</label>
+              <textarea id="novelty" rows="3" placeholder="Describe brevemente la novedad reportada..." required></textarea>
             </div>
             <div class="form-group">
               <label for="solution">Solución aplicada</label>
@@ -252,7 +245,6 @@ const newTITicketFormHTML = `
         </div>
 
         <div class="ti-form-seccion ultima">
-          <h4>Cierre</h4>
           <div class="ti-form-fila cierre">
             <div class="form-group">
               <label for="time-spent">Tiempo invertido</label>
@@ -270,7 +262,7 @@ const newTITicketFormHTML = `
               </select>
             </div>
             <div class="form-group">
-              <label for="associated-device">Equipo asociado <span>(opcional)</span></label>
+              <label for="associated-device">Equipo asociado</label>
               <input type="text" id="associated-device" list="device-list" placeholder="Busca por código, usuario o marca...">
               <datalist id="device-list"></datalist>
             </div>
@@ -2530,7 +2522,8 @@ if (quickNoteRaw) {
 
             const categoryText = form.category.options[form.category.selectedIndex].text;
             const novelty = form.novelty.value.trim();
-            const management = form.management.value.trim();
+            // El formulario de Soporte TI ya no pide "Gestión realizada": se guarda vacía por compatibilidad.
+            const management = form.management ? form.management.value.trim() : '';
             const solution = form.solution.value.trim();
 
             const newSupportData = {

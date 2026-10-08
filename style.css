@@ -12990,3 +12990,36 @@ body.ti-sobrio .ti-form-fila.cierre .support-actions {
 body.ti-sobrio .ti-form-fila.cierre .support-primary-btn {
     height: 42px !important;
 }
+
+/* Formulario de Soporte TI sin títulos de bloque: solo espacio entre filas, sin líneas */
+body.ti-sobrio .ti-form-seccion {
+    padding: 0 !important;
+    margin: 0 0 16px !important;
+    border-bottom: 0 !important;
+}
+
+body.ti-sobrio .ti-form-seccion.ultima {
+    margin-bottom: 0 !important;
+}
+
+body.ti-sobrio .ti-form-seccion .ti-form-fila + .ti-form-fila {
+    margin-top: 16px;
+}
+
+body.ti-sobrio .ti-form textarea {
+    min-height: 84px !important;
+}
+
+@media (max-width: 768px) {
+    body.ti-sobrio .ti-form-seccion .ti-form-fila + .ti-form-fila {
+        margin-top: 14px;
+    }
+
+    body.ti-sobrio .ti-form-seccion {
+        margin-bottom: 14px !important;
+    }
+}
+
+body.ti-sobrio .ti-form .ti-form-fila .form-group {
+    margin-bottom: 0 !important;
+}
