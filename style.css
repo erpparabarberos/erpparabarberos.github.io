@@ -14083,3 +14083,345 @@ body.ti-sobrio #manual-form select {
         flex-direction: row !important;
     }
 }
+
+/* =====================================================
+   REPORTES
+===================================================== */
+
+body.ti-sobrio .reports-modern-page {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+}
+
+body.ti-sobrio .reports-modern-page,
+body.ti-sobrio .reports-modern-page * {
+    text-transform: none !important;
+    letter-spacing: normal !important;
+}
+
+body.ti-sobrio .reports-modern-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 16px !important;
+    flex-wrap: wrap !important;
+    margin: 0 0 16px !important;
+    padding: 0 !important;
+}
+
+body.ti-sobrio .reports-main-icon {
+    display: none !important;
+}
+
+body.ti-sobrio .reports-modern-header h1 {
+    margin: 0 !important;
+    font-size: 26px !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.02em !important;
+    color: var(--ti-tinta) !important;
+    text-align: left !important;
+}
+
+body.ti-sobrio .reports-export-pdf,
+body.ti-sobrio .reports-export-pdf:hover {
+    height: 40px !important;
+    padding: 0 16px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    background: #fff !important;
+    border: 1px solid var(--ti-linea) !important;
+    border-radius: 6px !important;
+    box-shadow: none !important;
+    color: var(--ti-tinta) !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+}
+
+body.ti-sobrio .reports-export-pdf:hover {
+    border-color: #cbd5e1 !important;
+    background: #f8fafc !important;
+}
+
+/* Filtros */
+body.ti-sobrio .reports-filter-card,
+body.ti-sobrio .reports-card {
+    padding: 20px !important;
+    background: #fff !important;
+    border: 1px solid var(--ti-linea) !important;
+    border-radius: 6px !important;
+    box-shadow: var(--ti-sombra) !important;
+}
+
+body.ti-sobrio .reports-filter-card {
+    margin: 0 0 16px !important;
+}
+
+body.ti-sobrio .reports-filter-grid {
+    align-items: end !important;
+    gap: 14px !important;
+}
+
+body.ti-sobrio .reports-filter-group label {
+    display: block !important;
+    margin-bottom: 6px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: var(--ti-tinta-2) !important;
+}
+
+body.ti-sobrio .reports-filter-card input,
+body.ti-sobrio .reports-filter-card select {
+    width: 100% !important;
+    height: 42px !important;
+    padding: 0 12px !important;
+    background-color: #fff !important;
+    border: 1px solid var(--ti-linea) !important;
+    border-radius: 6px !important;
+    box-shadow: none !important;
+    font-family: inherit !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    color: var(--ti-tinta) !important;
+    outline: none !important;
+}
+
+body.ti-sobrio .reports-filter-card select {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    padding-right: 34px !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 10px center !important;
+    background-size: 16px !important;
+}
+
+body.ti-sobrio .reports-filter-card input::-webkit-calendar-picker-indicator {
+    opacity: .45;
+}
+
+body.ti-sobrio .reports-filter-card input:focus,
+body.ti-sobrio .reports-filter-card select:focus {
+    border-color: #94a3b8 !important;
+    box-shadow: 0 0 0 3px rgba(15, 23, 42, .06) !important;
+}
+
+body.ti-sobrio .reports-generate-btn,
+body.ti-sobrio .reports-generate-btn:hover {
+    height: 42px !important;
+    padding: 0 20px !important;
+    background: var(--ti-tinta) !important;
+    border: 1px solid var(--ti-tinta) !important;
+    border-radius: 6px !important;
+    box-shadow: none !important;
+    color: #fff !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+}
+
+body.ti-sobrio .reports-generate-btn:hover {
+    background: #1e293b !important;
+}
+
+/* Indicadores */
+body.ti-sobrio .reports-kpi-grid {
+    gap: 16px !important;
+    margin: 0 0 16px !important;
+}
+
+body.ti-sobrio .reports-kpi-card {
+    min-width: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 14px !important;
+    padding: 16px 18px !important;
+    background: #fff !important;
+    border: 1px solid var(--ti-linea) !important;
+    border-radius: 6px !important;
+    box-shadow: var(--ti-sombra) !important;
+}
+
+body.ti-sobrio .reports-kpi-card::before,
+body.ti-sobrio .reports-kpi-card::after {
+    display: none !important;
+}
+
+body.ti-sobrio .reports-kpi-card > div:last-child {
+    min-width: 0 !important;
+}
+
+body.ti-sobrio .reports-kpi-icon {
+    width: 42px !important;
+    height: 42px !important;
+    min-width: 42px !important;
+    display: grid !important;
+    place-items: center !important;
+    background: #f1f5f9 !important;
+    border: 1px solid var(--ti-linea-2) !important;
+    border-radius: 6px !important;
+    color: var(--ti-gris) !important;
+    font-size: 0 !important;
+}
+
+body.ti-sobrio .reports-kpi-icon svg.ti-ico {
+    width: 19px;
+    height: 19px;
+}
+
+body.ti-sobrio .reports-kpi-card strong {
+    display: block !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    font-size: 24px !important;
+    font-weight: 800 !important;
+    line-height: 1.15 !important;
+    color: var(--ti-tinta) !important;
+}
+
+/* Categoría principal y solicitante top son texto: un poco más pequeños */
+body.ti-sobrio #reports-top-category,
+body.ti-sobrio #reports-top-requester {
+    font-size: 18px !important;
+    line-height: 1.3 !important;
+}
+
+body.ti-sobrio .reports-kpi-card span {
+    display: block !important;
+    margin-top: 2px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: var(--ti-tinta-2) !important;
+}
+
+body.ti-sobrio .reports-kpi-card small {
+    display: block !important;
+    font-size: 12px !important;
+    color: var(--ti-gris) !important;
+}
+
+/* Tarjetas de gráficas */
+body.ti-sobrio .reports-grid-main,
+body.ti-sobrio .reports-grid-secondary,
+body.ti-sobrio .reports-inventory-grid {
+    gap: 16px !important;
+    margin: 0 0 16px !important;
+}
+
+body.ti-sobrio .reports-card-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: baseline !important;
+    gap: 10px !important;
+    margin: 0 0 14px !important;
+}
+
+body.ti-sobrio .reports-card-header h3 {
+    margin: 0 !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    color: var(--ti-tinta) !important;
+}
+
+body.ti-sobrio .reports-card-header span {
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    color: var(--ti-gris) !important;
+}
+
+body.ti-sobrio .reports-section-title {
+    margin: 8px 0 12px !important;
+    font-size: 18px !important;
+    font-weight: 800 !important;
+    color: var(--ti-tinta) !important;
+}
+
+/* Rankings */
+body.ti-sobrio .reports-ranking-row {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    padding: 8px 0 !important;
+}
+
+body.ti-sobrio .reports-rank-number {
+    width: 24px !important;
+    height: 24px !important;
+    min-width: 24px !important;
+    display: grid !important;
+    place-items: center !important;
+    background: #f1f5f9 !important;
+    border: 1px solid var(--ti-linea) !important;
+    border-radius: 4px !important;
+    color: var(--ti-gris) !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+}
+
+body.ti-sobrio .reports-rank-content {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+}
+
+body.ti-sobrio .reports-rank-content strong {
+    display: block !important;
+    margin-bottom: 6px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    color: var(--ti-tinta-2) !important;
+}
+
+body.ti-sobrio .reports-rank-bar {
+    height: 6px !important;
+    background: var(--ti-linea-2) !important;
+    border-radius: 3px !important;
+    overflow: hidden !important;
+}
+
+body.ti-sobrio .reports-rank-bar i {
+    display: block !important;
+    height: 100% !important;
+    background: var(--ti-acento) !important;
+    border-radius: 3px !important;
+}
+
+body.ti-sobrio .reports-ranking-row em {
+    font-style: normal !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    color: var(--ti-tinta) !important;
+}
+
+body.ti-sobrio .reports-empty {
+    padding: 16px 0 !important;
+    font-size: 14px !important;
+    color: var(--ti-gris) !important;
+}
+
+@media (max-width: 768px) {
+    body.ti-sobrio .reports-modern-header,
+    body.ti-sobrio .reports-title-wrap {
+        justify-content: flex-start !important;
+        width: 100% !important;
+    }
+
+    body.ti-sobrio .reports-export-pdf {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+}
+
+body.ti-sobrio .reports-kpi-grid .reports-kpi-card .reports-kpi-icon,
+body.ti-sobrio .reports-kpi-grid .reports-kpi-card.blue .reports-kpi-icon,
+body.ti-sobrio .reports-kpi-grid .reports-kpi-card.green .reports-kpi-icon,
+body.ti-sobrio .reports-kpi-grid .reports-kpi-card.orange .reports-kpi-icon,
+body.ti-sobrio .reports-kpi-grid .reports-kpi-card.purple .reports-kpi-icon {
+    background: #f1f5f9 !important;
+    border: 1px solid #eef2f7 !important;
+    color: #64748b !important;
+}

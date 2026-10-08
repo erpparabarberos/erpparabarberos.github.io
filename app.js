@@ -1090,13 +1090,13 @@ const newTITicketFormHTML = `
 
     <div class="reports-modern-header">
         <div class="reports-title-wrap">
-            <div class="reports-main-icon">📈</div>
+
             <div>
-                <h1>CENTRO DE ANÁLISIS</h1>
+                <h1>Reportes</h1>
             </div>
         </div>
 
-        <button id="export-report-pdf" class="reports-export-pdf">📄 Exportar PDF</button>
+        <button id="export-report-pdf" class="reports-export-pdf">Exportar PDF</button>
     </div>
 
     <div class="reports-filter-card">
@@ -1140,7 +1140,7 @@ const newTITicketFormHTML = `
 
     <div class="reports-kpi-grid">
         <div class="reports-kpi-card blue">
-            <div class="reports-kpi-icon">🎫</div>
+            <div class="reports-kpi-icon">${tiIcono('soportes')}</div>
             <div>
                 <strong id="reports-total-tickets">0</strong>
                 <span>Total tickets</span>
@@ -1149,7 +1149,7 @@ const newTITicketFormHTML = `
         </div>
 
         <div class="reports-kpi-card green">
-            <div class="reports-kpi-icon">✓</div>
+            <div class="reports-kpi-icon">${tiIcono('cerrado')}</div>
             <div>
                 <strong id="reports-closed-tickets">0</strong>
                 <span>Cerrados</span>
@@ -1158,7 +1158,7 @@ const newTITicketFormHTML = `
         </div>
 
         <div class="reports-kpi-card orange">
-            <div class="reports-kpi-icon">◷</div>
+            <div class="reports-kpi-icon">${tiIcono('seguimiento')}</div>
             <div>
                 <strong id="reports-progress-tickets">0</strong>
                 <span>En curso</span>
@@ -1167,7 +1167,7 @@ const newTITicketFormHTML = `
         </div>
 
         <div class="reports-kpi-card purple">
-            <div class="reports-kpi-icon">⏱</div>
+            <div class="reports-kpi-icon">${tiIcono('tiempo')}</div>
             <div>
                 <strong id="reports-time-spent">0h 0m</strong>
                 <span>Tiempo invertido</span>
@@ -1176,7 +1176,7 @@ const newTITicketFormHTML = `
         </div>
 
         <div class="reports-kpi-card blue">
-            <div class="reports-kpi-icon">📁</div>
+            <div class="reports-kpi-icon">${tiIcono('nota')}</div>
             <div>
                 <strong id="reports-top-category">N/A</strong>
                 <span>Categoría principal</span>
@@ -1185,7 +1185,7 @@ const newTITicketFormHTML = `
         </div>
 
         <div class="reports-kpi-card blue">
-            <div class="reports-kpi-icon">👤</div>
+            <div class="reports-kpi-icon">${tiIcono('usuario')}</div>
             <div>
                 <strong id="reports-top-requester">N/A</strong>
                 <span>Solicitante top</span>
@@ -3528,14 +3528,14 @@ if (quickNoteRawAfterSave) {
     endDateInput.value = endDefault.toISOString().split('T')[0];
 
     const chartColors = {
-        blue: '#2563eb',
-        green: '#22c55e',
-        orange: '#f97316',
-        purple: '#8b5cf6',
-        red: '#ef4444',
-        cyan: '#14b8a6',
-        gray: '#64748b',
-        yellow: '#facc15'
+        blue: '#1d4ed8',
+        green: '#94a3b8',
+        orange: '#0f172a',
+        purple: '#6f8ff0',
+        red: '#dc2626',
+        cyan: '#c7d7fe',
+        gray: '#cbd5e1',
+        yellow: '#475569'
     };
 
     function destroyChart(instanceName) {
@@ -3579,11 +3579,23 @@ if (quickNoteRawAfterSave) {
         return labels[type] || capitalizar(type || 'Otro');
     }
 
+    // Nombre legible de la categoría ("equipo-lento" → "Equipo lento"; si no hay categoría, el tipo: "ti" → "Soporte TI")
+    const NOMBRES_CATEGORIA = {
+        'impresora': 'Impresora',
+        'equipo-lento': 'Equipo lento',
+        'internet': 'Internet',
+        'correo': 'Correo',
+        'camara': 'Cámara',
+        'instalacion': 'Instalación / configuración',
+        'usuario-contrasena': 'Usuario o contraseña',
+        'app-interna': 'App interna',
+        'otro': 'Otro'
+    };
+
     function getCategoryLabel(ticket) {
-        return ticket.category ||
-            ticket.supportType ||
-            ticket.ticketType ||
-            'Sin categoría';
+        if (ticket.category) return NOMBRES_CATEGORIA[ticket.category] || ticket.category;
+        const tipo = ticket.supportType || ticket.ticketType;
+        return tipo ? getTypeLabel(tipo) : 'Sin categoría';
     }
 
     function getDeviceNamesFromTicket(ticket, devicesMap) {
@@ -3779,7 +3791,7 @@ if (quickNoteRawAfterSave) {
                 labels: ['Cerrados', 'En curso', 'Pendientes'],
                 datasets: [{
                     data: [closed, progress, pending],
-                    backgroundColor: [chartColors.green, chartColors.orange, chartColors.purple],
+                    backgroundColor: ['#94a3b8', chartColors.blue, chartColors.orange],
                     borderWidth: 0
                 }]
             },
@@ -3800,12 +3812,12 @@ if (quickNoteRawAfterSave) {
                     if (!chartArea) return;
 
                     ctx.save();
-                    ctx.font = '800 24px Arial';
+                    ctx.font = "800 24px 'Inter', system-ui, sans-serif";
                     ctx.fillStyle = '#0f172a';
                     ctx.textAlign = 'center';
                     ctx.fillText(total, (chartArea.left + chartArea.right) / 2, (chartArea.top + chartArea.bottom) / 2 - 4);
 
-                    ctx.font = '700 12px Arial';
+                    ctx.font = "600 12px 'Inter', system-ui, sans-serif";
                     ctx.fillStyle = '#64748b';
                     ctx.fillText('Total', (chartArea.left + chartArea.right) / 2, (chartArea.top + chartArea.bottom) / 2 + 18);
                     ctx.restore();
@@ -3895,19 +3907,19 @@ if (quickNoteRawAfterSave) {
                         label: 'Creados',
                         data: createdData,
                         borderColor: chartColors.blue,
-                        backgroundColor: 'rgba(37,99,235,0.08)',
-                        fill: true,
-                        tension: 0.35,
-                        pointRadius: 3
+                        backgroundColor: chartColors.blue,
+                        fill: false,
+                        tension: 0.25,
+                        pointRadius: 2
                     },
                     {
                         label: 'Cerrados',
                         data: closedData,
                         borderColor: chartColors.green,
-                        backgroundColor: 'rgba(34,197,94,0.08)',
-                        fill: true,
-                        tension: 0.35,
-                        pointRadius: 3
+                        backgroundColor: chartColors.green,
+                        fill: false,
+                        tension: 0.25,
+                        pointRadius: 2
                     }
                 ]
             },
