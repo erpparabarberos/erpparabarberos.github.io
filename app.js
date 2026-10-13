@@ -1607,115 +1607,108 @@ const newTITicketFormHTML = `
 </section>
 `;
     const servicesModernPageHTML = `
-<section class="services-modern-page">
-
-    <div class="services-modern-header">
-        <div class="services-modern-title-wrap">
-            <div class="services-modern-main-icon">📡</div>
+<section class="services-modern-page inventory-modern-page">
+    <div class="inventory-modern-header">
+        <div class="inventory-modern-title-wrap">
             <div>
                 <h1 id="services-page-title">Servicios</h1>
             </div>
         </div>
-
-        <div class="services-modern-actions-top">
-            <button id="add-service-btn" class="services-action-btn blue open-form-modal-btn">+ Añadir servicio</button>
-            <button class="services-action-btn light export-btn csv" data-format="csv">⬇ Exportar</button>
-        </div>
     </div>
 
-    <div class="services-modern-tabs" id="services-modern-tabs">
-        <a href="#services-internet" class="services-modern-tab" data-category="internet">📡 Internet</a>
-        <a href="#services-telefonia" class="services-modern-tab" data-category="telefonia">☎ Telefonía</a>
-        <a href="#services-otros" class="services-modern-tab" data-category="otros">▦ Otros</a>
+    <div class="inventory-modern-tabs" id="services-modern-tabs">
+        <a href="#services-internet" class="services-modern-tab inventory-modern-tab" data-category="internet">${tiIcono('servicios')} Internet</a>
+        <a href="#services-telefonia" class="services-modern-tab inventory-modern-tab" data-category="telefonia">${tiIcono('auricular')} Telefonía</a>
+        <a href="#services-otros" class="services-modern-tab inventory-modern-tab" data-category="otros">${tiIcono('nota')} Otros</a>
     </div>
 
-    <div class="services-filter-card">
-        <div class="services-search-wrap">
-            <input type="text" id="services-search-input" placeholder="Buscar por código, proveedor, plan, contrato o ubicación...">
-        </div>
+    <div class="inventory-modern-panel">
+        <div class="inventory-modern-toolbar">
+            <div class="inventory-modern-search-wrap">
+                <input type="text" id="services-search-input" placeholder="Buscar por código, proveedor, plan, contrato o ubicación...">
+            </div>
 
-        <div class="services-filter-item">
-            <label>Estado</label>
-            <select id="services-filter-status">
-                <option value="">Todos</option>
-            </select>
-        </div>
+            <div class="inventory-modern-filters">
+                <div class="inventory-filter-item">
+                    <label>Estado</label>
+                    <select id="services-filter-status">
+                        <option value="">Todos</option>
+                    </select>
+                </div>
 
-        <div class="services-filter-item">
-            <label>Proveedor</label>
-            <select id="services-filter-provider">
-                <option value="">Todos</option>
-            </select>
-        </div>
+                <div class="inventory-filter-item">
+                    <label>Proveedor</label>
+                    <select id="services-filter-provider">
+                        <option value="">Todos</option>
+                    </select>
+                </div>
 
-        <div class="services-filter-item">
-            <label>Ubicación</label>
-            <select id="services-filter-location">
-                <option value="">Todas</option>
-            </select>
-        </div>
+                <div class="inventory-filter-item" id="services-filter-location-wrap">
+                    <label>Ubicación</label>
+                    <select id="services-filter-location">
+                        <option value="">Todas</option>
+                    </select>
+                </div>
+            </div>
 
-        <button type="button" id="services-clear-filters" class="services-clear-btn">Limpiar filtros</button>
-    </div>
-
-    <div class="services-kpi-grid">
-        <div class="services-kpi-card">
-            <div class="services-kpi-icon blue">📶</div>
-            <div>
-                <strong id="services-kpi-total">0</strong>
-                <span>Servicios totales</span>
-                <small>Todos los servicios registrados</small>
+            <div class="inventory-modern-actions">
+                <button type="button" id="services-clear-filters" class="export-btn services-clear-btn">Limpiar filtros</button>
+                <button class="export-btn csv" data-format="csv">Exportar</button>
+                <button id="add-service-btn" class="btn-blue open-form-modal-btn">Añadir servicio</button>
             </div>
         </div>
 
-        <div class="services-kpi-card">
-            <div class="services-kpi-icon green">✓</div>
-            <div>
-                <strong id="services-kpi-active">0</strong>
-                <span>Servicios activos</span>
-                <small id="services-kpi-active-percent">0% del total</small>
+        <div class="inventory-kpi-grid services-kpi-grid">
+            <div class="inventory-kpi-card">
+                <div class="inventory-kpi-icon">${tiIcono('servicios')}</div>
+                <div>
+                    <strong id="services-kpi-total">0</strong>
+                    <span>Servicios totales</span>
+                    <small>Todos los registros</small>
+                </div>
+            </div>
+
+            <div class="inventory-kpi-card">
+                <div class="inventory-kpi-icon">${tiIcono('cerrado')}</div>
+                <div>
+                    <strong id="services-kpi-active">0</strong>
+                    <span>Servicios activos</span>
+                    <small id="services-kpi-active-percent">0% del total</small>
+                </div>
+            </div>
+
+            <div class="inventory-kpi-card" id="services-kpi-speed-card">
+                <div class="inventory-kpi-icon">${tiIcono('rayo')}</div>
+                <div>
+                    <strong id="services-kpi-speed">0</strong>
+                    <span>Velocidad contratada</span>
+                    <small>Suma de los servicios activos</small>
+                </div>
+            </div>
+
+            <div class="inventory-kpi-card">
+                <div class="inventory-kpi-icon">${tiIcono('factura')}</div>
+                <div>
+                    <strong id="services-kpi-cost">$ 0</strong>
+                    <span>Costo mensual</span>
+                    <small>Servicios activos</small>
+                </div>
             </div>
         </div>
 
-        <div class="services-kpi-card">
-            <div class="services-kpi-icon orange">◷</div>
-            <div>
-                <strong id="services-kpi-speed">0</strong>
-                <span>Velocidad total contratada</span>
-                <small>Suma de velocidades</small>
+        <div class="inventory-table-card">
+            <div class="inventory-table-wrapper">
+                <table id="data-table" class="inventory-modern-table services-modern-table">
+                    <thead id="services-table-head"></thead>
+                    <tbody id="services-table-body"></tbody>
+                </table>
             </div>
-        </div>
 
-        <div class="services-kpi-card">
-            <div class="services-kpi-icon purple">$</div>
-            <div>
-                <strong id="services-kpi-cost">$ 0</strong>
-                <span>Costo mensual total</span>
-                <small>Costo mensual de servicios activos</small>
+            <div class="inventory-table-footer">
+                <span id="services-results-text">Mostrando 0 registros</span>
             </div>
         </div>
     </div>
-
-    <div class="services-table-card">
-        <div class="services-table-wrapper">
-            <table id="data-table" class="services-modern-table">
-                <thead id="services-table-head"></thead>
-                <tbody id="services-table-body"></tbody>
-            </table>
-        </div>
-
-        <div class="services-table-footer">
-            <span id="services-results-text">Mostrando 0 registros</span>
-
-            <div class="services-pagination-mock">
-                <button type="button">‹</button>
-                <button type="button" class="active">1</button>
-                <button type="button">2</button>
-                <button type="button">›</button>
-            </div>
-        </div>
-    </div>
-
 </section>
 `;
     const maintenancePlanningPageHTML = `
@@ -4188,13 +4181,22 @@ if (quickNoteRawAfterSave) {
     const resultsText = document.getElementById('services-results-text');
 
     pageTitle.textContent = config.title;
-    addButton.textContent = `+ Añadir ${config.titleSingular}`;
+    addButton.textContent = `Añadir ${config.titleSingular.toLowerCase()}`;
     addButton.dataset.type = 'services';
     addButton.dataset.category = category;
 
     document.querySelectorAll('.services-modern-tab').forEach(tab => {
         tab.classList.toggle('active', tab.dataset.category === category);
     });
+
+    // La velocidad y la ubicación solo existen en Internet
+    if (!config.fields.speed) {
+        document.getElementById('services-kpi-speed-card').classList.add('ti-oculto');
+        document.querySelector('.services-kpi-grid').style.gridTemplateColumns = 'repeat(3, minmax(0, 1fr))';
+    }
+    if (!config.fields.location) {
+        document.getElementById('services-filter-location-wrap').classList.add('ti-oculto');
+    }
 
     const iconEdit = tiIcono('editar');
     const iconView = tiIcono('ver');
@@ -4265,26 +4267,22 @@ if (quickNoteRawAfterSave) {
 
         let cls = 'neutral';
 
-        if (normalized.includes('activo')) cls = 'active';
-        else if (normalized.includes('suspendido')) cls = 'suspended';
-        else if (normalized.includes('inactivo')) cls = 'inactive';
+        if (normalized === 'activo') cls = 'green';
+        else if (normalized.includes('suspendido')) cls = 'orange';
+        else if (normalized.includes('inactivo')) cls = 'gray';
 
-        return `<span class="services-status-badge ${cls}">${status || 'N/A'}</span>`;
+        return `<span class="inventory-status-badge ${cls}">${status || 'N/A'}</span>`;
     };
 
     const updateKPIs = (items) => {
         const total = items.length;
 
-        const active = items.filter(item => {
-            const st = normalizeText(item.status);
-            return st.includes('activo');
-        }).length;
+        const activos = items.filter(item => normalizeText(item.status) === 'activo');
+        const active = activos.length;
 
-        const totalCost = items
-            .filter(item => normalizeText(item.status).includes('activo'))
-            .reduce((sum, item) => sum + parseMoney(item.monthlyCost), 0);
+        const totalCost = activos.reduce((sum, item) => sum + parseMoney(item.monthlyCost), 0);
 
-        const totalSpeed = items.reduce((sum, item) => {
+        const totalSpeed = activos.reduce((sum, item) => {
             return sum + parseSpeedToMbps(item.speed);
         }, 0);
 
@@ -4343,7 +4341,7 @@ if (quickNoteRawAfterSave) {
                     value = value || 'N/A';
                 }
 
-                return `<td>${value}</td>`;
+                return `<td data-field="${key}">${value}</td>`;
             }).join('');
 
             return `
@@ -4351,7 +4349,7 @@ if (quickNoteRawAfterSave) {
                     <td><input type="checkbox" class="services-row-check"></td>
                     ${cellsHTML}
                     <td>
-                    <div class="services-actions-cell">
+                    <div class="inventory-actions-cell services-actions-cell">
                     <button type="button" class="action-icon-edit" data-id="${item.id}" data-collection="services" data-category="${category}" title="Editar">${iconEdit}</button>
                     <button type="button" class="action-icon-view" data-id="${item.id}" title="Ver historial">${iconView}</button>
                     <button type="button" class="action-icon-delete" data-id="${item.id}" data-collection="services" title="Eliminar">${iconDelete}</button>
@@ -5393,7 +5391,7 @@ const buildTasksForMonth = () => {
 
     addButton.dataset.type = 'credentials';
     addButton.dataset.category = category;
-    addButton.textContent = `+ Añadir ${config.titleSingular}`;
+    addButton.textContent = `Añadir ${config.titleSingular.toLowerCase()}`;
 
     const iconEdit = tiIcono('editar');
 

@@ -15563,3 +15563,110 @@ body.ti-sobrio .ti-oculto,
 body.ti-sobrio .inventory-kpi-grid .inventory-kpi-card.ti-oculto {
     display: none !important;
 }
+
+/* =====================================================
+   SERVICIOS: usa la misma estructura que Inventario
+===================================================== */
+
+body.ti-sobrio .inventory-modern-actions #add-service-btn,
+body.ti-sobrio .inventory-modern-actions #add-service-btn:hover {
+    height: 42px !important;
+    padding: 0 18px !important;
+    background: var(--ti-tinta) !important;
+    border: 1px solid var(--ti-tinta) !important;
+    border-radius: 6px !important;
+    box-shadow: none !important;
+    color: #fff !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    white-space: nowrap !important;
+}
+
+body.ti-sobrio .inventory-modern-actions #add-service-btn:hover {
+    background: #1e293b !important;
+}
+
+body.ti-sobrio .services-modern-page .inventory-modern-actions .services-clear-btn {
+    white-space: nowrap !important;
+}
+
+body.ti-sobrio .services-actions-cell > button,
+body.ti-sobrio .services-actions-cell > button:hover {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    display: grid !important;
+    place-items: center !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 1px solid transparent !important;
+    border-radius: 6px !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: var(--ti-gris) !important;
+    cursor: pointer !important;
+}
+
+body.ti-sobrio .services-actions-cell > button:hover {
+    border-color: var(--ti-linea) !important;
+    background: #fff !important;
+    color: var(--ti-tinta) !important;
+}
+
+body.ti-sobrio .services-actions-cell > button.action-icon-delete:hover {
+    color: var(--ti-peligro) !important;
+}
+
+body.ti-sobrio .services-actions-cell svg.ti-ico {
+    width: 17px;
+    height: 17px;
+    pointer-events: none;
+}
+
+body.ti-sobrio .services-modern-table td[data-field="description"] {
+    white-space: normal !important;
+    min-width: 220px !important;
+}
+
+body.ti-sobrio .inventory-modern-filters .inventory-filter-item.ti-oculto {
+    display: none !important;
+}
+
+@media (max-width: 768px) {
+    body.ti-sobrio .services-modern-page .inventory-modern-actions {
+        flex-wrap: wrap !important;
+    }
+
+    body.ti-sobrio .services-modern-page .inventory-modern-actions #add-service-btn {
+        flex: 1 1 100% !important;
+    }
+
+    body.ti-sobrio .services-kpi-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+}
+
+body.ti-sobrio .services-actions-cell > button svg.ti-ico,
+body.ti-sobrio .services-actions-cell > button:hover svg.ti-ico {
+    fill: none !important;
+    stroke: currentColor !important;
+}
+
+body.ti-sobrio .services-modern-table input.services-row-check {
+    width: 16px !important;
+    height: 16px !important;
+    min-width: 16px !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+body.ti-sobrio .services-kpi-grid .inventory-kpi-card > div:last-child {
+    min-width: 0 !important;
+}
+
+@media (max-width: 520px) {
+    body.ti-sobrio .services-kpi-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
