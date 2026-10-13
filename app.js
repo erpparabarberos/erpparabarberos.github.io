@@ -1481,7 +1481,8 @@ const newTITicketFormHTML = `
     <div class="inventory-modern-tabs" id="inventory-modern-tabs">
         <a href="#inventory-computers" class="inventory-modern-tab" data-category="computers">${tiIcono('inventario')} Computadores</a>
         <a href="#inventory-phones" class="inventory-modern-tab" data-category="phones">${tiIcono('celular')} Teléfonos</a>
-        <a href="#inventory-cameras" class="inventory-modern-tab" data-category="cameras">${tiIcono('camara')} DVR</a>
+        <a href="#inventory-cameras" class="inventory-modern-tab" data-category="cameras">${tiIcono('grabador')} DVR</a>
+        <a href="#inventory-camaras" class="inventory-modern-tab" data-category="camaras">${tiIcono('camara')} Cámaras</a>
         <a href="#inventory-modems" class="inventory-modern-tab" data-category="modems">${tiIcono('modem')} Módems</a>
         <a href="#inventory-communicators" class="inventory-modern-tab" data-category="communicators">${tiIcono('radio')} Radios</a>
         <a href="#inventory-network" class="inventory-modern-tab" data-category="network">${tiIcono('servicios')} Redes</a>
@@ -1977,7 +1978,7 @@ const newTITicketFormHTML = `
     async function exportStatsToPDF() { const reportElement = document.getElementById('stats-content'); const canvas = await html2canvas(reportElement, { scale: 2 }); const imgData = canvas.toDataURL('image/png'); const pdf = new jsPDF('p', 'mm', 'a4'); const pdfWidth = pdf.internal.pageSize.getWidth(); const pdfHeight = (canvas.height * pdfWidth) / canvas.width; pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight); pdf.save("reporte-estadisticas.pdf"); }
     function setupTableSearch(inputId, tableId) { const searchInput = document.getElementById(inputId); if (!searchInput) return; if (searchInput.dataset.listenerAttached) return; searchInput.dataset.listenerAttached = 'true'; searchInput.addEventListener('input', (e) => { const searchTerm = e.target.value.toLowerCase().trim(); const table = document.getElementById(tableId); const rows = table.querySelectorAll('tbody tr'); rows.forEach(row => { const rowText = row.textContent.toLowerCase(); if (rowText.includes(searchTerm)) { row.style.display = ''; } else { row.style.display = 'none'; } }); }); }
 
-    const inventoryCategoryConfig = { computers: { title: 'Computadores', titleSingular: 'Computador', prefix: 'PC-', counter: 'computerCounter', fields: { id: { label: 'Código' }, brand: { label: 'Marca', type: 'text' }, model: { label: 'Modelo', type: 'text' }, serial: { label: 'Serial', type: 'text' }, user: { label: 'Usuario', type: 'text' }, cpu: { label: 'CPU', type: 'text' }, ram: { label: 'RAM (GB)', type: 'text' }, storage: { label: 'Almacenamiento (GB)', type: 'text' }, os: { label: 'Licencia de SO Asignada', type: 'select', optionsSource: 'software-licenses' }, sede: { label: 'Sede', type: 'select', optionsSource: 'locations' }, purchaseDate: { label: 'Fecha de Compra', type: 'date' }, warrantyEndDate: { label: 'Fin de Garantía', type: 'date' }, lifecycleStatus: { label: 'Estado', type: 'select', options: ['En Uso', 'En TI', 'Dañado', 'Retirado'] }, observaciones: { label: 'Observaciones', type: 'textarea' } } }, phones: { title: 'Teléfonos', titleSingular: 'Teléfono', prefix: 'TEL-', counter: 'phoneCounter', fields: { id: { label: 'Código' }, brand: { label: 'Marca', type: 'text' }, model: { label: 'Modelo', type: 'text' }, serial: { label: 'Serial', type: 'text' }, imei: { label: 'IMEI', type: 'text' }, phoneNumber: { label: 'N/Teléfono', type: 'text' }, user: { label: 'Usuario', type: 'text' }, purchaseDate: { label: 'Fecha de Compra', type: 'date' }, warrantyEndDate: { label: 'Fin de Garantía', type: 'date' }, lifecycleStatus: { label: 'Fase del Ciclo de Vida', type: 'select', options: ['Producción', 'En TI', 'En Mantenimiento', 'Retirado'] } } }, cameras: { title: 'DVR', titleSingular: 'DVR', prefix: 'DVR-', counter: 'dvrCounter', fields: { id: { label: 'Código' }, brand: { label: 'Marca', type: 'text' }, model: { label: 'Modelo', type: 'text' }, serial: { label: 'Serial', type: 'text' }, ipAddress: { label: 'Dirección IP', type: 'text' }, location: { label: 'Ubicación Física', type: 'text' } } }, modems: { title: 'Módems', titleSingular: 'Módem', prefix: 'MOD-', counter: 'modemsCounter', fields: { id: { label: 'Código' }, brand: { label: 'Marca', type: 'text' }, model: { label: 'Modelo', type: 'text' }, serial: { label: 'Serial', type: 'text' }, serviceProvider: { label: 'Proveedor de Internet', type: 'text' }, location: { label: 'Ubicación Física', type: 'text' } } }, communicators: { title: 'Comunicadores', titleSingular: 'Comunicador', prefix: 'COM-', counter: 'communicatorsCounter', fields: { id: { label: 'Código' }, brand: { label: 'Marca', type: 'text' }, model: { label: 'Modelo', type: 'text' }, serial: { label: 'Serial', type: 'text' }, type: { label: 'Tipo (Satelital, Radio)', type: 'text' } } }, network: { title: 'Dispositivos de Red', titleSingular: 'Dispositivo de Red', prefix: 'NET-', counter: 'redCounter', fields: { id: { label: 'Código' }, type: { label: 'Tipo (Switch, Router, AP)', type: 'text' }, brand: { label: 'Marca', type: 'text' }, model: { label: 'Modelo', type: 'text' }, ipAddress: { label: 'Dirección IP', type: 'text' }, location: { label: 'Ubicación Física', type: 'text' } } }, printers: { title: 'Impresoras', titleSingular: 'Impresora', prefix: 'IMP-', counter: 'impresoraCounter', fields: { id: { label: 'Código' }, brand: { label: 'Marca', type: 'text' }, model: { label: 'Modelo', type: 'text' }, serial: { label: 'Serial', type: 'text' }, ipAddress: { label: 'Dirección IP', type: 'text' }, type: { label: 'Tipo (Láser, Tinta)', type: 'text' }, location: { label: 'Ubicación Física', type: 'text' } } }, monitors: { title: 'Monitores', titleSingular: 'Monitor', prefix: 'MON-', counter: 'monitorCounter', fields: { id: { label: 'ID' }, brand: { label: 'Marca', type: 'text' }, model: { label: 'Modelo', type: 'text' }, serial: { label: 'Serial', type: 'text' }, inches: { label: 'Pulgadas', type: 'text' }, area: { label: 'Área', type: 'text' }, purchaseDate: { label: 'Fecha de Compra', type: 'date' }, lifecycleStatus: { label: 'Estado', type: 'select', options: ['En Uso', 'En TI', 'Dañado', 'Retirado'] } } } };
+    const inventoryCategoryConfig = { computers: { title: 'Computadores', titleSingular: 'Computador', prefix: 'PC-', counter: 'computerCounter', fields: { id: { label: 'Código' }, brand: { label: 'Marca', type: 'text' }, model: { label: 'Modelo', type: 'text' }, serial: { label: 'Serial', type: 'text' }, user: { label: 'Usuario', type: 'text' }, cpu: { label: 'CPU', type: 'text' }, ram: { label: 'RAM (GB)', type: 'text' }, storage: { label: 'Almacenamiento (GB)', type: 'text' }, os: { label: 'Licencia de SO Asignada', type: 'select', optionsSource: 'software-licenses' }, sede: { label: 'Sede', type: 'select', optionsSource: 'locations' }, purchaseDate: { label: 'Fecha de Compra', type: 'date' }, warrantyEndDate: { label: 'Fin de Garantía', type: 'date' }, lifecycleStatus: { label: 'Estado', type: 'select', options: ['En Uso', 'En TI', 'Dañado', 'Retirado'] }, observaciones: { label: 'Observaciones', type: 'textarea' } } }, phones: { title: 'Teléfonos', titleSingular: 'Teléfono', prefix: 'TEL-', counter: 'phoneCounter', fields: { id: { label: 'Código' }, brand: { label: 'Marca', type: 'text' }, model: { label: 'Modelo', type: 'text' }, serial: { label: 'Serial', type: 'text' }, imei: { label: 'IMEI', type: 'text' }, phoneNumber: { label: 'N/Teléfono', type: 'text' }, user: { label: 'Usuario', type: 'text' }, purchaseDate: { label: 'Fecha de Compra', type: 'date' }, warrantyEndDate: { label: 'Fin de Garantía', type: 'date' }, lifecycleStatus: { label: 'Fase del Ciclo de Vida', type: 'select', options: ['Producción', 'En TI', 'En Mantenimiento', 'Retirado'] } } }, cameras: { title: 'DVR', titleSingular: 'DVR', prefix: 'DVR-', counter: 'dvrCounter', fields: { id: { label: 'Código' }, brand: { label: 'Marca', type: 'text' }, model: { label: 'Modelo', type: 'text' }, serial: { label: 'Serial', type: 'text' }, ipAddress: { label: 'Dirección IP', type: 'text' }, location: { label: 'Ubicación Física', type: 'text' } } }, camaras: { title: 'Cámaras', titleSingular: 'Cámara', prefix: 'CAM-', counter: 'camaraCounter', fields: { id: { label: 'Código' }, brand: { label: 'Marca', type: 'text' }, model: { label: 'Modelo', type: 'text' }, cameraType: { label: 'Tipo', type: 'select', options: ['IP', 'Análoga'] }, sede: { label: 'Sede', type: 'select', optionsSource: 'locations' }, location: { label: 'Ubicación Física', type: 'text' } } }, modems: { title: 'Módems', titleSingular: 'Módem', prefix: 'MOD-', counter: 'modemsCounter', fields: { id: { label: 'Código' }, brand: { label: 'Marca', type: 'text' }, model: { label: 'Modelo', type: 'text' }, serial: { label: 'Serial', type: 'text' }, serviceProvider: { label: 'Proveedor de Internet', type: 'text' }, location: { label: 'Ubicación Física', type: 'text' } } }, communicators: { title: 'Comunicadores', titleSingular: 'Comunicador', prefix: 'COM-', counter: 'communicatorsCounter', fields: { id: { label: 'Código' }, brand: { label: 'Marca', type: 'text' }, model: { label: 'Modelo', type: 'text' }, serial: { label: 'Serial', type: 'text' }, type: { label: 'Tipo (Satelital, Radio)', type: 'text' } } }, network: { title: 'Dispositivos de Red', titleSingular: 'Dispositivo de Red', prefix: 'NET-', counter: 'redCounter', fields: { id: { label: 'Código' }, type: { label: 'Tipo (Switch, Router, AP)', type: 'text' }, brand: { label: 'Marca', type: 'text' }, model: { label: 'Modelo', type: 'text' }, ipAddress: { label: 'Dirección IP', type: 'text' }, location: { label: 'Ubicación Física', type: 'text' } } }, printers: { title: 'Impresoras', titleSingular: 'Impresora', prefix: 'IMP-', counter: 'impresoraCounter', fields: { id: { label: 'Código' }, brand: { label: 'Marca', type: 'text' }, model: { label: 'Modelo', type: 'text' }, serial: { label: 'Serial', type: 'text' }, ipAddress: { label: 'Dirección IP', type: 'text' }, type: { label: 'Tipo (Láser, Tinta)', type: 'text' }, location: { label: 'Ubicación Física', type: 'text' } } }, monitors: { title: 'Monitores', titleSingular: 'Monitor', prefix: 'MON-', counter: 'monitorCounter', fields: { id: { label: 'ID' }, brand: { label: 'Marca', type: 'text' }, model: { label: 'Modelo', type: 'text' }, serial: { label: 'Serial', type: 'text' }, inches: { label: 'Pulgadas', type: 'text' }, area: { label: 'Área', type: 'text' }, purchaseDate: { label: 'Fecha de Compra', type: 'date' }, lifecycleStatus: { label: 'Estado', type: 'select', options: ['En Uso', 'En TI', 'Dañado', 'Retirado'] } } } };
     const servicesCategoryConfig = { internet: { title: 'Internet', titleSingular: 'Servicio de Internet', prefix: 'SRV-INET-', counter: 'internetServiceCounter', fields: { id: { label: 'Código' }, provider: { label: 'Proveedor', type: 'text' }, planName: { label: 'Nombre del Plan', type: 'text' }, contract: { label: 'Contrato', type: 'text' }, speed: { label: 'Velocidad Contratada', type: 'text' }, monthlyCost: { label: 'Costo Mensual', type: 'number' }, location: { label: 'Ubicación', type: 'text' }, status: { label: 'Estado', type: 'select', options: ['Activo', 'Inactivo'] } } }, telefonia: { title: 'Servicios de Telefonía', titleSingular: 'Servicio de Telefonía', prefix: 'SRV-TEL-', counter: 'telefoniaServiceCounter', fields: { id: { label: 'Código' }, provider: { label: 'Proveedor', type: 'text' }, planName: { label: 'Nombre del plan', type: 'text' }, contrac: { label: 'Número de cuenta', type: 'text' }, bill: { label: 'Número de factura', type: 'text' }, linesIncluded: { label: 'Línea', type: 'number' }, monthlyCost: { label: 'Costo mensual', type: 'number' }, assignedUser: { label: 'Usuario asignado', type: 'text' }, status: { label: 'Estado', type: 'select', options: ['Activo', 'Inactivo'] } } }, otros: { title: 'Otros Servicios', titleSingular: 'Otro Servicio', prefix: 'SRV-OTH-', counter: 'otrosServiceCounter', fields: { id: { label: 'Código' }, serviceName: { label: 'Nombre del Servicio', type: 'text' }, provider: { label: 'Proveedor', type: 'text' }, description: { label: 'Descripción', type: 'textarea' }, monthlyCost: { label: 'Costo mensual', type: 'number' }, status: { label: 'Estado', type: 'select', options: ['Activo', 'Inactivo'] } } } };
     const credentialsCategoryConfig = {
         emails: { title: 'Correos Electrónicos', titleSingular: 'Credencial de Correo', prefix: 'CRED-EMAIL-', counter: 'emailCounter', fields: { id: { label: 'Código' }, service: { label: 'Servicio (Google, O365)', type: 'text' }, email: { label: 'Correo Electrónico', type: 'email' }, password: { label: 'Contraseña', type: 'text' }, recoveryEmail: { label: 'Correo de recuperación', type: 'email' }, recoveryPhone: { label: 'Número de recuperación', type: 'tel' }, assignedUser: { label: 'Usuario asignado', type: 'text' }, area: { label: 'Área', type: 'text' }, status: { label: 'Estado', type: 'select', options: ['Activo', 'Inactivo'] }, notes: { label: 'Notas', type: 'textarea' } } },
@@ -4013,7 +4014,8 @@ if (quickNoteRawAfterSave) {
 
         if (id.startsWith('PC-')) return 'computers';
         if (id.startsWith('TEL-')) return 'phones';
-        if (id.startsWith('CAM-')) return 'cameras';
+        if (id.startsWith('DVR-')) return 'cameras';
+        if (id.startsWith('CAM-')) return 'camaras';
         if (id.startsWith('MOD-')) return 'modems';
         if (id.startsWith('COM-')) return 'communicators';
         if (id.startsWith('NET-')) return 'network';
@@ -4056,7 +4058,8 @@ if (quickNoteRawAfterSave) {
     const categoryLabels = {
         computers: 'Computadores',
         phones: 'Teléfonos',
-        cameras: 'Cámaras',
+        cameras: 'DVR',
+        camaras: 'Cámaras',
         modems: 'Módems',
         communicators: 'Comunicadores',
         network: 'Dispositivos de Red',
@@ -5998,14 +6001,25 @@ tableBody.addEventListener('click', (e) => {
 
     let allItems = [];
 
-    const fillSelectOptions = (selectEl, values, placeholder) => {
+    const fillSelectOptions = (selectEl, values, placeholder, etiqueta = (v) => v) => {
         const currentValue = selectEl.value;
         selectEl.innerHTML = `<option value="">${placeholder}</option>`;
         [...new Set(values.filter(Boolean))].sort().forEach(value => {
-            selectEl.innerHTML += `<option value="${value}">${value}</option>`;
+            selectEl.innerHTML += `<option value="${value}">${etiqueta(value)}</option>`;
         });
         selectEl.value = currentValue;
     };
+
+    // La sede se guarda con el código de la ubicación (LOC-1…); en la tabla y el filtro se muestra su nombre.
+    let nombresSede = {};
+    const nombreSede = (valor) => nombresSede[valor] || valor;
+    db.collection('locations').get().then(snap => {
+        snap.forEach(doc => { nombresSede[doc.id] = doc.data().name || doc.id; });
+        if (allItems.length) {
+            fillSelectOptions(sedeFilter, allItems.map(item => item.sede), 'Todas las sedes', nombreSede);
+            renderTable();
+        }
+    }).catch(error => console.error('No se pudieron cargar las sedes:', error));
 
     const getWarrantyStatus = (dateStr) => {
         if (!dateStr) return 'sin-garantia';
@@ -6110,7 +6124,9 @@ tableBody.addEventListener('click', (e) => {
             for (const key of Object.keys(config.fields)) {
                 let cellContent = key === 'id' ? item.id : (item[key] || 'N/A');
 
-                if (key === 'lifecycleStatus' || key === 'status') {
+                if (key === 'sede' && item.sede) {
+                    cellContent = nombreSede(item.sede);
+                } else if (key === 'lifecycleStatus' || key === 'status') {
                     cellContent = getStatusBadge(item[key] || 'N/A');
                 } else if (key === 'os' && cellContent !== 'N/A') {
                     cellContent = `<a href="#credentials-software" style="color:#2563eb; text-decoration:underline;">${cellContent}</a>`;
@@ -6139,7 +6155,7 @@ tableBody.addEventListener('click', (e) => {
         snapshot.forEach(doc => allItems.push({ id: doc.id, ...doc.data() }));
         allItems.sort((a, b) => (a.numericId || 0) - (b.numericId || 0));
 
-        fillSelectOptions(sedeFilter, allItems.map(item => item.sede), 'Todas las sedes');
+        fillSelectOptions(sedeFilter, allItems.map(item => item.sede), 'Todas las sedes', nombreSede);
         fillSelectOptions(statusFilter, allItems.map(item => item.lifecycleStatus || item.status), 'Todos los estados');
         fillSelectOptions(userFilter, allItems.map(item => item.user), 'Todos los usuarios');
 
@@ -7083,7 +7099,8 @@ if (seeAllTicketsBtn) {
         const categoryIcons = {
             computers: tiIcono('inventario'),
             phones: tiIcono('celular'),
-            cameras: tiIcono('camara'),
+            cameras: tiIcono('grabador'),
+            camaras: tiIcono('camara'),
             modems: tiIcono('modem'),
             communicators: tiIcono('radio'),
             network: tiIcono('servicios'),
@@ -7094,7 +7111,8 @@ if (seeAllTicketsBtn) {
         const categoryNames = {
             computers: 'Computadores',
             phones: 'Teléfonos',
-            cameras: 'Cámaras',
+            cameras: 'DVR',
+            camaras: 'Cámaras',
             modems: 'Módems',
             communicators: 'Radios',
             network: 'Redes',
