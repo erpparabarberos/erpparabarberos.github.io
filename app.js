@@ -9369,6 +9369,7 @@ if (exportBtn) {
         nvr: { nombre: 'NVR', icono: 'grabador', conIp: true },
         dvr: { nombre: 'DVR', icono: 'grabador', conIp: true },
         camaras: { nombre: 'Cámaras IP', icono: 'camara', conIp: false },
+        camarasAnalogas: { nombre: 'Cámaras análogas', icono: 'camara', conIp: false },
         pc: { nombre: 'Computador', icono: 'inventario', conIp: false },
         portatil: { nombre: 'Portátil', icono: 'portatil', conIp: false },
         torre: { nombre: 'Torre', icono: 'torre', conIp: false },
