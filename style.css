@@ -15964,3 +15964,281 @@ body.ti-sobrio #planning-new-task-modal .planning-execution-modal,
 body.ti-sobrio #planning-execution-modal .planning-execution-modal {
     border-radius: 6px !important;
 }
+
+/* =====================================================
+   ACCESOS: misma estructura que Inventario
+===================================================== */
+
+body.ti-sobrio .credentials-modern-page .inventory-modern-header h1 {
+    margin: 0 !important;
+}
+
+body.ti-sobrio .credentials-modern-page .inventory-modern-search-wrap {
+    flex: 1 1 100% !important;
+}
+
+body.ti-sobrio .credentials-modern-page .inventory-modern-search-wrap input {
+    width: 100% !important;
+}
+
+body.ti-sobrio .credentials-modern-page .inventory-modern-filters {
+    flex: 1 1 100% !important;
+    display: grid !important;
+    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+}
+
+body.ti-sobrio .credentials-modern-page .inventory-filter-item input,
+body.ti-sobrio .credentials-modern-page .inventory-filter-item select {
+    width: 100% !important;
+}
+
+body.ti-sobrio .credentials-modern-page .inventory-modern-actions {
+    flex: 1 1 100% !important;
+    justify-content: flex-end !important;
+}
+
+body.ti-sobrio .credentials-modern-page .inventory-modern-actions .export-btn {
+    white-space: nowrap !important;
+}
+
+body.ti-sobrio .credentials-kpi-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+}
+
+body.ti-sobrio .credentials-kpi-grid .inventory-kpi-card > div:last-child {
+    min-width: 0 !important;
+}
+
+body.ti-sobrio .credentials-kpi-grid #cred-kpi-last-update {
+    font-size: 20px !important;
+}
+
+/* Barra de seleccionados */
+body.ti-sobrio .credentials-selection-bar {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin: 0 0 12px !important;
+    padding: 10px 12px !important;
+    background: #f8fafc !important;
+    border: 1px solid var(--ti-linea) !important;
+    border-radius: 6px !important;
+    box-shadow: none !important;
+}
+
+body.ti-sobrio .credentials-selection-bar.hidden {
+    display: none !important;
+}
+
+body.ti-sobrio .credentials-selected-info {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin-right: auto !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    color: var(--ti-tinta) !important;
+}
+
+body.ti-sobrio .credentials-selection-bar button,
+body.ti-sobrio .credentials-selection-bar button:hover {
+    display: inline-flex !important;
+    align-items: center !important;
+    height: 34px !important;
+    padding: 0 12px !important;
+    background: #fff !important;
+    border: 1px solid var(--ti-linea) !important;
+    border-radius: 6px !important;
+    box-shadow: none !important;
+    color: var(--ti-tinta) !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    transform: none !important;
+}
+
+body.ti-sobrio .credentials-selection-bar .credentials-selected-delete:hover {
+    border-color: #fecaca !important;
+    color: var(--ti-peligro) !important;
+}
+
+/* Tabla */
+body.ti-sobrio .credentials-modern-table input[type="checkbox"] {
+    width: 16px !important;
+    height: 16px !important;
+    min-width: 16px !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    accent-color: var(--ti-tinta) !important;
+}
+
+body.ti-sobrio .credentials-modern-table th.credentials-check-col,
+body.ti-sobrio .credentials-modern-table td.credentials-check-col {
+    width: 40px !important;
+}
+
+body.ti-sobrio .credentials-modern-table td,
+body.ti-sobrio .credentials-modern-table td .credentials-email-cell {
+    font-weight: 400 !important;
+}
+
+body.ti-sobrio .credentials-modern-table td[data-field="id"] strong {
+    font-weight: 600 !important;
+    color: var(--ti-tinta) !important;
+    white-space: nowrap !important;
+}
+
+body.ti-sobrio .credentials-modern-table td .credentials-email-cell,
+body.ti-sobrio .credentials-modern-table td .credentials-url-cell {
+    color: var(--ti-tinta-2) !important;
+    text-decoration: none !important;
+}
+
+body.ti-sobrio .credentials-password-cell {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    font-family: inherit !important;
+    color: var(--ti-tinta-2) !important;
+}
+
+body.ti-sobrio .credentials-password-cell .credentials-show-password,
+body.ti-sobrio .credentials-password-cell .credentials-show-password:hover {
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px !important;
+    display: grid !important;
+    place-items: center !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+    border: 1px solid transparent !important;
+    border-radius: 6px !important;
+    box-shadow: none !important;
+    color: var(--ti-gris) !important;
+    transform: none !important;
+}
+
+body.ti-sobrio .credentials-password-cell .credentials-show-password:hover,
+body.ti-sobrio .credentials-password-cell .credentials-show-password.active {
+    border-color: var(--ti-linea) !important;
+    background: #fff !important;
+    color: var(--ti-tinta) !important;
+}
+
+body.ti-sobrio .credentials-actions-cell {
+    display: flex !important;
+    gap: 4px !important;
+}
+
+body.ti-sobrio .credentials-actions-cell > button,
+body.ti-sobrio .credentials-actions-cell > button:hover {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    display: grid !important;
+    place-items: center !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 1px solid transparent !important;
+    border-radius: 6px !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: var(--ti-gris) !important;
+    transform: none !important;
+}
+
+body.ti-sobrio .credentials-actions-cell > button:hover {
+    border-color: var(--ti-linea) !important;
+    background: #fff !important;
+    color: var(--ti-tinta) !important;
+}
+
+body.ti-sobrio .credentials-actions-cell > button.action-icon-delete:hover {
+    color: var(--ti-peligro) !important;
+}
+
+body.ti-sobrio .credentials-password-cell svg.ti-ico,
+body.ti-sobrio .credentials-actions-cell svg.ti-ico {
+    width: 17px;
+    height: 17px;
+    fill: none !important;
+    stroke: currentColor !important;
+    pointer-events: none;
+}
+
+body.ti-sobrio .credentials-modern-table .credentials-empty {
+    padding: 28px !important;
+    text-align: center !important;
+    color: var(--ti-gris) !important;
+}
+
+/* Pie de tabla */
+body.ti-sobrio .credentials-footer-right {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    white-space: nowrap !important;
+}
+
+body.ti-sobrio .credentials-footer-right select {
+    height: 32px !important;
+    padding: 0 30px 0 10px !important;
+    background-color: #fff !important;
+    border: 1px solid var(--ti-linea) !important;
+    border-radius: 6px !important;
+    box-shadow: none !important;
+    font-family: inherit !important;
+    font-size: 13px !important;
+    color: var(--ti-tinta) !important;
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 8px center !important;
+    background-size: 14px !important;
+}
+
+@media (max-width: 1200px) {
+    body.ti-sobrio .credentials-modern-page .inventory-modern-filters,
+    body.ti-sobrio .credentials-kpi-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    }
+}
+
+@media (max-width: 768px) {
+    body.ti-sobrio .credentials-modern-page .inventory-modern-filters,
+    body.ti-sobrio .credentials-kpi-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    body.ti-sobrio .credentials-modern-page .inventory-modern-actions {
+        flex-wrap: wrap !important;
+    }
+
+    body.ti-sobrio .credentials-modern-page .inventory-modern-actions .export-btn {
+        flex: 1 1 calc(50% - 4px) !important;
+    }
+
+    body.ti-sobrio .credentials-modern-page .inventory-modern-actions #add-item-btn {
+        flex: 1 1 100% !important;
+    }
+}
+
+@media (max-width: 520px) {
+    body.ti-sobrio .credentials-modern-page .inventory-modern-filters,
+    body.ti-sobrio .credentials-kpi-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+body.ti-sobrio .inventory-modern-tabs .credentials-modern-tab {
+    height: 40px !important;
+    min-height: 0 !important;
+    padding: 0 14px !important;
+}
+
+body.ti-sobrio .credentials-selected-info span {
+    white-space: nowrap !important;
+}

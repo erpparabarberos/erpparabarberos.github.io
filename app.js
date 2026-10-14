@@ -1285,186 +1285,169 @@ const newTITicketFormHTML = `
 `;
     const genericListPageHTML = `<h1 id="page-title"></h1><div class="add-new-button-container"><button class="export-btn csv" data-format="csv">Exportar a Excel (CSV)</button><button class="export-btn pdf" data-format="pdf">Exportar a PDF</button><button id="add-item-btn" class="btn-blue open-form-modal-btn">Añadir Nuevo</button></div><div class="card"><div class="table-search-container"><input type="text" id="table-search-input" placeholder="🔍 Buscar en la tabla..."></div><h2 id="item-list-title"></h2><div class="table-wrapper"><table id="data-table"><thead id="item-table-head"></thead><tbody id="item-table-body"></tbody></table></div></div>`;
     const credentialsEmailsModernPageHTML = `
-<section class="credentials-modern-page">
+<section class="credentials-modern-page inventory-modern-page">
+    <div class="inventory-modern-header credentials-title-wrap">
+        <h1>Correos electrónicos</h1>
+    </div>
 
-    <div class="credentials-modern-header">
-        <div class="credentials-title-wrap">
-            <div class="credentials-main-icon">
-                <svg viewBox="0 0 24 24" width="34" height="34" fill="none">
-                    <path d="M4 6.5h16v11H4v-11Z" stroke="#2563eb" stroke-width="2" rx="2"/>
-                    <path d="M4.8 7.3 12 13l7.2-5.7" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
+    <div class="inventory-modern-tabs" id="credentials-modern-tabs">
+        <a href="#credentials-emails" class="credentials-modern-tab inventory-modern-tab" data-category="emails">${tiIcono('correo')} Correos</a>
+        <a href="#credentials-computers" class="credentials-modern-tab inventory-modern-tab" data-category="computers">${tiIcono('inventario')} PCs</a>
+        <a href="#credentials-phones" class="credentials-modern-tab inventory-modern-tab" data-category="phones">${tiIcono('celular')} Celulares</a>
+        <a href="#credentials-internet" class="credentials-modern-tab inventory-modern-tab" data-category="internet">${tiIcono('servicios')} Internet</a>
+        <a href="#credentials-servers" class="credentials-modern-tab inventory-modern-tab" data-category="servers">${tiIcono('basedatos')} Servidores</a>
+        <a href="#credentials-software" class="credentials-modern-tab inventory-modern-tab" data-category="software">${tiIcono('factura')} Licencias</a>
+        <a href="#credentials-siigo" class="credentials-modern-tab inventory-modern-tab" data-category="siigo">${tiIcono('programa')} Siigo</a>
+        <a href="#credentials-velocity" class="credentials-modern-tab inventory-modern-tab" data-category="velocity">${tiIcono('rayo')} Velocity</a>
+        <a href="#credentials-traslados" class="credentials-modern-tab inventory-modern-tab" data-category="traslados">${tiIcono('camion')} Traslados</a>
+        <a href="#credentials-atencion" class="credentials-modern-tab inventory-modern-tab" data-category="atencion">${tiIcono('auricular')} Atención</a>
+        <a href="#credentials-others" class="credentials-modern-tab inventory-modern-tab" data-category="others">${tiIcono('accesos')} Otros</a>
+    </div>
+
+    <div class="inventory-modern-panel">
+        <div class="inventory-modern-toolbar">
+            <div class="inventory-modern-search-wrap">
+                <input type="text" id="credentials-search-input" placeholder="Buscar por correo, usuario, código o servicio...">
             </div>
-            <div>
-                <h1>Correos electrónicos</h1>
-                <div class="credentials-breadcrumb">
+
+            <div class="inventory-modern-filters" id="credentials-filter-grid">
+                <div class="inventory-filter-item credentials-filter-item">
+                    <label>Servicio</label>
+                    <select id="credentials-filter-service">
+                        <option value="">Todos los servicios</option>
+                    </select>
+                </div>
+
+                <div class="inventory-filter-item credentials-filter-item">
+                    <label>Área</label>
+                    <select id="credentials-filter-area">
+                        <option value="">Todas las áreas</option>
+                    </select>
+                </div>
+
+                <div class="inventory-filter-item credentials-filter-item">
+                    <label>Estado</label>
+                    <select id="credentials-filter-status">
+                        <option value="">Todos los estados</option>
+                    </select>
+                </div>
+
+                <div class="inventory-filter-item credentials-filter-item">
+                    <label>Usuario</label>
+                    <select id="credentials-filter-user">
+                        <option value="">Todos los usuarios</option>
+                    </select>
+                </div>
+
+                <div class="inventory-filter-item credentials-filter-item">
+                    <label>Actualizado desde</label>
+                    <input type="date" id="credentials-filter-date-from">
+                </div>
+
+                <div class="inventory-filter-item credentials-filter-item">
+                    <label>Actualizado hasta</label>
+                    <input type="date" id="credentials-filter-date-to">
+                </div>
+            </div>
+
+            <div class="inventory-modern-actions">
+                <button type="button" id="credentials-clear-filters" class="export-btn credentials-clear-btn">Limpiar filtros</button>
+                <button class="export-btn csv" data-format="csv">Exportar Excel</button>
+                <button class="export-btn pdf" data-format="pdf">Exportar PDF</button>
+                <button id="add-item-btn" class="btn-blue open-form-modal-btn">Añadir credencial</button>
+            </div>
+        </div>
+
+        <div class="inventory-kpi-grid credentials-kpi-grid">
+            <div class="inventory-kpi-card">
+                <div class="inventory-kpi-icon">${tiIcono('accesos')}</div>
+                <div>
+                    <strong id="cred-kpi-total">0</strong>
+                    <span id="cred-kpi-total-label">Total</span>
+                    <small>Registros en total</small>
+                </div>
+            </div>
+
+            <div class="inventory-kpi-card">
+                <div class="inventory-kpi-icon">${tiIcono('cerrado')}</div>
+                <div>
+                    <strong id="cred-kpi-active">0</strong>
+                    <span>Activos</span>
+                    <small id="cred-kpi-active-percent">0% del total</small>
+                </div>
+            </div>
+
+            <div class="inventory-kpi-card">
+                <div class="inventory-kpi-icon">${tiIcono('prohibido')}</div>
+                <div>
+                    <strong id="cred-kpi-inactive">0</strong>
+                    <span>Inactivos</span>
+                    <small id="cred-kpi-inactive-percent">0% del total</small>
+                </div>
+            </div>
+
+            <div class="inventory-kpi-card">
+                <div class="inventory-kpi-icon">${tiIcono('personas')}</div>
+                <div>
+                    <strong id="cred-kpi-users">0</strong>
+                    <span>Usuarios asignados</span>
+                    <small>Usuarios únicos</small>
+                </div>
+            </div>
+
+            <div class="inventory-kpi-card">
+                <div class="inventory-kpi-icon">${tiIcono('grupo')}</div>
+                <div>
+                    <strong id="cred-kpi-areas">0</strong>
+                    <span>Áreas</span>
+                    <small>Áreas diferentes</small>
+                </div>
+            </div>
+
+            <div class="inventory-kpi-card">
+                <div class="inventory-kpi-icon">${tiIcono('reloj')}</div>
+                <div>
+                    <strong id="cred-kpi-last-update">N/A</strong>
+                    <span>Última actualización</span>
+                    <small>Cambio más reciente</small>
                 </div>
             </div>
         </div>
 
-        <div class="credentials-header-actions">
-            <button class="credentials-export-btn export-btn csv" data-format="csv">Exportar a Excel (CSV)</button>
-            <button class="credentials-export-btn export-btn pdf" data-format="pdf">Exportar a PDF</button>
-            <button id="add-item-btn" class="credentials-add-btn open-form-modal-btn">+ Añadir credencial</button>        </div>
-    </div>
-    <div class="credentials-modern-tabs" id="credentials-modern-tabs">
-    <a href="#credentials-emails" class="credentials-modern-tab" data-category="emails">✉️ Correos</a>
-    <a href="#credentials-computers" class="credentials-modern-tab" data-category="computers">💻 PCs</a>
-    <a href="#credentials-phones" class="credentials-modern-tab" data-category="phones">📱 Celulares</a>
-    <a href="#credentials-internet" class="credentials-modern-tab" data-category="internet">🌐 Internet</a>
-    <a href="#credentials-servers" class="credentials-modern-tab" data-category="servers">🖥️ Servidores</a>
-    <a href="#credentials-software" class="credentials-modern-tab" data-category="software">🪪 Licencias</a>
-    <a href="#credentials-siigo" class="credentials-modern-tab" data-category="siigo">S Siigo</a>
-    <a href="#credentials-velocity" class="credentials-modern-tab" data-category="velocity">⚡ Velocity</a>
-    <a href="#credentials-traslados" class="credentials-modern-tab" data-category="traslados">🚚 Traslados</a>
-    <a href="#credentials-atencion" class="credentials-modern-tab" data-category="atencion">🎧 Atención</a>
-    <a href="#credentials-others" class="credentials-modern-tab" data-category="others">🔐 Otros</a>
-</div>
-    <div class="credentials-kpi-grid">
-        <div class="credentials-kpi-card">
-            <div class="credentials-kpi-icon blue">✉</div>
-            <div>
-                <span>Total correos</span>
-                <strong id="cred-kpi-total">0</strong>
-                <small>Registros en total</small>
-            </div>
+        <div class="credentials-selection-bar hidden" id="credentials-selection-bar">
+            <label class="credentials-selected-info">
+                <input type="checkbox" id="credentials-select-all">
+                <span id="credentials-selected-count">0 seleccionados</span>
+            </label>
+
+            <button type="button" id="credentials-export-selected" class="credentials-selected-export">Exportar seleccionados</button>
+            <button type="button" id="credentials-delete-selected" class="credentials-selected-delete">Eliminar seleccionados</button>
         </div>
 
-        <div class="credentials-kpi-card">
-            <div class="credentials-kpi-icon green">✓</div>
-            <div>
-                <span>Activos</span>
-                <strong id="cred-kpi-active">0</strong>
-                <small id="cred-kpi-active-percent">0% del total</small>
+        <div class="inventory-table-card">
+            <div class="inventory-table-wrapper credentials-table-wrapper">
+                <table class="inventory-modern-table credentials-modern-table" id="data-table">
+                    <thead id="credentials-table-head"></thead>
+                    <tbody id="credentials-table-body"></tbody>
+                </table>
             </div>
-        </div>
 
-        <div class="credentials-kpi-card">
-            <div class="credentials-kpi-icon orange">Ⅱ</div>
-            <div>
-                <span>Inactivos</span>
-                <strong id="cred-kpi-inactive">0</strong>
-                <small id="cred-kpi-inactive-percent">0% del total</small>
-            </div>
-        </div>
+            <div class="inventory-table-footer">
+                <span id="credentials-results-text">Mostrando 0 registros</span>
 
-        <div class="credentials-kpi-card">
-            <div class="credentials-kpi-icon purple">👥</div>
-            <div>
-                <span>Usuarios asignados</span>
-                <strong id="cred-kpi-users">0</strong>
-                <small>Usuarios únicos</small>
-            </div>
-        </div>
-
-        <div class="credentials-kpi-card">
-            <div class="credentials-kpi-icon blue-soft">▥</div>
-            <div>
-                <span>Áreas</span>
-                <strong id="cred-kpi-areas">0</strong>
-                <small>Áreas diferentes</small>
-            </div>
-        </div>
-
-        <div class="credentials-kpi-card">
-            <div class="credentials-kpi-icon cyan">↻</div>
-            <div>
-                <span>Última actualización</span>
-                <strong id="cred-kpi-last-update">N/A</strong>
-                <small>Actualización más reciente</small>
+                <div class="credentials-footer-right">
+                    <select id="credentials-page-size">
+                        <option value="8">8</option>
+                        <option value="10">10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                        <option value="all" selected>Todos</option>
+                    </select>
+                    <span>por página</span>
+                </div>
             </div>
         </div>
     </div>
-
-    <div class="credentials-filter-card">
-        <div class="credentials-search-row">
-            <div class="credentials-search-box">
-                <span>🔍</span>
-                <input type="text" id="credentials-search-input" placeholder="Buscar por correo, usuario, código o servicio...">
-            </div>
-        </div>
-
-        <div class="credentials-filter-grid" id="credentials-filter-grid">
-            <div class="credentials-filter-item">
-                <label>Servicio</label>
-                <select id="credentials-filter-service">
-                    <option value="">Todos los servicios</option>
-                </select>
-            </div>
-
-            <div class="credentials-filter-item">
-                <label>Área</label>
-                <select id="credentials-filter-area">
-                    <option value="">Todas las áreas</option>
-                </select>
-            </div>
-
-            <div class="credentials-filter-item">
-                <label>Estado</label>
-                <select id="credentials-filter-status">
-                    <option value="">Todos los estados</option>
-                </select>
-            </div>
-
-            <div class="credentials-filter-item">
-                <label>Usuario asignado</label>
-                <select id="credentials-filter-user">
-                    <option value="">Todos los usuarios</option>
-                </select>
-            </div>
-
-            <div class="credentials-filter-item">
-                <label>Actualizado desde</label>
-                <input type="date" id="credentials-filter-date-from">
-            </div>
-
-            <div class="credentials-filter-item">
-                <label>Actualizado hasta</label>
-                <input type="date" id="credentials-filter-date-to">
-            </div>
-
-            <div class="credentials-filter-buttons">
-                <button type="button" id="credentials-clear-filters" class="credentials-clear-btn">Limpiar</button>
-                <button type="button" id="credentials-apply-filters" class="credentials-apply-btn">Aplicar filtros</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="credentials-selection-bar hidden" id="credentials-selection-bar">
-        <label class="credentials-selected-info">
-            <input type="checkbox" id="credentials-select-all">
-            <span id="credentials-selected-count">0 seleccionados</span>
-        </label>
-
-        <button type="button" id="credentials-delete-selected" class="credentials-selected-delete">Eliminar seleccionados</button>
-        <button type="button" id="credentials-export-selected" class="credentials-selected-export">Exportar seleccionados</button>
-    </div>
-
-    <div class="credentials-table-card">
-        <div class="credentials-table-wrapper">
-            <table class="credentials-modern-table" id="data-table">
-
-            <thead id="credentials-table-head"></thead>
-            <tbody id="credentials-table-body"></tbody>
-            </table>
-        </div>
-
-        <div class="credentials-table-footer">
-            <span id="credentials-results-text">Mostrando 0 registros</span>
-
-            <div class="credentials-footer-right">
-            <select id="credentials-page-size">
-            <option value="8">8</option>
-            <option value="10">10</option>
-            <option value="20">20</option>
-            <option value="50">50</option>
-            <option value="all" selected>Todos</option>
-            </select>
-                <span>por página</span>
-            </div>
-        </div>
-    </div>
-
 </section>
 `;
     const inventoryModernPageHTML = `
@@ -5379,6 +5362,7 @@ const buildTasksForMonth = () => {
     const selectedCount = document.getElementById('credentials-selected-count');
 
     const titleEl = document.querySelector('.credentials-title-wrap h1');
+    const totalLabelEl = document.getElementById('cred-kpi-total-label');
     const breadcrumbLast = document.querySelector('.credentials-breadcrumb span:last-child');
 
     if (titleEl) titleEl.textContent = config.title;
@@ -5491,37 +5475,14 @@ const fieldKeys = fieldEntries.map(([key]) => key);
         const normalized = normalizeText(value);
 
         if (normalized === 'activo' || normalized === 'sí' || normalized === 'si') {
-            return `<span class="credentials-status active">${escapeHTML(value)}</span>`;
+            return `<span class="inventory-status-badge green">${escapeHTML(value)}</span>`;
         }
 
         if (normalized === 'inactivo' || normalized === 'no') {
-            return `<span class="credentials-status inactive">${escapeHTML(value)}</span>`;
+            return `<span class="inventory-status-badge gray">${escapeHTML(value)}</span>`;
         }
 
-        return `<span class="credentials-status neutral">${escapeHTML(value)}</span>`;
-    };
-
-    const getServiceLogo = (value) => {
-        const text = normalizeText(value);
-
-        if (text.includes('google')) {
-            return `<span class="credentials-service-logo google">G</span>`;
-        }
-
-        if (text.includes('365') || text.includes('office') || text.includes('microsoft')) {
-            return `<span class="credentials-service-logo microsoft">M</span>`;
-        }
-
-        return `<span class="credentials-service-logo other">▣</span>`;
-    };
-
-    const getInitials = (name) => {
-        const parts = String(name || 'NA').trim().split(/\s+/).filter(Boolean);
-
-        if (parts.length === 0) return 'NA';
-        if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
-
-        return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+        return `<span class="inventory-status-badge neutral">${escapeHTML(value)}</span>`;
     };
 
     const maskSensitiveValue = (value) => {
@@ -5540,7 +5501,7 @@ const fieldKeys = fieldEntries.map(([key]) => key);
             return `
                 <span class="credentials-password-cell">
                     <span>${maskSensitiveValue(value)}</span>
-                    <button type="button" class="credentials-show-password" data-value="${escapeHTML(value || '')}" title="Mostrar / ocultar">👁</button>
+                    <button type="button" class="credentials-show-password" data-value="${escapeHTML(value || '')}" title="Mostrar / ocultar">${tiIcono('ver')}</button>
                 </span>
             `;
         }
@@ -5550,21 +5511,11 @@ const fieldKeys = fieldEntries.map(([key]) => key);
         }
 
         if (key === 'service' || key === 'provider' || key === 'softwareName' || key === 'system') {
-            return `
-                <div class="credentials-service-cell">
-                    ${getServiceLogo(value)}
-                    <span>${escapeHTML(value || 'N/A')}</span>
-                </div>
-            `;
+            return escapeHTML(value || 'N/A');
         }
 
         if (key === 'assignedUser' || key === 'user' || key === 'assignedTo' || key === 'username') {
-            return `
-                <div class="credentials-user-cell">
-                    <span class="credentials-avatar">${getInitials(value)}</span>
-                    <span>${escapeHTML(value || 'N/A')}</span>
-                </div>
-            `;
+            return escapeHTML(value || 'N/A');
         }
         if (key === 'url') {
     return `
@@ -5622,8 +5573,7 @@ if (key === 'email' || key === 'recoveryEmail') {
 
         const lastDate = sortedByDate.length ? sortedByDate[0].date : null;
 
-        const totalLabel = document.querySelector('#cred-kpi-total')?.previousElementSibling;
-        if (totalLabel) totalLabel.textContent = `Total ${config.title}`;
+        if (totalLabelEl) totalLabelEl.textContent = `Total ${config.title.toLowerCase()}`;
 
         document.getElementById('cred-kpi-total').textContent = total;
         document.getElementById('cred-kpi-active').textContent = active;
@@ -5642,7 +5592,7 @@ if (key === 'email' || key === 'recoveryEmail') {
     const updateSelectionBar = () => {
         const count = selectedIds.size;
 
-        selectedCount.textContent = `${count} seleccionados`;
+        selectedCount.textContent = `${count} ${count === 1 ? 'seleccionado' : 'seleccionados'}`;
         selectionBar.classList.toggle('hidden', count === 0);
 
         if (headCheck) {
@@ -5820,7 +5770,6 @@ if (key === 'email' || key === 'recoveryEmail') {
     dateToFilter.addEventListener('change', applyFilters);
     pageSizeSelect.addEventListener('change', renderTable);
 
-    document.getElementById('credentials-apply-filters').addEventListener('click', applyFilters);
 
     document.getElementById('credentials-clear-filters').addEventListener('click', () => {
         searchInput.value = '';
@@ -5942,7 +5891,7 @@ tableBody.addEventListener('click', (e) => {
             rows.push(fieldKeys.map(key => key === 'id' ? item.id : (item[key] || '')));
         });
 
-        const csv = rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\\n');
+        const csv = rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
 
