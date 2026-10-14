@@ -1712,121 +1712,122 @@ const newTITicketFormHTML = `
 </section>
 `;
     const maintenancePlanningPageHTML = `
-<section class="planning-modern-page">
-
-    <div class="planning-header">
-        <div class="planning-title-wrap">
-            <div class="planning-main-icon">🗓️</div>
+<section class="planning-modern-page inventory-modern-page">
+    <div class="inventory-modern-header">
+        <div class="inventory-modern-title-wrap">
             <div>
-                <h1>Planificación TI</h1>
+                <h1>Mantenimiento</h1>
             </div>
         </div>
     </div>
 
-    <div class="planning-filter-card">
-        <div class="planning-filter-item">
-            <label>Mes</label>
-            <input type="month" id="planning-month-filter">
+    <div class="inventory-modern-panel">
+        <div class="inventory-modern-toolbar">
+            <div class="inventory-modern-filters">
+                <div class="inventory-filter-item">
+                    <label>Mes</label>
+                    <input type="month" id="planning-month-filter">
+                </div>
+
+                <div class="inventory-filter-item">
+                    <label>Sede</label>
+                    <select id="planning-location-filter">
+                        <option value="">Todas las sedes</option>
+                    </select>
+                </div>
+
+                <div class="inventory-filter-item">
+                    <label>Estado</label>
+                    <select id="planning-status-filter">
+                        <option value="">Todos los estados</option>
+                        <option value="programado">Programado</option>
+                        <option value="ejecutado">Ejecutado</option>
+                        <option value="pendiente">Pendiente</option>
+                        <option value="vencido">Vencido</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="inventory-modern-actions">
+                <button type="button" class="export-btn" id="planning-export-excel">Exportar Excel</button>
+                <button type="button" class="export-btn" id="planning-export-pdf">Exportar PDF</button>
+                <button type="button" class="btn-blue" id="planning-new-task-btn">Nueva tarea</button>
+            </div>
         </div>
 
-        <div class="planning-filter-item">
-            <label>Sede</label>
-            <select id="planning-location-filter">
-                <option value="">Todas las sedes</option>
-            </select>
+        <div class="inventory-kpi-grid planning-kpi-grid">
+            <div class="inventory-kpi-card">
+                <div class="inventory-kpi-icon">${tiIcono('nota')}</div>
+                <div>
+                    <strong id="planning-total-tasks">0</strong>
+                    <span>Total de tareas</span>
+                    <small>Programadas para el mes</small>
+                </div>
+            </div>
+
+            <div class="inventory-kpi-card">
+                <div class="inventory-kpi-icon">${tiIcono('cerrado')}</div>
+                <div>
+                    <strong id="planning-executed-tasks">0</strong>
+                    <span>Ejecutadas</span>
+                    <small id="planning-executed-percent">0% del total</small>
+                </div>
+            </div>
+
+            <div class="inventory-kpi-card">
+                <div class="inventory-kpi-icon">${tiIcono('reloj')}</div>
+                <div>
+                    <strong id="planning-pending-tasks">0</strong>
+                    <span>Pendientes</span>
+                    <small id="planning-pending-percent">0% del total</small>
+                </div>
+            </div>
+
+            <div class="inventory-kpi-card">
+                <div class="inventory-kpi-icon">${tiIcono('prohibido')}</div>
+                <div>
+                    <strong id="planning-expired-tasks">0</strong>
+                    <span>Vencidas</span>
+                    <small id="planning-expired-percent">0% del total</small>
+                </div>
+            </div>
+
+            <div class="inventory-kpi-card planning-kpi-proxima">
+                <div class="inventory-kpi-icon">${tiIcono('tiempo')}</div>
+                <div>
+                    <strong id="planning-next-task-date">N/A</strong>
+                    <span>Próxima tarea</span>
+                    <small id="planning-next-task-name">Sin tarea próxima</small>
+                </div>
+            </div>
         </div>
 
-        <div class="planning-filter-item">
-            <label>Estado</label>
-            <select id="planning-status-filter">
-                <option value="">Todos los estados</option>
-                <option value="programado">Programado</option>
-                <option value="ejecutado">Ejecutado</option>
-                <option value="pendiente">Pendiente</option>
-                <option value="vencido">Vencido</option>
-            </select>
-        </div>
+        <div class="inventory-table-card">
+            <div class="inventory-table-wrapper">
+                <table class="inventory-modern-table planning-table" id="planning-table">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Tarea</th>
+                            <th>Sede</th>
+                            <th>Frecuencia</th>
+                            <th>Margen</th>
+                            <th>Programado para</th>
+                            <th>Ejecutado el</th>
+                            <th>Estado</th>
+                            <th>Soporte</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="planning-table-body"></tbody>
+                </table>
+            </div>
 
-        <div class="planning-actions">
-            <button class="planning-btn light" id="planning-export-excel">Exportar a Excel (CSV)</button>
-            <button class="planning-btn light" id="planning-export-pdf">Exportar a PDF</button>
-            <button class="planning-btn blue" id="planning-new-task-btn">+ Nueva tarea</button>
+            <div class="inventory-table-footer">
+                <span id="planning-results-text">Mostrando 0 tareas</span>
+            </div>
         </div>
     </div>
-
-    <div class="planning-kpi-grid">
-        <div class="planning-kpi-card blue">
-            <div class="planning-kpi-icon">📋</div>
-            <div>
-                <span>Total de tareas</span>
-                <strong id="planning-total-tasks">0</strong>
-                <small>Programadas para el mes</small>
-            </div>
-        </div>
-
-        <div class="planning-kpi-card green">
-            <div class="planning-kpi-icon">✓</div>
-            <div>
-                <span>Ejecutadas</span>
-                <strong id="planning-executed-tasks">0</strong>
-                <small id="planning-executed-percent">0% del total</small>
-            </div>
-        </div>
-
-        <div class="planning-kpi-card orange">
-            <div class="planning-kpi-icon">◷</div>
-            <div>
-                <span>Pendientes</span>
-                <strong id="planning-pending-tasks">0</strong>
-                <small id="planning-pending-percent">0% del total</small>
-            </div>
-        </div>
-
-        <div class="planning-kpi-card red">
-            <div class="planning-kpi-icon">!</div>
-            <div>
-                <span>Vencidas</span>
-                <strong id="planning-expired-tasks">0</strong>
-                <small id="planning-expired-percent">0% del total</small>
-            </div>
-        </div>
-
-        <div class="planning-kpi-card purple">
-            <div class="planning-kpi-icon">📅</div>
-            <div>
-                <span>Próxima tarea</span>
-                <strong id="planning-next-task-date">N/A</strong>
-                <small id="planning-next-task-name">Sin tarea próxima</small>
-            </div>
-        </div>
-    </div>
-
-    <div class="planning-table-card">
-        <div class="planning-table-wrapper">
-            <table class="planning-table" id="planning-table">
-                <thead>
-                    <tr>
-                        <th>Item</th>
-                        <th>Tarea</th>
-                        <th>Sede</th>
-                        <th>Frecuencia</th>
-                        <th>Margen ejecución</th>
-                        <th>Programado para</th>
-                        <th>Ejecutado el</th>
-                        <th>Estado</th>
-                        <th>Soporte asociado</th>
-                        <th>Acción</th>
-                    </tr>
-                </thead>
-                <tbody id="planning-table-body"></tbody>
-            </table>
-        </div>
-
-        <div class="planning-table-footer">
-            <span id="planning-results-text">Mostrando 0 tareas</span>
-        </div>
-    </div>
-
 </section>
 `;
     const maintenanceCalendarHTML = `<h1>📅 Planificación</h1><div class="add-new-button-container"><button class="export-btn csv" data-format="csv">Exportar a Excel (CSV)</button><button class="export-btn pdf" data-format="pdf">Exportar a PDF</button><button class="primary open-form-modal-btn" data-type="maintenance">Programar Tarea</button></div><div class="card"><div id="maintenance-calendar"></div><table id="data-table" style="display:none;"></table></div>`;
@@ -4801,7 +4802,8 @@ const getStatusBadge = (status) => {
         vencido: 'Vencido'
     };
 
-    return `<span class="planning-status-badge ${status}">${labels[status] || status}</span>`;
+    const tonos = { ejecutado: 'green', vencido: 'orange', pendiente: 'neutral', programado: 'neutral' };
+    return `<span class="inventory-status-badge ${tonos[status] || 'neutral'}">${labels[status] || status}</span>`;
 };
 
 const fillLocationFilter = () => {
@@ -4905,16 +4907,16 @@ const buildTasksForMonth = () => {
                 : '—';
 
             const actionHTML = status === 'ejecutado'
-                ? `<button type="button" class="planning-action-btn light planning-support-link" data-id="${task.supportId}">👁 Ver soporte</button>`
-                : `<button type="button" class="planning-action-btn blue planning-register-execution" data-task="${task.id}">+ Registrar ejecución</button>`;
+                ? `<button type="button" class="planning-action-btn planning-support-link" data-id="${task.supportId}">${tiIcono('ver')} Ver soporte</button>`
+                : `<button type="button" class="planning-action-btn planning-register-execution" data-task="${task.id}">Registrar ejecución</button>`;
 
             return `
                 <tr>
                     <td>${task.item}</td>
-                    <td><strong>${task.task}</strong></td>
+                    <td data-field="tarea"><strong>${task.task}</strong></td>
                     <td>${task.location}</td>
                     <td>${task.frequency}</td>
-                    <td>${task.margin} meses</td>
+                    <td>${task.margin} ${Number(task.margin) === 1 ? 'mes' : 'meses'}</td>
                     <td>${task.plannedLabel}</td>
                     <td>${task.executedAt || '—'}</td>
                     <td>${getStatusBadge(status)}</td>
@@ -4975,10 +4977,8 @@ const buildTasksForMonth = () => {
             <button type="button" class="planning-execution-close" id="close-execution-modal">×</button>
 
             <div class="planning-execution-header">
-                <div class="planning-execution-icon">✓</div>
                 <div>
                     <h2>Registrar ejecución</h2>
-                    <p>Marca esta tarea como ejecutada y crea el soporte asociado.</p>
                 </div>
             </div>
 
@@ -5018,7 +5018,7 @@ const buildTasksForMonth = () => {
                 </div>
 
                 <div class="planning-execution-field full">
-                    <label>Observación / actividad realizada</label>
+                    <label>Actividad realizada</label>
                     <textarea id="execution-note" rows="5" placeholder="Describe qué se realizó durante el mantenimiento..." required></textarea>
                 </div>
 
@@ -5127,10 +5127,8 @@ const buildTasksForMonth = () => {
             <button type="button" class="planning-execution-close" id="close-new-task-modal">×</button>
 
             <div class="planning-execution-header">
-                <div class="planning-execution-icon blue">+</div>
                 <div>
                     <h2>Nueva tarea</h2>
-                    <p>Agrega una tarea al cronograma mensual de mantenimiento.</p>
                 </div>
             </div>
 
@@ -5189,7 +5187,7 @@ const buildTasksForMonth = () => {
 
                 <div class="planning-execution-field full">
                     <label>Observación</label>
-                    <textarea id="new-planning-task-note" rows="4" placeholder="Escribe una observación opcional sobre esta tarea..."></textarea>
+                    <textarea id="new-planning-task-note" rows="4" placeholder="Observación sobre esta tarea"></textarea>
                 </div>
 
                 <div class="planning-execution-footer">
