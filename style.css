@@ -16242,3 +16242,32 @@ body.ti-sobrio .inventory-modern-tabs .credentials-modern-tab {
 body.ti-sobrio .credentials-selected-info span {
     white-space: nowrap !important;
 }
+/* Accesos: sin ancho máximo por columna; el texto no se monta sobre la columna vecina */
+body.ti-sobrio .credentials-modern-table thead th,
+body.ti-sobrio .credentials-modern-table tbody td {
+    width: auto !important;
+    max-width: none !important;
+    white-space: nowrap !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+}
+
+body.ti-sobrio .credentials-modern-table td[data-field="notes"],
+body.ti-sobrio .credentials-modern-table td[data-field="description"] {
+    white-space: normal !important;
+    min-width: 220px !important;
+}
+
+body.ti-sobrio .credentials-modern-page .inventory-table-wrapper {
+    overflow-x: auto !important;
+}
+body.ti-sobrio .credentials-modern-page table.credentials-modern-table {
+    width: max-content !important;
+    min-width: 100% !important;
+    max-width: none !important;
+    table-layout: auto !important;
+}
+body.ti-sobrio .credentials-modern-table th:last-child,
+body.ti-sobrio .credentials-modern-table td:last-child {
+    box-shadow: inset 1px 0 0 var(--ti-linea) !important;
+}
