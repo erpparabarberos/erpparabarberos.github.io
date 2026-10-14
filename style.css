@@ -16269,5 +16269,6 @@ body.ti-sobrio .credentials-modern-page table.credentials-modern-table {
 }
 body.ti-sobrio .credentials-modern-table th:last-child,
 body.ti-sobrio .credentials-modern-table td:last-child {
-    box-shadow: inset 1px 0 0 var(--ti-linea) !important;
+    box-shadow: none !important;
+    border-left: 0 !important;
 }
