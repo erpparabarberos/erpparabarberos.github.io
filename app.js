@@ -1817,137 +1817,120 @@ const newTITicketFormHTML = `
 `;
     const maintenanceCalendarHTML = `<h1>📅 Planificación</h1><div class="add-new-button-container"><button class="export-btn csv" data-format="csv">Exportar a Excel (CSV)</button><button class="export-btn pdf" data-format="pdf">Exportar a PDF</button><button class="primary open-form-modal-btn" data-type="maintenance">Programar Tarea</button></div><div class="card"><div id="maintenance-calendar"></div><table id="data-table" style="display:none;"></table></div>`;
     const configHTML = `
-<section class="settings-modern-page">
-
-    <div class="settings-modern-header">
-        <div>
-            <h1>Centro de configuración</h1
-        </div>
-
-        <div class="settings-header-actions">
-            <button type="button" id="settings-export-btn" class="settings-light-btn">Exportar</button>
-            <button type="button" id="settings-import-btn" class="settings-light-btn">Importar</button>
-            <button type="button" id="settings-add-main-btn" class="settings-red-btn">+ Agregar nuevo</button>
-        </div>
+<section class="settings-modern-page inventory-modern-page">
+    <div class="inventory-modern-header">
+        <h1>Ajustes</h1>
     </div>
 
-    <div class="settings-kpi-grid">
-        <div class="settings-kpi-card">
-            <div class="settings-kpi-icon blue">👥</div>
-            <div>
-                <span>Solicitantes activos</span>
-                <strong id="settings-kpi-requesters">0</strong>
-                <small id="settings-kpi-requesters-sub">De 0 registrados</small>
-            </div>
-            <em>↑ 8%</em>
-        </div>
-
-        <div class="settings-kpi-card">
-            <div class="settings-kpi-icon blue">📍</div>
-            <div>
-                <span>Ubicaciones activas</span>
-                <strong id="settings-kpi-locations">0</strong>
-                <small id="settings-kpi-locations-sub">De 0 registradas</small>
-            </div>
-            <em>↑ 0%</em>
-        </div>
-
-        <div class="settings-kpi-card">
-            <div class="settings-kpi-icon orange">👤+</div>
-            <div>
-                <span>Nuevos solicitantes</span>
-                <strong id="settings-kpi-new">0</strong>
-                <small>Este mes</small>
-            </div>
-            <em>↑ 50%</em>
-        </div>
-
-        <div class="settings-kpi-card">
-            <div class="settings-kpi-icon purple">🏢</div>
-            <div>
-                <span>Solicitudes asociadas</span>
-                <strong id="settings-kpi-tickets">0</strong>
-                <small>Historial total</small>
-            </div>
-            <em>↑ 12%</em>
-        </div>
+    <div class="inventory-modern-tabs">
+        <button type="button" class="settings-tab inventory-modern-tab active" data-tab="requesters">${tiIcono('personas')} Solicitantes</button>
+        <button type="button" class="settings-tab inventory-modern-tab" data-tab="locations">${tiIcono('grupo')} Ubicaciones</button>
     </div>
 
-    <div class="settings-main-card">
-
-        <div class="settings-tabs">
-            <button type="button" class="settings-tab active" data-tab="requesters">👥 Solicitantes</button>
-            <button type="button" class="settings-tab" data-tab="locations">📍 Ubicaciones</button>
-
-            <button type="button" id="settings-reset-filters" class="settings-reset-btn">↻ Restablecer filtros</button>
-        </div>
-
-        <div class="settings-filter-grid">
-            <div class="settings-search-box">
-                <span>🔍</span>
+    <div class="inventory-modern-panel">
+        <div class="inventory-modern-toolbar">
+            <div class="inventory-modern-search-wrap">
                 <input type="text" id="settings-search-input" placeholder="Buscar solicitante...">
             </div>
 
-            <div class="settings-filter-item">
-                <label>Estado</label>
-                <select id="settings-filter-status">
-                    <option value="">Todos</option>
-                    <option value="Activo">Activo</option>
-                    <option value="Inactivo">Inactivo</option>
-                </select>
+            <div class="inventory-modern-filters">
+                <div class="inventory-filter-item">
+                    <label>Estado</label>
+                    <select id="settings-filter-status">
+                        <option value="">Todos</option>
+                        <option value="Activo">Activo</option>
+                        <option value="Inactivo">Inactivo</option>
+                    </select>
+                </div>
+
+                <div class="inventory-filter-item">
+                    <label id="settings-filter-area-label">Área</label>
+                    <select id="settings-filter-area">
+                        <option value="">Todas</option>
+                    </select>
+                </div>
+
+                <div class="inventory-filter-item" id="settings-filter-location-wrap">
+                    <label>Ubicación</label>
+                    <select id="settings-filter-location">
+                        <option value="">Todas</option>
+                    </select>
+                </div>
+
+                <div class="inventory-filter-item">
+                    <label>Registrado desde</label>
+                    <input type="date" id="settings-filter-date">
+                </div>
             </div>
 
-            <div class="settings-filter-item">
-                <label>Rol / Área</label>
-                <select id="settings-filter-area">
-                    <option value="">Todos</option>
-                    <option value="Administrativo">Administrativo</option>
-                    <option value="Ventas">Ventas</option>
-                    <option value="TI">TI</option>
-                    <option value="Operaciones">Operaciones</option>
-                    <option value="Bodega">Bodega</option>
-                </select>
-            </div>
-
-            <div class="settings-filter-item">
-                <label>Ubicación</label>
-                <select id="settings-filter-location">
-                    <option value="">Todas</option>
-                </select>
-            </div>
-
-            <div class="settings-filter-item">
-                <label>Fecha de registro</label>
-                <input type="date" id="settings-filter-date">
-            </div>
-        </div>
-
-        <div class="settings-table-wrapper">
-            <table class="settings-table" id="data-table">
-                <thead id="settings-table-head"></thead>
-                <tbody id="settings-table-body"></tbody>
-            </table>
-        </div>
-
-        <div class="settings-table-footer">
-            <span id="settings-results-text">Mostrando 0 resultados</span>
-
-            <div class="settings-pagination">
-                <select id="settings-page-size">
-                    <option value="10">10 por página</option>
-                    <option value="20">20 por página</option>
-                    <option value="all">Todos</option>
-                </select>
-                <button type="button">‹</button>
-                <button type="button" class="active">1</button>
-                <button type="button">2</button>
-                <button type="button">3</button>
-                <button type="button">›</button>
+            <div class="inventory-modern-actions">
+                <button type="button" id="settings-reset-filters" class="export-btn">Limpiar filtros</button>
+                <button type="button" id="settings-export-btn" class="export-btn">Exportar Excel</button>
+                <button type="button" id="settings-export-pdf" class="export-btn">Exportar PDF</button>
+                <button type="button" id="settings-add-main-btn" class="btn-blue">Agregar solicitante</button>
             </div>
         </div>
 
+        <div class="inventory-kpi-grid settings-kpi-grid">
+            <div class="inventory-kpi-card">
+                <div class="inventory-kpi-icon">${tiIcono('personas')}</div>
+                <div>
+                    <strong id="settings-kpi-requesters">0</strong>
+                    <span>Solicitantes activos</span>
+                    <small id="settings-kpi-requesters-sub">De 0 registrados</small>
+                </div>
+            </div>
+
+            <div class="inventory-kpi-card">
+                <div class="inventory-kpi-icon">${tiIcono('grupo')}</div>
+                <div>
+                    <strong id="settings-kpi-locations">0</strong>
+                    <span>Ubicaciones activas</span>
+                    <small id="settings-kpi-locations-sub">De 0 registradas</small>
+                </div>
+            </div>
+
+            <div class="inventory-kpi-card">
+                <div class="inventory-kpi-icon">${tiIcono('registrar')}</div>
+                <div>
+                    <strong id="settings-kpi-new">0</strong>
+                    <span>Nuevos solicitantes</span>
+                    <small>Este mes</small>
+                </div>
+            </div>
+
+            <div class="inventory-kpi-card">
+                <div class="inventory-kpi-icon">${tiIcono('soportes')}</div>
+                <div>
+                    <strong id="settings-kpi-tickets">0</strong>
+                    <span>Soportes registrados</span>
+                    <small>Historial total</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="inventory-table-card">
+            <div class="inventory-table-wrapper">
+                <table class="inventory-modern-table settings-table" id="data-table">
+                    <thead id="settings-table-head"></thead>
+                    <tbody id="settings-table-body"></tbody>
+                </table>
+            </div>
+
+            <div class="inventory-table-footer">
+                <span id="settings-results-text">Mostrando 0 resultados</span>
+
+                <div class="credentials-footer-right">
+                    <select id="settings-page-size">
+                        <option value="10">10</option>
+                        <option value="20">20</option>
+                        <option value="all">Todos</option>
+                    </select>
+                    <span>por página</span>
+                </div>
+            </div>
+        </div>
     </div>
-
 </section>
 `;
     // --- 4. CONFIGURACIONES DE TABLAS ---
@@ -6672,15 +6655,11 @@ tableBody.addEventListener('click', (e) => {
         const value = status || 'Activo';
         const normalized = normalize(value);
 
-        if (normalized === 'activo') {
-            return `<span class="settings-status active">Activo</span>`;
-        }
-
         if (normalized === 'inactivo') {
-            return `<span class="settings-status inactive">Inactivo</span>`;
+            return `<span class="inventory-status-badge gray">Inactivo</span>`;
         }
 
-        return `<span class="settings-status active">Activo</span>`;
+        return `<span class="inventory-status-badge green">Activo</span>`;
     };
 
     const formatDate = (value) => {
@@ -6703,6 +6682,32 @@ tableBody.addEventListener('click', (e) => {
         } catch (error) {
             return 'N/A';
         }
+    };
+
+    // Fecha en formato AAAA-MM-DD para comparar con el filtro "Registrado desde"
+    const fechaISO = (value) => {
+        if (!value) return '';
+        const date = value.toDate ? value.toDate() : value.seconds ? new Date(value.seconds * 1000) : new Date(value);
+        if (isNaN(date.getTime())) return '';
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    };
+
+    // Filas que se están viendo (todas las que pasan los filtros, sin paginar), para exportar
+    let filasActuales = { head: [], body: [] };
+
+    // El filtro de la segunda lista es "Área" en solicitantes y "Tipo" en ubicaciones
+    const fillAreaFilter = () => {
+        const currentValue = areaFilter.value;
+        const valores = activeTab === 'requesters'
+            ? requestersData.map(item => getRequesterArea(item))
+            : locationsData.map(item => getLocationType(item));
+
+        document.getElementById('settings-filter-area-label').textContent = activeTab === 'requesters' ? 'Área' : 'Tipo';
+        document.getElementById('settings-filter-location-wrap').classList.toggle('ti-oculto', activeTab !== 'requesters');
+
+        areaFilter.innerHTML = `<option value="">Todas</option>` + [...new Set(valores.filter(Boolean))].sort()
+            .map(valor => `<option value="${escapeHTML(valor)}">${escapeHTML(valor)}</option>`).join('');
+        areaFilter.value = [...areaFilter.options].some(o => o.value === currentValue) ? currentValue : '';
     };
 
     const fillLocationFilter = () => {
@@ -6804,14 +6809,13 @@ tableBody.addEventListener('click', (e) => {
                     itemStatus
                 ].join(' '));
 
-                const itemDate = item.createdAt || item.registerDate;
-                const formattedDate = formatDate(itemDate);
+                const itemDate = fechaISO(item.createdAt || item.registerDate);
 
                 return (!search || text.includes(search)) &&
                     (!status || itemStatus === status) &&
                     (!area || itemArea === area) &&
                     (!location || itemLocation === location) &&
-                    (!date || formattedDate.includes(date));
+                    (!date || (itemDate && itemDate >= date));
             });
 
             const visible = pageSize === 'all'
@@ -6827,7 +6831,7 @@ tableBody.addEventListener('click', (e) => {
                         <td>${escapeHTML(item.name)}</td>
                         <td>${escapeHTML(item.email || 'N/A')}</td>
                         <td>${escapeHTML(getRequesterArea(item))}</td>
-                        <td><span class="settings-location-dot">📍</span> ${escapeHTML(getRequesterLocationName(item))}</td>
+                        <td>${escapeHTML(getRequesterLocationName(item))}</td>
                         <td>${getStatusBadge(item.status || 'Activo')}</td>
                         <td>${formatDate(item.createdAt || item.registerDate)}</td>
                         <td>
@@ -6844,7 +6848,12 @@ tableBody.addEventListener('click', (e) => {
                 ? `Mostrando 1 a ${visible.length} de ${filtered.length} resultados`
                 : `Mostrando 0 resultados`;
 
-            addMainBtn.textContent = '+ Agregar solicitante';
+            filasActuales = {
+                head: ['Código', 'Nombre completo', 'Correo electrónico', 'Área', 'Ubicación principal', 'Estado', 'Fecha de registro'],
+                body: filtered.map(item => [item.id, item.name || '', item.email || '', getRequesterArea(item), getRequesterLocationName(item), item.status || 'Activo', formatDate(item.createdAt || item.registerDate)])
+            };
+
+            addMainBtn.textContent = 'Agregar solicitante';
             searchInput.placeholder = 'Buscar solicitante...';
         }
 
@@ -6874,14 +6883,12 @@ tableBody.addEventListener('click', (e) => {
                     itemStatus
                 ].join(' '));
 
-                const itemDate = item.createdAt || item.registerDate;
-                const formattedDate = formatDate(itemDate);
+                const itemDate = fechaISO(item.createdAt || item.registerDate);
 
                 return (!search || text.includes(search)) &&
                     (!status || itemStatus === status) &&
                     (!area || itemType === area) &&
-                    (!location || item.name === location) &&
-                    (!date || formattedDate.includes(date));
+                    (!date || (itemDate && itemDate >= date));
             });
 
             const visible = pageSize === 'all'
@@ -6913,7 +6920,12 @@ tableBody.addEventListener('click', (e) => {
                 ? `Mostrando 1 a ${visible.length} de ${filtered.length} resultados`
                 : `Mostrando 0 resultados`;
 
-            addMainBtn.textContent = '+ Agregar ubicación';
+            filasActuales = {
+                head: ['Código', 'Nombre de la ubicación', 'Tipo', 'Ciudad', 'Estado', 'Fecha de registro'],
+                body: filtered.map(item => [item.id, item.name || '', getLocationType(item), item.city || 'Cali', item.status || 'Activo', formatDate(item.createdAt || item.registerDate)])
+            };
+
+            addMainBtn.textContent = 'Agregar ubicación';
             searchInput.placeholder = 'Buscar ubicación...';
         }
     };
@@ -6939,16 +6951,12 @@ tableBody.addEventListener('click', (e) => {
             await db.runTransaction(async (transaction) => {
                 const counterDoc = await transaction.get(counterRef);
 
-                if (!counterDoc.exists) {
-                    throw new Error(`El contador '${counterName}' no existe.`);
-                }
-
-                newNumber = counterDoc.data().currentNumber + 1;
+                // Si el contador no existe todavía, se crea
+                newNumber = (counterDoc.exists ? Number(counterDoc.data().currentNumber) || 0 : 0) + 1;
                 newId = `${prefix}${newNumber}`;
 
-                transaction.update(counterRef, {
-                    currentNumber: newNumber
-                });
+                if (counterDoc.exists) transaction.update(counterRef, { currentNumber: newNumber });
+                else transaction.set(counterRef, { currentNumber: newNumber });
             });
 
             await db.collection(collectionName).doc(newId).set({
@@ -6965,43 +6973,17 @@ tableBody.addEventListener('click', (e) => {
     };
 
     const exportCurrentData = () => {
-        const data = activeTab === 'requesters' ? requestersData : locationsData;
-
-        const rows = activeTab === 'requesters'
-            ? [
-                ['Código', 'Nombre', 'Correo', 'Área', 'Ubicación', 'Estado'],
-                ...data.map(item => [
-                    item.id,
-                    item.name || '',
-                    item.email || '',
-                    getRequesterArea(item),
-                    getRequesterLocationName(item),
-                    item.status || 'Activo'
-                ])
-            ]
-            : [
-                ['Código', 'Nombre', 'Tipo', 'Ciudad', 'Estado'],
-                ...data.map(item => [
-                    item.id,
-                    item.name || '',
-                    getLocationType(item),
-                    item.city || 'Cali',
-                    item.status || 'Activo'
-                ])
-            ];
-
-        const csv = rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\\n');
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const csv = Papa.unparse({ fields: filasActuales.head, data: filasActuales.body }, { delimiter: ';' });
+        const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
 
         const link = document.createElement('a');
         link.href = url;
-        link.download = activeTab === 'requesters' ? 'solicitantes.csv' : 'ubicaciones.csv';
+        link.download = `${nombreArchivo(activeTab === 'requesters' ? 'solicitantes' : 'ubicaciones')}.csv`;
         link.click();
 
         URL.revokeObjectURL(url);
     };
-
     db.collection('requesters').orderBy('numericId', 'asc').onSnapshot(snapshot => {
         requestersData = [];
 
@@ -7013,6 +6995,7 @@ tableBody.addEventListener('click', (e) => {
         });
 
         updateKPIs();
+        fillAreaFilter();
         renderTable();
     });
 
@@ -7027,6 +7010,7 @@ tableBody.addEventListener('click', (e) => {
         });
 
         fillLocationFilter();
+        fillAreaFilter();
         updateKPIs();
         renderTable();
     });
@@ -7056,6 +7040,7 @@ tableBody.addEventListener('click', (e) => {
             locationFilter.value = '';
             dateFilter.value = '';
 
+            fillAreaFilter();
             renderTable();
         });
     });
@@ -7080,8 +7065,9 @@ tableBody.addEventListener('click', (e) => {
 
     document.getElementById('settings-export-btn').addEventListener('click', exportCurrentData);
 
-    document.getElementById('settings-import-btn').addEventListener('click', () => {
-        alert('Más adelante podemos crear importación desde Excel/CSV.');
+    document.getElementById('settings-export-pdf').addEventListener('click', () => {
+        const titulo = activeTab === 'requesters' ? 'Solicitantes' : 'Ubicaciones';
+        exportarPDFTabla({ titulo, detalle: filtrosAplicados(), head: filasActuales.head, body: filasActuales.body });
     });
 }
     
@@ -9617,7 +9603,8 @@ if (formBtn) {
     return;
 }
 
-const exportBtn = target.closest('.export-btn');
+// Solo los botones con data-format (csv / pdf) usan la exportación genérica; los demás .export-btn solo comparten el estilo
+const exportBtn = target.closest('.export-btn[data-format]');
 if (exportBtn) {
     exportBtn.dataset.format === 'pdf'
         ? exportToPDF('data-table')

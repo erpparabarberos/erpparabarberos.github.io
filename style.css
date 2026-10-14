@@ -16272,3 +16272,138 @@ body.ti-sobrio .credentials-modern-table td:last-child {
     box-shadow: none !important;
     border-left: 0 !important;
 }
+/* =====================================================
+   AJUSTES: misma estructura que Inventario
+===================================================== */
+
+body.ti-sobrio .settings-modern-page .inventory-modern-tabs .settings-tab,
+body.ti-sobrio .settings-modern-page .inventory-modern-tabs .settings-tab:hover {
+    height: 40px !important;
+    min-height: 0 !important;
+    padding: 0 14px !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    transform: none !important;
+    cursor: pointer !important;
+}
+
+body.ti-sobrio .settings-modern-page .inventory-modern-tabs .settings-tab:not(.active) {
+    background: #fff !important;
+    border-color: var(--ti-linea) !important;
+    color: #475569 !important;
+}
+
+body.ti-sobrio .settings-modern-page .inventory-modern-tabs .settings-tab svg.ti-ico {
+    width: 17px;
+    height: 17px;
+    fill: none !important;
+    stroke: currentColor !important;
+}
+
+body.ti-sobrio .settings-kpi-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+}
+
+body.ti-sobrio .inventory-modern-actions #settings-add-main-btn,
+body.ti-sobrio .inventory-modern-actions #settings-add-main-btn:hover {
+    height: 42px !important;
+    padding: 0 18px !important;
+    background: var(--ti-tinta) !important;
+    border: 1px solid var(--ti-tinta) !important;
+    border-radius: 6px !important;
+    box-shadow: none !important;
+    color: #fff !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    white-space: nowrap !important;
+}
+
+body.ti-sobrio .inventory-modern-actions #settings-add-main-btn:hover {
+    background: #1e293b !important;
+}
+
+body.ti-sobrio .settings-modern-page .inventory-modern-actions .export-btn {
+    white-space: nowrap !important;
+}
+
+body.ti-sobrio .settings-table .settings-code {
+    font-weight: 600 !important;
+    color: var(--ti-tinta) !important;
+}
+
+body.ti-sobrio .settings-table .settings-empty {
+    padding: 28px !important;
+    text-align: center !important;
+    color: var(--ti-gris) !important;
+}
+
+body.ti-sobrio .settings-actions-cell {
+    display: flex !important;
+    gap: 4px !important;
+}
+
+body.ti-sobrio .settings-actions-cell > button,
+body.ti-sobrio .settings-actions-cell > button:hover {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    display: grid !important;
+    place-items: center !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 1px solid transparent !important;
+    border-radius: 6px !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: var(--ti-gris) !important;
+    transform: none !important;
+}
+
+body.ti-sobrio .settings-actions-cell > button:hover {
+    border-color: var(--ti-linea) !important;
+    background: #fff !important;
+    color: var(--ti-tinta) !important;
+}
+
+body.ti-sobrio .settings-actions-cell > button.action-icon-delete:hover {
+    color: var(--ti-peligro) !important;
+}
+
+body.ti-sobrio .settings-actions-cell svg.ti-ico {
+    width: 17px;
+    height: 17px;
+    fill: none !important;
+    stroke: currentColor !important;
+    pointer-events: none;
+}
+
+@media (max-width: 1100px) {
+    body.ti-sobrio .settings-kpi-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+}
+
+@media (max-width: 768px) {
+    body.ti-sobrio .settings-modern-page .inventory-modern-actions {
+        flex-wrap: wrap !important;
+    }
+
+    body.ti-sobrio .settings-modern-page .inventory-modern-actions .export-btn {
+        flex: 1 1 calc(50% - 4px) !important;
+    }
+
+    body.ti-sobrio .settings-modern-page .inventory-modern-actions #settings-add-main-btn {
+        flex: 1 1 100% !important;
+    }
+}
+
+@media (max-width: 520px) {
+    body.ti-sobrio .settings-kpi-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+body.ti-sobrio .settings-modern-page .inventory-modern-tabs .settings-tab {
+    flex: 0 0 auto !important;
+    width: auto !important;
+    transition: none !important;
+}
