@@ -2000,7 +2000,8 @@ const newTITicketFormHTML = `
 
     // PDF con tabla: título, fecha de generación, filtros, resumen opcional y número de página.
     // resumen: [['Total', '8'], ['Ejecutadas', '2'], ...]
-    function exportarPDFTabla({ titulo, detalle = '', resumen = [], head, body, archivo, tituloTabla = '' }) {
+    // secciones(doc, y, util): dibuja contenido extra entre el resumen y la tabla; devuelve la nueva posición y.
+    function exportarPDFTabla({ titulo, detalle = '', resumen = [], head, body, archivo, tituloTabla = '', secciones = null }) {
         const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
         const ancho = doc.internal.pageSize.getWidth();
         const margen = 12;
@@ -2049,6 +2050,10 @@ const newTITicketFormHTML = `
                 bodyStyles: { textColor: [15, 23, 42], fontStyle: 'bold', fontSize: 11 }
             });
             y = doc.lastAutoTable.finalY + 6;
+        }
+
+        if (secciones) {
+            y = secciones(doc, y, { margen, ancho, alto: doc.internal.pageSize.getHeight(), estiloBase });
         }
 
         if (tituloTabla) {
@@ -3904,7 +3909,7 @@ if (quickNoteRawAfterSave) {
 
             renderInventoryCharts(inventoryDevices);
 
-            ultimoReporte = { tickets, requestersMap, start, end, total, closed, progress, pending, totalMinutes, topCategory, topRequester };
+            ultimoReporte = { tickets, requestersMap, devicesMap, start, end, total, closed, progress, pending, totalMinutes, topCategory, topRequester };
 
         } catch (error) {
             console.error('Error generando reporte:', error);
@@ -4303,19 +4308,136 @@ if (quickNoteRawAfterSave) {
 
         const tickets = [...r.tickets].sort((a, b) => (getDate(b) || 0) - (getDate(a) || 0));
 
+        // Datos de cada gráfico tal como se ven en el panel
+        const datosGrafico = (instancia) => {
+            const chart = window[instancia];
+            if (!chart) return [];
+            return chart.data.labels.map((label, i) => [label, chart.data.datasets[0].data[i]]);
+        };
+        const conPorcentaje = (filas) => {
+            const suma = filas.reduce((s, f) => s + (Number(f[1]) || 0), 0);
+            return filas.map(f => [f[0], f[1], percent(Number(f[1]) || 0, suma)]);
+        };
+
+        const solicitantes = sortEntries(countBy(r.tickets, t => r.requestersMap[t.requesterId] || 'Sin solicitante'), 10);
+        const dispositivos = {};
+        r.tickets.forEach(t => getDeviceNamesFromTicket(t, r.devicesMap || {}).forEach(n => { dispositivos[n] = (dispositivos[n] || 0) + 1; }));
+        const topDispositivos = sortEntries(dispositivos, 10);
+
+        const flujo = window.reportFlowChartInstance;
+        const totalCreados = flujo ? flujo.data.datasets[0].data.reduce((s, v) => s + (Number(v) || 0), 0) : r.total;
+        const totalCerrados = flujo && flujo.data.datasets[1] ? flujo.data.datasets[1].data.reduce((s, v) => s + (Number(v) || 0), 0) : r.closed;
+
+        const bloques = [
+            [
+                { titulo: 'Tickets por estado', grafico: 'reportStatusChart', head: ['Estado', 'Tickets', '%'], body: conPorcentaje(datosGrafico('reportStatusChartInstance')) },
+                { titulo: 'Tickets por tipo', grafico: 'reportTypeChart', head: ['Tipo', 'Tickets', '%'], body: conPorcentaje(datosGrafico('reportTypeChartInstance')) }
+            ],
+            [
+                { titulo: 'Tiempo invertido por categoría', grafico: 'reportTimeByCategoryChart', head: ['Categoría', 'Horas'], body: datosGrafico('reportTimeByCategoryChartInstance') },
+                { titulo: 'Top solicitantes', head: ['#', 'Solicitante', 'Tickets'], body: solicitantes.length ? solicitantes.map((e, i) => [i + 1, e[0], e[1]]) : [[{ content: 'No hay datos', colSpan: 3 }]] }
+            ],
+            [
+                { titulo: 'Creados vs cerrados', grafico: 'reportFlowChart', head: ['Creados en el periodo', 'Cerrados en el periodo'], body: [[totalCreados, totalCerrados]] },
+                { titulo: 'Top dispositivos problemáticos', head: ['#', 'Dispositivo', 'Tickets'], body: topDispositivos.length ? topDispositivos.map((e, i) => [i + 1, e[0], e[1]]) : [[{ content: 'No hay datos', colSpan: 3 }]] }
+            ],
+            [
+                { seccion: 'Resumen de inventario', titulo: 'Dispositivos por categoría', grafico: 'reportInventoryCategoryChart', head: ['Categoría', 'Dispositivos'], body: datosGrafico('reportInventoryCategoryChartInstance') },
+                { titulo: 'Computadores por sistema operativo', grafico: 'reportOSChart', head: ['Sistema operativo', 'Computadores', '%'], body: conPorcentaje(datosGrafico('reportOSChartInstance')) }
+            ]
+        ];
+
+        // Imagen del gráfico ya terminado de dibujar (sin animación), sobre fondo blanco y en JPEG para que el PDF pese poco
+        const imagenGrafico = (canvas) => {
+            const chart = Chart.getChart ? Chart.getChart(canvas) : null;
+            if (chart) { chart.stop(); chart.update('none'); }
+            const copia = document.createElement('canvas');
+            copia.width = canvas.width;
+            copia.height = canvas.height;
+            const ctx = copia.getContext('2d');
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, copia.width, copia.height);
+            ctx.drawImage(canvas, 0, 0);
+            return copia.toDataURL('image/jpeg', 0.9);
+        };
+
+        const dibujarSecciones = (doc, y, { margen, ancho, alto, estiloBase }) => {
+            const util = ancho - margen * 2;
+            const separacion = 8;
+            const pie = alto - 16;
+
+            bloques.forEach(fila => {
+                const anchoCol = fila.length === 1 ? util : (util - separacion) / 2;
+                // Altura estimada de la fila para decidir si cabe en la página
+                const estimado = Math.max(...fila.map(b => 8 + (b.grafico ? (b.alto || 44) + 3 : 0) + (b.body.length + 1) * 6.5)) + (fila[0].seccion ? 9 : 0);
+                if (y + Math.min(estimado, 120) > pie) { doc.addPage(); y = 16; }
+
+                if (fila[0].seccion) {
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(13);
+                    doc.setTextColor(15, 23, 42);
+                    doc.text(fila[0].seccion, margen, y + 2);
+                    y += 9;
+                }
+
+                let yMax = y;
+                fila.forEach((b, i) => {
+                    const x = margen + i * (anchoCol + separacion);
+                    let yc = y;
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(10);
+                    doc.setTextColor(15, 23, 42);
+                    doc.text(b.titulo, x, yc + 2);
+                    yc += 5;
+
+                    const canvas = b.grafico ? document.getElementById(b.grafico) : null;
+                    if (canvas && canvas.width) {
+                        const altoCaja = b.alto || 44;
+                        const proporcion = canvas.width / canvas.height;
+                        let w = anchoCol, h = w / proporcion;
+                        if (h > altoCaja) { h = altoCaja; w = h * proporcion; }
+                        doc.setDrawColor(226, 232, 240);
+                        doc.rect(x, yc, anchoCol, altoCaja + 4);
+                        doc.addImage(imagenGrafico(canvas), 'JPEG', x + (anchoCol - w) / 2, yc + 2, w, h);
+                        yc += altoCaja + 7;
+                    }
+
+                    doc.autoTable({
+                        startY: yc,
+                        margin: { left: x, right: ancho - x - anchoCol, bottom: 14 },
+                        tableWidth: anchoCol,
+                        theme: 'grid',
+                        head: [b.head],
+                        body: b.body.length ? b.body : [[{ content: 'No hay datos', colSpan: b.head.length }]],
+                        styles: estiloBase,
+                        headStyles: { fillColor: [248, 250, 252], textColor: [100, 116, 139], fontStyle: 'bold' }
+                    });
+                    yMax = Math.max(yMax, doc.lastAutoTable.finalY);
+                    // Si la tabla pasó a otra página, la siguiente columna empieza en esa página
+                    if (doc.internal.getCurrentPageInfo().pageNumber !== doc.internal.getNumberOfPages()) doc.setPage(doc.internal.getNumberOfPages());
+                });
+                y = yMax + 9;
+            });
+
+            // El detalle de soportes empieza en una página nueva
+            doc.addPage();
+            return 16;
+        };
+
         exportarPDFTabla({
             titulo: 'Reporte de soportes',
             detalle: [`Periodo: ${fecha(r.start)} al ${fecha(r.end)}`, ...filtros].join('   ·   '),
             resumen: [
-                ['Total soportes', r.total],
+                ['Total tickets', r.total],
                 ['Cerrados', `${r.closed} (${percent(r.closed, r.total)})`],
                 ['En curso', `${r.progress} (${percent(r.progress, r.total)})`],
                 ['Pendientes', r.pending],
                 ['Tiempo invertido', formatMinutes(r.totalMinutes)],
                 ['Categoría principal', r.topCategory ? `${capitalizar(r.topCategory[0])} (${r.topCategory[1]})` : 'N/A'],
-                ['Más solicitudes', r.topRequester ? `${r.topRequester[0]} (${r.topRequester[1]})` : 'N/A']
+                ['Solicitante top', r.topRequester ? `${r.topRequester[0]} (${r.topRequester[1]})` : 'N/A']
             ],
-            tituloTabla: 'Soportes del periodo',
+            secciones: dibujarSecciones,
+            tituloTabla: 'Detalle de soportes del periodo',
             head: ['Código', 'Fecha', 'Tipo', 'Categoría', 'Solicitante', 'Novedad', 'Estado', 'Tiempo'],
             body: tickets.map(ticket => [
                 ticket.id,
