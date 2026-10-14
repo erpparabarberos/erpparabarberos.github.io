@@ -1513,7 +1513,8 @@ const newTITicketFormHTML = `
             </div>
 
             <div class="inventory-modern-actions">
-                <button class="export-btn csv" data-format="csv">Exportar</button>
+                <button class="export-btn csv" data-format="csv">Exportar Excel</button>
+                <button class="export-btn pdf" data-format="pdf">Exportar PDF</button>
                 <button id="add-item-btn" class="btn-blue open-form-modal-btn">Añadir equipo</button>
             </div>
         </div>
@@ -1636,7 +1637,8 @@ const newTITicketFormHTML = `
 
             <div class="inventory-modern-actions">
                 <button type="button" id="services-clear-filters" class="export-btn services-clear-btn">Limpiar filtros</button>
-                <button class="export-btn csv" data-format="csv">Exportar</button>
+                <button class="export-btn csv" data-format="csv">Exportar Excel</button>
+                <button class="export-btn pdf" data-format="pdf">Exportar PDF</button>
                 <button id="add-service-btn" class="btn-blue open-form-modal-btn">Añadir servicio</button>
             </div>
         </div>
@@ -1950,8 +1952,159 @@ const newTITicketFormHTML = `
 `;
     // --- 4. CONFIGURACIONES DE TABLAS ---
     function capitalizar(str) { if (!str) return str; str = String(str); return str.charAt(0).toUpperCase() + str.slice(1); }
-    function exportToCSV(tableId, filename) { const table = document.getElementById(tableId); if (!table) return; let data = []; const headers = Array.from(table.querySelectorAll('thead th')).map(header => header.innerText).slice(0, -1); const rows = table.querySelectorAll('tbody tr'); rows.forEach(row => { const rowData = Array.from(row.querySelectorAll('td')).map(cell => cell.innerText).slice(0, -1); data.push(rowData); }); const csv = Papa.unparse({ fields: headers, data }, { delimiter: ";" }); const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a"); if (link.download !== undefined) { const url = URL.createObjectURL(blob); link.setAttribute("href", url); link.setAttribute("download", `${filename}.csv`); link.style.visibility = 'hidden'; document.body.appendChild(link); link.click(); document.body.removeChild(link); } }
-    function exportToPDF(tableId, filename) { const table = document.getElementById(tableId); if (!table) return; const doc = new jsPDF({ orientation: "landscape" }); const head = [Array.from(table.querySelectorAll('thead th')).map(header => header.innerText).slice(0, -1)]; const body = Array.from(table.querySelectorAll('tbody tr')).map(row => Array.from(row.querySelectorAll('td')).map(cell => cell.innerText).slice(0, -1)); doc.autoTable({ head: head, body: body, startY: 10, styles: { font: "Inter", fontSize: 8 }, headStyles: { fillColor: [41, 128, 186], textColor: 255, fontStyle: 'bold' } }); doc.save(`${filename}.pdf`); }
+    // Lee una tabla de la página: quita la columna de casillas (encabezado vacío) y la de acciones.
+    function leerTablaExportable(tableId) {
+        const table = document.getElementById(tableId);
+        if (!table) return null;
+        const textoCelda = (celda) => (celda.innerText || celda.textContent || '').replace(/\s+/g, ' ').trim();
+        const encabezados = Array.from(table.querySelectorAll('thead th')).map(textoCelda);
+        const columnas = encabezados
+            .map((texto, i) => ({ texto, i }))
+            .filter(c => c.texto && !/^acci[oó]n(es)?$/i.test(c.texto));
+        const filas = Array.from(table.querySelectorAll('tbody tr'))
+            .map(tr => Array.from(tr.querySelectorAll('td')))
+            .filter(celdas => celdas.length >= columnas.length && !celdas.some(c => c.colSpan > 1))
+            .map(celdas => columnas.map(c => celdas[c.i] ? textoCelda(celdas[c.i]) : ''));
+        return { head: columnas.map(c => c.texto), body: filas };
+    }
+
+    // Título de la página actual, para el PDF y el nombre del archivo
+    function tituloPaginaActual() {
+        const h1 = document.querySelector('#app-content h1, main h1');
+        return h1 ? h1.textContent.trim() : 'Reporte';
+    }
+
+    function nombreArchivo(titulo) {
+        const limpio = String(titulo || 'reporte').toLowerCase()
+            .normalize('NFD').replace(/[̀-ͯ]/g, '')
+            .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        return `${limpio || 'reporte'}-${new Date().toISOString().slice(0, 10)}`;
+    }
+
+    // Filtros con valor elegido en la página (para dejarlos escritos en el PDF)
+    function filtrosAplicados() {
+        const partes = [];
+        document.querySelectorAll('#app-content [class*="filter-item"], #app-content [class*="filter-group"]').forEach(item => {
+            if (item.offsetParent === null) return;
+            const label = item.querySelector('label');
+            const campo = item.querySelector('select, input');
+            if (!label || !campo || !campo.value) return;
+            let valor = campo.tagName === 'SELECT' ? campo.options[campo.selectedIndex].text : campo.value;
+            if (campo.type === 'date' || campo.type === 'month') valor = campo.value.split('-').reverse().join('/');
+            partes.push(`${label.textContent.trim()}: ${valor}`);
+        });
+        const buscador = document.querySelector('#app-content .inventory-modern-search-wrap input');
+        if (buscador && buscador.value.trim()) partes.unshift(`Búsqueda: "${buscador.value.trim()}"`);
+        return partes.join('   ·   ');
+    }
+
+    // PDF con tabla: título, fecha de generación, filtros, resumen opcional y número de página.
+    // resumen: [['Total', '8'], ['Ejecutadas', '2'], ...]
+    function exportarPDFTabla({ titulo, detalle = '', resumen = [], head, body, archivo, tituloTabla = '' }) {
+        const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+        const ancho = doc.internal.pageSize.getWidth();
+        const margen = 12;
+        const ahora = new Date().toLocaleString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(16);
+        doc.setTextColor(15, 23, 42);
+        doc.text(titulo, margen, 16);
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        doc.setTextColor(100, 116, 139);
+        doc.text(`Gestión de TI   ·   Generado el ${ahora}   ·   ${body.length} ${body.length === 1 ? 'registro' : 'registros'}`, margen, 22);
+
+        let y = 26;
+        if (detalle) {
+            const lineas = doc.splitTextToSize(detalle, ancho - margen * 2);
+            doc.text(lineas, margen, y + 1);
+            y += lineas.length * 4 + 1;
+        }
+
+        doc.setDrawColor(226, 232, 240);
+        doc.line(margen, y, ancho - margen, y);
+        y += 4;
+
+        const estiloBase = {
+            font: 'helvetica',
+            fontSize: 8,
+            cellPadding: 2.2,
+            textColor: [51, 65, 85],
+            lineColor: [226, 232, 240],
+            lineWidth: 0.1,
+            overflow: 'linebreak'
+        };
+
+        if (resumen.length) {
+            doc.autoTable({
+                startY: y,
+                margin: { left: margen, right: margen },
+                theme: 'grid',
+                head: [resumen.map(r => r[0])],
+                body: [resumen.map(r => String(r[1]))],
+                styles: { ...estiloBase, fontSize: 9 },
+                headStyles: { fillColor: [248, 250, 252], textColor: [100, 116, 139], fontStyle: 'normal', fontSize: 8 },
+                bodyStyles: { textColor: [15, 23, 42], fontStyle: 'bold', fontSize: 11 }
+            });
+            y = doc.lastAutoTable.finalY + 6;
+        }
+
+        if (tituloTabla) {
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(11);
+            doc.setTextColor(15, 23, 42);
+            doc.text(tituloTabla, margen, y + 1);
+            y += 4;
+        }
+
+        doc.autoTable({
+            startY: y,
+            margin: { left: margen, right: margen, bottom: 14 },
+            theme: 'grid',
+            head: [head],
+            body: body.length ? body : [[{ content: 'No hay registros para mostrar.', colSpan: head.length, styles: { halign: 'center', textColor: [100, 116, 139] } }]],
+            styles: estiloBase,
+            headStyles: { fillColor: [15, 23, 42], textColor: 255, fontStyle: 'bold' },
+            alternateRowStyles: { fillColor: [248, 250, 252] }
+        });
+
+        const paginas = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= paginas; i++) {
+            doc.setPage(i);
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(8);
+            doc.setTextColor(148, 163, 184);
+            doc.text(titulo, margen, doc.internal.pageSize.getHeight() - 7);
+            doc.text(`Página ${i} de ${paginas}`, ancho - margen, doc.internal.pageSize.getHeight() - 7, { align: 'right' });
+        }
+
+        doc.save(`${archivo || nombreArchivo(titulo)}.pdf`);
+    }
+
+    function exportToCSV(tableId, filename) {
+        const datos = leerTablaExportable(tableId);
+        if (!datos) return;
+        const csv = Papa.unparse({ fields: datos.head, data: datos.body }, { delimiter: ";" });
+        const blob = new Blob(["﻿" + csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${filename || nombreArchivo(tituloPaginaActual())}.csv`;
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+
+    function exportToPDF(tableId, filename) {
+        const datos = leerTablaExportable(tableId);
+        if (!datos) return;
+        const titulo = tituloPaginaActual();
+        exportarPDFTabla({ titulo, detalle: filtrosAplicados(), head: datos.head, body: datos.body, archivo: filename });
+    }
     async function exportStatsToPDF() { const reportElement = document.getElementById('stats-content'); const canvas = await html2canvas(reportElement, { scale: 2 }); const imgData = canvas.toDataURL('image/png'); const pdf = new jsPDF('p', 'mm', 'a4'); const pdfWidth = pdf.internal.pageSize.getWidth(); const pdfHeight = (canvas.height * pdfWidth) / canvas.width; pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight); pdf.save("reporte-estadisticas.pdf"); }
     function setupTableSearch(inputId, tableId) { const searchInput = document.getElementById(inputId); if (!searchInput) return; if (searchInput.dataset.listenerAttached) return; searchInput.dataset.listenerAttached = 'true'; searchInput.addEventListener('input', (e) => { const searchTerm = e.target.value.toLowerCase().trim(); const table = document.getElementById(tableId); const rows = table.querySelectorAll('tbody tr'); rows.forEach(row => { const rowText = row.textContent.toLowerCase(); if (rowText.includes(searchTerm)) { row.style.display = ''; } else { row.style.display = 'none'; } }); }); }
 
@@ -3497,6 +3650,7 @@ if (quickNoteRawAfterSave) {
     const statusSelect = document.getElementById('stats-status');
     const generateBtn = document.getElementById('generate-stats-report');
     const exportPdfBtn = document.getElementById('export-report-pdf');
+    let ultimoReporte = null;
 
     const now = new Date();
     const endDefault = new Date(now);
@@ -3749,6 +3903,8 @@ if (quickNoteRawAfterSave) {
             }
 
             renderInventoryCharts(inventoryDevices);
+
+            ultimoReporte = { tickets, requestersMap, start, end, total, closed, progress, pending, totalMinutes, topCategory, topRequester };
 
         } catch (error) {
             console.error('Error generando reporte:', error);
@@ -4137,7 +4293,42 @@ if (quickNoteRawAfterSave) {
     generateBtn.addEventListener('click', loadReport);
 
     exportPdfBtn.addEventListener('click', () => {
-        window.print();
+        if (!ultimoReporte) return;
+        const r = ultimoReporte;
+        const fecha = (d) => d ? d.toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
+        const estados = { cerrado: 'Cerrado', 'en-curso': 'En curso', abierto: 'Abierto', pendiente: 'Pendiente' };
+        const filtros = [];
+        if (typeSelect.value) filtros.push(`Tipo: ${typeSelect.options[typeSelect.selectedIndex].text}`);
+        if (statusSelect.value) filtros.push(`Estado: ${statusSelect.options[statusSelect.selectedIndex].text}`);
+
+        const tickets = [...r.tickets].sort((a, b) => (getDate(b) || 0) - (getDate(a) || 0));
+
+        exportarPDFTabla({
+            titulo: 'Reporte de soportes',
+            detalle: [`Periodo: ${fecha(r.start)} al ${fecha(r.end)}`, ...filtros].join('   ·   '),
+            resumen: [
+                ['Total soportes', r.total],
+                ['Cerrados', `${r.closed} (${percent(r.closed, r.total)})`],
+                ['En curso', `${r.progress} (${percent(r.progress, r.total)})`],
+                ['Pendientes', r.pending],
+                ['Tiempo invertido', formatMinutes(r.totalMinutes)],
+                ['Categoría principal', r.topCategory ? `${capitalizar(r.topCategory[0])} (${r.topCategory[1]})` : 'N/A'],
+                ['Más solicitudes', r.topRequester ? `${r.topRequester[0]} (${r.topRequester[1]})` : 'N/A']
+            ],
+            tituloTabla: 'Soportes del periodo',
+            head: ['Código', 'Fecha', 'Tipo', 'Categoría', 'Solicitante', 'Novedad', 'Estado', 'Tiempo'],
+            body: tickets.map(ticket => [
+                ticket.id,
+                fecha(getDate(ticket)),
+                getTypeLabel(ticket.ticketType),
+                getCategoryLabel(ticket),
+                r.requestersMap[ticket.requesterId] || 'Sin solicitante',
+                ticket.novelty || ticket.description || ticket.descripcionDeLaNovedad || ticket.title || '',
+                estados[ticket.status] || capitalizar(ticket.status || ''),
+                formatMinutes(ticket.timeSpentMinutes)
+            ]),
+            archivo: `reporte-soportes-${startDateInput.value}-a-${endDateInput.value}`
+        });
     });
 
     loadReport();
@@ -4928,7 +5119,7 @@ const buildTasksForMonth = () => {
                 task.margin,
                 task.plannedLabel,
                 task.executedAt || '',
-                status,
+                status.charAt(0).toUpperCase() + status.slice(1),
                 task.supportId || ''
             ]);
         });
@@ -5245,7 +5436,38 @@ const buildTasksForMonth = () => {
     document.getElementById('planning-export-excel').addEventListener('click', exportPlanningCSV);
 
     document.getElementById('planning-export-pdf').addEventListener('click', () => {
-        window.print();
+        const etiquetas = { programado: 'Programado', ejecutado: 'Ejecutado', pendiente: 'Pendiente', vencido: 'Vencido' };
+        const tareas = planningTasks.filter(task => {
+            const status = getTaskStatus(task);
+            return (!locationFilter.value || task.location === locationFilter.value) && (!statusFilter.value || status === statusFilter.value);
+        });
+        const contar = (estado) => tareas.filter(task => getTaskStatus(task) === estado).length;
+
+        exportarPDFTabla({
+            titulo: `Mantenimiento - ${getMonthLabel(monthInput.value)}`,
+            detalle: filtrosAplicados().split('   ·   ').filter(f => !f.startsWith('Mes:')).join('   ·   '),
+            resumen: [
+                ['Total de tareas', tareas.length],
+                ['Ejecutadas', contar('ejecutado')],
+                ['Pendientes', contar('pendiente')],
+                ['Vencidas', contar('vencido')]
+            ],
+            tituloTabla: 'Tareas del mes',
+            head: ['Item', 'Tarea', 'Sede', 'Frecuencia', 'Margen', 'Programado para', 'Ejecutado el', 'Estado', 'Soporte', 'Observación'],
+            body: tareas.map(task => [
+                task.item,
+                task.task,
+                task.location,
+                task.frequency,
+                `${task.margin} ${Number(task.margin) === 1 ? 'mes' : 'meses'}`,
+                task.plannedLabel,
+                task.executedAt || '—',
+                etiquetas[getTaskStatus(task)] || getTaskStatus(task),
+                task.supportId || '—',
+                task.executionNote || ''
+            ]),
+            archivo: `mantenimiento-${monthInput.value}`
+        });
     });
 
     document.getElementById('planning-new-task-btn').addEventListener('click', () => {
@@ -9276,8 +9498,8 @@ if (formBtn) {
 const exportBtn = target.closest('.export-btn');
 if (exportBtn) {
     exportBtn.dataset.format === 'pdf'
-        ? exportToPDF('data-table', 'reporte')
-        : exportToCSV('data-table', 'reporte');
+        ? exportToPDF('data-table')
+        : exportToCSV('data-table');
     return;
 }
 
@@ -9609,7 +9831,41 @@ if (exportBtn) {
 
         document.getElementById('topo-zoom-mas').addEventListener('click', () => { zoom = Math.min(1.6, +(zoom + 0.1).toFixed(2)); dibujar(); });
         document.getElementById('topo-zoom-menos').addEventListener('click', () => { zoom = Math.max(0.5, +(zoom - 0.1).toFixed(2)); dibujar(); });
-        document.getElementById('topo-pdf').addEventListener('click', () => window.print());
+        // PDF: todos los equipos de la red en orden (cada uno debajo del equipo al que se conecta)
+        document.getElementById('topo-pdf').addEventListener('click', () => {
+            const porId = Object.fromEntries(datos.nodos.map(n => [n.id, n]));
+            const filas = [];
+            const recorrer = (nodo, nivel) => {
+                filas.push([
+                    '    '.repeat(nivel) + (nodo.nombre || ''),
+                    (TOPO_TIPOS[nodo.tipo] || TOPO_TIPOS.otro).nombre,
+                    nodo.padre && porId[nodo.padre] ? porId[nodo.padre].nombre : '—',
+                    nodo.padre ? (nodo.conexion === 'wifi' ? 'WiFi' : 'Cable') : '—',
+                    nodo.ip || '—',
+                    nodo.inventario || '',
+                    [nodo.marca, nodo.modelo].filter(Boolean).join(' '),
+                    nodo.notas || ''
+                ]);
+                hijosDe(nodo.id).forEach(h => recorrer(h, nivel + 1));
+            };
+            datos.nodos.filter(n => !n.padre || !porId[n.padre]).forEach(raiz => recorrer(raiz, 0));
+
+            const contar = (fn) => datos.nodos.filter(fn).length;
+            exportarPDFTabla({
+                titulo: 'Estructura de la red',
+                resumen: [
+                    ['Equipos en total', datos.nodos.length],
+                    ['Equipos de red', contar(n => ['modem', 'router', 'switch', 'ap'].includes(n.tipo))],
+                    ['Por cable', contar(n => n.padre && n.conexion !== 'wifi')],
+                    ['Por WiFi', contar(n => n.padre && n.conexion === 'wifi')],
+                    ['Con IP fija', contar(n => n.ip)]
+                ],
+                tituloTabla: 'Equipos y conexiones',
+                head: ['Equipo', 'Tipo', 'Conectado a', 'Conexión', 'IP', 'Inventario', 'Marca / modelo', 'Notas'],
+                body: filas,
+                archivo: nombreArchivo('estructura-de-la-red')
+            });
+        });
 
         try {
             const snap = await docRef.get();
