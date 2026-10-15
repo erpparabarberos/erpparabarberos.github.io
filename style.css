@@ -16407,3 +16407,19 @@ body.ti-sobrio .settings-modern-page .inventory-modern-tabs .settings-tab {
     width: auto !important;
     transition: none !important;
 }
+/* Títulos con el mismo aire que Historial (una regla antigua los subía 18 px) */
+body.ti-sobrio .inventory-modern-header,
+body.ti-sobrio .services-modern-header,
+body.ti-sobrio .credentials-modern-header,
+body.ti-sobrio .planning-header {
+    transform: none !important;
+    margin: 0 0 16px !important;
+    padding: 0 !important;
+    min-height: 44px !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+body.ti-sobrio .inventory-modern-tabs {
+    margin-top: 0 !important;
+}
