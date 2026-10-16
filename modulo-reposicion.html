@@ -113,8 +113,8 @@
   <button class="rep-tab" data-tab="config" id="tabConfigBtn">Configuración</button>
 </nav>
 
-<main class="p-5 max-w-[1600px] mx-auto">
-  <div id="sinDatos" class="card p-6 hidden">
+<main class="py-5 px-5 md:px-8 w-full">
+  <div id="sinDatos" class="card p-6 mb-4 hidden">
     <h2 class="font-bold text-lg mb-1">Todavía no hay datos de reposición</h2>
     <p class="muted text-sm">El sincronizador con Siigo (<b>nexus-sync</b>) aún no ha corrido o no tiene permiso para escribir en Firestore.
       Cuando corra, aparecerán aquí los productos y sugerencias.</p>
@@ -426,7 +426,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const meses = (S.meta && S.meta.meses) || [];
     const tot = meses.map(m => F.reduce((a, f) => a + ((f.ventas_mes || {})[m] || 0), 0));
     dibujar('chVentas', { type: 'bar', data: { labels: meses, datasets: [{ label: 'Unidades', data: tot, backgroundColor: '#1d4ed8', borderRadius: 3 }] },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { ticks: { callback: v => num(v) } } } } });
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0, callback: v => num(v) } } } } });
     const etq = ESTADOS.map(nombreEstado), val = ESTADOS.map(e => sum(cuenta(e.charAt(0)), 'valor_stock') / 1e6);
     dibujar('chEstados', { type: 'doughnut', data: { labels: etq, datasets: [{ data: val, backgroundColor: ['#0f172a', '#334155', '#64748b', '#94a3b8', '#cbd5e1', '#e2e8f0'], borderWidth: 0 }] },
       options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' }, tooltip: { callbacks: { label: c => `${c.label}: $${num(c.raw)}M` } } } } });
@@ -434,7 +434,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const urg = F.filter(f => f.abc === 'A' && f.dias_para_pedir !== null && (f.estado.startsWith('1') || f.estado.startsWith('2') || f.estado.startsWith('3')))
       .sort((a, b) => a.dias_para_pedir - b.dias_para_pedir).slice(0, 15);
     $('tblUrgentes').innerHTML = `<thead><tr><th>Producto</th><th>Origen</th><th class="num">Stock</th><th class="num">Demanda/mes</th>
-      <th class="num">Cobertura (días)</th><th>Pedir a más tardar</th><th class="num">Cantidad sugerida</th><th class="num">Puente ahora</th><th>Estado</th></tr></thead><tbody>` +
+      <th class="num">Cobertura (días)</th><th>Pedir a más tardar</th><th class="num">Cantidad sugerida</th><th class="num">Puente ahora</th><th>Estado</th></tr></thead><tbody>` + (urg.length ? '' : '<tr><td colspan="9" class="muted" style="padding:20px;text-align:center">No hay productos clase A por pedir.</td></tr>') +
       urg.map(f => `<tr><td><span class="linkish" data-det="${esc(f.codigo)}">${esc(f.nombre)}</span><div class="text-xs muted">${esc(f.codigo)} · ${esc(f.proveedor || '—')}</div></td>
         <td>${esc(f.origen)}</td><td class="num">${num(f.stock)}</td><td class="num">${num(f.demanda_mes, 1)}</td><td class="num">${num(f.dias_cobertura)}</td>
         <td>${f.dias_para_pedir <= 0 ? '<b class="text-red-700">YA (' + fmtFecha(f.fecha_limite_pedido) + ')</b>' : fmtFecha(f.fecha_limite_pedido)}</td>
