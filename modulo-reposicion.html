@@ -625,7 +625,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="tbl-wrap" style="max-height:380px"><table class="tbl"><thead><tr><th>Producto</th><th>ABC</th><th class="num">Stock</th><th class="num">Tránsito</th><th class="num">Demanda/mes</th>
           <th>Pedir antes de</th><th class="num">Sugerido</th><th class="num">Costo</th><th class="num">Valor</th><th>Estado</th></tr></thead><tbody>
           ${items.map(f => `<tr><td><span class="linkish" data-det="${esc(f.codigo)}">${esc(f.nombre)}</span><div class="text-xs muted">${esc(f.codigo)}</div></td><td>${esc(f.abc)}</td>
-            <td class="num">${num(f.stock)}</td>${bod ? `<td class="num font-bold">${num(stockEn(f, bod))}</td>` : ''}<td class="num">${f.en_transito ? num(f.en_transito) : '–'}</td><td class="num">${num(f.demanda_mes, 1)}</td>
+            <td class="num">${num(f.stock)}</td><td class="num">${f.en_transito ? num(f.en_transito) : '–'}</td><td class="num">${num(f.demanda_mes, 1)}</td>
             <td>${f.dias_para_pedir <= 0 ? '<b class="text-red-700">YA</b>' : fmtFecha(f.fecha_limite_pedido)}</td><td class="num font-bold">${num(f.cantidad_sugerida)}</td>
             <td class="num">${pesos(f.costo)}</td><td class="num">${pesos(f.valor_sugerido)}</td><td>${chip(f.estado)}</td></tr>`).join('')}
         </tbody></table></div></div>`;
