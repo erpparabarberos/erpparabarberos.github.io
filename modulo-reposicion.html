@@ -143,6 +143,7 @@
       <select id="fOrigen" class="inp"><option value="">China y nacional</option><option>China</option><option>Nacional</option></select>
       <select id="fAbc" class="inp"><option value="">Todas las clases</option><option>A</option><option>B</option><option>C</option></select>
       <select id="fProv" class="inp max-w-xs"><option value="">Todos los proveedores</option></select>
+      <select id="fBodega" class="inp" title="Muestra solo lo que tiene unidades en esa bodega"><option value="">Todas las bodegas</option></select>
       <label class="text-sm flex items-center gap-1"><input type="checkbox" id="fAccion"> Solo con acción</label>
       <span class="flex-1"></span>
       <span class="text-sm muted" id="cuentaRepo"></span>
@@ -450,12 +451,19 @@ document.addEventListener('DOMContentLoaded', () => {
   // ---------------------------------------------------------------- REPOSICIÓN
   function filtrar() {
     const toks = $('busquedaGlobal').value.trim().toLowerCase().split(/\s+/).filter(Boolean);
-    const e = $('fEstado').value, o = $('fOrigen').value, a = $('fAbc').value, p = $('fProv').value, acc = $('fAccion').checked;
+    const e = $('fEstado').value, o = $('fOrigen').value, a = $('fAbc').value, p = $('fProv').value, bod = $('fBodega').value, acc = $('fAccion').checked;
     return S.filas.filter(f =>
       (!toks.length || toks.every(t => (f.codigo + ' ' + f.nombre).toLowerCase().includes(t))) &&
-      (!e || f.estado.startsWith(e)) && (!o || f.origen === o) && (!a || f.abc === a) && (!p || f.proveedor === p) &&
+      (!e || f.estado.startsWith(e)) && (!o || f.origen === o) && (!a || f.abc === a) && (!p || f.proveedor === p) && (!bod || stockEn(f, bod) > 0) &&
       (!acc || f.cantidad_sugerida > 0 || f.puente_ahora > 0));
   }
+  // Unidades del producto en una bodega de Siigo (las negativas cuentan como 0)
+  const stockEn = (f, bodega) => Math.max(0, Number((f.bodegas || {})[bodega]) || 0);
+  // Con una bodega elegida aparece la columna "En <bodega>" junto al stock total
+  const columnasRepo = () => {
+    const bod = $('fBodega').value;
+    return bod ? COLS_REPO.flatMap(c => c[0] === 'stock' ? [c, ['stock_bodega', 'En ' + bod, 1]] : [c]) : COLS_REPO;
+  };
   const COLS_REPO = [
     ['sel', ''], ['nombre', 'Producto'], ['abc', 'ABC'], ['origen', 'Origen'], ['proveedor', 'Proveedor'],
     ['stock', 'Stock', 1], ['en_transito', 'Tránsito', 1], ['demanda_mes', 'Demanda/mes', 1], ['dias_cobertura', 'Cobertura (días)', 1],
@@ -464,10 +472,21 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderRepo() {
     const sel = $('fEstado'); if (sel.options.length === 1) ESTADOS.forEach(e => sel.add(new Option(nombreEstado(e), e.charAt(0))));
     const ps = $('fProv'); if (ps.options.length === 1) [...new Set(S.filas.map(f => f.proveedor).filter(Boolean))].sort().forEach(p => ps.add(new Option(p, p)));
+    const bs = $('fBodega');
+    if (bs.options.length === 1) {
+      // Bodegas que tienen al menos un producto con unidades; la Principal primero
+      const bodegas = [...new Set(S.filas.flatMap(f => Object.keys(f.bodegas || {}).filter(b => stockEn(f, b) > 0)))]
+        .sort((a, b) => (b === 'PRINCIPAL') - (a === 'PRINCIPAL') || a.localeCompare(b));
+      bodegas.forEach(b => bs.add(new Option(b, b)));
+    }
+    const bod = bs.value;
+    if (!bod && S.orden.col === 'stock_bodega') S.orden = { col: 'estado', dir: 1 };
+    const COLS = columnasRepo();
     let F = filtrar();
     const { col, dir } = S.orden;
     F.sort((x, y) => {
       let a = x[col], b = y[col];
+      if (col === 'stock_bodega') { a = stockEn(x, bod); b = stockEn(y, bod); }
       if (col === 'estado') { a = x.estado + String(1e12 - (x.venta12 || 0)).padStart(14, '0'); b = y.estado + String(1e12 - (y.venta12 || 0)).padStart(14, '0'); }
       if (a == null) return 1; if (b == null) return -1;
       return (a > b ? 1 : a < b ? -1 : 0) * dir;
@@ -475,14 +494,14 @@ document.addEventListener('DOMContentLoaded', () => {
     $('cuentaRepo').textContent = `${num(F.length)} productos`;
     const vis = F.slice(0, S.limiteRepo);
     $('btnMasRepo').style.display = F.length > S.limiteRepo ? '' : 'none';
-    $('tblRepo').innerHTML = '<thead><tr>' + COLS_REPO.map(([k, t, n]) =>
+    $('tblRepo').innerHTML = '<thead><tr>' + COLS.map(([k, t, n]) =>
       k === 'sel' ? '<th><input type="checkbox" id="selTodos"></th>' : `<th class="${n ? 'num' : ''}" data-ord="${k}">${t}${S.orden.col === k ? (S.orden.dir > 0 ? ' ▲' : ' ▼') : ''}</th>`).join('') + '</tr></thead><tbody>' +
       vis.map(f => `<tr>
         <td><input type="checkbox" class="selFila" data-c="${esc(f.codigo)}" ${S.seleccion.has(f.codigo) ? 'checked' : ''}></td>
         <td><span class="linkish" data-det="${esc(f.codigo)}">${esc(f.nombre)}</span><div class="text-xs muted">${esc(f.codigo)}${f.tiene_ajuste ? ' · <b class="text-amber-700">ajustado</b>' : ''}</div></td>
         <td>${esc(f.abc)}</td><td>${esc(f.origen)}${f.fuente_origen && f.fuente_origen.startsWith('Estimado') && !f.tiene_ajuste ? ' <span class="tag-est" title="Origen estimado, confirmar">estimado</span>' : ''}</td>
         <td class="text-xs">${esc(f.proveedor || '—')}</td>
-        <td class="num">${num(f.stock)}</td><td class="num">${f.en_transito ? num(f.en_transito) : '–'}</td><td class="num">${num(f.demanda_mes, 1)}</td>
+        <td class="num">${num(f.stock)}</td>${bod ? `<td class="num font-bold">${num(stockEn(f, bod))}</td>` : ''}<td class="num">${f.en_transito ? num(f.en_transito) : '–'}</td><td class="num">${num(f.demanda_mes, 1)}</td>
         <td class="num">${num(f.dias_cobertura)}</td>
         <td>${f.fecha_limite_pedido ? (f.dias_para_pedir <= 0 ? '<b class="text-red-700">YA</b>' : fmtFecha(f.fecha_limite_pedido)) : '–'}</td>
         <td class="num font-bold">${f.cantidad_sugerida ? num(f.cantidad_sugerida) : '–'}</td><td class="num">${f.puente_ahora ? num(f.puente_ahora) : '–'}</td>
@@ -606,7 +625,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="tbl-wrap" style="max-height:380px"><table class="tbl"><thead><tr><th>Producto</th><th>ABC</th><th class="num">Stock</th><th class="num">Tránsito</th><th class="num">Demanda/mes</th>
           <th>Pedir antes de</th><th class="num">Sugerido</th><th class="num">Costo</th><th class="num">Valor</th><th>Estado</th></tr></thead><tbody>
           ${items.map(f => `<tr><td><span class="linkish" data-det="${esc(f.codigo)}">${esc(f.nombre)}</span><div class="text-xs muted">${esc(f.codigo)}</div></td><td>${esc(f.abc)}</td>
-            <td class="num">${num(f.stock)}</td><td class="num">${f.en_transito ? num(f.en_transito) : '–'}</td><td class="num">${num(f.demanda_mes, 1)}</td>
+            <td class="num">${num(f.stock)}</td>${bod ? `<td class="num font-bold">${num(stockEn(f, bod))}</td>` : ''}<td class="num">${f.en_transito ? num(f.en_transito) : '–'}</td><td class="num">${num(f.demanda_mes, 1)}</td>
             <td>${f.dias_para_pedir <= 0 ? '<b class="text-red-700">YA</b>' : fmtFecha(f.fecha_limite_pedido)}</td><td class="num font-bold">${num(f.cantidad_sugerida)}</td>
             <td class="num">${pesos(f.costo)}</td><td class="num">${pesos(f.valor_sugerido)}</td><td>${chip(f.estado)}</td></tr>`).join('')}
         </tbody></table></div></div>`;
@@ -912,7 +931,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (t.dataset.tsall !== undefined) document.querySelectorAll('.ts' + t.dataset.tsall).forEach(cb => cb.checked = t.checked);
   });
   document.querySelectorAll('.rep-tab').forEach(b => b.onclick = () => mostrarTab(b.dataset.tab));
-  ['fEstado', 'fOrigen', 'fAbc', 'fProv', 'fAccion'].forEach(id => $(id).addEventListener('change', () => { S.limiteRepo = PASO_FILAS; renderRepo(); }));
+  ['fEstado', 'fOrigen', 'fAbc', 'fProv', 'fBodega', 'fAccion'].forEach(id => $(id).addEventListener('change', () => { S.limiteRepo = PASO_FILAS; renderRepo(); }));
   ['fPedEstado', 'fPedTipo'].forEach(id => $(id).addEventListener('change', renderPedidos));
   $('fPedBuscar').addEventListener('input', renderPedidos);
   let tBusq; $('busquedaGlobal').addEventListener('input', () => {
