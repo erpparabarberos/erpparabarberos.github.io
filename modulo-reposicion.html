@@ -49,18 +49,7 @@
 </head>
 <body>
 
-<!-- ====== CABECERA ====== -->
-<header class="bg-white border-b border-slate-200 px-5 py-3 flex flex-wrap items-center gap-3 justify-between">
-  <div>
-    <h1 class="text-lg font-extrabold tracking-tight">Reposición de inventario</h1>
-    <p class="text-xs muted" id="hdrDatos">Cargando datos…</p>
-  </div>
-  <div class="flex items-center gap-3">
-    <input id="busquedaGlobal" class="inp w-64" placeholder="Buscar código o producto…">
-    <span id="userEmailDisplay" class="text-xs muted"></span>
-    <button id="logoutBtn" class="btn btn-sec">Salir</button>
-  </div>
-</header>
+
 
 <nav class="rep-tabs" id="tabs">
   <button class="rep-tab active" data-tab="resumen">Resumen</button>
@@ -81,6 +70,7 @@
 
   <!-- ====== RESUMEN ====== -->
   <section id="tab-resumen">
+    <p class="text-xs muted mb-3" id="hdrDatos">Cargando datos…</p>
     <div class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-3 mb-4" id="kpis"></div>
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-4 mb-4">
       <div class="card p-4 xl:col-span-2"><h3 class="font-bold mb-2">Unidades vendidas por mes (netas de devoluciones)</h3><div style="height:260px"><canvas id="chVentas"></canvas></div></div>
@@ -96,6 +86,7 @@
   <!-- ====== REPOSICIÓN ====== -->
   <section id="tab-reposicion" class="hidden-tab">
     <div class="card p-3 mb-3 flex flex-wrap gap-2 items-center">
+      <input id="busquedaGlobal" class="inp w-64" placeholder="Buscar código o producto…">
       <select id="fEstado" class="inp"><option value="">Todos los estados</option></select>
       <select id="fOrigen" class="inp"><option value="">China y nacional</option><option>China</option><option>Nacional</option></select>
       <select id="fAbc" class="inp"><option value="">Todas las clases</option><option>A</option><option>B</option><option>C</option></select>
@@ -147,6 +138,7 @@
   <!-- ====== PEDIDOS Y TRÁNSITO ====== -->
   <section id="tab-pedidos" class="hidden-tab">
     <div class="card p-3 mb-3 flex flex-wrap gap-2 items-center">
+      <input id="fPedBuscar" class="inp w-64" placeholder="Buscar pedido, proveedor o producto…">
       <select id="fPedEstado" class="inp">
         <option value="abiertos">Abiertos (borrador, confirmado, en tránsito)</option>
         <option value="">Todos</option><option value="borrador">Borrador</option><option value="confirmado">Confirmado</option>
@@ -629,7 +621,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ---------------------------------------------------------------- PEDIDOS (lista)
   function renderPedidos() {
-    const e = $('fPedEstado').value, t = $('fPedTipo').value, q = $('busquedaGlobal').value.trim().toLowerCase();
+    const e = $('fPedEstado').value, t = $('fPedTipo').value, q = $('fPedBuscar').value.trim().toLowerCase();
     const P = S.pedidos.filter(p => (e === 'abiertos' ? ['borrador', 'confirmado', 'en_transito'].includes(p.estado) : (!e || p.estado === e)) && (!t || p.tipo === t) &&
       (!q || (p.id + ' ' + (p.proveedor || '') + ' ' + (p.items || []).map(i => i.codigo + ' ' + i.nombre).join(' ')).toLowerCase().includes(q)))
       .sort((a, b) => String(b.creado || '').localeCompare(String(a.creado || '')));
@@ -859,8 +851,9 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.rep-tab').forEach(b => b.onclick = () => mostrarTab(b.dataset.tab));
   ['fEstado', 'fOrigen', 'fAbc', 'fProv', 'fAccion'].forEach(id => $(id).addEventListener('change', () => { S.limiteRepo = PASO_FILAS; renderRepo(); }));
   ['fPedEstado', 'fPedTipo'].forEach(id => $(id).addEventListener('change', renderPedidos));
+  $('fPedBuscar').addEventListener('input', renderPedidos);
   let tBusq; $('busquedaGlobal').addEventListener('input', () => {
-    clearTimeout(tBusq); tBusq = setTimeout(() => { S.limiteRepo = PASO_FILAS; if (!['reposicion', 'pedidos'].includes(S.tab)) mostrarTab('reposicion'); else render(); }, 250);
+    clearTimeout(tBusq); tBusq = setTimeout(() => { S.limiteRepo = PASO_FILAS; render(); }, 250);
   });
   $('btnMasRepo').onclick = () => { S.limiteRepo += PASO_FILAS; renderRepo(); };
   $('btnExportRepo').onclick = exportarRepo;
@@ -868,7 +861,6 @@ document.addEventListener('DOMContentLoaded', () => {
   $('btnRegistrarPuente').onclick = () => abrirEditorPedido(null, [...S.selPuente], 'nacional');
   $('btnNuevoPedido').onclick = () => abrirEditorPedido(null, [], 'china');
   $('btnGuardarCfg').onclick = guardarConfig;
-  $('logoutBtn').onclick = () => { localStorage.removeItem('userRole'); auth.signOut().then(() => window.parent.location.href = 'index.html'); };
   document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.modal-bg.open').forEach(m => m.classList.remove('open')); });
 
   // ---------------------------------------------------------------- ARRANQUE (mismo patrón que Traslados)
@@ -883,7 +875,6 @@ document.addEventListener('DOMContentLoaded', () => {
       S.puedeEditar = ['admin', 'compras'].includes(rol);
       S.puedeTrasladar = ['admin', 'compras', 'inventarios', 'bodega'].includes(rol);
       if (!S.puedeTrasladar) { document.body.innerHTML = '<div class="p-10 text-center muted">No tienes permiso para ver el módulo de Reposición.</div>'; return; }
-      $('userEmailDisplay').textContent = user.email;
       if (!S.puedeEditar) $('tabConfigBtn').style.display = 'none';
       await cargarTodo();
       mostrarTab('resumen');
