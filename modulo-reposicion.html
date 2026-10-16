@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REPOSICIÓN DE INVENTARIO PARABARBEROS S.A.S.</title>
+<link rel="icon" type="image/jpeg" href="https://parabarberos.github.io/1.jpg">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  body { background:#f1f5f9; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color:#0f172a; }
+  .rep-tabs { display:flex; gap:0; overflow-x:auto; background:#fff; border-bottom:1px solid #dbe4f0; padding:0 8px; position:sticky; top:0; z-index:20; }
+  .rep-tab { height:52px; padding:0 22px; display:flex; align-items:center; white-space:nowrap; color:#475569; font-size:12px; font-weight:800;
+             text-transform:uppercase; letter-spacing:.02em; border-bottom:3px solid transparent; cursor:pointer; background:none; }
+  .rep-tab:hover { color:#2563eb; background:#f8fbff; }
+  .rep-tab.active { color:#2563eb; border-bottom-color:#2563eb; }
+  .card { background:#fff; border:1px solid #e2e8f0; border-radius:14px; box-shadow:0 1px 2px rgba(15,23,42,.04); }
+  .kpi-num { font-size:26px; font-weight:800; line-height:1.1; font-variant-numeric: tabular-nums; }
+  .tbl { width:100%; border-collapse:separate; border-spacing:0; font-size:12.5px; }
+  .tbl th { position:sticky; top:0; background:#1e293b; color:#fff; font-weight:700; text-align:left; padding:8px 10px; white-space:nowrap; cursor:pointer; user-select:none; }
+  .tbl th.num, .tbl td.num { text-align:right; font-variant-numeric: tabular-nums; }
+  .tbl td { padding:7px 10px; border-bottom:1px solid #eef2f7; vertical-align:middle; }
+  .tbl tbody tr:hover { background:#f8fbff; }
+  .tbl-wrap { max-height:68vh; overflow:auto; border-radius:12px; border:1px solid #e2e8f0; background:#fff; }
+  .chip { display:inline-block; padding:2px 8px; border-radius:999px; font-size:11px; font-weight:800; white-space:nowrap; }
+  .e1 { background:#b91c1c; color:#fff; } .e2 { background:#fecaca; color:#7f1d1d; } .e3 { background:#fed7aa; color:#7c2d12; }
+  .e4 { background:#bbf7d0; color:#14532d; } .e5 { background:#bfdbfe; color:#1e3a8a; } .e6, .e7 { background:#e5e7eb; color:#374151; }
+  .btn { display:inline-flex; align-items:center; gap:6px; padding:8px 14px; border-radius:10px; font-weight:700; font-size:13px; cursor:pointer; border:1px solid transparent; }
+  .btn:disabled { opacity:.45; cursor:not-allowed; }
+  .btn-pri { background:#2563eb; color:#fff; } .btn-pri:hover { background:#1d4ed8; }
+  .btn-sec { background:#fff; color:#1e293b; border-color:#cbd5e1; } .btn-sec:hover { background:#f8fafc; }
+  .btn-ok { background:#16a34a; color:#fff; } .btn-ok:hover { background:#15803d; }
+  .btn-red { background:#dc2626; color:#fff; } .btn-red:hover { background:#b91c1c; }
+  .inp { border:1px solid #cbd5e1; border-radius:10px; padding:7px 10px; font-size:13px; background:#fff; }
+  .inp:focus { outline:2px solid #93c5fd; border-color:#60a5fa; }
+  .muted { color:#64748b; }
+  .modal-bg { position:fixed; inset:0; background:rgba(15,23,42,.55); display:none; align-items:flex-start; justify-content:center; z-index:50; overflow:auto; padding:30px 12px; }
+  .modal-bg.open { display:flex; }
+  .modal { background:#fff; border-radius:16px; width:100%; max-width:980px; box-shadow:0 20px 50px rgba(0,0,0,.25); }
+  .hidden-tab { display:none; }
+  .toast { position:fixed; right:18px; bottom:18px; background:#0f172a; color:#fff; padding:12px 16px; border-radius:12px; font-size:13px; z-index:60; display:none; max-width:420px; }
+  .group-h { background:#f8fafc; font-weight:800; }
+  .linkish { color:#1d4ed8; cursor:pointer; } .linkish:hover { text-decoration:underline; }
+</style>
+</head>
+<body>
+
+<!-- ====== CABECERA ====== -->
+<header class="bg-white border-b border-slate-200 px-5 py-3 flex flex-wrap items-center gap-3 justify-between">
+  <div>
+    <h1 class="text-lg font-extrabold tracking-tight">Reposición de inventario</h1>
+    <p class="text-xs muted" id="hdrDatos">Cargando datos…</p>
+  </div>
+  <div class="flex items-center gap-3">
+    <input id="busquedaGlobal" class="inp w-64" placeholder="Buscar código o producto…">
+    <span id="userEmailDisplay" class="text-xs muted"></span>
+    <button id="logoutBtn" class="btn btn-sec">Salir</button>
+  </div>
+</header>
+
+<nav class="rep-tabs" id="tabs">
+  <button class="rep-tab active" data-tab="resumen">Resumen</button>
+  <button class="rep-tab" data-tab="reposicion">Reposición</button>
+  <button class="rep-tab" data-tab="china">Pedidos a China</button>
+  <button class="rep-tab" data-tab="puente">Puente nacional</button>
+  <button class="rep-tab" data-tab="traslados">Traslados sugeridos</button>
+  <button class="rep-tab" data-tab="pedidos">Pedidos y tránsito</button>
+  <button class="rep-tab" data-tab="config" id="tabConfigBtn">Configuración</button>
+</nav>
+
+<main class="p-5 max-w-[1600px] mx-auto">
+  <div id="sinDatos" class="card p-6 hidden">
+    <h2 class="font-bold text-lg mb-1">Todavía no hay datos de reposición</h2>
+    <p class="muted text-sm">El sincronizador con Siigo (<b>nexus-sync</b>) aún no ha corrido o no tiene permiso para escribir en Firestore.
+      Cuando corra, aparecerán aquí los productos y sugerencias.</p>
+  </div>
+
+  <!-- ====== RESUMEN ====== -->
+  <section id="tab-resumen">
+    <div class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-3 mb-4" id="kpis"></div>
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-4 mb-4">
+      <div class="card p-4 xl:col-span-2"><h3 class="font-bold mb-2">Unidades vendidas por mes (netas de devoluciones)</h3><div style="height:260px"><canvas id="chVentas"></canvas></div></div>
+      <div class="card p-4"><h3 class="font-bold mb-2">Valor del inventario por estado</h3><div style="height:260px"><canvas id="chEstados"></canvas></div></div>
+    </div>
+    <div class="card p-4">
+      <div class="flex items-center justify-between mb-2"><h3 class="font-bold">Lo más urgente (clase A con menos días para pedir)</h3>
+        <span class="text-xs muted">Clic en un producto para ver el detalle</span></div>
+      <div class="tbl-wrap" style="max-height:420px"><table class="tbl" id="tblUrgentes"></table></div>
+    </div>
+  </section>
+
+  <!-- ====== REPOSICIÓN ====== -->
+  <section id="tab-reposicion" class="hidden-tab">
+    <div class="card p-3 mb-3 flex flex-wrap gap-2 items-center">
+      <select id="fEstado" class="inp"><option value="">Todos los estados</option></select>
+      <select id="fOrigen" class="inp"><option value="">China y nacional</option><option>China</option><option>Nacional</option></select>
+      <select id="fAbc" class="inp"><option value="">Todas las clases</option><option>A</option><option>B</option><option>C</option></select>
+      <select id="fProv" class="inp max-w-xs"><option value="">Todos los proveedores</option></select>
+      <label class="text-sm flex items-center gap-1"><input type="checkbox" id="fAccion"> Solo con acción</label>
+      <span class="flex-1"></span>
+      <span class="text-sm muted" id="cuentaRepo"></span>
+      <button class="btn btn-sec" id="btnExportRepo">Exportar a Excel</button>
+      <button class="btn btn-pri" id="btnAgregarPedido" disabled>Agregar seleccionados a pedido</button>
+    </div>
+    <div class="tbl-wrap"><table class="tbl" id="tblRepo"></table></div>
+    <div class="text-center mt-3"><button class="btn btn-sec" id="btnMasRepo">Mostrar más</button></div>
+  </section>
+
+  <!-- ====== PEDIDOS A CHINA ====== -->
+  <section id="tab-china" class="hidden-tab">
+    <p class="text-sm muted mb-3">Productos de China con cantidad sugerida, agrupados por proveedor y ordenados por fecha límite.
+      La cantidad ya descuenta lo que se cubrirá con compras puente mientras llega el pedido.</p>
+    <div id="chinaGrupos" class="space-y-4"></div>
+  </section>
+
+  <!-- ====== PUENTE NACIONAL ====== -->
+  <section id="tab-puente" class="hidden-tab">
+    <div class="card p-4 mb-4">
+      <div class="flex flex-wrap items-center gap-2 mb-2">
+        <h3 class="font-bold">Comprar en Colombia ahora</h3>
+        <span class="text-xs muted">Productos de China cuyo inventario no alcanza para los días de entrega nacional + seguridad.</span>
+        <span class="flex-1"></span>
+        <button class="btn btn-pri" id="btnRegistrarPuente" disabled>Registrar compra nacional de los seleccionados</button>
+      </div>
+      <div class="tbl-wrap" style="max-height:50vh"><table class="tbl" id="tblPuente"></table></div>
+    </div>
+    <div class="card p-4">
+      <h3 class="font-bold mb-1">Solo importados en riesgo</h3>
+      <p class="text-xs muted mb-2">No se consiguen en Colombia (por ejemplo, sillas). Si se agotan antes de que llegue el pedido, es venta perdida.</p>
+      <div class="tbl-wrap" style="max-height:40vh"><table class="tbl" id="tblRiesgo"></table></div>
+    </div>
+  </section>
+
+  <!-- ====== TRASLADOS ====== -->
+  <section id="tab-traslados" class="hidden-tab">
+    <div class="card p-3 mb-3 flex flex-wrap items-center gap-2 text-sm">
+      <span class="muted" id="trasInfo"></span><span class="flex-1"></span>
+      <label>Fecha de entrega <input type="date" id="trasFecha" class="inp ml-1"></label>
+    </div>
+    <div id="trasGrupos" class="space-y-4"></div>
+  </section>
+
+  <!-- ====== PEDIDOS Y TRÁNSITO ====== -->
+  <section id="tab-pedidos" class="hidden-tab">
+    <div class="card p-3 mb-3 flex flex-wrap gap-2 items-center">
+      <select id="fPedEstado" class="inp">
+        <option value="abiertos">Abiertos (borrador, confirmado, en tránsito)</option>
+        <option value="">Todos</option><option value="borrador">Borrador</option><option value="confirmado">Confirmado</option>
+        <option value="en_transito">En tránsito</option><option value="recibido">Recibido</option><option value="cancelado">Cancelado</option>
+      </select>
+      <select id="fPedTipo" class="inp"><option value="">China y nacional</option><option value="china">China</option><option value="nacional">Nacional</option></select>
+      <span class="flex-1"></span>
+      <button class="btn btn-pri" id="btnNuevoPedido">Nuevo pedido</button>
+    </div>
+    <div class="tbl-wrap"><table class="tbl" id="tblPedidos"></table></div>
+  </section>
+
+  <!-- ====== CONFIGURACIÓN ====== -->
+  <section id="tab-config" class="hidden-tab">
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+      <div class="card p-4">
+        <h3 class="font-bold mb-3">Parámetros del cálculo</h3>
+        <div id="cfgForm" class="grid grid-cols-2 gap-3 text-sm"></div>
+        <p class="text-xs muted mt-3">Los cambios se aplican de inmediato en esta pantalla y en la próxima sincronización.</p>
+        <button class="btn btn-pri mt-3" id="btnGuardarCfg">Guardar parámetros</button>
+      </div>
+      <div class="card p-4">
+        <h3 class="font-bold mb-3">Últimas sincronizaciones con Siigo</h3>
+        <div class="tbl-wrap" style="max-height:340px"><table class="tbl" id="tblSync"></table></div>
+      </div>
+      <div class="card p-4 xl:col-span-2">
+        <div class="flex items-center mb-2"><h3 class="font-bold">Proveedores</h3><span class="flex-1"></span>
+          <span class="text-xs muted">NIT 444444xxx = proveedor del exterior. Los días de entrega se usan cuando el origen del producto coincide con el del proveedor.</span></div>
+        <div class="tbl-wrap" style="max-height:50vh"><table class="tbl" id="tblProv"></table></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ====== MODAL DETALLE ====== -->
+<div class="modal-bg" id="mdDetalle"><div class="modal"><div id="mdDetalleBody"></div></div></div>
+<!-- ====== MODAL PEDIDO ====== -->
+<div class="modal-bg" id="mdPedido"><div class="modal"><div id="mdPedidoBody"></div></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // ---------------------------------------------------------------- FIREBASE (misma configuración del ERP)
+  // Estas llaves web de Firebase son públicas por diseño; la seguridad está en las reglas de Firestore.
+  // NUNCA poner aquí la clave de Siigo ni la cuenta de servicio.
+  const firebaseConfig = {
+    apiKey: "AIzaSyDkH2_E7t07SWWH1SZr77BFlNp6RQTDDDY",
+    authDomain: "erpparabarberos-12de9.firebaseapp.com",
+    projectId: "erpparabarberos-12de9",
+    storageBucket: "erpparabarberos-12de9.firebasestorage.app",
+    messagingSenderId: "722745790519",
+    appId: "1:722745790519:web:7bf1dbe172433898a56fb2"
+  };
+  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  // ---------------------------------------------------------------- CONSTANTES
+  const ESTADOS = ['1 AGOTADO', '2 PEDIR YA', '3 PEDIR PRONTO', '4 OK', '5 SOBRESTOCK', '6 SIN VENTAS RECIENTES'];
+  const PARAMS_DEFECTO = {
+    base_meses: 6, alerta_dias: 30, sobrestock_dias: 365, sobrecosto_nacional: 0.40,
+    z: { A: 1.65, B: 1.28, C: 0.84, '-': 0 },
+    origen: { China: { entrega: 150, ciclo: 90 }, Nacional: { entrega: 20, ciclo: 30 } },
+    traslado_min_dias: 15, traslado_objetivo_dias: 30, traslado_min_venta_mes: 1
+  };
+  const BODEGA_TRASLADOS = {
+    'PRINCIPAL': 'Bodega Principal', 'CALI CENTRO': 'Punto de venta Cali centro', 'CALI SUR': 'Punto de venta Cali sur',
+    'PASTO': 'Punto de venta Pasto', 'TULUA': 'Punto de venta Tulua', 'MEDELLIN CENTRO': 'Punto de venta Medellin',
+    'BOGOTA': 'Punto de venta Bogota', 'BARRANQUILLA': 'Punto de venta Barranquilla'
+  };
+  const ESTADO_PEDIDO = { borrador: 'Borrador', confirmado: 'Confirmado', en_transito: 'En tránsito', recibido: 'Recibido', cancelado: 'Cancelado' };
+  const PASO_FILAS = 150;
+
+  // ---------------------------------------------------------------- ESTADO
+  const S = {
+    user: null, rol: '', nombre: '', puedeEditar: false, esAdmin: false,
+    meta: null, base: [], filas: [], porCodigo: new Map(),
+    cfg: structuredClone(PARAMS_DEFECTO), proveedores: {}, provDocs: {}, ajustes: {}, pedidos: [], traslados: null, syncLog: [],
+    tab: 'resumen', limiteRepo: PASO_FILAS, orden: { col: 'estado', dir: 1 }, seleccion: new Set(), selPuente: new Set(), charts: {}
+  };
+
+  // ---------------------------------------------------------------- UTILIDADES
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const num = (v, d = 0) => (v === null || v === undefined || v === '' || isNaN(v)) ? '–' : Number(v).toLocaleString('es-CO', { minimumFractionDigits: d, maximumFractionDigits: d });
+  const pesos = v => (v === null || v === undefined || isNaN(v)) ? '–' : '$' + Math.round(v).toLocaleString('es-CO');
+  const millones = v => (v === null || v === undefined || isNaN(v)) ? '–' : '$' + (v / 1e6).toLocaleString('es-CO', { maximumFractionDigits: 0 }) + 'M';
+  const hoyISO = () => new Date().toISOString().slice(0, 10);
+  const sumarDias = (iso, d) => { const t = new Date(iso + 'T12:00:00'); t.setDate(t.getDate() + Math.round(d)); return t.toISOString().slice(0, 10); };
+  const fmtFecha = iso => iso ? new Date(iso + 'T12:00:00').toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }) : '–';
+  const chip = e => `<span class="chip e${esc(String(e || '').charAt(0))}">${esc(String(e || '').slice(2))}</span>`;
+  const toast = (msg, ms = 3500) => { const t = $('toast'); t.textContent = msg; t.style.display = 'block'; clearTimeout(t._h); t._h = setTimeout(() => t.style.display = 'none', ms); };
+  const idPedido = tipo => (tipo === 'china' ? 'PC-' : 'PN-') + hoyISO().replace(/-/g, '') + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
+  const idTraslado = () => { const c = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'; let r = ''; for (let i = 0; i < 6; i++) r += c[Math.floor(Math.random() * c.length)]; return r; };
+  const ahoraISO = () => new Date().toISOString();
+
+  // ---------------------------------------------------------------- CÁLCULO (equivalente a calculos.py del sincronizador)
+  function transitoPorCodigo() {
+    const t = {};
+    for (const p of S.pedidos) {
+      if (p.estado !== 'confirmado' && p.estado !== 'en_transito') continue;
+      for (const it of (p.items || [])) {
+        const pend = (Number(it.cantidad) || 0) - (Number(it.recibido) || 0);
+        if (pend > 0) t[it.codigo] = (t[it.codigo] || 0) + pend;
+      }
+    }
+    return t;
+  }
+
+  function recalcularFila(f, cfg, proveedores, ajuste = {}, transito = 0, hoy = hoyISO()) {
+    const origen = ajuste.origen || f.origen;
+    const def = cfg.origen[origen] || cfg.origen.Nacional;
+    const provNombre = ajuste.proveedor || f.proveedor;
+    const prov = proveedores[provNombre];
+    const entrega = Number(ajuste.dias_entrega) || ((prov && prov.origen === origen && Number(prov.dias_entrega)) || def.entrega);
+    const ciclo = def.ciclo;
+    const demanda = cfg.base_meses === 12 ? (f.prom12 ?? f.demanda_mes) : (f.prom6 ?? f.demanda_mes);
+    const z = (cfg.z && cfg.z[f.abc]) || 0, d = demanda / 30, st = f.stock, tr = transito;
+    const ss = demanda > 0 ? Math.ceil(z * f.desv_mes * Math.sqrt(entrega / 30)) : 0;
+    const cob = d > 0 ? (st + tr) / d : null;
+    const pr = d * entrega + ss;
+    const dpp = d > 0 ? (st + tr - pr) / d : null;
+    const cant = d > 0 ? Math.max(0, Math.ceil(d * ciclo + ss - Math.max(0, st + tr - d * entrega))) : 0;
+    let estado;
+    if (demanda <= 0) estado = st > 0 ? '6 SIN VENTAS RECIENTES' : '7 -';
+    else if (st <= 0) estado = tr > 0 ? '1 AGOTADO (en camino)' : '1 AGOTADO';
+    else if (dpp <= 0) estado = '2 PEDIR YA';
+    else if (dpp <= cfg.alerta_dias) estado = '3 PEDIR PRONTO';
+    else if (cob > cfg.sobrestock_dias) estado = '5 SOBRESTOCK';
+    else estado = '4 OK';
+    const puede = (ajuste.puede_comprar_colombia ?? f.puede_comprar_colombia) && origen === 'China';
+    const nac = cfg.origen.Nacional;
+    let puente = 0, faltantes = 0, sobre = null;
+    if (origen === 'China' && d > 0) {
+      faltantes = Math.max(0, Math.ceil(d * (entrega - cob)));
+      if (puede && cob < nac.entrega + ss / d) puente = Math.max(0, Math.ceil(d * (nac.entrega + nac.ciclo) + ss - st - tr));
+      const cch = f.costo, cna = Number(ajuste.costo_nacional) || null;
+      if (puede && faltantes && cch) sobre = faltantes * ((cna || cch * (1 + cfg.sobrecosto_nacional)) - cch);
+    }
+    const costo = f.costo || null;
+    return {
+      ...f, origen, proveedor: provNombre, dias_entrega: entrega, dias_ciclo: ciclo, demanda_mes: demanda, en_transito: tr,
+      stock_seguridad: ss, dias_cobertura: cob, punto_reorden: pr, dias_para_pedir: dpp,
+      fecha_limite_pedido: dpp == null ? null : sumarDias(hoy, dpp), cantidad_sugerida: cant, estado,
+      puede_comprar_colombia: !!puede, puente_ahora: puente, faltantes_hasta_llegada: faltantes, sobrecosto_puente: sobre,
+      valor_sugerido: costo ? cant * costo : 0, valor_stock: costo ? st * costo : 0, tiene_ajuste: Object.keys(ajuste).length > 0
+    };
+  }
+
+  function recalcularTodo() {
+    const tr = transitoPorCodigo();
+    S.filas = S.base.map(f => recalcularFila(f, S.cfg, S.proveedores, S.ajustes[f.codigo] || {}, tr[f.codigo] || 0));
+    S.porCodigo = new Map(S.filas.map(f => [f.codigo, f]));
+  }
+
+  // ---------------------------------------------------------------- CARGA DE DATOS
+  async function cargarTodo() {
+    const metaSnap = await db.collection('rep_snapshot').doc('meta').get();
+    if (!metaSnap.exists) { $('sinDatos').classList.remove('hidden'); $('hdrDatos').textContent = 'Sin datos de sincronización'; }
+    S.meta = metaSnap.exists ? metaSnap.data() : null;
+    const partes = S.meta ? (S.meta.partes || 0) : 0;
+    const promesas = [];
+    for (let i = 1; i <= partes; i++) promesas.push(db.collection('rep_snapshot').doc('parte_' + String(i).padStart(2, '0')).get());
+    const [docsPartes, cfgSnap, provSnap, ajSnap, pedSnap, trasSnap] = await Promise.all([
+      Promise.all(promesas),
+      db.collection('rep_config').doc('parametros').get(),
+      db.collection('rep_proveedores').get(),
+      db.collection('rep_ajustes').get(),
+      db.collection('rep_pedidos').get(),
+      db.collection('rep_traslados_sugeridos').doc('actual').get()
+    ]);
+    S.base = docsPartes.flatMap(d => (d.exists ? (d.data().filas || []) : []));
+    if (cfgSnap.exists) S.cfg = { ...structuredClone(PARAMS_DEFECTO), ...cfgSnap.data() };
+    S.provDocs = {}; S.proveedores = {};
+    provSnap.forEach(d => { const v = d.data(); S.provDocs[d.id] = v; if (v.nombre) S.proveedores[v.nombre] = v; });
+    S.ajustes = {}; ajSnap.forEach(d => S.ajustes[d.id] = d.data());
+    S.pedidos = []; pedSnap.forEach(d => S.pedidos.push({ id: d.id, ...d.data() }));
+    S.traslados = trasSnap.exists ? trasSnap.data() : null;
+    recalcularTodo();
+    const m = S.meta;
+    $('hdrDatos').textContent = m ? `Datos de Siigo al ${fmtFecha(m.fecha_datos)} · ${num(S.filas.length)} productos · demanda: promedio de ${S.cfg.base_meses} meses` : 'Sin datos de sincronización';
+    if (S.esAdmin || S.puedeEditar) cargarSyncLog();
+  }
+
+  async function cargarSyncLog() {
+    try {
+      const snap = await db.collection('rep_sync_log').orderBy(firebase.firestore.FieldPath.documentId(), 'desc').limit(15).get();
+      S.syncLog = []; snap.forEach(d => S.syncLog.push({ id: d.id, ...d.data() }));
+      const ult = S.syncLog[0];
+      if (ult && ult.estado === 'error') $('hdrDatos').innerHTML += ` · <span class="text-red-600 font-bold">La última sincronización falló</span>`;
+    } catch (e) { console.warn('No se pudo leer rep_sync_log', e); }
+  }
+
+  // ---------------------------------------------------------------- PESTAÑAS
+  function mostrarTab(t) {
+    S.tab = t;
+    document.querySelectorAll('.rep-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === t));
+    document.querySelectorAll('main > section').forEach(s => s.classList.toggle('hidden-tab', s.id !== 'tab-' + t));
+    render();
+  }
+  function render() {
+    ({ resumen: renderResumen, reposicion: renderRepo, china: renderChina, puente: renderPuente,
+       traslados: renderTraslados, pedidos: renderPedidos, config: renderConfig })[S.tab]();
+  }
+
+  // ---------------------------------------------------------------- RESUMEN
+  function renderResumen() {
+    const F = S.filas, cuenta = e => F.filter(f => f.estado.startsWith(e));
+    const sum = (arr, k) => arr.reduce((a, f) => a + (Number(f[k]) || 0), 0);
+    const china = F.filter(f => f.origen === 'China');
+    const kp = [
+      ['Agotados', cuenta('1').length, `${cuenta('1').filter(f => f.abc === 'A').length} clase A`, 'text-red-700'],
+      ['Pedir ya', cuenta('2').length, `${cuenta('2').filter(f => f.abc === 'A').length} clase A`, 'text-red-600'],
+      ['Pedir pronto', cuenta('3').length, `próximos ${S.cfg.alerta_dias} días`, 'text-orange-600'],
+      ['Sobrestock', cuenta('5').length, millones(sum(cuenta('5'), 'valor_stock')) + ' en inventario', 'text-blue-700'],
+      ['Compra sugerida China', millones(sum(china, 'valor_sugerido')), `${china.filter(f => f.cantidad_sugerida > 0).length} productos`, 'text-slate-900'],
+      ['Puente nacional hoy', F.filter(f => f.puente_ahora > 0).length, 'productos para comprar ya en Colombia', 'text-amber-700'],
+      ['Sobrecosto del puente', millones(sum(F, 'sobrecosto_puente')), 'lo que cuesta pedir tarde a China', 'text-rose-700']
+    ];
+    $('kpis').innerHTML = kp.map(([t, v, s, c]) => `<div class="card p-4"><div class="text-xs muted font-bold uppercase">${t}</div>
+      <div class="kpi-num ${c}">${typeof v === 'number' ? num(v) : v}</div><div class="text-xs muted mt-1">${s}</div></div>`).join('');
+
+    // ventas mensuales
+    const meses = (S.meta && S.meta.meses) || [];
+    const tot = meses.map(m => F.reduce((a, f) => a + ((f.ventas_mes || {})[m] || 0), 0));
+    dibujar('chVentas', { type: 'bar', data: { labels: meses, datasets: [{ label: 'Unidades', data: tot, backgroundColor: '#2563eb', borderRadius: 4 }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { ticks: { callback: v => num(v) } } } } });
+    const etq = ESTADOS.map(e => e.slice(2)), val = ESTADOS.map(e => sum(cuenta(e.charAt(0)), 'valor_stock') / 1e6);
+    dibujar('chEstados', { type: 'doughnut', data: { labels: etq, datasets: [{ data: val, backgroundColor: ['#b91c1c', '#f87171', '#fb923c', '#4ade80', '#60a5fa', '#cbd5e1'] }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' }, tooltip: { callbacks: { label: c => `${c.label}: $${num(c.raw)}M` } } } } });
+
+    const urg = F.filter(f => f.abc === 'A' && f.dias_para_pedir !== null && (f.estado.startsWith('1') || f.estado.startsWith('2') || f.estado.startsWith('3')))
+      .sort((a, b) => a.dias_para_pedir - b.dias_para_pedir).slice(0, 15);
+    $('tblUrgentes').innerHTML = `<thead><tr><th>Producto</th><th>Origen</th><th class="num">Stock</th><th class="num">Demanda/mes</th>
+      <th class="num">Cobertura (días)</th><th>Pedir a más tardar</th><th class="num">Cantidad sugerida</th><th class="num">Puente ahora</th><th>Estado</th></tr></thead><tbody>` +
+      urg.map(f => `<tr><td><span class="linkish" data-det="${esc(f.codigo)}">${esc(f.nombre)}</span><div class="text-xs muted">${esc(f.codigo)} · ${esc(f.proveedor || '—')}</div></td>
+        <td>${esc(f.origen)}</td><td class="num">${num(f.stock)}</td><td class="num">${num(f.demanda_mes, 1)}</td><td class="num">${num(f.dias_cobertura)}</td>
+        <td>${f.dias_para_pedir <= 0 ? '<b class="text-red-700">YA (' + fmtFecha(f.fecha_limite_pedido) + ')</b>' : fmtFecha(f.fecha_limite_pedido)}</td>
+        <td class="num">${num(f.cantidad_sugerida)}</td><td class="num">${f.puente_ahora ? num(f.puente_ahora) : '–'}</td><td>${chip(f.estado)}</td></tr>`).join('') + '</tbody>';
+  }
+
+  function dibujar(id, conf) {
+    if (typeof Chart === 'undefined') return;
+    if (S.charts[id]) S.charts[id].destroy();
+    S.charts[id] = new Chart($(id), conf);
+  }
+
+  // ---------------------------------------------------------------- REPOSICIÓN
+  function filtrar() {
+    const toks = $('busquedaGlobal').value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    const e = $('fEstado').value, o = $('fOrigen').value, a = $('fAbc').value, p = $('fProv').value, acc = $('fAccion').checked;
+    return S.filas.filter(f =>
+      (!toks.length || toks.every(t => (f.codigo + ' ' + f.nombre).toLowerCase().includes(t))) &&
+      (!e || f.estado.startsWith(e)) && (!o || f.origen === o) && (!a || f.abc === a) && (!p || f.proveedor === p) &&
+      (!acc || f.cantidad_sugerida > 0 || f.puente_ahora > 0));
+  }
+  const COLS_REPO = [
+    ['sel', ''], ['nombre', 'Producto'], ['abc', 'ABC'], ['origen', 'Origen'], ['proveedor', 'Proveedor'],
+    ['stock', 'Stock', 1], ['en_transito', 'Tránsito', 1], ['demanda_mes', 'Demanda/mes', 1], ['dias_cobertura', 'Cobertura (días)', 1],
+    ['fecha_limite_pedido', 'Pedir antes de'], ['cantidad_sugerida', 'Sugerido', 1], ['puente_ahora', 'Puente', 1], ['valor_sugerido', 'Valor sugerido', 1], ['estado', 'Estado']
+  ];
+  function renderRepo() {
+    const sel = $('fEstado'); if (sel.options.length === 1) ESTADOS.forEach(e => sel.add(new Option(e.slice(2), e.charAt(0))));
+    const ps = $('fProv'); if (ps.options.length === 1) [...new Set(S.filas.map(f => f.proveedor).filter(Boolean))].sort().forEach(p => ps.add(new Option(p, p)));
+    let F = filtrar();
+    const { col, dir } = S.orden;
+    F.sort((x, y) => {
+      let a = x[col], b = y[col];
+      if (col === 'estado') { a = x.estado + String(1e12 - (x.venta12 || 0)).padStart(14, '0'); b = y.estado + String(1e12 - (y.venta12 || 0)).padStart(14, '0'); }
+      if (a == null) return 1; if (b == null) return -1;
+      return (a > b ? 1 : a < b ? -1 : 0) * dir;
+    });
+    $('cuentaRepo').textContent = `${num(F.length)} productos`;
+    const vis = F.slice(0, S.limiteRepo);
+    $('btnMasRepo').style.display = F.length > S.limiteRepo ? '' : 'none';
+    $('tblRepo').innerHTML = '<thead><tr>' + COLS_REPO.map(([k, t, n]) =>
+      k === 'sel' ? '<th><input type="checkbox" id="selTodos"></th>' : `<th class="${n ? 'num' : ''}" data-ord="${k}">${t}${S.orden.col === k ? (S.orden.dir > 0 ? ' ▲' : ' ▼') : ''}</th>`).join('') + '</tr></thead><tbody>' +
+      vis.map(f => `<tr>
+        <td><input type="checkbox" class="selFila" data-c="${esc(f.codigo)}" ${S.seleccion.has(f.codigo) ? 'checked' : ''}></td>
+        <td><span class="linkish" data-det="${esc(f.codigo)}">${esc(f.nombre)}</span><div class="text-xs muted">${esc(f.codigo)}${f.tiene_ajuste ? ' · <b class="text-amber-700">ajustado</b>' : ''}</div></td>
+        <td>${esc(f.abc)}</td><td>${esc(f.origen)}${f.fuente_origen && f.fuente_origen.startsWith('Estimado') && !f.tiene_ajuste ? ' <span title="Origen estimado, confirmar">⚠️</span>' : ''}</td>
+        <td class="text-xs">${esc(f.proveedor || '—')}</td>
+        <td class="num">${num(f.stock)}</td><td class="num">${f.en_transito ? num(f.en_transito) : '–'}</td><td class="num">${num(f.demanda_mes, 1)}</td>
+        <td class="num">${num(f.dias_cobertura)}</td>
+        <td>${f.fecha_limite_pedido ? (f.dias_para_pedir <= 0 ? '<b class="text-red-700">YA</b>' : fmtFecha(f.fecha_limite_pedido)) : '–'}</td>
+        <td class="num font-bold">${f.cantidad_sugerida ? num(f.cantidad_sugerida) : '–'}</td><td class="num">${f.puente_ahora ? num(f.puente_ahora) : '–'}</td>
+        <td class="num">${f.valor_sugerido ? pesos(f.valor_sugerido) : '–'}</td><td>${chip(f.estado)}</td></tr>`).join('') + '</tbody>';
+    $('btnAgregarPedido').disabled = !S.puedeEditar || S.seleccion.size === 0;
+    $('btnAgregarPedido').textContent = S.seleccion.size ? `Agregar ${S.seleccion.size} a pedido` : 'Agregar seleccionados a pedido';
+  }
+
+  function exportarRepo() {
+    if (typeof XLSX === 'undefined') return toast('No se cargó la librería de Excel');
+    const rows = filtrar().map(f => ({
+      'Código': f.codigo, 'Producto': f.nombre, 'Grupo': f.grupo, 'ABC': f.abc, 'Proveedor': f.proveedor, 'Origen': f.origen,
+      'Días entrega': f.dias_entrega, 'Demanda mensual': Math.round(f.demanda_mes * 10) / 10, 'Desv. mensual': f.desv_mes,
+      'Stock': f.stock, 'En tránsito': f.en_transito, 'Stock seguridad': f.stock_seguridad, 'Cobertura (días)': f.dias_cobertura == null ? '' : Math.round(f.dias_cobertura),
+      'Punto de reorden': Math.round(f.punto_reorden), 'Pedir antes de': f.fecha_limite_pedido || '', 'Cantidad sugerida': f.cantidad_sugerida,
+      'Comprar puente ahora': f.puente_ahora, 'Faltantes hasta que llegue China': f.faltantes_hasta_llegada, 'Costo unitario': f.costo,
+      'Valor sugerido': Math.round(f.valor_sugerido), 'Estado': f.estado.slice(2),
+      ...Object.fromEntries(Object.entries(f.bodegas || {}).map(([b, q]) => ['Stock ' + b, q]))
+    }));
+    const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), 'Reposición');
+    XLSX.writeFile(wb, `reposicion_${hoyISO()}.xlsx`);
+  }
+
+  // ---------------------------------------------------------------- DETALLE DE PRODUCTO
+  function abrirDetalle(codigo) {
+    const f = S.porCodigo.get(codigo); if (!f) return;
+    const aj = S.ajustes[codigo] || {};
+    const meses = (S.meta && S.meta.meses) || Object.keys(f.ventas_mes || {});
+    const abiertos = S.pedidos.filter(p => ['borrador', 'confirmado', 'en_transito'].includes(p.estado) && (p.items || []).some(i => i.codigo === codigo));
+    const bods = Object.entries(f.bodegas || {}).filter(([, q]) => q).sort((a, b) => b[1] - a[1]);
+    const dis = S.puedeEditar ? '' : 'disabled';
+    $('mdDetalleBody').innerHTML = `
+      <div class="p-5 border-b flex items-start gap-3"><div class="flex-1"><div class="text-xs muted">${esc(f.codigo)} · ${esc(f.grupo || '')} · clase ${esc(f.abc)}</div>
+        <h2 class="text-xl font-extrabold">${esc(f.nombre)}</h2><div class="mt-1">${chip(f.estado)} <span class="text-sm muted ml-2">${esc(f.origen)} · ${esc(f.proveedor || 'sin proveedor')} · ${esc(f.fuente_origen || '')}</span></div></div>
+        <button class="btn btn-sec" data-cerrar="mdDetalle">Cerrar</button></div>
+      <div class="p-5 grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div><h3 class="font-bold mb-2">Ventas netas por mes</h3><div style="height:200px"><canvas id="chDet"></canvas></div>
+          <h3 class="font-bold mt-4 mb-2">Stock por bodega</h3>
+          <table class="tbl"><tbody>${bods.map(([b, q]) => `<tr><td>${esc(b)}</td><td class="num">${num(q)}</td></tr>`).join('') || '<tr><td class="muted">Sin stock</td></tr>'}</tbody></table></div>
+        <div><h3 class="font-bold mb-2">Cálculo</h3>
+          <table class="tbl"><tbody>
+            <tr><td>Demanda mensual (prom. ${S.cfg.base_meses} meses)</td><td class="num">${num(f.demanda_mes, 1)}</td></tr>
+            <tr><td>Desviación mensual</td><td class="num">${num(f.desv_mes, 1)}</td></tr>
+            <tr><td>Días de entrega · ciclo</td><td class="num">${num(f.dias_entrega)} · ${num(f.dias_ciclo)}</td></tr>
+            <tr><td>Stock de seguridad (z=${S.cfg.z[f.abc] ?? 0})</td><td class="num">${num(f.stock_seguridad)}</td></tr>
+            <tr><td>Stock disponible + en tránsito</td><td class="num">${num(f.stock)} + ${num(f.en_transito)}</td></tr>
+            <tr><td>Cobertura</td><td class="num">${num(f.dias_cobertura)} días</td></tr>
+            <tr><td>Punto de reorden</td><td class="num">${num(f.punto_reorden)}</td></tr>
+            <tr><td>Pedir a más tardar</td><td class="num">${f.dias_para_pedir == null ? '–' : (f.dias_para_pedir <= 0 ? '<b class="text-red-700">YA</b> (' + fmtFecha(f.fecha_limite_pedido) + ')' : fmtFecha(f.fecha_limite_pedido))}</td></tr>
+            <tr><td><b>Cantidad sugerida</b></td><td class="num"><b>${num(f.cantidad_sugerida)}</b></td></tr>
+            ${f.origen === 'China' ? `<tr><td>Comprar en Colombia ahora</td><td class="num">${f.puente_ahora ? num(f.puente_ahora) : '–'}</td></tr>
+            <tr><td>Faltantes hasta que llegue China</td><td class="num">${num(f.faltantes_hasta_llegada)}</td></tr>` : ''}
+            <tr><td>Costo unitario aprox.</td><td class="num">${pesos(f.costo)}</td></tr>
+            <tr><td>Tendencia (3 vs 6 meses)</td><td class="num">${f.tendencia == null ? '–' : (f.tendencia > 0 ? '+' : '') + Math.round(f.tendencia * 100) + '%'}</td></tr>
+          </tbody></table>
+          ${abiertos.length ? `<h3 class="font-bold mt-4 mb-2">Pedidos abiertos</h3>` + abiertos.map(p => `<div class="text-sm">${esc(p.id)} · ${esc(ESTADO_PEDIDO[p.estado])} · ${num((p.items.find(i => i.codigo === codigo) || {}).cantidad)} unid. · llega ${fmtFecha(p.fecha_estimada_llegada)}</div>`).join('') : ''}
+        </div>
+      </div>
+      <div class="p-5 border-t bg-slate-50 rounded-b-2xl">
+        <h3 class="font-bold mb-2">Ajustes manuales <span class="text-xs muted font-normal">(se respetan en cada sincronización)</span></h3>
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
+          <label>Origen<select id="ajOrigen" class="inp w-full" ${dis}><option value="">(automático: ${esc(S.base.find(b => b.codigo === codigo)?.origen || '')})</option><option ${aj.origen === 'China' ? 'selected' : ''}>China</option><option ${aj.origen === 'Nacional' ? 'selected' : ''}>Nacional</option></select></label>
+          <label>¿Se compra en Colombia?<select id="ajPuede" class="inp w-full" ${dis}><option value="">(automático)</option><option value="si" ${aj.puede_comprar_colombia === true ? 'selected' : ''}>Sí</option><option value="no" ${aj.puede_comprar_colombia === false ? 'selected' : ''}>No (solo importado)</option></select></label>
+          <label>Días de entrega<input id="ajDias" type="number" min="1" class="inp w-full" value="${esc(aj.dias_entrega || '')}" placeholder="${num(f.dias_entrega)}" ${dis}></label>
+          <label>Costo nacional ($)<input id="ajCosto" type="number" min="0" class="inp w-full" value="${esc(aj.costo_nacional || '')}" placeholder="opcional" ${dis}></label>
+          <label>Nota<input id="ajNota" class="inp w-full" value="${esc(aj.nota || '')}" ${dis}></label>
+        </div>
+        ${S.puedeEditar ? `<div class="mt-3 flex gap-2"><button class="btn btn-pri" id="btnGuardarAj">Guardar ajustes</button>
+          ${Object.keys(aj).length ? '<button class="btn btn-sec" id="btnBorrarAj">Quitar ajustes</button>' : ''}
+          <span class="flex-1"></span><button class="btn btn-ok" id="btnDetPedido">Agregar a pedido</button></div>` : ''}
+        ${aj.actualizado_por ? `<div class="text-xs muted mt-2">Último ajuste: ${esc(aj.actualizado_por)} · ${esc((aj.fecha || '').slice(0, 10))}</div>` : ''}
+      </div>`;
+    $('mdDetalle').classList.add('open');
+    dibujar('chDet', { type: 'bar', data: { labels: meses, datasets: [{ data: meses.map(m => (f.ventas_mes || {})[m] || 0), backgroundColor: '#0ea5e9', borderRadius: 3 }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
+    if (S.puedeEditar) {
+      $('btnGuardarAj').onclick = () => guardarAjuste(codigo);
+      if ($('btnBorrarAj')) $('btnBorrarAj').onclick = () => borrarAjuste(codigo);
+      $('btnDetPedido').onclick = () => { cerrar('mdDetalle'); abrirEditorPedido(null, [codigo]); };
+    }
+  }
+
+  async function guardarAjuste(codigo) {
+    const o = $('ajOrigen').value, p = $('ajPuede').value, d = $('ajDias').value, c = $('ajCosto').value, n = $('ajNota').value.trim();
+    const data = {};
+    if (o) data.origen = o;
+    if (p) data.puede_comprar_colombia = p === 'si';
+    if (d) data.dias_entrega = Number(d);
+    if (c) data.costo_nacional = Number(c);
+    if (n) data.nota = n;
+    try {
+      if (!Object.keys(data).length) return borrarAjuste(codigo);
+      data.actualizado_por = S.user.email; data.fecha = ahoraISO();
+      await db.collection('rep_ajustes').doc(codigo).set(data);
+      S.ajustes[codigo] = data; recalcularTodo(); toast('Ajuste guardado'); abrirDetalle(codigo); render();
+    } catch (e) { console.error(e); toast('No se pudo guardar: ' + e.message); }
+  }
+  async function borrarAjuste(codigo) {
+    try { await db.collection('rep_ajustes').doc(codigo).delete(); delete S.ajustes[codigo]; recalcularTodo(); toast('Ajustes eliminados'); abrirDetalle(codigo); render(); }
+    catch (e) { toast('No se pudo eliminar: ' + e.message); }
+  }
+
+  // ---------------------------------------------------------------- PEDIDOS A CHINA
+  function renderChina() {
+    const F = S.filas.filter(f => f.origen === 'China' && f.cantidad_sugerida > 0);
+    const grupos = {};
+    F.forEach(f => (grupos[f.proveedor || 'Sin proveedor asignado'] ||= []).push(f));
+    const orden = Object.entries(grupos).sort((a, b) => b[1].reduce((s, f) => s + f.valor_sugerido, 0) - a[1].reduce((s, f) => s + f.valor_sugerido, 0));
+    if (!orden.length) { $('chinaGrupos').innerHTML = '<div class="card p-6 muted">No hay sugerencias de pedido a China.</div>'; return; }
+    $('chinaGrupos').innerHTML = orden.map(([prov, items], gi) => {
+      items.sort((a, b) => (a.dias_para_pedir ?? 9e9) - (b.dias_para_pedir ?? 9e9));
+      const borr = S.pedidos.find(p => p.estado === 'borrador' && p.tipo === 'china' && p.proveedor === prov);
+      const total = items.reduce((s, f) => s + f.valor_sugerido, 0);
+      return `<div class="card p-4"><div class="flex flex-wrap items-center gap-2 mb-2">
+        <h3 class="font-bold">${esc(prov)}</h3><span class="text-sm muted">${items.length} productos · ${pesos(total)} a costo de compra · llega aprox. ${fmtFecha(sumarDias(hoyISO(), items[0].dias_entrega))} si se pide hoy</span>
+        <span class="flex-1"></span>
+        ${S.puedeEditar ? (borr ? `<button class="btn btn-sec" data-editped="${esc(borr.id)}">Abrir borrador ${esc(borr.id)}</button>` : '') +
+          `<button class="btn btn-pri" data-crearchina="${gi}">Crear pedido con estos productos</button>` : ''}</div>
+        <div class="tbl-wrap" style="max-height:380px"><table class="tbl"><thead><tr><th>Producto</th><th>ABC</th><th class="num">Stock</th><th class="num">Tránsito</th><th class="num">Demanda/mes</th>
+          <th>Pedir antes de</th><th class="num">Sugerido</th><th class="num">Costo</th><th class="num">Valor</th><th>Estado</th></tr></thead><tbody>
+          ${items.map(f => `<tr><td><span class="linkish" data-det="${esc(f.codigo)}">${esc(f.nombre)}</span><div class="text-xs muted">${esc(f.codigo)}</div></td><td>${esc(f.abc)}</td>
+            <td class="num">${num(f.stock)}</td><td class="num">${f.en_transito ? num(f.en_transito) : '–'}</td><td class="num">${num(f.demanda_mes, 1)}</td>
+            <td>${f.dias_para_pedir <= 0 ? '<b class="text-red-700">YA</b>' : fmtFecha(f.fecha_limite_pedido)}</td><td class="num font-bold">${num(f.cantidad_sugerida)}</td>
+            <td class="num">${pesos(f.costo)}</td><td class="num">${pesos(f.valor_sugerido)}</td><td>${chip(f.estado)}</td></tr>`).join('')}
+        </tbody></table></div></div>`;
+    }).join('');
+    S._gruposChina = orden;
+  }
+
+  // ---------------------------------------------------------------- PUENTE NACIONAL
+  function renderPuente() {
+    const P = S.filas.filter(f => f.origen === 'China' && f.puente_ahora > 0).sort((a, b) => (a.dias_cobertura ?? 0) - (b.dias_cobertura ?? 0));
+    $('tblPuente').innerHTML = `<thead><tr><th><input type="checkbox" id="selPuenteTodos"></th><th>Producto</th><th>ABC</th><th class="num">Stock</th><th class="num">Demanda/mes</th>
+      <th class="num">Cobertura (días)</th><th>Se agota aprox.</th><th class="num">Comprar ahora</th><th class="num">Faltantes hasta que llegue China</th><th class="num">Sobrecosto estimado</th></tr></thead><tbody>` +
+      (P.map(f => `<tr><td><input type="checkbox" class="selP" data-c="${esc(f.codigo)}" ${S.selPuente.has(f.codigo) ? 'checked' : ''}></td>
+        <td><span class="linkish" data-det="${esc(f.codigo)}">${esc(f.nombre)}</span><div class="text-xs muted">${esc(f.codigo)}</div></td><td>${esc(f.abc)}</td>
+        <td class="num">${num(f.stock)}</td><td class="num">${num(f.demanda_mes, 1)}</td><td class="num">${num(f.dias_cobertura)}</td>
+        <td>${fmtFecha(sumarDias(hoyISO(), f.stock / (f.demanda_mes / 30)))}</td><td class="num font-bold">${num(f.puente_ahora)}</td>
+        <td class="num">${num(f.faltantes_hasta_llegada)}</td><td class="num">${f.sobrecosto_puente ? pesos(f.sobrecosto_puente) : '–'}</td></tr>`).join('') ||
+        '<tr><td colspan="10" class="muted p-4">Nada por comprar en Colombia hoy.</td></tr>') + '</tbody>';
+    $('btnRegistrarPuente').disabled = !S.puedeEditar || S.selPuente.size === 0;
+    const R = S.filas.filter(f => f.origen === 'China' && !f.puede_comprar_colombia && f.faltantes_hasta_llegada > 0)
+      .map(f => ({ ...f, riesgo: f.faltantes_hasta_llegada * (f.precio_prom || 0) })).sort((a, b) => b.riesgo - a.riesgo);
+    $('tblRiesgo').innerHTML = `<thead><tr><th>Producto</th><th class="num">Stock</th><th class="num">Demanda/mes</th><th>Se agota aprox.</th><th>Un pedido de hoy llega</th>
+      <th class="num">Unidades sin stock</th><th class="num">Venta en riesgo</th><th>Estado</th></tr></thead><tbody>` +
+      (R.map(f => `<tr><td><span class="linkish" data-det="${esc(f.codigo)}">${esc(f.nombre)}</span><div class="text-xs muted">${esc(f.codigo)}</div></td>
+        <td class="num">${num(f.stock)}</td><td class="num">${num(f.demanda_mes, 1)}</td><td>${fmtFecha(sumarDias(hoyISO(), f.stock / (f.demanda_mes / 30)))}</td>
+        <td>${fmtFecha(sumarDias(hoyISO(), f.dias_entrega))}</td><td class="num">${num(f.faltantes_hasta_llegada)}</td><td class="num font-bold text-red-700">${pesos(f.riesgo)}</td><td>${chip(f.estado)}</td></tr>`).join('') ||
+        '<tr><td colspan="8" class="muted p-4">Ningún producto solo importado en riesgo.</td></tr>') + '</tbody>';
+  }
+
+  // ---------------------------------------------------------------- TRASLADOS
+  function renderTraslados() {
+    if (!$('trasFecha').value) $('trasFecha').value = sumarDias(hoyISO(), 3);
+    const T = (S.traslados && S.traslados.items) || [];
+    $('trasInfo').textContent = S.traslados ? `Calculado el ${fmtFecha(S.traslados.fecha)} con lo que vendió cada tienda en los últimos 3 meses. Lleva cada tienda a ${S.cfg.traslado_objetivo_dias} días de inventario.` : 'Sin datos de traslados.';
+    const g = {}; T.forEach(t => (g[t.tienda] ||= []).push(t));
+    const rk = { A: 0, B: 1, C: 2, '-': 3 };
+    Object.values(g).forEach(arr => arr.sort((a, b) => (rk[a.abc] ?? 3) - (rk[b.abc] ?? 3) || a.dias_cobertura_tienda - b.dias_cobertura_tienda));
+    const orden = Object.entries(g).sort((a, b) => b[1].length - a[1].length);
+    S._trasGrupos = orden;
+    $('trasGrupos').innerHTML = orden.map(([tienda, items], gi) => `<div class="card p-4"><div class="flex flex-wrap items-center gap-2 mb-2">
+      <h3 class="font-bold">${esc(tienda)}</h3><span class="text-sm muted">${items.length} productos · ${num(items.reduce((s, i) => s + i.cantidad, 0))} unidades desde Bodega Principal</span>
+      <span class="flex-1"></span>${S.puedeEditar || S.puedeTrasladar ? `<button class="btn btn-pri" data-creartras="${gi}">Crear solicitud de traslado</button>` : ''}</div>
+      <div class="tbl-wrap" style="max-height:320px"><table class="tbl"><thead><tr><th><input type="checkbox" checked data-tsall="${gi}"></th><th>Producto</th><th>ABC</th><th class="num">Vende/mes</th>
+        <th class="num">Stock tienda</th><th class="num">Días cobertura</th><th class="num">Stock principal</th><th class="num">Cantidad</th></tr></thead><tbody>
+        ${items.map((t, ii) => `<tr><td><input type="checkbox" checked class="ts${gi}" data-i="${ii}"></td><td><span class="linkish" data-det="${esc(t.codigo)}">${esc(t.nombre)}</span><div class="text-xs muted">${esc(t.codigo)}</div></td>
+          <td>${esc(t.abc)}</td><td class="num">${num(t.venta_mes_tienda, 1)}</td><td class="num">${num(t.stock_tienda)}</td><td class="num">${num(t.dias_cobertura_tienda)}</td>
+          <td class="num">${num(t.stock_principal)}</td><td class="num"><input type="number" min="0" class="inp w-20 text-right tq${gi}" data-i="${ii}" value="${t.cantidad}"></td></tr>`).join('')}
+      </tbody></table></div></div>`).join('') || '<div class="card p-6 muted">No hay traslados sugeridos.</div>';
+  }
+
+  async function crearTraslado(gi) {
+    const [tienda, items] = S._trasGrupos[gi];
+    const destino = BODEGA_TRASLADOS[tienda];
+    if (!destino) return toast('Tienda sin equivalencia en Traslados: ' + tienda);
+    const elegidos = [];
+    document.querySelectorAll('.ts' + gi).forEach(cb => {
+      if (!cb.checked) return;
+      const i = Number(cb.dataset.i), q = Number(document.querySelector(`.tq${gi}[data-i="${i}"]`).value) || 0;
+      if (q > 0) elegidos.push({ productId: items[i].codigo, productName: items[i].nombre, quantity: q, sentQuantity: 0, receivedQuantity: 0 });
+    });
+    if (!elegidos.length) return toast('Selecciona al menos un producto con cantidad');
+    const fecha = $('trasFecha').value;
+    if (!fecha) return toast('Indica la fecha de entrega');
+    if (!confirm(`¿Crear solicitud de traslado de ${elegidos.length} productos de Bodega Principal a ${destino}?`)) return;
+    const id = idTraslado();
+    try {
+      await db.collection('transferencias').doc(id).set({
+        id, items: elegidos, fromWarehouse: 'Bodega Principal', toWarehouse: destino, requesterName: S.nombre,
+        deliveryDate: fecha, requesterNotes: 'Sugerido por el módulo de Reposición', status: 'pending',
+        origen: 'reposicion', timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      toast(`Solicitud de traslado ${id} creada. Sigue su flujo en el módulo Traslados.`, 6000);
+    } catch (e) { console.error(e); toast('No se pudo crear el traslado: ' + e.message); }
+  }
+
+  // ---------------------------------------------------------------- PEDIDOS (lista)
+  function renderPedidos() {
+    const e = $('fPedEstado').value, t = $('fPedTipo').value, q = $('busquedaGlobal').value.trim().toLowerCase();
+    const P = S.pedidos.filter(p => (e === 'abiertos' ? ['borrador', 'confirmado', 'en_transito'].includes(p.estado) : (!e || p.estado === e)) && (!t || p.tipo === t) &&
+      (!q || (p.id + ' ' + (p.proveedor || '') + ' ' + (p.items || []).map(i => i.codigo + ' ' + i.nombre).join(' ')).toLowerCase().includes(q)))
+      .sort((a, b) => String(b.creado || '').localeCompare(String(a.creado || '')));
+    const hoy = hoyISO();
+    $('tblPedidos').innerHTML = `<thead><tr><th>Pedido</th><th>Tipo</th><th>Proveedor</th><th>Estado</th><th>Pedido el</th><th>Llegada estimada</th>
+      <th class="num">Productos</th><th class="num">Unidades</th><th class="num">Recibido</th><th class="num">Valor</th><th></th></tr></thead><tbody>` +
+      (P.map(p => {
+        const u = (p.items || []).reduce((s, i) => s + (Number(i.cantidad) || 0), 0), r = (p.items || []).reduce((s, i) => s + (Number(i.recibido) || 0), 0);
+        const v = (p.items || []).reduce((s, i) => s + (Number(i.cantidad) || 0) * (Number(i.costo) || 0), 0);
+        const tarde = ['confirmado', 'en_transito'].includes(p.estado) && p.fecha_estimada_llegada && p.fecha_estimada_llegada < hoy;
+        return `<tr><td class="font-bold">${esc(p.id)}</td><td>${p.tipo === 'china' ? 'China' : 'Nacional'}</td><td>${esc(p.proveedor || '—')}</td>
+          <td><span class="chip ${p.estado === 'recibido' ? 'e4' : p.estado === 'cancelado' ? 'e6' : p.estado === 'borrador' ? 'e6' : 'e5'}">${esc(ESTADO_PEDIDO[p.estado] || p.estado)}</span></td>
+          <td>${fmtFecha(p.fecha_pedido)}</td><td>${fmtFecha(p.fecha_estimada_llegada)}${tarde ? ' <b class="text-red-700">atrasado</b>' : ''}</td>
+          <td class="num">${(p.items || []).length}</td><td class="num">${num(u)}</td><td class="num">${num(r)}</td><td class="num">${pesos(v)}</td>
+          <td><button class="btn btn-sec" data-editped="${esc(p.id)}">Abrir</button></td></tr>`;
+      }).join('') || '<tr><td colspan="11" class="muted p-4">No hay pedidos con este filtro.</td></tr>') + '</tbody>';
+    $('btnNuevoPedido').style.display = S.puedeEditar ? '' : 'none';
+  }
+
+  // ---------------------------------------------------------------- EDITOR DE PEDIDO
+  let ED = null;  // pedido en edición
+  function abrirEditorPedido(id, codigos = [], tipoForzado = null, cantidades = {}) {
+    let p = id ? structuredClone(S.pedidos.find(x => x.id === id)) : null;
+    if (!p) {
+      const filas = codigos.map(c => S.porCodigo.get(c)).filter(Boolean);
+      const tipo = tipoForzado || (filas[0] && filas[0].origen === 'China' ? 'china' : 'nacional');
+      const prov = tipo === 'china' ? (filas[0] && filas[0].proveedor) || '' : '';
+      // si hay un borrador del mismo proveedor, agregamos ahí
+      const borr = S.pedidos.find(x => x.estado === 'borrador' && x.tipo === tipo && prov && x.proveedor === prov);
+      p = borr ? structuredClone(borr) : { id: null, tipo, proveedor: prov, estado: 'borrador', fecha_pedido: hoyISO(), items: [], notas: '' };
+      for (const f of filas) {
+        const cant = cantidades[f.codigo] ?? (tipo === 'nacional' ? (f.puente_ahora || f.cantidad_sugerida) : f.cantidad_sugerida) ?? 0;
+        const ex = p.items.find(i => i.codigo === f.codigo);
+        if (ex) ex.cantidad = Math.max(Number(ex.cantidad) || 0, cant);
+        else p.items.push({ codigo: f.codigo, nombre: f.nombre, cantidad: cant, recibido: 0, costo: Math.round(f.costo || 0) });
+      }
+    }
+    ED = p; pintarEditor();
+    $('mdPedido').classList.add('open');
+  }
+
+  function diasEntregaPedido(p) {
+    if (p.tipo === 'nacional') return S.cfg.origen.Nacional.entrega;
+    const pr = S.proveedores[p.proveedor];
+    return (pr && pr.origen === 'China' && Number(pr.dias_entrega)) || S.cfg.origen.China.entrega;
+  }
+
+  function pintarEditor() {
+    const p = ED, editable = S.puedeEditar && ['borrador', 'confirmado'].includes(p.estado), recibiendo = S.puedeEditar && p.estado === 'en_transito';
+    const provsChina = Object.values(S.proveedores).filter(v => v.origen === 'China').map(v => v.nombre).sort();
+    if (!p.fecha_estimada_llegada && p.fecha_pedido) p.fecha_estimada_llegada = sumarDias(p.fecha_pedido, diasEntregaPedido(p));
+    const total = p.items.reduce((s, i) => s + (Number(i.cantidad) || 0) * (Number(i.costo) || 0), 0);
+    const dis = editable ? '' : 'disabled';
+    $('mdPedidoBody').innerHTML = `
+      <div class="p-5 border-b flex items-start gap-3"><div class="flex-1"><div class="text-xs muted">${p.id ? esc(p.id) : 'Pedido nuevo'} · ${esc(ESTADO_PEDIDO[p.estado])}</div>
+        <h2 class="text-xl font-extrabold">Pedido ${p.tipo === 'china' ? 'a China' : 'nacional (puente)'}</h2></div>
+        <button class="btn btn-sec" data-cerrar="mdPedido">Cerrar</button></div>
+      <div class="p-5 grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+        <label>Tipo<select id="edTipo" class="inp w-full" ${p.id ? 'disabled' : dis}><option value="china" ${p.tipo === 'china' ? 'selected' : ''}>China</option><option value="nacional" ${p.tipo === 'nacional' ? 'selected' : ''}>Nacional</option></select></label>
+        <label>Proveedor<input id="edProv" class="inp w-full" list="dlProv" value="${esc(p.proveedor || '')}" ${dis} placeholder="${p.tipo === 'nacional' ? 'Proveedor en Colombia' : 'Proveedor en China'}">
+          <datalist id="dlProv">${(p.tipo === 'china' ? provsChina : Object.keys(S.proveedores).sort()).map(n => `<option value="${esc(n)}">`).join('')}</datalist></label>
+        <label>Fecha del pedido<input id="edFecha" type="date" class="inp w-full" value="${esc(p.fecha_pedido || '')}" ${dis}></label>
+        <label>Llegada estimada<input id="edLlegada" type="date" class="inp w-full" value="${esc(p.fecha_estimada_llegada || '')}" ${dis}></label>
+      </div>
+      <div class="px-5">
+        <div class="tbl-wrap" style="max-height:45vh"><table class="tbl"><thead><tr><th>Producto</th><th class="num">Cantidad</th>${p.estado === 'en_transito' || p.estado === 'recibido' ? '<th class="num">Recibido</th>' : ''}
+          <th class="num">Costo unit.</th><th class="num">Subtotal</th>${editable ? '<th></th>' : ''}</tr></thead><tbody>
+          ${p.items.map((i, k) => `<tr><td>${esc(i.nombre)}<div class="text-xs muted">${esc(i.codigo)}</div></td>
+            <td class="num"><input type="number" min="0" class="inp w-24 text-right edCant" data-k="${k}" value="${esc(i.cantidad)}" ${dis}></td>
+            ${p.estado === 'en_transito' || p.estado === 'recibido' ? `<td class="num"><input type="number" min="0" class="inp w-24 text-right edRec" data-k="${k}" value="${esc(i.recibido || 0)}" ${recibiendo ? '' : 'disabled'}></td>` : ''}
+            <td class="num"><input type="number" min="0" class="inp w-28 text-right edCosto" data-k="${k}" value="${esc(i.costo || 0)}" ${dis}></td>
+            <td class="num">${pesos((Number(i.cantidad) || 0) * (Number(i.costo) || 0))}</td>
+            ${editable ? `<td><button class="btn btn-sec edQuitar" data-k="${k}">Quitar</button></td>` : ''}</tr>`).join('') || '<tr><td colspan="6" class="muted p-3">Sin productos.</td></tr>'}
+        </tbody></table></div>
+        ${editable ? `<div class="flex gap-2 mt-3"><input id="edBuscar" class="inp flex-1" list="dlProd" placeholder="Agregar producto: escribe código o nombre…">
+          <datalist id="dlProd">${S.filas.slice(0, 3000).map(f => `<option value="${esc(f.codigo)} | ${esc(f.nombre)}">`).join('')}</datalist>
+          <button class="btn btn-sec" id="edAgregar">Agregar</button></div>` : ''}
+        <div class="text-right font-bold mt-3">Total: ${pesos(total)}</div>
+        <label class="block text-sm mt-2">Notas<textarea id="edNotas" class="inp w-full" rows="2" ${S.puedeEditar ? '' : 'disabled'}>${esc(p.notas || '')}</textarea></label>
+      </div>
+      <div class="p-5 flex flex-wrap gap-2 border-t mt-4 bg-slate-50 rounded-b-2xl">
+        ${S.puedeEditar ? `
+          ${p.estado === 'borrador' ? '<button class="btn btn-sec" id="edGuardar">Guardar borrador</button><button class="btn btn-pri" id="edConfirmar">Confirmar pedido (ya se hizo)</button>' : ''}
+          ${p.estado === 'confirmado' ? '<button class="btn btn-sec" id="edGuardar">Guardar cambios</button><button class="btn btn-pri" id="edTransito">Marcar en tránsito</button>' : ''}
+          ${p.estado === 'en_transito' ? '<button class="btn btn-sec" id="edGuardar">Guardar recibido parcial</button><button class="btn btn-ok" id="edRecibido">Marcar recibido</button>' : ''}
+          ${p.id && ['borrador', 'confirmado', 'en_transito'].includes(p.estado) ? '<button class="btn btn-red" id="edCancelar">Cancelar pedido</button>' : ''}` : ''}
+        <span class="flex-1"></span><button class="btn btn-sec" id="edExportar">Exportar a Excel</button>
+      </div>
+      ${(p.historial || []).length ? `<div class="px-5 pb-5 text-xs muted">${p.historial.map(h => `${esc((h.fecha || '').slice(0, 16).replace('T', ' '))} · ${esc(h.usuario)} · ${esc(h.accion)}`).join('<br>')}</div>` : ''}`;
+    // eventos
+    const leer = () => {
+      if (!$('edProv').disabled) ED.proveedor = $('edProv').value.trim();
+      if (!$('edTipo').disabled) ED.tipo = $('edTipo').value;
+      if (!$('edFecha').disabled) ED.fecha_pedido = $('edFecha').value;
+      if (!$('edLlegada').disabled) ED.fecha_estimada_llegada = $('edLlegada').value;
+      ED.notas = $('edNotas').value;
+      document.querySelectorAll('.edCant').forEach(x => ED.items[x.dataset.k].cantidad = Number(x.value) || 0);
+      document.querySelectorAll('.edCosto').forEach(x => ED.items[x.dataset.k].costo = Number(x.value) || 0);
+      document.querySelectorAll('.edRec').forEach(x => ED.items[x.dataset.k].recibido = Number(x.value) || 0);
+    };
+    $('mdPedidoBody').querySelectorAll('input,select,textarea').forEach(x => x.addEventListener('change', () => {
+      const antesFecha = ED.fecha_pedido, antesTipo = ED.tipo, antesProv = ED.proveedor;
+      leer();
+      if (ED.fecha_pedido !== antesFecha || ED.tipo !== antesTipo || ED.proveedor !== antesProv) ED.fecha_estimada_llegada = sumarDias(ED.fecha_pedido, diasEntregaPedido(ED));
+      if (x.id !== 'edBuscar') pintarEditor();
+    }));
+    document.querySelectorAll('.edQuitar').forEach(b => b.onclick = () => { leer(); ED.items.splice(Number(b.dataset.k), 1); pintarEditor(); });
+    if ($('edAgregar')) $('edAgregar').onclick = () => {
+      leer(); const v = $('edBuscar').value.split('|')[0].trim(); const f = S.porCodigo.get(v);
+      if (!f) return toast('Producto no encontrado');
+      if (!ED.items.some(i => i.codigo === f.codigo)) ED.items.push({ codigo: f.codigo, nombre: f.nombre, cantidad: f.cantidad_sugerida || 1, recibido: 0, costo: Math.round(f.costo || 0) });
+      pintarEditor();
+    };
+    const accion = (nuevoEstado, texto) => async () => { leer(); await guardarPedido(nuevoEstado, texto); };
+    if ($('edGuardar')) $('edGuardar').onclick = accion(null, 'guardado');
+    if ($('edConfirmar')) $('edConfirmar').onclick = accion('confirmado', 'confirmado');
+    if ($('edTransito')) $('edTransito').onclick = accion('en_transito', 'marcado en tránsito');
+    if ($('edRecibido')) $('edRecibido').onclick = async () => { leer(); ED.items.forEach(i => { if (!i.recibido) i.recibido = i.cantidad; }); await guardarPedido('recibido', 'recibido'); };
+    if ($('edCancelar')) $('edCancelar').onclick = async () => { if (confirm('¿Cancelar este pedido?')) { leer(); await guardarPedido('cancelado', 'cancelado'); } };
+    $('edExportar').onclick = () => { leer(); exportarPedido(ED); };
+  }
+
+  async function guardarPedido(nuevoEstado, texto) {
+    const p = ED;
+    if (!p.items.length) return toast('El pedido no tiene productos');
+    if (nuevoEstado === 'confirmado' && !p.proveedor) return toast('Indica el proveedor');
+    if (nuevoEstado === 'confirmado' && !p.fecha_pedido) return toast('Indica la fecha del pedido');
+    p.items = p.items.filter(i => Number(i.cantidad) > 0);
+    if (nuevoEstado) p.estado = nuevoEstado;
+    if (!p.id) { p.id = idPedido(p.tipo); p.creado = ahoraISO(); p.creado_por = S.user.email; }
+    p.actualizado = ahoraISO();
+    p.historial = [...(p.historial || []), { fecha: ahoraISO(), usuario: S.user.email, accion: texto }];
+    try {
+      await db.collection('rep_pedidos').doc(p.id).set(p);
+      const k = S.pedidos.findIndex(x => x.id === p.id);
+      if (k >= 0) S.pedidos[k] = structuredClone(p); else S.pedidos.push(structuredClone(p));
+      recalcularTodo(); S.seleccion.clear(); S.selPuente.clear();
+      toast(`Pedido ${p.id} ${texto}`); pintarEditor(); render();
+    } catch (e) { console.error(e); toast('No se pudo guardar el pedido: ' + e.message); }
+  }
+
+  function exportarPedido(p) {
+    if (typeof XLSX === 'undefined') return toast('No se cargó la librería de Excel');
+    const rows = p.items.map(i => ({ 'Código': i.codigo, 'Producto': i.nombre, 'Cantidad': i.cantidad, 'Costo unitario': i.costo, 'Subtotal': (i.cantidad || 0) * (i.costo || 0) }));
+    const ws = XLSX.utils.json_to_sheet(rows);
+    XLSX.utils.sheet_add_aoa(ws, [[`Pedido ${p.id || '(nuevo)'} · ${p.proveedor || ''} · ${p.fecha_pedido || ''}`]], { origin: { r: rows.length + 2, c: 0 } });
+    const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Pedido');
+    XLSX.writeFile(wb, `pedido_${p.id || 'nuevo'}.xlsx`);
+  }
+
+  // ---------------------------------------------------------------- CONFIGURACIÓN
+  function renderConfig() {
+    const c = S.cfg, dis = S.esAdmin ? '' : 'disabled';
+    const campo = (id, et, v, paso = '1') => `<label>${et}<input id="${id}" type="number" step="${paso}" class="inp w-full" value="${esc(v)}" ${dis}></label>`;
+    $('cfgForm').innerHTML = `
+      <label>Base de la demanda<select id="cfgBase" class="inp w-full" ${dis}><option value="6" ${c.base_meses == 6 ? 'selected' : ''}>Últimos 6 meses</option><option value="12" ${c.base_meses == 12 ? 'selected' : ''}>Últimos 12 meses</option></select></label>
+      ${campo('cfgAlerta', 'Alerta "pedir pronto" (días)', c.alerta_dias)}
+      ${campo('cfgSobre', 'Sobrestock si cobertura > (días)', c.sobrestock_dias)}
+      ${campo('cfgSobrecosto', 'Sobrecosto nacional vs China (%)', Math.round(c.sobrecosto_nacional * 100))}
+      ${campo('cfgChEnt', 'China: días de entrega', c.origen.China.entrega)}
+      ${campo('cfgChCic', 'China: días que cubre cada pedido', c.origen.China.ciclo)}
+      ${campo('cfgNaEnt', 'Nacional: días de entrega', c.origen.Nacional.entrega)}
+      ${campo('cfgNaCic', 'Nacional: días que cubre cada pedido', c.origen.Nacional.ciclo)}
+      ${campo('cfgZA', 'Factor z clase A (1,65 = 95%)', c.z.A, '0.01')}
+      ${campo('cfgZB', 'Factor z clase B (1,28 = 90%)', c.z.B, '0.01')}
+      ${campo('cfgZC', 'Factor z clase C (0,84 = 80%)', c.z.C, '0.01')}
+      ${campo('cfgTrasObj', 'Traslados: llevar tiendas a (días)', c.traslado_objetivo_dias)}`;
+    $('btnGuardarCfg').style.display = S.esAdmin ? '' : 'none';
+    $('tblSync').innerHTML = '<thead><tr><th>Fecha</th><th>Estado</th><th class="num">Productos</th><th>Detalle</th></tr></thead><tbody>' +
+      (S.syncLog.map(l => `<tr><td>${esc((l.inicio || l.id || '').slice(0, 16).replace('T', ' '))}</td><td>${l.estado === 'ok' ? '<span class="chip e4">OK</span>' : '<span class="chip e1">' + esc(l.estado) + '</span>'}</td>
+        <td class="num">${num(l.productos)}</td><td class="text-xs">${esc(l.error || (l.meses_descargados || []).join(', '))}</td></tr>`).join('') || '<tr><td colspan="4" class="muted p-3">Sin registros.</td></tr>') + '</tbody>';
+    const provs = Object.entries(S.provDocs).sort((a, b) => (a[1].nombre || '').localeCompare(b[1].nombre || ''));
+    const pd = S.puedeEditar ? '' : 'disabled';
+    $('tblProv').innerHTML = '<thead><tr><th>Proveedor</th><th>NIT</th><th>Origen</th><th class="num">Días de entrega</th><th class="num">Productos</th><th></th></tr></thead><tbody>' +
+      provs.map(([id, v]) => `<tr><td>${esc(v.nombre)}</td><td>${esc(v.nit || '')}</td>
+        <td><select class="inp pvOrigen" data-id="${esc(id)}" ${pd}><option ${v.origen === 'China' ? 'selected' : ''}>China</option><option ${v.origen === 'Nacional' ? 'selected' : ''}>Nacional</option></select></td>
+        <td class="num"><input type="number" min="1" class="inp w-24 text-right pvDias" data-id="${esc(id)}" value="${esc(v.dias_entrega || '')}" ${pd}></td>
+        <td class="num">${num(S.filas.filter(f => f.proveedor === v.nombre).length)}</td>
+        <td>${S.puedeEditar ? `<button class="btn btn-sec pvGuardar" data-id="${esc(id)}">Guardar</button>` : ''}</td></tr>`).join('') + '</tbody>';
+  }
+
+  async function guardarConfig() {
+    const v = id => Number($(id).value);
+    const n = {
+      ...S.cfg, base_meses: v('cfgBase'), alerta_dias: v('cfgAlerta'), sobrestock_dias: v('cfgSobre'), sobrecosto_nacional: v('cfgSobrecosto') / 100,
+      origen: { China: { entrega: v('cfgChEnt'), ciclo: v('cfgChCic') }, Nacional: { entrega: v('cfgNaEnt'), ciclo: v('cfgNaCic') } },
+      z: { A: v('cfgZA'), B: v('cfgZB'), C: v('cfgZC'), '-': 0 }, traslado_objetivo_dias: v('cfgTrasObj')
+    };
+    if (Object.values(n.origen).some(o => !(o.entrega > 0 && o.ciclo > 0))) return toast('Los días deben ser mayores que cero');
+    try { await db.collection('rep_config').doc('parametros').set(n); S.cfg = n; recalcularTodo(); toast('Parámetros guardados'); $('hdrDatos').textContent = $('hdrDatos').textContent.replace(/promedio de \d+ meses/, `promedio de ${n.base_meses} meses`); }
+    catch (e) { toast('No se pudo guardar: ' + e.message); }
+  }
+
+  async function guardarProveedor(id) {
+    const o = document.querySelector(`.pvOrigen[data-id="${CSS.escape(id)}"]`).value, d = Number(document.querySelector(`.pvDias[data-id="${CSS.escape(id)}"]`).value);
+    if (!(d > 0)) return toast('Días de entrega inválidos');
+    try {
+      await db.collection('rep_proveedores').doc(id).set({ origen: o, dias_entrega: d, auto: false, actualizado_por: S.user.email }, { merge: true });
+      Object.assign(S.provDocs[id], { origen: o, dias_entrega: d, auto: false }); S.proveedores[S.provDocs[id].nombre] = S.provDocs[id];
+      recalcularTodo(); toast('Proveedor actualizado');
+    } catch (e) { toast('No se pudo guardar: ' + e.message); }
+  }
+
+  // ---------------------------------------------------------------- EVENTOS
+  function cerrar(id) { $(id).classList.remove('open'); }
+  document.addEventListener('click', ev => {
+    const t = ev.target;
+    const det = t.closest('[data-det]'); if (det) return abrirDetalle(det.dataset.det);
+    const c = t.closest('[data-cerrar]'); if (c) return cerrar(c.dataset.cerrar);
+    if (t.classList.contains('modal-bg')) return t.classList.remove('open');
+    const ord = t.closest('th[data-ord]');
+    if (ord) { const k = ord.dataset.ord; S.orden = { col: k, dir: S.orden.col === k ? -S.orden.dir : (['nombre', 'proveedor', 'origen', 'abc', 'estado', 'fecha_limite_pedido'].includes(k) ? 1 : -1) }; return renderRepo(); }
+    const ep = t.closest('[data-editped]'); if (ep) return abrirEditorPedido(ep.dataset.editped);
+    const cc = t.closest('[data-crearchina]');
+    if (cc) { const [, items] = S._gruposChina[Number(cc.dataset.crearchina)]; return abrirEditorPedido(null, items.map(f => f.codigo), 'china'); }
+    const ct = t.closest('[data-creartras]'); if (ct) return crearTraslado(Number(ct.dataset.creartras));
+    if (t.classList.contains('pvGuardar')) return guardarProveedor(t.dataset.id);
+  });
+  document.addEventListener('change', ev => {
+    const t = ev.target;
+    if (t.classList.contains('selFila')) { t.checked ? S.seleccion.add(t.dataset.c) : S.seleccion.delete(t.dataset.c); return renderRepo(); }
+    if (t.id === 'selTodos') { document.querySelectorAll('.selFila').forEach(cb => t.checked ? S.seleccion.add(cb.dataset.c) : S.seleccion.delete(cb.dataset.c)); return renderRepo(); }
+    if (t.classList.contains('selP')) { t.checked ? S.selPuente.add(t.dataset.c) : S.selPuente.delete(t.dataset.c); return ($('btnRegistrarPuente').disabled = !S.puedeEditar || S.selPuente.size === 0); }
+    if (t.id === 'selPuenteTodos') { document.querySelectorAll('.selP').forEach(cb => { cb.checked = t.checked; t.checked ? S.selPuente.add(cb.dataset.c) : S.selPuente.delete(cb.dataset.c); }); return ($('btnRegistrarPuente').disabled = !S.puedeEditar || S.selPuente.size === 0); }
+    if (t.dataset.tsall !== undefined) document.querySelectorAll('.ts' + t.dataset.tsall).forEach(cb => cb.checked = t.checked);
+  });
+  document.querySelectorAll('.rep-tab').forEach(b => b.onclick = () => mostrarTab(b.dataset.tab));
+  ['fEstado', 'fOrigen', 'fAbc', 'fProv', 'fAccion'].forEach(id => $(id).addEventListener('change', () => { S.limiteRepo = PASO_FILAS; renderRepo(); }));
+  ['fPedEstado', 'fPedTipo'].forEach(id => $(id).addEventListener('change', renderPedidos));
+  let tBusq; $('busquedaGlobal').addEventListener('input', () => {
+    clearTimeout(tBusq); tBusq = setTimeout(() => { S.limiteRepo = PASO_FILAS; if (!['reposicion', 'pedidos'].includes(S.tab)) mostrarTab('reposicion'); else render(); }, 250);
+  });
+  $('btnMasRepo').onclick = () => { S.limiteRepo += PASO_FILAS; renderRepo(); };
+  $('btnExportRepo').onclick = exportarRepo;
+  $('btnAgregarPedido').onclick = () => abrirEditorPedido(null, [...S.seleccion]);
+  $('btnRegistrarPuente').onclick = () => abrirEditorPedido(null, [...S.selPuente], 'nacional');
+  $('btnNuevoPedido').onclick = () => abrirEditorPedido(null, [], 'china');
+  $('btnGuardarCfg').onclick = guardarConfig;
+  $('logoutBtn').onclick = () => { localStorage.removeItem('userRole'); auth.signOut().then(() => window.parent.location.href = 'index.html'); };
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.modal-bg.open').forEach(m => m.classList.remove('open')); });
+
+  // ---------------------------------------------------------------- ARRANQUE (mismo patrón que Traslados)
+  auth.onAuthStateChanged(async user => {
+    if (!user) { window.parent.location.href = 'index.html'; return; }
+    try {
+      const doc = await db.collection('usuarios').doc(user.email).get();
+      if (!doc.exists) { console.error('El usuario no tiene rol en el ERP'); return auth.signOut(); }
+      const rol = String(doc.data().rol || '').toLowerCase().trim();
+      S.user = user; S.rol = rol; S.nombre = doc.data().nombre || user.email.split('@')[0];
+      S.esAdmin = rol === 'admin';
+      S.puedeEditar = ['admin', 'compras'].includes(rol);
+      S.puedeTrasladar = ['admin', 'compras', 'inventarios', 'bodega'].includes(rol);
+      if (!S.puedeTrasladar) { document.body.innerHTML = '<div class="p-10 text-center muted">No tienes permiso para ver el módulo de Reposición.</div>'; return; }
+      $('userEmailDisplay').textContent = user.email;
+      if (!S.puedeEditar) $('tabConfigBtn').style.display = 'none';
+      await cargarTodo();
+      mostrarTab('resumen');
+    } catch (e) {
+      console.error(e);
+      $('hdrDatos').innerHTML = '<span class="text-red-700 font-bold">No se pudieron cargar los datos: ' + esc(e.message) + '</span>';
+    }
+  });
+});
+</script>
+</body>
+</html>
