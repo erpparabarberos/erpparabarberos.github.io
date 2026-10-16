@@ -1017,9 +1017,25 @@
             handleFilePreview('f_fotos_reparacion', 'preview-archivos-reparacion');
             handleFilePreview('f_fotos_diagnostico', 'preview-archivos-diagnostico');
 
+            // Solo entran los roles de garantías; el rol se lee de "usuarios" y las reglas de Firestore lo vuelven a exigir
+            auth.onAuthStateChanged(async user => {
+                const negar = (mensaje) => {
+                    document.body.innerHTML = '<div style="padding:40px;font-family:system-ui,sans-serif;color:#334155;text-align:center">' + mensaje + '</div>';
+                };
+                if (!user) return negar('No tienes una sesión activa. Inicia sesión desde la pantalla principal.');
+                try {
+                    const perfil = await db.collection('usuarios').doc(String(user.email || '').toLowerCase()).get();
+                    const rol = perfil.exists ? String(perfil.data().rol || '').toLowerCase().trim() : '';
+                    if (!['admin', 'garantias', 'garantías'].includes(rol)) negar('No tienes permiso para ver el módulo de Garantías.');
+                } catch (error) {
+                    console.error('No se pudo validar el rol:', error);
+                    negar('No se pudo validar tu usuario. Recarga la página o vuelve a iniciar sesión.');
+                }
+            });
+
             auth.onAuthStateChanged(user => {
                 if (user) {
-                    const currentUserEmail = user.email; 
+                    const currentUserEmail = user.email;
                     
                     const toggleModo = document.getElementById('t_modo_garantia');
                     const wrapperCamposCliente = document.getElementById('wrapperCamposCliente');

@@ -9614,10 +9614,30 @@ if (exportBtn) {
 
         });
 
-        auth.onAuthStateChanged(user => {
+        // Solo entran los roles de TI; el rol se lee de "usuarios" (no del navegador) y las reglas de Firestore lo vuelven a exigir
+        const ROLES_TI = ['admin', 'tecnologia', 'tecnología', 'ti'];
+        const accesoDenegado = (mensaje) => {
+            appContent.innerHTML = `
+                <div style="padding: 40px; width: 100%;">
+                    <div class="card">
+                        <h2>Acceso denegado</h2>
+                        <p>${mensaje}</p>
+                    </div>
+                </div>`;
+        };
+
+        auth.onAuthStateChanged(async user => {
             if (user) {
-                window.addEventListener('hashchange', router); 
-                router(); 
+                try {
+                    const perfil = await db.collection('usuarios').doc(String(user.email || '').toLowerCase()).get();
+                    const rol = perfil.exists ? String(perfil.data().rol || '').toLowerCase().trim() : '';
+                    if (!ROLES_TI.includes(rol)) return accesoDenegado('Tu usuario no tiene permiso para la Gestión de TI.');
+                } catch (error) {
+                    console.error('No se pudo validar el rol:', error);
+                    return accesoDenegado('No se pudo validar tu usuario. Recarga la página o vuelve a iniciar sesión.');
+                }
+                window.addEventListener('hashchange', router);
+                router();
             } else {
                 appContent.innerHTML = `
                     <div style="padding: 40px; width: 100%;">

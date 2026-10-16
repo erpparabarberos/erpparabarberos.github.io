@@ -720,8 +720,9 @@ function closePasswordHelp() {
                 btnIngresar.textContent = 'Validando acceso...';
 
                 auth.signInWithEmailAndPassword(email, password)
-                    .then(() => {
-                        return db.collection('usuarios').doc(email).get();
+                    .then((cred) => {
+                        // El correo de la sesión siempre viene en minúsculas, igual que los documentos de "usuarios"
+                        return db.collection('usuarios').doc(String(cred.user.email || email).toLowerCase()).get();
                     })
                     .then((doc) => {
                         if (doc.exists) {

@@ -1,0 +1,2 @@
+# Reglas de Firestore: se copian a mano en la consola de Firebase, no se publican
+firestore.rules

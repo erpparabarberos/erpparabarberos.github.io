@@ -873,8 +873,9 @@ document.addEventListener('DOMContentLoaded', () => {
       S.user = user; S.rol = rol; S.nombre = doc.data().nombre || user.email.split('@')[0];
       S.esAdmin = rol === 'admin';
       S.puedeEditar = ['admin', 'compras'].includes(rol);
-      S.puedeTrasladar = ['admin', 'compras', 'inventarios', 'bodega'].includes(rol);
-      if (!S.puedeTrasladar) { document.body.innerHTML = '<div class="p-10 text-center muted">No tienes permiso para ver el módulo de Reposición.</div>'; return; }
+      // Reposición es solo de compras (y admin); inventarios y bodega trabajan en el módulo Traslados
+      S.puedeTrasladar = S.puedeEditar;
+      if (!S.puedeEditar) { document.body.innerHTML = '<div class="p-10 text-center muted">No tienes permiso para ver el módulo de Reposición.</div>'; return; }
       if (!S.puedeEditar) $('tabConfigBtn').style.display = 'none';
       await cargarTodo();
       mostrarTab('resumen');
