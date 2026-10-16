@@ -738,7 +738,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const cant = cantidades[f.codigo] ?? (tipo === 'nacional' ? (f.puente_ahora || f.cantidad_sugerida) : f.cantidad_sugerida) ?? 0;
         const ex = p.items.find(i => i.codigo === f.codigo);
         if (ex) ex.cantidad = Math.max(Number(ex.cantidad) || 0, cant);
-        else p.items.push({ codigo: f.codigo, nombre: f.nombre, cantidad: cant, recibido: 0, costo: Math.round(f.costo || 0) });
+        // En China cada producto trae su fábrica; en nacional se elige (vacío = el proveedor de arriba)
+        else p.items.push({ codigo: f.codigo, nombre: f.nombre, cantidad: cant, recibido: 0, costo: Math.round(f.costo || 0), proveedor: tipo === 'china' ? (f.proveedor || '') : '' });
       }
     }
     ED = p; pintarEditor();
@@ -757,21 +758,26 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!p.fecha_estimada_llegada && p.fecha_pedido) p.fecha_estimada_llegada = sumarDias(p.fecha_pedido, diasEntregaPedido(p));
     const total = p.items.reduce((s, i) => s + (Number(i.cantidad) || 0) * (Number(i.costo) || 0), 0);
     const dis = editable ? '' : 'disabled';
+    // Proveedor por producto: si quedan varios, al guardar se crea un pedido por cada proveedor
+    const provItem = i => String(i.proveedor || p.proveedor || '').trim();
+    const provsDistintos = [...new Set(p.items.map(provItem))];
     $('mdPedidoBody').innerHTML = `
       <div class="p-5 border-b flex items-start gap-3"><div class="flex-1"><div class="text-xs muted">${p.id ? esc(p.id) : 'Pedido nuevo'} · ${esc(ESTADO_PEDIDO[p.estado])}</div>
         <h2 class="text-xl font-extrabold">Pedido ${p.tipo === 'china' ? 'a China' : 'nacional (puente)'}</h2></div>
         <button class="btn btn-sec" data-cerrar="mdPedido">Cerrar</button></div>
       <div class="p-5 grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
         <label>Tipo<select id="edTipo" class="inp w-full" ${p.id ? 'disabled' : dis}><option value="china" ${p.tipo === 'china' ? 'selected' : ''}>China</option><option value="nacional" ${p.tipo === 'nacional' ? 'selected' : ''}>Nacional</option></select></label>
-        <label>Proveedor<input id="edProv" class="inp w-full" list="dlProv" value="${esc(p.proveedor || '')}" ${dis} placeholder="${p.tipo === 'nacional' ? 'Proveedor en Colombia' : 'Proveedor en China'}">
+        <label>${editable ? 'Proveedor (por defecto)' : 'Proveedor'}<input id="edProv" class="inp w-full" list="dlProv" value="${esc(p.proveedor || '')}" ${dis} placeholder="${p.tipo === 'nacional' ? 'Proveedor en Colombia' : 'Proveedor en China'}">
           <datalist id="dlProv">${(p.tipo === 'china' ? provsChina : Object.keys(S.proveedores).sort()).map(n => `<option value="${esc(n)}">`).join('')}</datalist></label>
         <label>Fecha del pedido<input id="edFecha" type="date" class="inp w-full" value="${esc(p.fecha_pedido || '')}" ${dis}></label>
         <label>Llegada estimada<input id="edLlegada" type="date" class="inp w-full" value="${esc(p.fecha_estimada_llegada || '')}" ${dis}></label>
       </div>
       <div class="px-5">
-        <div class="tbl-wrap" style="max-height:45vh"><table class="tbl"><thead><tr><th>Producto</th><th class="num">Cantidad</th>${p.estado === 'en_transito' || p.estado === 'recibido' ? '<th class="num">Recibido</th>' : ''}
+        ${editable && provsDistintos.length > 1 ? `<div class="text-sm mb-2" style="color:var(--tinta-2)">Hay productos de <b>${provsDistintos.length} proveedores</b>. Al guardar se crea un pedido por cada uno: ${provsDistintos.map(v => esc(v || 'sin proveedor')).join(' · ')}.</div>` : ''}
+        <div class="tbl-wrap" style="max-height:45vh"><table class="tbl"><thead><tr><th>Producto</th>${editable ? '<th>Proveedor</th>' : ''}<th class="num">Cantidad</th>${p.estado === 'en_transito' || p.estado === 'recibido' ? '<th class="num">Recibido</th>' : ''}
           <th class="num">Costo unit.</th><th class="num">Subtotal</th>${editable ? '<th></th>' : ''}</tr></thead><tbody>
           ${p.items.map((i, k) => `<tr><td>${esc(i.nombre)}<div class="text-xs muted">${esc(i.codigo)}</div></td>
+            ${editable ? `<td><input class="inp w-52 edProvItem" data-k="${k}" list="dlProv" value="${esc(i.proveedor || '')}" placeholder="${esc(p.proveedor || 'Elegir proveedor')}"></td>` : ''}
             <td class="num"><input type="number" min="0" class="inp w-24 text-right edCant" data-k="${k}" value="${esc(i.cantidad)}" ${dis}></td>
             ${p.estado === 'en_transito' || p.estado === 'recibido' ? `<td class="num"><input type="number" min="0" class="inp w-24 text-right edRec" data-k="${k}" value="${esc(i.recibido || 0)}" ${recibiendo ? '' : 'disabled'}></td>` : ''}
             <td class="num"><input type="number" min="0" class="inp w-28 text-right edCosto" data-k="${k}" value="${esc(i.costo || 0)}" ${dis}></td>
@@ -803,6 +809,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.edCant').forEach(x => ED.items[x.dataset.k].cantidad = Number(x.value) || 0);
       document.querySelectorAll('.edCosto').forEach(x => ED.items[x.dataset.k].costo = Number(x.value) || 0);
       document.querySelectorAll('.edRec').forEach(x => ED.items[x.dataset.k].recibido = Number(x.value) || 0);
+      document.querySelectorAll('.edProvItem').forEach(x => ED.items[x.dataset.k].proveedor = x.value.trim());
     };
     $('mdPedidoBody').querySelectorAll('input,select,textarea').forEach(x => x.addEventListener('change', () => {
       const antesFecha = ED.fecha_pedido, antesTipo = ED.tipo, antesProv = ED.proveedor;
@@ -814,7 +821,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if ($('edAgregar')) $('edAgregar').onclick = () => {
       leer(); const v = $('edBuscar').value.split('|')[0].trim(); const f = S.porCodigo.get(v);
       if (!f) return toast('Producto no encontrado');
-      if (!ED.items.some(i => i.codigo === f.codigo)) ED.items.push({ codigo: f.codigo, nombre: f.nombre, cantidad: f.cantidad_sugerida || 1, recibido: 0, costo: Math.round(f.costo || 0) });
+      if (!ED.items.some(i => i.codigo === f.codigo)) ED.items.push({ codigo: f.codigo, nombre: f.nombre, cantidad: f.cantidad_sugerida || 1, recibido: 0, costo: Math.round(f.costo || 0), proveedor: ED.tipo === 'china' ? (f.proveedor || '') : '' });
       pintarEditor();
     };
     const accion = (nuevoEstado, texto) => async () => { leer(); await guardarPedido(nuevoEstado, texto); };
@@ -826,22 +833,71 @@ document.addEventListener('DOMContentLoaded', () => {
     $('edExportar').onclick = () => { leer(); exportarPedido(ED); };
   }
 
+  // Guarda el pedido. Si sus productos tienen proveedores distintos, queda un pedido por proveedor:
+  // el pedido abierto se queda con los de su proveedor y los demás van a un borrador existente de ese
+  // proveedor (si el resultado es borrador) o a pedidos nuevos con las mismas fechas, notas y estado.
   async function guardarPedido(nuevoEstado, texto) {
     const p = ED;
-    if (!p.items.length) return toast('El pedido no tiene productos');
-    if (nuevoEstado === 'confirmado' && !p.proveedor) return toast('Indica el proveedor');
-    if (nuevoEstado === 'confirmado' && !p.fecha_pedido) return toast('Indica la fecha del pedido');
     p.items = p.items.filter(i => Number(i.cantidad) > 0);
-    if (nuevoEstado) p.estado = nuevoEstado;
-    if (!p.id) { p.id = idPedido(p.tipo); p.creado = ahoraISO(); p.creado_por = S.user.email; }
-    p.actualizado = ahoraISO();
-    p.historial = [...(p.historial || []), { fecha: ahoraISO(), usuario: S.user.email, accion: texto }];
+    if (!p.items.length) return toast('El pedido no tiene productos');
+    const separar = nuevoEstado !== 'cancelado';
+    const clave = i => separar ? String(i.proveedor || p.proveedor || '').trim() : String(p.proveedor || '').trim();
+    if (nuevoEstado === 'confirmado' && p.items.some(i => !clave(i))) return toast('Indica el proveedor de todos los productos');
+    if (nuevoEstado === 'confirmado' && !p.fecha_pedido) return toast('Indica la fecha del pedido');
+
+    const grupos = new Map();
+    for (const i of p.items) { const k = clave(i); if (!grupos.has(k)) grupos.set(k, []); grupos.get(k).push(i); }
+    const propio = String(p.proveedor || '').trim();
+    const principal = grupos.has(propio) ? propio : [...grupos.keys()][0];
+    const sinProveedorPorLinea = items => items.map(({ proveedor, ...resto }) => resto);
+    const estadoFinal = nuevoEstado || p.estado;
+    const ahora = ahoraISO(), nota = (accion) => ({ fecha: ahora, usuario: S.user.email, accion });
+    const aGuardar = [];
+
+    for (const [prov, items] of grupos) {
+      let q;
+      if (prov === principal) {
+        q = p;
+        q.proveedor = prov;
+        q.items = sinProveedorPorLinea(items);
+        if (!q.id) { q.id = idPedido(q.tipo); q.creado = ahora; q.creado_por = S.user.email; }
+        q.historial = [...(q.historial || []), nota(texto)];
+      } else {
+        const borr = estadoFinal === 'borrador' && S.pedidos.find(x => x.id !== p.id && x.estado === 'borrador' && x.tipo === p.tipo && x.proveedor === prov);
+        if (borr) {
+          q = structuredClone(borr);
+          for (const it of sinProveedorPorLinea(items)) {
+            const ex = q.items.find(x => x.codigo === it.codigo);
+            if (ex) ex.cantidad = Math.max(Number(ex.cantidad) || 0, Number(it.cantidad) || 0); else q.items.push(it);
+          }
+          q.historial = [...(q.historial || []), nota(`productos agregados desde ${p.id}`)];
+        } else {
+          q = {
+            id: idPedido(p.tipo), tipo: p.tipo, proveedor: prov, estado: estadoFinal, fecha_pedido: p.fecha_pedido,
+            fecha_estimada_llegada: p.fecha_pedido ? sumarDias(p.fecha_pedido, diasEntregaPedido({ tipo: p.tipo, proveedor: prov })) : '',
+            notas: p.notas || '', items: sinProveedorPorLinea(items), creado: ahora, creado_por: S.user.email,
+            historial: [nota(`creado al separar por proveedor (${texto})`)]
+          };
+        }
+      }
+      if (nuevoEstado) q.estado = nuevoEstado;
+      q.actualizado = ahora;
+      aGuardar.push(q);
+    }
+
     try {
-      await db.collection('rep_pedidos').doc(p.id).set(p);
-      const k = S.pedidos.findIndex(x => x.id === p.id);
-      if (k >= 0) S.pedidos[k] = structuredClone(p); else S.pedidos.push(structuredClone(p));
+      const lote = db.batch();
+      aGuardar.forEach(q => lote.set(db.collection('rep_pedidos').doc(q.id), q));
+      await lote.commit();
+      aGuardar.forEach(q => {
+        const k = S.pedidos.findIndex(x => x.id === q.id);
+        if (k >= 0) S.pedidos[k] = structuredClone(q); else S.pedidos.push(structuredClone(q));
+      });
       recalcularTodo(); S.seleccion.clear(); S.selPuente.clear();
-      toast(`Pedido ${p.id} ${texto}`); pintarEditor(); render();
+      toast(aGuardar.length > 1
+        ? `Se guardaron ${aGuardar.length} pedidos, uno por proveedor: ${aGuardar.map(q => q.id).join(', ')}`
+        : `Pedido ${p.id} ${texto}`, 7000);
+      pintarEditor(); render();
     } catch (e) { console.error(e); toast('No se pudo guardar el pedido: ' + e.message); }
   }
 
