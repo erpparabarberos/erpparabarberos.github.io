@@ -93,6 +93,77 @@ body.tras-sobrio {
 .tras-sobrio .tras-seccion { font-size: 14px; font-weight: 700; color: var(--tinta); margin-bottom: 8px; }
 .tras-sobrio .tras-seccion-sub { font-size: 13px; font-weight: 600; color: var(--gris); margin: 16px 0 8px; }
 
+/* Tarjetas de solicitud (Mis solicitudes, Administrador, Separador) */
+.tras-sobrio .tras-ayuda { font-size: 13px; color: var(--gris); }
+.tras-sobrio .sol-card { display: flex; flex-direction: column; padding: 14px 16px; background: #fff; border: 1px solid var(--linea); border-radius: var(--radio); }
+.tras-sobrio .sol-card:hover { border-color: #cbd5e1; }
+.tras-sobrio .sol-nombre { font-size: 15px; font-weight: 700; color: var(--tinta); }
+.tras-sobrio .sol-para { font-size: 13px; color: var(--tinta-2); }
+.tras-sobrio .sol-para b { font-weight: 600; color: var(--tinta); }
+.tras-sobrio .sol-meta { margin-top: 4px; font-size: 12px; color: var(--gris); }
+.tras-sobrio .sol-chip { flex-shrink: 0; display: inline-flex; align-items: center; height: 24px; padding: 0 9px; border: 1px solid var(--linea); border-radius: 4px; background: #f8fafc; font-size: 12px; font-weight: 600; color: var(--tinta-2); white-space: nowrap; }
+.tras-sobrio .sol-chip-fuerte { background: var(--tinta); border-color: var(--tinta); color: #fff; }
+.tras-sobrio .sol-chip-medio { background: #fff; border-color: var(--tinta-2); color: var(--tinta); }
+.tras-sobrio .sol-chip-claro { background: #f8fafc; color: var(--tinta-2); }
+.tras-sobrio .sol-chip-apagado { background: #fff; color: var(--gris-claro); }
+.tras-sobrio .sol-chip-novedad { background: #fff; border-color: #fecaca; color: var(--peligro); }
+
+/* Línea de avance */
+.tras-sobrio .sol-pasos { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin-top: 12px; }
+.tras-sobrio .sol-pasos span { height: 4px; border-radius: 2px; background: var(--linea); }
+.tras-sobrio .sol-pasos span.hecho { background: var(--tinta); }
+.tras-sobrio .sol-pasos span.actual { background: var(--gris-claro); }
+.tras-sobrio .sol-paso-texto { margin-top: 6px; font-size: 12px; font-weight: 600; color: var(--tinta-2); }
+
+/* Detalle */
+.tras-sobrio .sol-detalle { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--linea-2); }
+.tras-sobrio .sol-detalle.hidden { display: none; }
+.tras-sobrio .sol-ver { align-self: flex-start; margin-top: 10px; font-size: 13px; font-weight: 600; color: var(--tinta-2); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--linea); }
+.tras-sobrio .sol-ver:hover { color: var(--tinta); text-decoration-color: var(--gris-claro); }
+.tras-sobrio .sol-dato { padding: 8px 10px; background: #f8fafc; border: 1px solid var(--linea-2); border-radius: var(--radio); }
+.tras-sobrio .sol-dato-titulo { font-size: 12px; font-weight: 600; color: var(--gris); }
+.tras-sobrio .sol-dato-valor { margin-top: 2px; font-size: 13px; color: var(--tinta); white-space: pre-line; }
+.tras-sobrio .sol-dato-novedad { background: #fff; border-color: #fecaca; }
+.tras-sobrio .sol-subtitulo { font-size: 14px; font-weight: 700; color: var(--tinta); }
+.tras-sobrio .sol-ayuda { font-size: 12px; color: var(--gris); }
+.tras-sobrio .sol-vacio { padding: 14px 8px; text-align: center; font-size: 13px; color: var(--gris); }
+.tras-sobrio .sol-evidencia { width: 100%; height: 64px; object-fit: cover; border: 1px solid var(--linea); border-radius: var(--radio); }
+.tras-sobrio .sol-evidencia-video { display: flex; align-items: center; justify-content: center; background: #f1f5f9; color: var(--gris); }
+
+/* Productos dentro de la tarjeta */
+.tras-sobrio .sol-item { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 10px; background: #fff; border: 1px solid var(--linea); border-radius: var(--radio); }
+.tras-sobrio .sol-item.falta { border-left: 3px solid var(--gris-claro); }
+.tras-sobrio .sol-item.ok { border-left: 3px solid var(--tinta); background: #f8fafc; }
+.tras-sobrio .sol-item-nombre { font-size: 13px; font-weight: 600; color: var(--tinta); }
+.tras-sobrio .sol-item-cant { font-size: 12px; color: var(--gris); }
+.tras-sobrio .sol-item-cant b { color: var(--tinta-2); }
+.tras-sobrio .sol-item-cant b.sol-diferencia { color: var(--peligro); }
+.tras-sobrio .sol-mini-label { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--gris); }
+.tras-sobrio .sol-cant { width: 64px; height: 32px; border: 1px solid var(--linea); border-radius: var(--radio); text-align: center; font-size: 13px; color: var(--tinta); outline: none; }
+.tras-sobrio .sol-cant:focus, .tras-sobrio .sol-input:focus { border-color: var(--gris-claro); box-shadow: 0 0 0 3px rgba(15, 23, 42, .06); }
+.tras-sobrio .sol-check { width: 18px; height: 18px; accent-color: var(--tinta); cursor: pointer; }
+
+/* Formularios y botones de la tarjeta */
+.tras-sobrio .sol-bloque { margin-top: 14px; }
+.tras-sobrio .sol-recuadro { padding: 12px; background: #f8fafc; border: 1px solid var(--linea-2); border-radius: var(--radio); }
+.tras-sobrio .sol-label { display: block; margin-bottom: 6px; font-size: 13px; font-weight: 600; color: var(--tinta-2); }
+.tras-sobrio .sol-input { width: 100%; min-height: 38px; padding: 8px 10px; background-color: #fff; border: 1px solid var(--linea); border-radius: var(--radio); font-size: 13px; color: var(--tinta); outline: none; }
+.tras-sobrio select.sol-input { -webkit-appearance: none; appearance: none; padding-right: 32px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 9px center; background-size: 15px; }
+.tras-sobrio .sol-archivo { width: 100%; font-size: 13px; color: var(--gris); }
+.tras-sobrio .sol-archivo::file-selector-button { margin-right: 10px; height: 34px; padding: 0 12px; border: 1px solid var(--linea); border-radius: var(--radio); background: #fff; font-weight: 600; color: var(--tinta); cursor: pointer; }
+.tras-sobrio .sol-acciones { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--linea-2); }
+.tras-sobrio .sol-btn { display: inline-flex; align-items: center; justify-content: center; height: 38px; padding: 0 14px; border-radius: var(--radio); border: 1px solid transparent; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.tras-sobrio .sol-btn[data-pequeno] { height: 32px; padding: 0 12px; }
+.tras-sobrio .sol-btn:disabled { opacity: .45; cursor: not-allowed; }
+.tras-sobrio .sol-btn-pri { background: var(--tinta); border-color: var(--tinta); color: #fff; }
+.tras-sobrio .sol-btn-pri:hover:not(:disabled) { background: #1e293b; }
+.tras-sobrio .sol-btn-sec { background: #fff; border-color: var(--linea); color: var(--tinta); }
+.tras-sobrio .sol-btn-sec:hover:not(:disabled) { background: #f8fafc; border-color: #cbd5e1; }
+.tras-sobrio .sol-btn-peligro { background: #fff; border-color: #fecaca; color: var(--peligro); }
+.tras-sobrio .sol-btn-peligro:hover:not(:disabled) { background: #fef2f2; }
+
 #productList::-webkit-scrollbar, #currentTransferRequest::-webkit-scrollbar { width: 10px; }
 #productList::-webkit-scrollbar-track, #currentTransferRequest::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 999px; }
 #productList::-webkit-scrollbar-thumb, #currentTransferRequest::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
@@ -167,80 +238,76 @@ body.tras-sobrio {
             </div>
         </div>
 
-        <div id="adminView" class="space-y-8 mt-24 pt-16 border-t-8 border-gray-300" style="display: none;">
-            <div id="productManagementCard" class="bg-white p-6 rounded-xl shadow-lg" style="display: none;">
-                <h2 class="text-2xl font-semibold mb-4 text-gray-800 border-b pb-3">Gestión de Productos</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                    <div>
-                        <p class="text-sm text-gray-600 mb-2">Sube un archivo <strong>JSON</strong> para actualizar la lista de productos.</p>
-                        <pre class="bg-gray-100 p-3 rounded-lg text-xs text-gray-700 overflow-x-auto">[{"...":"..."}]</pre>
-                    </div>
-                    <div class="text-center">
-                        <label for="productFile" class="cursor-pointer w-full inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg">Seleccionar Archivo JSON</label>
-                        <input type="file" id="productFile" class="hidden" accept=".json">
-                        <span id="fileNameDisplay" class="block text-sm text-gray-500 mt-2 truncate">Ningún archivo seleccionado.</span>
-                        <button id="uploadProductsBtn" class="mt-4 w-full bg-gray-800 hover:bg-black text-white font-bold py-3 px-4 rounded-lg shadow-lg">Actualizar Base de Datos</button>
-                        <p id="uploadStatus" class="mt-3 text-sm font-medium"></p>
-                    </div>
+        <div id="adminView" class="space-y-5" style="display: none;">
+            <div id="productManagementCard" class="tras-card" style="display: none;">
+                <h2 class="tras-card-titulo mb-1">Gestión de productos</h2>
+                <p class="tras-ayuda mb-4">Sube un archivo <b>JSON</b> para actualizar el catálogo de productos que ven los solicitantes. Reemplaza la lista completa.</p>
+                <div class="flex flex-wrap items-center gap-3">
+                    <label for="productFile" class="tras-btn tras-btn-sec cursor-pointer">Seleccionar archivo JSON</label>
+                    <input type="file" id="productFile" class="hidden" accept=".json">
+                    <span id="fileNameDisplay" class="tras-ayuda truncate">Ningún archivo seleccionado.</span>
+                    <span class="flex-1"></span>
+                    <button id="uploadProductsBtn" class="tras-btn tras-btn-pri">Actualizar base de datos</button>
                 </div>
+                <p id="uploadStatus" class="mt-3 text-sm font-medium"></p>
             </div>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div class="bg-white p-6 rounded-xl shadow-lg">
-                    <h2 class="text-2xl font-semibold mb-4 text-gray-800 border-b pb-3">Traslados Activos</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+                <div class="tras-card">
+                    <h2 class="tras-card-titulo mb-4">Traslados activos</h2>
                     <div class="space-y-2 mb-4">
-                        <input type="text" id="adminActiveSearchId" placeholder="Buscar por ID o Solicitante..." class="w-full px-3 py-2 border rounded-lg">
-                        <div class="grid grid-cols-2 gap-2"><input type="date" id="adminActiveDateFrom" class="w-full px-3 py-2 border rounded-lg text-sm" title="Fecha Desde"><input type="date" id="adminActiveDateTo" class="w-full px-3 py-2 border rounded-lg text-sm" title="Fecha Hasta"></div>
+                        <input type="text" id="adminActiveSearchId" placeholder="Buscar por ID o solicitante..." class="tras-campo">
+                        <div class="grid grid-cols-2 gap-2"><input type="date" id="adminActiveDateFrom" class="tras-campo" title="Fecha desde"><input type="date" id="adminActiveDateTo" class="tras-campo" title="Fecha hasta"></div>
                     </div>
-                    <div class="max-h-[80vh] overflow-y-auto">
-                        <h3 class="text-lg font-semibold text-black mb-2">Pendientes de Revisión</h3>
-                        <div id="adminPendingRequests" class="grid gap-4 mb-6"></div>
-                        <h3 class="text-lg font-semibold text-black mb-2">Pendientes por Nota de Traslado</h3>
-                        <div id="adminPendingNtRequests" class="grid gap-4 mb-6"></div>
-                        <h3 class="text-lg font-semibold text-black mb-2">Por Enviar</h3>
-                        <div id="adminReadyToShipRequests" class="grid gap-4 mb-6"></div>
-                        <h3 class="text-lg font-semibold text-black mb-2">Detalles de Envío</h3>
-                        <div id="adminShippingDetailsRequests" class="grid gap-4 mb-6"></div>
-                        <h3 class="text-lg font-semibold text-black mb-2">Pendientes por Recibir</h3>
-                        <div id="adminShippedRequests" class="grid gap-4"></div>
+                    <div class="max-h-[80vh] overflow-y-auto pr-1">
+                        <h3 class="tras-seccion">Pendientes de revisión</h3>
+                        <div id="adminPendingRequests" class="grid gap-3 mb-5"></div>
+                        <h3 class="tras-seccion">Pendientes por nota de traslado</h3>
+                        <div id="adminPendingNtRequests" class="grid gap-3 mb-5"></div>
+                        <h3 class="tras-seccion">Por enviar</h3>
+                        <div id="adminReadyToShipRequests" class="grid gap-3 mb-5"></div>
+                        <h3 class="tras-seccion">Detalles de envío</h3>
+                        <div id="adminShippingDetailsRequests" class="grid gap-3 mb-5"></div>
+                        <h3 class="tras-seccion">Pendientes por recibir</h3>
+                        <div id="adminShippedRequests" class="grid gap-3"></div>
                     </div>
                 </div>
-                <div class="bg-white p-6 rounded-xl shadow-lg">
-                    <div class="flex justify-between items-center border-b pb-3 mb-4">
-                        <h2 class="text-2xl font-semibold text-gray-800">Historial</h2>
-                        <button id="exportExcelBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md flex items-center space-x-2"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg><span>Exportar</span></button>
+                <div class="tras-card">
+                    <div class="flex justify-between items-center gap-3 mb-4">
+                        <h2 class="tras-card-titulo">Historial</h2>
+                        <button id="exportExcelBtn" class="tras-btn tras-btn-sec" title="Exporta lo que se ve en el historial, con los filtros puestos">Exportar Excel</button>
                     </div>
                     <div class="space-y-2 mb-4">
-                        <input type="text" id="adminHistorySearchId" placeholder="Buscar por ID o Solicitante..." class="w-full px-3 py-2 border rounded-lg">
-                        <div class="grid grid-cols-2 gap-2"><input type="date" id="adminHistoryDateFrom" class="w-full px-3 py-2 border rounded-lg text-sm" title="Fecha Desde"><input type="date" id="adminHistoryDateTo" class="w-full px-3 py-2 border rounded-lg text-sm" title="Fecha Hasta"></div>
+                        <input type="text" id="adminHistorySearchId" placeholder="Buscar por ID o solicitante..." class="tras-campo">
+                        <div class="grid grid-cols-2 gap-2"><input type="date" id="adminHistoryDateFrom" class="tras-campo" title="Fecha desde"><input type="date" id="adminHistoryDateTo" class="tras-campo" title="Fecha hasta"></div>
                     </div>
-                    <div class="max-h-[80vh] overflow-y-auto">
-                        <h3 class="text-lg font-semibold text-black mb-2">Completadas</h3>
-                        <div id="adminCompletedRequests" class="grid gap-4 mb-6"></div>
-                        <h3 class="text-lg font-semibold text-black mb-2">Con Novedad</h3>
-                        <div id="adminNoveltyRequests" class="grid gap-4 mb-6"></div>
-                        <h3 class="text-lg font-semibold text-black mb-2">Canceladas</h3>
-                        <div id="adminCancelledRequests" class="grid gap-4"></div>
+                    <div class="max-h-[80vh] overflow-y-auto pr-1">
+                        <h3 class="tras-seccion">Completadas</h3>
+                        <div id="adminCompletedRequests" class="grid gap-3 mb-5"></div>
+                        <h3 class="tras-seccion">Con novedad</h3>
+                        <div id="adminNoveltyRequests" class="grid gap-3 mb-5"></div>
+                        <h3 class="tras-seccion">Canceladas</h3>
+                        <div id="adminCancelledRequests" class="grid gap-3"></div>
                     </div>
                 </div>
             </div>
         </div>
-        
-        <div id="reviewerView" class="space-y-8" style="display: none;">
-            <div class="bg-white p-6 rounded-xl shadow-lg">
-                <h2 class="text-2xl font-semibold mb-4 text-gray-800 border-b pb-3">Pendientes de Revisión</h2>
+
+        <div id="reviewerView" class="space-y-5" style="display: none;">
+            <div class="tras-card">
+                <h2 class="tras-card-titulo mb-4">Pendientes de revisión</h2>
                 <div class="space-y-2 mb-4">
-                    <input type="text" id="reviewerSearchId" placeholder="Buscar por ID o Solicitante..." class="w-full px-3 py-2 border rounded-lg">
+                    <input type="text" id="reviewerSearchId" placeholder="Buscar por ID o solicitante..." class="tras-campo">
                     <div class="grid grid-cols-2 gap-2">
-                        <input type="date" id="reviewerDateFrom" class="w-full px-3 py-2 border rounded-lg text-sm" title="Fecha Desde">
-                        <input type="date" id="reviewerDateTo" class="w-full px-3 py-2 border rounded-lg text-sm" title="Fecha Hasta">
+                        <input type="date" id="reviewerDateFrom" class="tras-campo" title="Fecha desde">
+                        <input type="date" id="reviewerDateTo" class="tras-campo" title="Fecha hasta">
                     </div>
                 </div>
-                <div class="max-h-[80vh] overflow-y-auto">
-                    <div id="reviewerPendingRequests" class="grid gap-4 mb-6"></div>
+                <div class="max-h-[80vh] overflow-y-auto pr-1">
+                    <div id="reviewerPendingRequests" class="grid gap-3"></div>
                 </div>
             </div>
         </div>
-        
+
         <div id="managerView" class="space-y-8 mt-24 pt-16 border-t-8 border-gray-300" style="display: none;">
             <div class="bg-white p-6 rounded-xl shadow-lg">
                 <h2 class="text-2xl font-semibold mb-4 text-gray-800 border-b pb-3">Panel de Informes Gerenciales</h2>
@@ -576,8 +643,52 @@ body.tras-sobrio {
              return filtered;
         }
         
+        // Cuando llega un cambio de cualquier traslado, la pantalla se vuelve a dibujar. Antes de hacerlo se
+        // guarda lo que la persona está escribiendo (notas, guía, novedad, evidencias) para devolverlo después.
+        const CAMPOS_EN_EDICION = '[id^="adminNotes-"], [id^="shippingNotes-"], [id^="trackingNumber-"], [id^="noveltyReason-"], [id^="noveltyOtherReason-"], [id^="noveltySolution-"], [id^="receptionNotes-"], [id^="evidence-"], .reception-qty-input';
+        function guardarEdicionEnCurso() {
+            const guardado = { campos: [], radios: [], foco: null };
+            document.querySelectorAll(CAMPOS_EN_EDICION).forEach(el => {
+                const clave = el.id || `${el.dataset.requestId}|${el.dataset.itemIndex}`;
+                if (el.type === 'file') { if (el.files && el.files.length) guardado.campos.push({ clave, files: el.files }); return; }
+                const cambiado = el.tagName === 'SELECT' ? el.value !== '' : el.value !== el.defaultValue;
+                if (cambiado) guardado.campos.push({ clave, valor: el.value });
+            });
+            document.querySelectorAll('.tracking-option:checked').forEach(r => guardado.radios.push({ name: r.name, value: r.value }));
+            const activo = document.activeElement;
+            if (activo && activo.closest && activo.closest('.sol-card') && activo.id) {
+                guardado.foco = { id: activo.id, inicio: activo.selectionStart, fin: activo.selectionEnd };
+            }
+            return guardado;
+        }
+        function restaurarEdicionEnCurso(guardado) {
+            guardado.campos.forEach(({ clave, valor, files }) => {
+                const el = clave.includes('|')
+                    ? document.querySelector(`.reception-qty-input[data-request-id="${clave.split('|')[0]}"][data-item-index="${clave.split('|')[1]}"]`)
+                    : document.getElementById(clave);
+                if (!el) return;
+                if (files) { try { el.files = files; } catch (e) {} return; }
+                el.value = valor;
+                if (el.classList.contains('novelty-input')) validateNoveltyForm(el.dataset.requestId);
+            });
+            guardado.radios.forEach(({ name, value }) => {
+                const radio = document.querySelector(`input[name="${name}"][value="${value}"]`);
+                if (radio && !radio.checked) { radio.checked = true; handleTrackingOptionChange({ currentTarget: radio }); }
+            });
+            if (guardado.foco) {
+                const el = document.getElementById(guardado.foco.id);
+                if (el) { el.focus(); try { el.setSelectionRange(guardado.foco.inicio, guardado.foco.fin); } catch (e) {} }
+            }
+        }
+
 function renderAllSections() {
             if (!currentUserData) return;
+            const edicionEnCurso = guardarEdicionEnCurso();
+            renderAllSectionsBase();
+            restaurarEdicionEnCurso(edicionEnCurso);
+        }
+
+function renderAllSectionsBase() {
             const { name, role } = currentUserData;
             const sortedRequests = allTransferRequests.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
 
@@ -642,7 +753,7 @@ const allMyRequests = sortedRequests.filter(r =>
             if (!div) return;
             div.innerHTML = '';
             if (data.length === 0) {
-                div.innerHTML = `<p class="text-gray-500 italic text-center py-4">${emptyMessage}</p>`;
+                div.innerHTML = `<p class="sol-vacio">${emptyMessage}</p>`;
                 return;
             }
             if (!sectionDisplayCounts[sectionId]) sectionDisplayCounts[sectionId] = INITIAL_DISPLAY_COUNT;
@@ -654,17 +765,39 @@ const allMyRequests = sortedRequests.filter(r =>
                 const loadAmount = Math.min(LOAD_MORE_COUNT, remaining);
                 const button = document.createElement('button');
                 button.textContent = `Ver ${loadAmount} más... (${remaining} restantes)`;
-                button.className = 'w-full mt-4 text-sm font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 py-2 px-4 rounded-lg';
+                button.className = 'sol-btn sol-btn-sec w-full mt-1';
                 button.onclick = () => { sectionDisplayCounts[sectionId] += LOAD_MORE_COUNT; renderAllSections(); };
                 div.appendChild(button);
             }
         }
         
+        // Pasos del traslado para la línea de avance de cada tarjeta
+        const PASOS_TRASLADO = ['Solicitada', 'Revisión', 'Nota de traslado', 'Envío', 'Recibida'];
+        const SITUACION_PASO = {
+            pending: 'Esperando revisión', processing_partial_items: 'En revisión', pending_nt_start: 'Pendiente de nota de traslado',
+            pending_nt_active: 'Preparando la nota de traslado', ready_to_ship: 'Listo para enviar', shipping_details: 'Registrando el envío',
+            shipped: 'En camino: falta confirmar la recepción'
+        };
+        const pasoDeEstado = (s) => ({
+            pending: 0, processing_partial_items: 1, pending_nt_start: 2, pending_nt_active: 2,
+            ready_to_ship: 3, shipping_details: 3, shipped: 4, completed: 5, completed_incomplete: 5, novelty_review: 5
+        })[s];
+
+        // Tono del estado (escala de grises; la novedad con borde rojo suave)
+        const tonoEstado = (s) => {
+            if (s === 'cancelled') return 'sol-chip-apagado';
+            if (s === 'completed') return 'sol-chip-claro';
+            if (s === 'completed_incomplete' || s === 'novelty_review') return 'sol-chip-novedad';
+            if (s === 'pending' || s === 'shipped') return 'sol-chip-fuerte';
+            return 'sol-chip-medio';
+        };
+
         function createRequestCard(req, role) {
             const isExpanded = expandedRequestsState.has(req.id);
             const card = document.createElement('div');
-            card.className = `p-4 rounded-lg shadow-sm flex flex-col ${getRequestStatusColor(req.status, req)}`;
+            card.className = 'sol-card';
             card.id = `card-${req.id}`;
+            const id = esc(req.id);
 
             const hasItems = req.items && req.items.length > 0;
             const allNtItemsChecked = hasItems && req.status === 'pending_nt_active' && req.items.every(item => item.nt_checked);
@@ -675,172 +808,178 @@ const allMyRequests = sortedRequests.filter(r =>
             const itemsHtml = hasItems ? (req.items || []).map((item, index) => {
                 let quantityDisplay;
                 if (req.status === 'pending_nt_active') {
-                    quantityDisplay = `Cantidad a Enviar: <b>${item.sentQuantity ?? item.quantity}</b>`;
+                    quantityDisplay = `A enviar: <b>${esc(item.sentQuantity ?? item.quantity)}</b>`;
                 } else {
-                    quantityDisplay = `Solicitado: <b>${item.quantity}</b>`;
-                    if (item.sentQuantity !== undefined) {
-                         quantityDisplay += ` | Enviado: <b>${item.sentQuantity}</b>`;
+                    quantityDisplay = `Solicitado: <b>${esc(item.quantity)}</b>`;
+                    // "Enviado" solo cuando ya se definió qué se envía y "Recibido" solo cuando ya se recibió
+                    const yaSeEnvia = ['ready_to_ship', 'shipping_details', 'shipped', 'completed', 'completed_incomplete', 'novelty_review'].includes(req.status);
+                    const yaSeRecibio = ['completed', 'completed_incomplete', 'novelty_review'].includes(req.status);
+                    if (yaSeEnvia && item.sentQuantity !== undefined) {
+                        quantityDisplay += ` · Enviado: <b>${esc(item.sentQuantity)}</b>`;
                     }
-                    if (item.receivedQuantity !== undefined) {
-                        const color = item.receivedQuantity !== item.sentQuantity ? 'text-red-600' : 'text-green-700';
-                        quantityDisplay += ` | Recibido: <b class="${color}">${item.receivedQuantity}</b>`;
+                    if (yaSeRecibio && item.receivedQuantity !== undefined) {
+                        const distinto = item.receivedQuantity !== item.sentQuantity;
+                        quantityDisplay += ` · Recibido: <b class="${distinto ? 'sol-diferencia' : ''}">${esc(item.receivedQuantity)}</b>`;
                     }
                 }
 
-                const receptionInput = (role === 'requester' && req.status === 'shipped') ? `<div class="flex items-center"><label class="text-xs mr-2">Recibido:</label><input type="number" value="${item.sentQuantity}" data-request-id="${req.id}" data-item-index="${index}" class="reception-qty-input w-16 p-1 border rounded-md text-center text-sm"></div>` : '';
-                
+                const receptionInput = (role === 'requester' && req.status === 'shipped') ? `<label class="sol-mini-label">Recibido<input type="number" value="${esc(item.sentQuantity)}" data-request-id="${id}" data-item-index="${index}" class="reception-qty-input sol-cant"></label>` : '';
+
                 let adminControls = '';
-                let itemBgColor = 'bg-white';
+                let revisado = '';
                 if (role === 'admin' || role === 'reviewer') {
                     if (req.status === 'processing_partial_items') {
-                        adminControls += `<input type="number" value="${item.sentQuantity ?? item.quantity}" data-request-id="${req.id}" data-item-index="${index}" class="admin-qty-input w-20 p-1 border rounded-md text-center">`;
-                        adminControls += `<input type="checkbox" ${item.nt_checked ? 'checked' : ''} data-request-id="${req.id}" data-item-index="${index}" class="nt-checkbox h-5 w-5 rounded border-gray-300 text-blue-600 cursor-pointer">`;
-                        itemBgColor = item.nt_checked ? 'bg-green-100' : 'bg-red-100'; 
+                        adminControls += `<label class="sol-mini-label">A enviar<input type="number" value="${esc(item.sentQuantity ?? item.quantity)}" data-request-id="${id}" data-item-index="${index}" class="admin-qty-input sol-cant"></label>`;
+                        adminControls += `<input type="checkbox" ${item.nt_checked ? 'checked' : ''} data-request-id="${id}" data-item-index="${index}" class="nt-checkbox sol-check" title="Marcar como revisado">`;
+                        revisado = item.nt_checked ? 'ok' : 'falta';
                     } else if (req.status === 'pending_nt_active') {
-                        adminControls += `<input type="checkbox" ${item.nt_checked ? 'checked' : ''} data-request-id="${req.id}" data-item-index="${index}" class="nt-checkbox h-5 w-5 rounded border-gray-300 text-blue-600 cursor-pointer">`;
-                        itemBgColor = item.nt_checked ? 'bg-green-100' : 'bg-red-100';
+                        adminControls += `<input type="checkbox" ${item.nt_checked ? 'checked' : ''} data-request-id="${id}" data-item-index="${index}" class="nt-checkbox sol-check" title="Marcar como incluido en la NT">`;
+                        revisado = item.nt_checked ? 'ok' : 'falta';
                     }
                 }
-                
-                return `<li class="p-2 rounded-md border ${itemBgColor} flex justify-between items-center text-sm" data-item-row-id="${req.id}-${index}"><div><span class="font-medium text-gray-800">${item.productName}</span><div class="text-xs text-gray-600">${quantityDisplay}</div></div><div class="flex items-center gap-2">${receptionInput}${adminControls}</div></li>`;
-            }).join('') : '<p class="text-sm text-gray-500 italic">No hay artículos.</p>';
+
+                return `<li class="sol-item ${revisado}" data-item-row-id="${id}-${index}"><div class="min-w-0"><span class="sol-item-nombre">${esc(item.productName)}</span><div class="sol-item-cant">${quantityDisplay}</div></div><div class="flex items-center gap-3 shrink-0">${receptionInput}${adminControls}</div></li>`;
+            }).join('') : '<p class="sol-vacio">No hay artículos.</p>';
+
+            const boton = (accion, texto, tipo = 'sec', extra = '') => `<button type="button" data-request-id="${id}" data-action="${accion}" class="action-btn sol-btn sol-btn-${tipo}" ${extra}>${texto}</button>`;
 
             let contentHtml = '';
             if (role === 'admin' || role === 'reviewer') {
                 let actionButtonsHtml = '';
 
                 if (req.status === 'pending') {
-                    actionButtonsHtml += `<button data-request-id="${req.id}" data-action="start_processing" class="action-btn flex-1 bg-gray-800 hover:bg-black text-white font-bold py-2 px-3 rounded-md">Iniciar Revisión</button>`;
+                    actionButtonsHtml += boton('start_processing', 'Iniciar revisión', 'pri');
                 }
                 if (req.status.startsWith('processing')) {
-                    contentHtml += `<div class="mt-4"><label for="adminNotes-${req.id}" class="text-sm font-medium">Nota de Revisión:</label><textarea id="adminNotes-${req.id}" rows="2" class="w-full mt-1 border rounded-md p-2">${req.adminNotes || ''}</textarea><button data-request-id="${req.id}" data-action="save_admin_note" class="action-btn mt-1 text-xs bg-gray-700 px-3 py-1.5 rounded-md text-white">Guardar Nota</button></div>`;
-                    actionButtonsHtml += `<button data-request-id="${req.id}" data-action="finalize_processing" class="action-btn bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-3 rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed" ${!allReviewItemsChecked ? 'disabled' : ''}>Finalizar Revisión</button>`;
+                    contentHtml += `<div class="sol-bloque"><label for="adminNotes-${id}" class="sol-label">Nota de revisión</label><textarea id="adminNotes-${id}" rows="2" class="sol-input">${esc(req.adminNotes || '')}</textarea><div class="mt-2">${boton('save_admin_note', 'Guardar nota', 'sec', 'data-pequeno')}</div></div>`;
+                    actionButtonsHtml += boton('finalize_processing', 'Finalizar revisión', 'pri', !allReviewItemsChecked ? 'disabled title="Marca todos los productos como revisados"' : '');
                 }
                 if (role === 'admin') {
                     if (req.status === 'pending_nt_start') {
-                        actionButtonsHtml += `<button data-request-id="${req.id}" data-action="start_nt_preparation" class="action-btn bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-3 rounded-md">Iniciar Preparación NT</button>`;
+                        actionButtonsHtml += boton('start_nt_preparation', 'Iniciar preparación de NT', 'pri');
                     }
                     if (req.status === 'pending_nt_active') {
-                        contentHtml += `<div class="mt-4 space-y-2"><label for="ntNumber-${req.id}" class="text-sm font-medium">Nº Nota de Traslado (Obligatorio):</label><input type="text" id="ntNumber-${req.id}" data-request-id="${req.id}" value="${req.ntNumber || ''}" class="nt-number-input w-full mt-1 border rounded-md p-2"></div>`;
-                        actionButtonsHtml += `<button data-request-id="${req.id}" data-action="return_to_pending" class="action-btn bg-yellow-600 hover:bg-yellow-700 text-white text-xs font-semibold py-2 px-3 rounded-md">Devolver</button>`;
-                        actionButtonsHtml += `<button data-request-id="${req.id}" data-action="ready_to_ship" class="action-btn bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold py-2 px-3 rounded-md disabled:bg-gray-400" ${!canProceedFromNt ? 'disabled' : ''}>Listo para Enviar</button>`;
+                        contentHtml += `<div class="sol-bloque"><label for="ntNumber-${id}" class="sol-label">Nº de nota de traslado (obligatorio)</label><input type="text" id="ntNumber-${id}" data-request-id="${id}" value="${esc(req.ntNumber || '')}" class="nt-number-input sol-input"></div>`;
+                        actionButtonsHtml += boton('return_to_pending', 'Devolver');
+                        actionButtonsHtml += boton('ready_to_ship', 'Listo para enviar', 'pri', !canProceedFromNt ? 'disabled title="Marca todos los productos y escribe el Nº de NT"' : '');
                     }
                 }
 
                 if (['pending', 'processing_partial_items', 'pending_nt_start', 'pending_nt_active'].includes(req.status)) {
-                    actionButtonsHtml += `<button data-request-id="${req.id}" data-action="cancel" class="action-btn bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-3 rounded-md">Cancelar</button>`;
+                    actionButtonsHtml += boton('cancel', 'Cancelar', 'peligro');
                 }
-                
+
                 if (req.status === 'cancelled') {
-                    actionButtonsHtml += `<button data-request-id="${req.id}" data-action="reactivate" class="action-btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3 rounded-md">Reactivar</button>`;
+                    actionButtonsHtml += boton('reactivate', 'Reactivar', 'pri');
                 }
 
                 if (actionButtonsHtml) {
-                    contentHtml += `<div class="mt-4 border-t pt-4 flex justify-end gap-2 flex-wrap">${actionButtonsHtml}</div>`;
+                    contentHtml += `<div class="sol-acciones">${actionButtonsHtml}</div>`;
                 }
 
                 if (role === 'admin') {
                     if (req.status === 'ready_to_ship') {
-                        contentHtml += `<div class="mt-4 space-y-2"><label for="shippingNotes-${req.id}" class="text-sm font-medium">Obs. de Envío (Opcional):</label><textarea id="shippingNotes-${req.id}" rows="2" class="w-full mt-1 border rounded-md p-2">${req.shippingNotes || ''}</textarea><button data-request-id="${req.id}" data-action="save_shipping_note" class="action-btn mt-1 text-xs bg-gray-700 px-3 py-1.5 rounded-md text-white">Guardar Nota</button></div>`;
-                        contentHtml += `<div class="mt-4 flex gap-2">
-                                          <button data-request-id="${req.id}" data-action="return_to_pending" class="action-btn bg-yellow-600 hover:bg-yellow-700 text-white text-xs font-semibold py-2 px-3 rounded-md">Devolver</button>
-                                          <button data-request-id="${req.id}" data-action="proceed_to_shipping" class="action-btn flex-grow bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-3 rounded-md">Proceder a Envío</button>
-                                       </div>`;
+                        contentHtml += `<div class="sol-bloque"><label for="shippingNotes-${id}" class="sol-label">Observaciones de envío (opcional)</label><textarea id="shippingNotes-${id}" rows="2" class="sol-input">${esc(req.shippingNotes || '')}</textarea><div class="mt-2">${boton('save_shipping_note', 'Guardar nota', 'sec', 'data-pequeno')}</div></div>`;
+                        contentHtml += `<div class="sol-acciones">${boton('return_to_pending', 'Devolver')}${boton('proceed_to_shipping', 'Proceder a envío', 'pri')}</div>`;
                     }
                     if (req.status === 'shipping_details') {
-                        contentHtml += `<div class="mt-4 space-y-3 p-3 bg-gray-100 rounded-lg border"><p class="font-semibold">¿Tiene guía?</p><div class="flex items-center gap-x-4"><label><input type="radio" name="hasTracking-${req.id}" value="yes" class="tracking-option"> Sí</label><label><input type="radio" name="hasTracking-${req.id}" value="no" class="tracking-option" checked> No</label></div><div id="trackingNumberDiv-${req.id}" class="hidden mt-2"><label for="trackingNumber-${req.id}" class="block text-sm font-medium">Nº de Guía:</label><input type="text" id="trackingNumber-${req.id}" class="w-full mt-1 border rounded-md p-2"></div></div>`;
-                        contentHtml += `<div class="mt-4 flex gap-2">
-                                          <button data-request-id="${req.id}" data-action="return_to_pending" class="action-btn bg-yellow-600 hover:bg-yellow-700 text-white text-xs font-semibold py-2 px-3 rounded-md">Devolver</button>
-                                          <button data-request-id="${req.id}" data-action="finalize_shipment" class="action-btn flex-grow bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-3 rounded-md">Marcar como Enviado</button>
-                                       </div>`;
+                        contentHtml += `<div class="sol-bloque sol-recuadro"><p class="sol-label">¿Tiene guía?</p><div class="flex items-center gap-x-5 text-sm"><label class="flex items-center gap-2"><input type="radio" name="hasTracking-${id}" value="yes" class="tracking-option"> Sí</label><label class="flex items-center gap-2"><input type="radio" name="hasTracking-${id}" value="no" class="tracking-option" checked> No</label></div><div id="trackingNumberDiv-${id}" class="hidden mt-3"><label for="trackingNumber-${id}" class="sol-label">Nº de guía</label><input type="text" id="trackingNumber-${id}" class="sol-input"></div></div>`;
+                        contentHtml += `<div class="sol-acciones">${boton('return_to_pending', 'Devolver')}${boton('finalize_shipment', 'Marcar como enviado', 'pri')}</div>`;
                     }
                     if (req.status === 'completed_incomplete') {
-                        contentHtml += `<div class="mt-4"><button data-request-id="${req.id}" data-action="start_novelty_review" class="action-btn w-full bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-3 rounded-md">Iniciar Revisión de Novedad</button></div>`;
+                        contentHtml += `<div class="sol-acciones">${boton('start_novelty_review', 'Iniciar revisión de novedad', 'pri')}</div>`;
                     }
                     if (req.status === 'novelty_review') {
-                        contentHtml += `<div id="noveltyForm-${req.id}" class="mt-4 p-4 bg-gray-100 border-t-2 space-y-4"><h5 class="font-bold text-lg">Gestionar Novedad</h5><div><label class="block text-sm font-medium">Causa:</label><select id="noveltyReason-${req.id}" data-request-id="${req.id}" class="novelty-input mt-1 block w-full p-2 border rounded-md"><option value="" selected disabled>-- Seleccione --</option><option value="Error de empaque">Error de empaque</option><option value="Perdida en transporte">Pérdida en transporte</option><option value="Otro">Otro</option></select></div><div id="noveltyOtherDiv-${req.id}" class="hidden"><label for="noveltyOtherReason-${req.id}" class="block text-sm font-medium">Especifique:</label><input type="text" id="noveltyOtherReason-${req.id}" data-request-id="${req.id}" class="novelty-input mt-1 block w-full p-2 border rounded-md"></div><div><label for="noveltySolution-${req.id}" class="block text-sm font-medium">Solución:</label><textarea id="noveltySolution-${req.id}" data-request-id="${req.id}" rows="3" class="novelty-input mt-1 block w-full p-2 border rounded-md"></textarea></div><button data-request-id="${req.id}" data-action="finalize_novelty" class="action-btn w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-3 rounded-md disabled:bg-gray-400" disabled>Finalizar Novedad</button></div>`;
+                        contentHtml += `<div id="noveltyForm-${id}" class="sol-bloque sol-recuadro space-y-3"><p class="sol-subtitulo">Gestionar novedad</p><div><label for="noveltyReason-${id}" class="sol-label">Causa</label><select id="noveltyReason-${id}" data-request-id="${id}" class="novelty-input sol-input"><option value="" selected disabled>-- Seleccione --</option><option value="Error de empaque">Error de empaque</option><option value="Perdida en transporte">Pérdida en transporte</option><option value="Otro">Otro</option></select></div><div id="noveltyOtherDiv-${id}" class="hidden"><label for="noveltyOtherReason-${id}" class="sol-label">Especifique</label><input type="text" id="noveltyOtherReason-${id}" data-request-id="${id}" class="novelty-input sol-input"></div><div><label for="noveltySolution-${id}" class="sol-label">Solución</label><textarea id="noveltySolution-${id}" data-request-id="${id}" rows="3" class="novelty-input sol-input"></textarea></div><div class="sol-acciones">${boton('finalize_novelty', 'Finalizar novedad', 'pri', 'disabled')}</div></div>`;
                     }
                 }
             }
 
             if (role === 'requester' && req.status === 'shipped') {
-                contentHtml += `<div class="mt-4 border-t-2 pt-4 space-y-3">
-                    <h5 class="font-bold text-md">Confirmar recepción</h5>
+                contentHtml += `<div class="sol-bloque sol-recuadro space-y-3">
+                    <p class="sol-subtitulo">Confirmar recepción</p>
+                    <p class="sol-ayuda">Revisa que las cantidades recibidas sean correctas antes de finalizar.</p>
                     <div>
-                        <label class="block text-sm font-medium">Evidencia (imágenes/videos):</label>
-                        <input type="file" id="evidence-${req.id}" multiple accept="image/*,video/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100 cursor-pointer">
+                        <label for="evidence-${id}" class="sol-label">Evidencia (imágenes o videos)</label>
+                        <input type="file" id="evidence-${id}" multiple accept="image/*,video/*" class="sol-archivo">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium">Obs. de recepción:</label>
-                        <textarea id="receptionNotes-${req.id}" rows="2" class="w-full mt-1 border rounded-md p-2"></textarea>
+                        <label for="receptionNotes-${id}" class="sol-label">Observaciones de recepción</label>
+                        <textarea id="receptionNotes-${id}" rows="2" class="sol-input"></textarea>
                     </div>
-                    <button data-request-id="${req.id}" data-action="finalize_reception" class="action-btn w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-3 rounded-md">Finalizar Recepción</button>
+                    <div class="sol-acciones">${boton('finalize_reception', 'Finalizar recepción', 'pri')}</div>
                 </div>`;
             }
 
             const reqDate = req.deliveryDate ? new Date(req.deliveryDate + 'T00:00:00').toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' }) : 'No especificada';
             const creationDate = req.timestamp ? new Date(req.timestamp.seconds * 1000).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' }) : '';
-            
-            const requesterButtons = (role === 'requester' && req.status === 'pending') 
-                ? `<div class="flex flex-col gap-1">
-                       <button data-request-id="${req.id}" data-action="edit_my_request" class="action-btn bg-blue-600 text-white text-xs px-2 py-1 rounded-md">Editar</button>
-                       <button data-request-id="${req.id}" data-action="cancel" class="action-btn bg-red-600 text-white text-xs px-2 py-1 rounded-md">Cancelar</button>
-                   </div>` 
+
+            const requesterButtons = (role === 'requester' && req.status === 'pending')
+                ? `<div class="flex gap-2 mt-3">${boton('edit_my_request', 'Editar', 'sec', 'data-pequeno')}${boton('cancel', 'Cancelar', 'peligro', 'data-pequeno')}</div>`
                 : '';
 
+            // Línea de avance: Solicitada → Revisión → Nota de traslado → Envío → Recibida
+            const paso = pasoDeEstado(req.status);
+            const avanceHtml = paso === undefined ? '' : `
+                <div class="sol-pasos" title="${PASOS_TRASLADO.map((p, i) => (i < paso ? '✓ ' : i === paso ? '→ ' : '') + p).join('  ')}">
+                    ${PASOS_TRASLADO.map((p, i) => `<span class="${i < paso ? 'hecho' : i === paso ? 'actual' : ''}"></span>`).join('')}
+                </div>
+                <p class="sol-paso-texto">${paso >= 5 ? 'Proceso terminado' : `Paso ${paso + 1} de 5 · ${SITUACION_PASO[req.status] || PASOS_TRASLADO[paso]}`}</p>`;
+
+            const dato = (titulo, valor, extra = '') => `<div class="sol-dato ${extra}"><p class="sol-dato-titulo">${titulo}</p><p class="sol-dato-valor">${valor}</p></div>`;
             const infoBoxesHtml = `
-                <div class="space-y-1 mt-2">
-                    ${req.requesterNotes ? `<div class="p-2 bg-white rounded-md border text-xs"><p class="font-semibold text-gray-700">Nota Solicitante:</p><p class="italic text-gray-800">"${req.requesterNotes}"</p></div>` : ''}
-                    ${req.adminNotes ? `<div class="p-2 bg-white rounded-md border text-xs"><p class="font-semibold text-gray-700">Nota Admin (Revisión):</p><p class="italic text-gray-800">"${req.adminNotes}"</p></div>` : ''}
-                    ${req.ntNumber ? `<div class="p-2 bg-white rounded-md border text-xs"><p class="font-semibold text-gray-700">Nº Nota de Traslado:</p><p class="font-bold text-gray-900">${req.ntNumber}</p></div>` : ''}
-                    ${req.shippingNotes ? `<div class="p-2 bg-white rounded-md border text-xs"><p class="font-semibold text-gray-700">Obs. de Envío:</p><p class="italic text-gray-800">"${req.shippingNotes}"</p></div>` : ''}
-                    ${req.shippingInfo ? `<div class="p-2 bg-white rounded-md border text-xs"><p class="font-semibold text-gray-700">Guía de Envío:</p><p class="font-bold text-gray-900">${req.shippingInfo.hasTracking ? req.shippingInfo.trackingNumber : 'Sin guía'}</p></div>` : ''}
-                    ${(req.reception && req.reception.notes) ? `<div class="p-2 bg-white rounded-md border text-xs"><p class="font-semibold text-gray-700">Obs. de Recepción:</p><p class="italic text-gray-800">"${req.reception.notes}"</p></div>` : ''}
+                <div class="grid gap-2">
+                    ${req.requesterNotes ? dato('Nota del solicitante', esc(req.requesterNotes)) : ''}
+                    ${req.adminNotes ? dato('Nota de revisión', esc(req.adminNotes)) : ''}
+                    ${req.ntNumber ? dato('Nº de nota de traslado', `<b>${esc(req.ntNumber)}</b>`) : ''}
+                    ${req.shippingNotes ? dato('Observaciones de envío', esc(req.shippingNotes)) : ''}
+                    ${req.shippingInfo ? dato('Guía de envío', `<b>${req.shippingInfo.hasTracking ? esc(req.shippingInfo.trackingNumber) : 'Sin guía'}</b>`) : ''}
+                    ${(req.reception && req.reception.notes) ? dato('Observaciones de recepción', esc(req.reception.notes)) : ''}
                     ${(req.reception && req.reception.evidence && req.reception.evidence.length > 0) ? `
-                        <div class="p-2 bg-white rounded-md border text-xs">
-                            <p class="font-semibold text-gray-700">Evidencia de Recepción:</p>
+                        <div class="sol-dato">
+                            <p class="sol-dato-titulo">Evidencia de recepción</p>
                             <div class="mt-2 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
                                 ${req.reception.evidence.map(file => `
-                                    <a href="${file.url}" target="_blank" rel="noopener noreferrer" title="${file.name}" class="block">
-                                        ${file.type.startsWith('image/') ? 
-                                            `<img src="${file.url}" alt="${file.name}" class="w-full h-16 object-cover rounded-md border hover:opacity-80">` : 
-                                            `<div class="w-full h-16 bg-gray-200 rounded-md flex items-center justify-center border hover:bg-gray-300" title="Ver video: ${file.name}">
-                                                <svg class="w-8 h-8 text-gray-600" fill="currentColor" viewBox="0 0 20 20"><path d="M4 3.222v13.556l11-6.778-11-6.778z"></path></svg>
+                                    <a href="${esc(file.url)}" target="_blank" rel="noopener noreferrer" title="${esc(file.name)}" class="block">
+                                        ${String(file.type || '').startsWith('image/') ?
+                                            `<img src="${esc(file.url)}" alt="${esc(file.name)}" class="sol-evidencia">` :
+                                            `<div class="sol-evidencia sol-evidencia-video" title="Ver video: ${esc(file.name)}">
+                                                <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 20 20"><path d="M4 3.222v13.556l11-6.778-11-6.778z"></path></svg>
                                             </div>`
                                         }
                                     </a>
                                 `).join('')}
                             </div>
                         </div>` : ''}
-                    ${req.novelty ? `<div class="p-2 bg-yellow-100 rounded-md border border-yellow-300 text-xs"><p class="font-semibold text-yellow-800">Detalle de Novedad:</p><p class="text-gray-800"><b>Causa:</b> ${req.novelty.reason}</p><p class="italic text-gray-800"><b>Solución:</b> "${req.novelty.solution}"</p></div>` : ''}
+                    ${req.novelty ? dato('Detalle de la novedad', `<b>Causa:</b> ${esc(req.novelty.reason)}<br><b>Solución:</b> ${esc(req.novelty.solution)}`, 'sol-dato-novedad') : ''}
                 </div>`;
-            
+
             card.innerHTML = `
-                <div class="flex justify-between items-start">
-                    <div>
-                        <h4 class="font-semibold text-lg">${req.requesterName}</h4>
-                        <p class="text-sm text-gray-600">Para: <strong>${req.toWarehouse}</strong></p>
-                        <p class="text-xs text-gray-400">ID: ${req.id} | Creada: ${creationDate}</p>
-                        <p class="text-sm mt-1">Fecha: <b>${reqDate}</b></p>
-                        <span class="inline-block mt-2 px-2 py-1 text-xs font-bold rounded-full bg-gray-200 text-gray-800">${translateStatus(req.status, req)}</span>
+                <div class="flex justify-between items-start gap-3">
+                    <div class="min-w-0">
+                        <h4 class="sol-nombre">${esc(req.requesterName)}</h4>
+                        <p class="sol-para">Para: <b>${esc(req.toWarehouse)}</b></p>
                     </div>
-                    ${requesterButtons}
+                    <span class="sol-chip ${tonoEstado(req.status)}">${esc(translateStatus(req.status, req))}</span>
                 </div>
-                <div id="details-${req.id}" class="flex-grow ${isExpanded ? '' : 'hidden'} mt-4 pt-4 border-t">
+                <p class="sol-meta">ID ${id} · Creada ${esc(creationDate)} · Fecha ${esc(reqDate)}</p>
+                ${avanceHtml}
+                ${requesterButtons}
+                <div id="details-${id}" class="${isExpanded ? '' : 'hidden'} sol-detalle">
                     ${infoBoxesHtml}
-                    <h5 class="font-bold text-gray-700 mt-4 mb-2">Items:</h5>
-                    <ul class="space-y-2">${itemsHtml}</ul> 
+                    <p class="sol-subtitulo mt-4 mb-2">Productos</p>
+                    <ul class="space-y-2">${itemsHtml}</ul>
                     ${contentHtml}
                 </div>
-                <div class="text-center mt-2"><button data-request-id="${req.id}" class="toggle-details-btn text-sm font-semibold text-blue-600 hover:text-blue-800">Ver ${isExpanded ? 'menos' : 'más'}</button></div>
+                <button type="button" data-request-id="${id}" class="toggle-details-btn sol-ver">${isExpanded ? 'Ocultar detalle' : 'Ver detalle'}</button>
             `;
-            
+
             card.querySelectorAll('.action-btn').forEach(b => b.onclick = handleAdminAction);
             card.querySelectorAll('.toggle-details-btn').forEach(b => b.onclick = handleToggleDetails);
             card.querySelectorAll('.admin-qty-input').forEach(i => i.onchange = handleAdminQuantityChange);
             card.querySelectorAll('.reception-qty-input').forEach(i => i.onchange = () => {});
             card.querySelectorAll('.tracking-option').forEach(r => r.onchange = handleTrackingOptionChange);
-            
+
             card.querySelectorAll('.nt-checkbox').forEach(c => {
                 c.oninput = () => {
                     const reqStatus = allTransferRequests.find(r => r.id === c.dataset.requestId)?.status;
@@ -851,6 +990,8 @@ const allMyRequests = sortedRequests.filter(r =>
                         const finalizeBtn = document.querySelector(`#card-${c.dataset.requestId} button[data-action="finalize_processing"]`);
                         if(finalizeBtn) finalizeBtn.disabled = !allChecked;
                     }
+                    const fila = c.closest('.sol-item');
+                    if (fila) { fila.classList.toggle('ok', c.checked); fila.classList.toggle('falta', !c.checked); }
                 };
                 c.onchange = handleNtCheckboxChange;
             });
@@ -862,7 +1003,7 @@ const allMyRequests = sortedRequests.filter(r =>
             card.querySelectorAll('.novelty-input').forEach(i => {
                 i.oninput = () => validateNoveltyForm(i.dataset.requestId);
             });
-            
+
             return card;
         }
         async function uploadReceptionEvidence(requestId, files) {
@@ -1606,8 +1747,8 @@ const allMyRequests = sortedRequests.filter(r =>
             }
         }
 
-        function exportManagerReport() {
-            const dataToExport = lastFilteredRequests.length > 0 ? lastFilteredRequests : allTransferRequests;
+        function exportManagerReport(datos) {
+            const dataToExport = Array.isArray(datos) ? datos : (lastFilteredRequests.length > 0 ? lastFilteredRequests : allTransferRequests);
              if (dataToExport.length === 0) {
                 alert("No hay datos para exportar.");
                 return;
@@ -1668,7 +1809,12 @@ const allMyRequests = sortedRequests.filter(r =>
             if(dom.toWarehouse) dom.toWarehouse.innerHTML = '<option value="" selected disabled>-- Seleccione una bodega --</option>' + 
                                         warehouseOptions.map(w => `<option value="${w}">${w}</option>`).join('');
             
-            if (dom.exportExcelBtn) dom.exportExcelBtn.addEventListener('click', exportManagerReport);
+            if (dom.exportExcelBtn) dom.exportExcelBtn.addEventListener('click', () => {
+                // Exporta exactamente lo que se ve en el Historial, con sus filtros
+                const historial = applyFilters(allTransferRequests.filter(r => ['completed', 'completed_incomplete', 'novelty_review', 'cancelled'].includes(r.status)), dom.adminHistorySearchId, dom.adminHistoryDateFrom, dom.adminHistoryDateTo);
+                if (!historial.length) return alert('No hay traslados en el historial con esos filtros.');
+                exportManagerReport(historial);
+            });
             if (dom.uploadProductsBtn) dom.uploadProductsBtn.addEventListener('click', handleProductUpload);
             if (dom.transferForm) dom.transferForm.addEventListener('submit', handleSubmitTransferForm);
             if (dom.searchInput) dom.searchInput.addEventListener('input', () => {
