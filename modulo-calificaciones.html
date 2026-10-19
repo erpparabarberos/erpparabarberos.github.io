@@ -81,7 +81,6 @@
   <div id="dashboard-content" class="w-full px-5 md:px-8 py-6 space-y-5 hidden">
     <header>
       <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight leading-tight uppercase">PANEL DE CONTROL ATENCIÓN AL CLIENTE</h1>
-      <p class="ayuda mt-1">Análisis de rendimiento de asesores virtuales</p>
     </header>
 
     <!-- Filtros -->
@@ -90,16 +89,16 @@
         <div><label for="advisor-filter" class="etiqueta">Asesor</label><select id="advisor-filter" class="campo"><option value="">Todos los asesores</option></select></div>
         <div><label for="month-filter" class="etiqueta">Mes</label><input id="month-filter" type="month" class="campo" /></div>
         <div><label for="date-filter" class="etiqueta">Día</label><input id="date-filter" type="date" class="campo" /></div>
-        <div class="flex items-center gap-3"><button id="limpiar-filtros" class="btn btn-blanco">Limpiar filtros</button><p id="vista-actual" class="ayuda leading-snug"></p></div>
+        <div class="flex items-center gap-3"><button id="limpiar-filtros" class="btn btn-blanco">Limpiar filtros</button><p id="vista-actual" class="hidden"></p></div>
       </div>
     </div>
 
     <!-- Indicadores -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-      <div class="card kpi"><p class="kpi-titulo">Calificación promedio</p><p id="avg-rating" class="kpi-num text-yellow-500">N/A</p><p id="avg-rating-sub" class="kpi-sub">de 5 estrellas</p></div>
-      <div class="card kpi"><p class="kpi-titulo">Total de respuestas</p><p id="total-ratings" class="kpi-num text-slate-900">0</p><p id="total-ratings-sub" class="kpi-sub"></p></div>
-      <div class="card kpi"><p class="kpi-titulo">Asesores activos</p><p id="total-advisors" class="kpi-num text-emerald-500">0</p><p class="kpi-sub">Con al menos una calificación</p></div>
-      <div class="card kpi"><p class="kpi-titulo">Casos por contactar</p><p id="low-ratings" class="kpi-num text-red-500">0</p><p class="kpi-sub">Calificaciones de 1 y 2 sin solucionar</p></div>
+      <div class="card kpi"><p class="kpi-titulo">Calificación promedio</p><p id="avg-rating" class="kpi-num text-yellow-500">N/A</p></div>
+      <div class="card kpi"><p class="kpi-titulo">Total de respuestas</p><p id="total-ratings" class="kpi-num text-slate-900">0</p></div>
+      <div class="card kpi"><p class="kpi-titulo">Asesores activos</p><p id="total-advisors" class="kpi-num text-emerald-500">0</p></div>
+      <div class="card kpi"><p class="kpi-titulo">Casos por contactar</p><p id="low-ratings" class="kpi-num text-red-500">0</p></div>
     </div>
 
     <div class="grid grid-cols-1 xl:grid-cols-5 gap-5">
@@ -120,7 +119,7 @@
     <!-- Calificaciones recientes -->
     <div>
       <div class="mb-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-        <div><h2 class="seccion-titulo">Calificaciones recientes</h2><p id="cuenta-recientes" class="ayuda"></p></div>
+        <h2 class="seccion-titulo">Calificaciones recientes</h2>
         <div class="flex items-center gap-2">
           <button id="export-excel-button" class="btn btn-verde">Descargar Excel</button>
           <button id="export-pdf-button" class="btn btn-blanco">Descargar PDF</button>
@@ -133,7 +132,7 @@
 
     <!-- Casos para contactar -->
     <div>
-      <div class="mb-3"><h2 class="seccion-titulo">Casos para contactar</h2><p class="ayuda">Clientes que calificaron con 1 o 2 estrellas y todavía no se han contactado.</p></div>
+      <div class="mb-3"><h2 class="seccion-titulo">Casos para contactar</h2></div>
       <div class="envoltura-tabla">
         <table class="tabla"><thead><tr><th>Asesor</th><th class="centro">Calificación</th><th>Comentario del cliente</th><th>Teléfono</th><th>Fecha</th><th></th></tr></thead><tbody id="critical-container"></tbody></table>
       </div>
@@ -274,7 +273,6 @@
       renderAsesores(ratings);
 
       // Calificaciones recientes
-      $("cuenta-recientes").textContent = `${ratings.length} ${ratings.length === 1 ? 'calificación' : 'calificaciones'}`;
       $("ratings-list-container").innerHTML = ratings.map(r => {
         const estado = !esCritico(r) ? '<span class="estado estado-ok">Sin novedad</span>' : r.resolved ? '<span class="estado estado-solucionado">Solucionado</span>' : '<span class="estado estado-pendiente">Pendiente</span>';
         return `<tr>
@@ -334,7 +332,6 @@
       const avg = total ? (ratings.reduce((s, r) => s + (r.rating || 0), 0) / total).toFixed(1) : "N/A";
       $("avg-rating").textContent = avg;
       $("total-ratings").textContent = total;
-      $("total-ratings-sub").textContent = total ? `${Math.round(ratings.filter(r => (r.rating || 0) >= 4).length / total * 100)}% con 4 o 5 estrellas` : 'Sin respuestas';
       $("total-advisors").textContent = new Set(ratings.map(r => r.advisorId)).size;
       $("low-ratings").textContent = ratings.filter(r => esCritico(r) && !r.resolved).length;
 
