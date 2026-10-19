@@ -5,155 +5,174 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ATENCIÓN AL CLIENTE</title>
   <link rel="icon" type="image/png" sizes="32x32" href="https://parabarberos.github.io/1.jpg">
-  
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+
+  <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
 
   <style>
-    body { font-family: "Inter", sans-serif; background-color: #f8fafc; color: #111827; margin: 0; }
+    :root { --tinta: #0f172a; --tinta-2: #334155; --gris: #64748b; --gris-claro: #94a3b8; --linea: #e2e8f0; --linea-2: #eef2f7; --radio: 8px; }
+    body { font-family: "Inter", sans-serif; background-color: #f8fafc; color: var(--tinta); margin: 0; }
     ::-webkit-scrollbar { height: 8px; width: 8px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-    .card { background-color: #ffffff; border: 1px solid #e5e7eb; box-shadow: 0 10px 25px rgba(15, 23, 42, 0.04); border-radius: 0.9rem; }
-    input, select { background-color: #f9fafb !important; color: #111827 !important; border-color: #d1d5db !important; }
-    .low-cases-grid { display: grid; grid-template-columns: 1.8fr 1fr 1fr 125px; align-items: center; column-gap: 1rem; }
-  /* Fix para proteger los botones del editor de texto (Quill) */
-    .ql-toolbar button {
-        background-color: transparent !important;
-        padding: 3px 5px !important;
-    }
-    .ql-toolbar button:hover, .ql-toolbar .ql-active {
-        background-color: #f0f0f0 !important;
-    }
-  
+
+    .card { background: #fff; border: 1px solid var(--linea); border-radius: var(--radio); box-shadow: 0 4px 14px rgba(15, 23, 42, .04); }
+    .seccion-titulo { font-size: 16px; font-weight: 700; color: var(--tinta); }
+    .ayuda { font-size: 13px; color: var(--gris); }
+    .etiqueta { display: block; margin-bottom: 6px; font-size: 13px; font-weight: 600; color: var(--tinta-2); }
+    .campo { width: 100%; height: 42px; padding: 0 12px; background-color: #fff; border: 1px solid var(--linea); border-radius: var(--radio); font-size: 14px; color: var(--tinta); outline: none; }
+    textarea.campo { height: auto; padding: 10px 12px; resize: vertical; }
+    select.campo { -webkit-appearance: none; appearance: none; padding-right: 34px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 10px center; background-size: 16px; }
+    .campo:focus { border-color: var(--gris-claro); box-shadow: 0 0 0 3px rgba(15, 23, 42, .06); }
+
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 40px; padding: 0 16px; border-radius: var(--radio); font-size: 13px; font-weight: 600; border: 1px solid transparent; cursor: pointer; white-space: nowrap; }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+    .btn-oscuro { background: var(--tinta); color: #fff; } .btn-oscuro:hover:not(:disabled) { background: #1e293b; }
+    .btn-blanco { background: #fff; border-color: var(--linea); color: var(--tinta); } .btn-blanco:hover { background: #f8fafc; border-color: #cbd5e1; }
+    .btn-verde { background: #10b981; color: #fff; } .btn-verde:hover { background: #059669; }
+    .btn-pequeno { height: 32px; padding: 0 12px; font-size: 12px; }
+    .btn-icono { width: 34px; height: 34px; padding: 0; color: var(--gris); background: transparent; border-color: transparent; }
+    .btn-icono:hover { color: var(--tinta); border-color: var(--linea); background: #fff; }
+
+    .kpi { padding: 16px 18px; }
+    .kpi-titulo { font-size: 13px; font-weight: 600; color: var(--tinta-2); }
+    .kpi-num { margin-top: 4px; font-size: 34px; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; }
+    .kpi-sub { margin-top: 2px; font-size: 12px; color: var(--gris); }
+
+    .tabla { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; }
+    .tabla th { position: sticky; top: 0; z-index: 1; background: #f8fafc; color: var(--gris); font-size: 12px; font-weight: 600; text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--linea); white-space: nowrap; }
+    .tabla td { padding: 10px 12px; border-bottom: 1px solid var(--linea-2); vertical-align: middle; color: var(--tinta-2); }
+    .tabla tbody tr:hover td { background: #f8fafc; }
+    .tabla tbody tr:last-child td { border-bottom: 0; }
+    .tabla .num { text-align: right; font-variant-numeric: tabular-nums; }
+    .tabla .centro { text-align: center; }
+    .comentario { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; max-width: 460px; }
+    .envoltura-tabla { max-height: 420px; overflow: auto; border: 1px solid var(--linea); border-radius: var(--radio); background: #fff; }
+
+    .estado { display: inline-flex; align-items: center; height: 24px; padding: 0 9px; border-radius: 999px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+    .estado-ok { background: #ecfdf5; color: #047857; }
+    .estado-pendiente { background: #fef2f2; color: #dc2626; }
+    .estado-solucionado { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
+    .nota-alta, .tabla td.nota-alta { color: #10b981; } .nota-media, .tabla td.nota-media { color: #f59e0b; } .nota-baja, .tabla td.nota-baja { color: #ef4444; }
+    .tabla td.text-red-500 { color: #ef4444; }
+    .vacio { padding: 22px 12px; text-align: center; font-size: 13px; color: var(--gris); }
+
+    .ventana-fondo { position: fixed; inset: 0; z-index: 50; display: none; align-items: flex-start; justify-content: center; padding: 40px 12px; background: rgba(15, 23, 42, .55); overflow-y: auto; }
+    .ventana-fondo.abierta { display: flex; }
+    .ventana { width: 100%; max-width: 560px; background: #fff; border: 1px solid var(--linea); border-radius: var(--radio); box-shadow: 0 20px 40px rgba(15, 23, 42, .2); }
+    .ventana-cabecera { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 20px; border-bottom: 1px solid var(--linea); }
+    .ventana-cuerpo { padding: 20px; }
   </style>
 </head>
 
-<body class="min-h-screen p-4 md:p-8">
+<body class="min-h-screen">
   <div id="loading-spinner" class="fixed inset-0 bg-slate-900/80 flex items-center justify-center z-50">
     <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-yellow-400"></div>
   </div>
 
-  <div id="dashboard-content" class="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 hidden">
-    <header class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
-      <div>
-        <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight leading-tight uppercase">PANEL DE CONTROL ATENCIÓN AL CLIENTE</h1>
-        <p class="text-xs md:text-sm text-gray-500 mt-1 uppercase">Análisis de rendimiento de asesores virtuales</p>
-      </div>
+  <div id="sin-permiso" class="hidden p-10 text-center ayuda"></div>
+
+  <div id="dashboard-content" class="w-full px-5 md:px-8 py-6 space-y-5 hidden">
+    <header>
+      <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight leading-tight uppercase">PANEL DE CONTROL ATENCIÓN AL CLIENTE</h1>
+      <p class="ayuda mt-1">Análisis de rendimiento de asesores virtuales</p>
     </header>
 
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-      <div class="card rounded-xl px-5 py-4 flex flex-col">
-        <p class="text-[12px] text-gray-500 mb-1 uppercase tracking-wide">Filtrar por asesor</p>
-        <select id="advisor-filter" class="mt-1 p-2 rounded-lg border text-sm"><option value="">Todos los asesores</option></select>
-      </div>
-      <div class="card rounded-xl px-5 py-4 flex flex-col">
-        <p class="text-[12px] text-gray-500 mb-1 uppercase tracking-wide">Filtrar por mes</p>
-        <input id="month-filter" type="month" class="mt-1 p-2 rounded-lg border text-sm" />
-      </div>
-      <div class="card rounded-xl px-5 py-4 flex flex-col">
-        <p class="text-[12px] text-gray-500 mb-1 uppercase tracking-wide">Filtrar por fecha (día)</p>
-        <input id="date-filter" type="date" class="mt-1 p-2 rounded-lg border text-sm" />
-      </div>
-      <div class="card rounded-xl px-5 py-4 flex flex-col justify-center">
-        <p class="text-[12px] text-gray-500 mb-1 uppercase tracking-wide">Vista actual</p>
-        <p class="text-sm text-gray-900 font-semibold uppercase">Desempeño Global</p>
+    <!-- Filtros -->
+    <div class="card p-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end">
+        <div><label for="advisor-filter" class="etiqueta">Asesor</label><select id="advisor-filter" class="campo"><option value="">Todos los asesores</option></select></div>
+        <div><label for="month-filter" class="etiqueta">Mes</label><input id="month-filter" type="month" class="campo" /></div>
+        <div><label for="date-filter" class="etiqueta">Día</label><input id="date-filter" type="date" class="campo" /></div>
+        <div class="flex items-center gap-3"><button id="limpiar-filtros" class="btn btn-blanco">Limpiar filtros</button><p id="vista-actual" class="ayuda leading-snug"></p></div>
       </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-      <div class="card rounded-xl px-5 py-4 text-center">
-        <p class="text-xs text-gray-500 uppercase tracking-wide">Calificación promedio</p>
-        <p id="avg-rating" class="mt-2 text-4xl font-extrabold text-yellow-500">N/A</p>
-      </div>
-      <div class="card rounded-xl px-5 py-4 text-center">
-        <p class="text-xs text-gray-500 uppercase tracking-wide">Total de respuestas</p>
-        <p id="total-ratings" class="mt-2 text-4xl font-extrabold text-slate-900">0</p>
-      </div>
-      <div class="card rounded-xl px-5 py-4 text-center">
-        <p class="text-xs text-gray-500 uppercase tracking-wide">Asesores activos</p>
-        <p id="total-advisors" class="mt-2 text-4xl font-extrabold text-emerald-500">0</p>
-      </div>
-      <div class="card rounded-xl px-5 py-4 text-center">
-        <p class="text-xs text-gray-500 uppercase tracking-wide">Comentarios negativos</p>
-        <p id="low-ratings" class="mt-2 text-4xl font-extrabold text-red-500">0</p>
-      </div>
+    <!-- Indicadores -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div class="card kpi"><p class="kpi-titulo">Calificación promedio</p><p id="avg-rating" class="kpi-num text-yellow-500">N/A</p><p id="avg-rating-sub" class="kpi-sub">de 5 estrellas</p></div>
+      <div class="card kpi"><p class="kpi-titulo">Total de respuestas</p><p id="total-ratings" class="kpi-num text-slate-900">0</p><p id="total-ratings-sub" class="kpi-sub"></p></div>
+      <div class="card kpi"><p class="kpi-titulo">Asesores activos</p><p id="total-advisors" class="kpi-num text-emerald-500">0</p><p class="kpi-sub">Con al menos una calificación</p></div>
+      <div class="card kpi"><p class="kpi-titulo">Casos por contactar</p><p id="low-ratings" class="kpi-num text-red-500">0</p><p class="kpi-sub">Calificaciones de 1 y 2 sin solucionar</p></div>
     </div>
 
-    <div class="card rounded-2xl px-6 py-6 mb-10">
-      <h2 class="text-lg font-semibold text-gray-900 mb-4 uppercase">Distribución de Puntuaciones</h2>
-      <div class="h-64 md:h-72"><canvas id="rating-distribution-chart"></canvas></div>
-    </div>
-
-    <div class="mb-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-      <h2 class="text-lg font-semibold text-gray-900 uppercase">Calificaciones Recientes</h2>
-      <div class="flex items-center gap-2">
-        <button id="export-excel-button" class="px-3 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-xs font-semibold text-white transition">Descargar Excel</button>
-        <button id="export-pdf-button" class="px-3 py-2 rounded-lg border border-slate-300 hover:bg-slate-50 text-xs font-semibold text-slate-900 transition">Descargar PDF</button>
+    <div class="grid grid-cols-1 xl:grid-cols-5 gap-5">
+      <!-- Distribución -->
+      <div class="card p-5 xl:col-span-3">
+        <h2 class="seccion-titulo mb-3">Distribución de puntuaciones</h2>
+        <div class="h-64 md:h-72 relative"><canvas id="rating-distribution-chart"></canvas></div>
       </div>
-    </div>
-
-    <div class="card rounded-2xl p-4 overflow-hidden mb-10">
-      <div class="max-h-[380px] overflow-y-auto">
-        <div class="hidden md:grid grid-cols-[2fr,1fr,3fr,1.5fr,70px,40px] text-[11px] font-semibold text-gray-400 px-4 pb-2 border-b border-slate-100 sticky top-0 bg-white z-10">
-          <span>ASESOR</span><span class="text-center">CALIFICACIÓN</span><span>COMENTARIO</span><span class="text-center">FECHA</span><span class="text-center">ESTADO</span><span class="text-center">ACCIÓN</span>
-        </div>
-        <div id="ratings-list-container" class="space-y-3 pr-1 pb-2 pt-2"></div>
-      </div>
-    </div>
-    <section class="mt-10 mb-10">
-      <div class="flex items-center justify-between mb-3">
-        <h2 class="text-2xl font-bold text-slate-900 uppercase">Casos para Contactar</h2>
-      </div>
-      <div class="card rounded-2xl p-4">
-        <div class="max-h-[380px] overflow-y-auto">
-          <div class="low-cases-grid text-[11px] font-semibold text-slate-500 px-4 pb-2 border-b border-slate-100 sticky top-0 bg-white z-10">
-            <span class="pl-4">ASESOR</span>
-            <span>TELÉFONO</span>
-            <span>FECHA REPORTE</span>
-            <span class="text-center">ACCIÓN</span>
-          </div>
-          <div class="pr-1 px-4">
-            <div id="critical-container" class="py-3 space-y-3"></div>
-          </div>
+      <!-- Por asesor -->
+      <div class="card p-5 xl:col-span-2">
+        <h2 class="seccion-titulo mb-3">Desempeño por asesor</h2>
+        <div class="envoltura-tabla" style="max-height: 288px;">
+          <table class="tabla"><thead><tr><th>Asesor</th><th class="num">Respuestas</th><th class="num">Promedio</th><th class="num">4 y 5 ★</th><th class="num">Por contactar</th></tr></thead><tbody id="tabla-asesores"></tbody></table>
         </div>
       </div>
-    </section>
-
-
-    <div class="mt-6 mb-10">
-      <h2 class="text-lg font-semibold text-gray-900 mb-3 uppercase">Casos Solucionados</h2>
-      <div id="resolved-container" class="card rounded-2xl p-4 space-y-3 max-h-[380px] overflow-y-auto"></div>
     </div>
-  </div>
-  
-  <div id="view-rating-modal" class="fixed inset-0 bg-slate-900/60 z-50 hidden items-center justify-center p-4">
-    <div class="bg-white rounded-[24px] max-w-lg w-full p-8 relative">
-      <button type="button" id="close-view-rating-modal" class="absolute top-6 right-6 text-gray-400 hover:text-gray-900">✕</button>
-      <div id="detail-content" class="space-y-4"></div>
-      
-      <div id="detail-resolution-block" class="hidden mt-6 pt-4 border-t border-slate-200">
-        <h4 class="text-xs font-bold text-emerald-600 uppercase mb-2">Detalle de la Solución</h4>
-        <p class="text-sm font-semibold text-slate-900">Por: <span id="detail-resolved-by" class="font-normal text-slate-600"></span></p>
-        <p class="text-sm text-slate-700 mt-2 p-3 bg-emerald-50 rounded-lg" id="detail-resolution-text"></p>
-        <p class="text-[10px] text-slate-400 mt-2" id="detail-resolved-at"></p>
+
+    <!-- Calificaciones recientes -->
+    <div>
+      <div class="mb-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <div><h2 class="seccion-titulo">Calificaciones recientes</h2><p id="cuenta-recientes" class="ayuda"></p></div>
+        <div class="flex items-center gap-2">
+          <button id="export-excel-button" class="btn btn-verde">Descargar Excel</button>
+          <button id="export-pdf-button" class="btn btn-blanco">Descargar PDF</button>
+        </div>
+      </div>
+      <div class="envoltura-tabla">
+        <table class="tabla"><thead><tr><th>Asesor</th><th class="centro">Calificación</th><th>Comentario</th><th>Fecha</th><th class="centro">Estado</th><th></th></tr></thead><tbody id="ratings-list-container"></tbody></table>
+      </div>
+    </div>
+
+    <!-- Casos para contactar -->
+    <div>
+      <div class="mb-3"><h2 class="seccion-titulo">Casos para contactar</h2><p class="ayuda">Clientes que calificaron con 1 o 2 estrellas y todavía no se han contactado.</p></div>
+      <div class="envoltura-tabla">
+        <table class="tabla"><thead><tr><th>Asesor</th><th class="centro">Calificación</th><th>Comentario del cliente</th><th>Teléfono</th><th>Fecha</th><th></th></tr></thead><tbody id="critical-container"></tbody></table>
+      </div>
+    </div>
+
+    <!-- Casos solucionados -->
+    <div>
+      <div class="mb-3"><h2 class="seccion-titulo">Casos solucionados</h2></div>
+      <div class="envoltura-tabla">
+        <table class="tabla"><thead><tr><th>Asesor</th><th class="centro">Calificación</th><th>Solución</th><th>Por</th><th>Fecha solución</th><th></th></tr></thead><tbody id="resolved-container"></tbody></table>
       </div>
     </div>
   </div>
 
-  <div id="solution-modal" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-[24px] w-full max-w-md p-8 text-gray-900">
-      <h2 class="text-xl font-bold mb-4">Solucionar Caso</h2>
-      <input id="solution-solver-name" type="text" placeholder="Tu nombre" class="w-full mb-3 p-3 border rounded-xl" />
-      <textarea id="solution-description" rows="3" placeholder="Descripción de la solución" class="w-full mb-4 p-3 border rounded-xl resize-none"></textarea>
-      <div class="flex justify-end gap-2">
-        <button id="solution-cancel-button" class="px-4 py-2 border rounded-xl text-sm font-bold">Cancelar</button>
-        <button id="solution-save-button" class="px-4 py-2 bg-slate-900 text-white rounded-xl text-sm font-bold">Guardar</button>
+  <!-- Ventana: detalle de una calificación -->
+  <div id="view-rating-modal" class="ventana-fondo">
+    <div class="ventana">
+      <div class="ventana-cabecera"><h3 class="seccion-titulo">Detalle de la calificación</h3><button type="button" id="close-view-rating-modal" class="btn btn-blanco btn-pequeno">Cerrar</button></div>
+      <div class="ventana-cuerpo">
+        <div id="detail-content" class="space-y-3"></div>
+        <div id="detail-resolution-block" class="hidden mt-5 pt-4 border-t border-slate-200">
+          <h4 class="text-xs font-bold text-emerald-600 uppercase mb-2">Detalle de la solución</h4>
+          <p class="text-sm font-semibold text-slate-900">Por: <span id="detail-resolved-by" class="font-normal text-slate-600"></span></p>
+          <p class="text-sm text-slate-700 mt-2 p-3 bg-emerald-50 rounded-lg whitespace-pre-line" id="detail-resolution-text"></p>
+          <p class="text-xs text-slate-400 mt-2" id="detail-resolved-at"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ventana: solucionar caso -->
+  <div id="solution-modal" class="ventana-fondo">
+    <div class="ventana" style="max-width: 480px;">
+      <div class="ventana-cabecera"><h3 class="seccion-titulo">Solucionar caso</h3><button type="button" id="solution-cancel-button" class="btn btn-blanco btn-pequeno">Cerrar</button></div>
+      <div class="ventana-cuerpo space-y-4">
+        <div id="solution-resumen" class="text-sm text-slate-600"></div>
+        <div><label for="solution-solver-name" class="etiqueta">Solucionado por</label><input id="solution-solver-name" type="text" class="campo" /></div>
+        <div><label for="solution-description" class="etiqueta">¿Qué se hizo?</label><textarea id="solution-description" rows="4" placeholder="Ej: Se llamó al cliente y se le cambió el producto" class="campo"></textarea></div>
+        <div class="flex justify-end"><button id="solution-save-button" class="btn btn-oscuro">Guardar solución</button></div>
       </div>
     </div>
   </div>
@@ -161,7 +180,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, collection, query, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, collection, query, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDkH2_E7t07SWWH1SZr77BFlNp6RQTDDDY",
@@ -176,20 +195,45 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
     const PUBLIC_RATINGS_COLLECTION = `artifacts/${firebaseConfig.projectId}/public/data/whatsapp_ratings`;
+    // Roles que pueden ver el panel (las reglas de Firestore exigen lo mismo)
+    const ROLES_PERMITIDOS = ['admin', 'ventas', 'atencion', 'atención'];
 
     let allRatings = [];
     let currentFilteredRatings = [];
     let chartInstance = null;
     let resolveTargetId = null;
+    let nombreUsuario = '';
 
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        startRealtimeDataListener();
-        document.getElementById("dashboard-content").classList.remove("hidden");
-        document.getElementById("loading-spinner").classList.add("hidden");
-      } else {
-        window.parent.location.href = 'index.html';
+    const $ = (id) => document.getElementById(id);
+    // Los comentarios los escriben los clientes en una página pública: siempre se muestran escapados
+    const esc = (v) => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const fechaCorta = (t) => t ? String(t).replace('T', ' ').substring(0, 16) : '—';
+    const claseNota = (n) => n >= 4 ? 'nota-alta' : n === 3 ? 'nota-media' : 'nota-baja';
+    const esCritico = (r) => (r.rating || 0) <= 2;
+    const ojo = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>';
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.parent.location.href = 'index.html'; return; }
+      try {
+        const perfil = await getDoc(doc(db, 'usuarios', String(user.email || '').toLowerCase()));
+        const rol = perfil.exists() ? String(perfil.data().rol || '').toLowerCase().trim() : '';
+        if (!ROLES_PERMITIDOS.includes(rol)) {
+          $("loading-spinner").classList.add("hidden");
+          $("sin-permiso").textContent = 'No tienes permiso para ver el panel de Atención al cliente.';
+          $("sin-permiso").classList.remove("hidden");
+          return;
+        }
+        nombreUsuario = perfil.data().nombre || user.email.split('@')[0];
+      } catch (e) {
+        console.error('No se pudo validar el rol:', e);
+        $("loading-spinner").classList.add("hidden");
+        $("sin-permiso").textContent = 'No se pudo validar tu usuario. Recarga la página o vuelve a iniciar sesión.';
+        $("sin-permiso").classList.remove("hidden");
+        return;
       }
+      startRealtimeDataListener();
+      $("dashboard-content").classList.remove("hidden");
+      $("loading-spinner").classList.add("hidden");
     });
 
     function startRealtimeDataListener() {
@@ -204,298 +248,303 @@
 
     function filterAndDisplay() {
       let f = [...allRatings];
-      const adv = document.getElementById("advisor-filter").value;
-      const mon = document.getElementById("month-filter").value;
-      const day = document.getElementById("date-filter").value;
+      const adv = $("advisor-filter").value;
+      const mon = $("month-filter").value;
+      const day = $("date-filter").value;
 
-      if(adv) f = f.filter(r => r.advisorId === adv);
-      if(mon) f = f.filter(r => r.timestamp && r.timestamp.startsWith(mon));
-      if(day) f = f.filter(r => r.timestamp && r.timestamp.startsWith(day));
+      if (adv) f = f.filter(r => r.advisorId === adv);
+      if (mon) f = f.filter(r => r.timestamp && r.timestamp.startsWith(mon));
+      if (day) f = f.filter(r => r.timestamp && r.timestamp.startsWith(day));
 
-      f.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+      f.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
       currentFilteredRatings = f;
+
+      // Qué se está viendo
+      const partes = [];
+      if (adv) partes.push($("advisor-filter").selectedOptions[0].textContent);
+      if (mon) partes.push(new Date(mon + '-15').toLocaleDateString('es-CO', { month: 'long', year: 'numeric' }));
+      if (day) partes.push(new Date(day + 'T12:00:00').toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' }));
+      $("vista-actual").textContent = partes.length ? `Viendo: ${partes.join(' · ')}` : 'Viendo: desempeño global';
+
       renderAll(f);
     }
 
     function renderAll(ratings) {
       updateStats(ratings);
-      
-      // Lista Principal
-      const list = document.getElementById("ratings-list-container");
-      list.innerHTML = ratings.map(r => `
-        <div class="rounded-xl bg-white border border-slate-200 px-4 py-3 grid grid-cols-1 md:grid-cols-[2fr,1fr,3fr,1.5fr,70px,40px] items-center">
-          <div class="font-bold text-sm">${r.advisorName || 'Asesor'}</div>
-          <div class="text-center font-black ${r.rating <= 2 ? 'text-red-500':'text-emerald-500'}">${r.rating}/5</div>
-          <div class="text-xs text-slate-500 truncate pr-4">${r.comments || 'Sin comentarios'}</div>
-          <div class="text-[10px] text-center">${r.timestamp?.replace("T"," ").substring(0,16)}</div>
-          <div class="text-[9px] font-bold text-center uppercase ${r.resolved ? 'text-emerald-500':'text-red-400'}">${r.rating > 2 ? 'OK' : (r.resolved ? 'LISTO' : 'PEND')}</div>
-          <button onclick="window.viewItem('${r.id}')" class="text-slate-400 hover:text-black flex justify-center">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-          </button>
-        </div>
-      `).join('');
+      renderAsesores(ratings);
 
-      // Críticos (Casos para Contactar)
-      const critContainer = document.getElementById("critical-container");
-      critContainer.innerHTML = ratings.filter(r => r.rating <= 2 && !r.resolved).map(r => `
-        <div class="low-cases-grid border border-red-100 bg-red-50/30 p-4 rounded-xl">
-          <div class="text-sm font-bold pl-1">${r.advisorName} <span class="text-red-500">${r.rating}★</span></div>
-          <div class="text-xs font-mono font-bold">${r.clientPhone || 'N/A'}</div>
-          <div class="text-[10px]">${r.timestamp?.substring(0,10)}</div>
-          <div class="flex items-center justify-center gap-2">
-            <button onclick="window.viewItem('${r.id}')" class="text-slate-400 hover:text-black transition" title="Ver detalles">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-            </button>
-            <button onclick="window.solItem('${r.id}')" class="bg-slate-900 text-white text-[10px] px-3 py-2 rounded-lg font-bold whitespace-nowrap">SOLUCIONAR</button>
-          </div>
-        </div>
-      `).join('');
+      // Calificaciones recientes
+      $("cuenta-recientes").textContent = `${ratings.length} ${ratings.length === 1 ? 'calificación' : 'calificaciones'}`;
+      $("ratings-list-container").innerHTML = ratings.map(r => {
+        const estado = !esCritico(r) ? '<span class="estado estado-ok">Sin novedad</span>' : r.resolved ? '<span class="estado estado-solucionado">Solucionado</span>' : '<span class="estado estado-pendiente">Pendiente</span>';
+        return `<tr>
+          <td class="font-semibold text-slate-900 whitespace-nowrap">${esc(r.advisorName || 'Asesor')}</td>
+          <td class="centro font-extrabold ${claseNota(r.rating)}">${esc(r.rating)}/5</td>
+          <td><span class="comentario" title="${esc(r.comments || '')}">${esc(r.comments || 'Sin comentarios')}</span></td>
+          <td class="whitespace-nowrap">${esc(fechaCorta(r.timestamp))}</td>
+          <td class="centro">${estado}</td>
+          <td class="centro"><button class="btn btn-icono" data-ver="${esc(r.id)}" title="Ver detalle">${ojo}</button></td>
+        </tr>`;
+      }).join('') || '<tr><td colspan="6" class="vacio">No hay calificaciones con estos filtros.</td></tr>';
 
-      // Solucionados
-      const resContainer = document.getElementById("resolved-container");
-      resContainer.innerHTML = ratings.filter(r => r.resolved).map(r => `
-        <div class="p-3 border bg-emerald-50/20 rounded-xl text-xs">
-          <div class="flex justify-between items-center font-bold">
-            <span>${r.advisorName} (${r.rating}★)</span>
-            <div class="flex items-center gap-3">
-              <span class="text-emerald-600">SOLUCIONADO</span>
-              <button onclick="window.viewItem('${r.id}')" class="text-slate-400 hover:text-black transition" title="Ver detalles">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-              </button>
-            </div>
-          </div>
-          <p class="mt-1">Solución: ${r.resolution} - <span class="text-gray-400">Por: ${r.resolvedBy}</span></p>
-        </div>
-      `).join('');}
+      // Casos para contactar
+      $("critical-container").innerHTML = ratings.filter(r => esCritico(r) && !r.resolved).map(r => `<tr>
+          <td class="font-semibold text-slate-900 whitespace-nowrap">${esc(r.advisorName)}</td>
+          <td class="centro font-extrabold nota-baja">${esc(r.rating)}★</td>
+          <td><span class="comentario">${esc(r.comments || 'Sin comentarios')}</span></td>
+          <td class="font-mono font-semibold whitespace-nowrap">${esc(r.clientPhone || 'N/A')}</td>
+          <td class="whitespace-nowrap">${esc(fechaCorta(r.timestamp))}</td>
+          <td><div class="flex items-center justify-end gap-1"><button class="btn btn-icono" data-ver="${esc(r.id)}" title="Ver detalle">${ojo}</button><button class="btn btn-oscuro btn-pequeno" data-solucionar="${esc(r.id)}">Solucionar</button></div></td>
+        </tr>`).join('') || '<tr><td colspan="6" class="vacio">No hay casos pendientes por contactar.</td></tr>';
+
+      // Casos solucionados
+      $("resolved-container").innerHTML = ratings.filter(r => r.resolved).map(r => `<tr>
+          <td class="font-semibold text-slate-900 whitespace-nowrap">${esc(r.advisorName)}</td>
+          <td class="centro font-extrabold ${claseNota(r.rating)}">${esc(r.rating)}★</td>
+          <td><span class="comentario">${esc(r.resolution || '')}</span></td>
+          <td class="whitespace-nowrap">${esc(r.resolvedBy || '')}</td>
+          <td class="whitespace-nowrap">${esc(fechaCorta(r.resolvedAt))}</td>
+          <td class="centro"><button class="btn btn-icono" data-ver="${esc(r.id)}" title="Ver detalle">${ojo}</button></td>
+        </tr>`).join('') || '<tr><td colspan="6" class="vacio">No hay casos solucionados con estos filtros.</td></tr>';
+    }
+
+    // Resumen por asesor: respuestas, promedio, % de 4 y 5 estrellas y casos por contactar
+    function resumenAsesores(ratings) {
+      const mapa = {};
+      ratings.forEach(r => {
+        const k = r.advisorId || r.advisorName || '—';
+        const a = mapa[k] || (mapa[k] = { nombre: r.advisorName || 'Asesor', n: 0, suma: 0, altas: 0, pendientes: 0 });
+        a.n++; a.suma += (r.rating || 0); if ((r.rating || 0) >= 4) a.altas++; if (esCritico(r) && !r.resolved) a.pendientes++;
+      });
+      return Object.values(mapa).sort((x, y) => (y.suma / y.n) - (x.suma / x.n) || y.n - x.n);
+    }
+
+    function renderAsesores(ratings) {
+      $("tabla-asesores").innerHTML = resumenAsesores(ratings).map(a => `<tr>
+          <td class="font-semibold text-slate-900">${esc(a.nombre)}</td>
+          <td class="num">${a.n}</td>
+          <td class="num font-bold ${claseNota(Math.round(a.suma / a.n))}">${(a.suma / a.n).toFixed(1)}</td>
+          <td class="num">${Math.round(a.altas / a.n * 100)}%</td>
+          <td class="num ${a.pendientes ? 'text-red-500 font-bold' : ''}">${a.pendientes}</td>
+        </tr>`).join('') || '<tr><td colspan="5" class="vacio">Sin datos.</td></tr>';
+    }
 
     function updateStats(ratings) {
       const total = ratings.length;
       const avg = total ? (ratings.reduce((s, r) => s + (r.rating || 0), 0) / total).toFixed(1) : "N/A";
-      document.getElementById("avg-rating").textContent = avg;
-      document.getElementById("total-ratings").textContent = total;
-      document.getElementById("total-advisors").textContent = new Set(ratings.map(r => r.advisorId)).size;
-      document.getElementById("low-ratings").textContent = ratings.filter(r => r.rating <= 2 && !r.resolved).length;
+      $("avg-rating").textContent = avg;
+      $("total-ratings").textContent = total;
+      $("total-ratings-sub").textContent = total ? `${Math.round(ratings.filter(r => (r.rating || 0) >= 4).length / total * 100)}% con 4 o 5 estrellas` : 'Sin respuestas';
+      $("total-advisors").textContent = new Set(ratings.map(r => r.advisorId)).size;
+      $("low-ratings").textContent = ratings.filter(r => esCritico(r) && !r.resolved).length;
 
-      const dist = [0,0,0,0,0];
-      ratings.forEach(r => { if(r.rating >=1 && r.rating <=5) dist[r.rating-1]++; });
-      const ctx = document.getElementById("rating-distribution-chart").getContext("2d");
-      if(chartInstance) chartInstance.destroy();
+      const dist = [0, 0, 0, 0, 0];
+      ratings.forEach(r => { if (r.rating >= 1 && r.rating <= 5) dist[r.rating - 1]++; });
+      const ctx = $("rating-distribution-chart").getContext("2d");
+      if (chartInstance) chartInstance.destroy();
       chartInstance = new Chart(ctx, {
-        type:'bar', data: { labels:['1★','2★','3★','4★','5★'], datasets:[{data:dist, backgroundColor:['#ef4444','#f97316','#64748b','#3b82f6','#10b981']}]},
-        options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}}
+        type: 'bar', data: { labels: ['1★', '2★', '3★', '4★', '5★'], datasets: [{ data: dist, backgroundColor: ['#ef4444', '#f97316', '#64748b', '#3b82f6', '#10b981'], borderRadius: 4 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => `${c.raw} respuestas (${total ? Math.round(c.raw / total * 100) : 0}%)` } } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
       });
     }
 
     // ==========================================
-    // EXPORTACIÓN AVANZADA PDF (Con 3 Secciones)
+    // PDF: resumen, desempeño por asesor y las tres secciones (todas, pendientes, solucionadas)
     // ==========================================
-    document.getElementById("export-pdf-button").onclick = () => {
-      if(!currentFilteredRatings.length) return alert("No hay datos para exportar");
-      
+    $("export-pdf-button").onclick = () => {
+      if (!currentFilteredRatings.length) return alert("No hay datos para exportar");
       const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      let finalY = 0;
-      const formatFecha = (d) => d ? d.replace("T", " ").substring(0, 16) : "-";
-      const cleanText = (str) => (str || "-").replace(/\r?\n/g, " ");
+      const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+      const ancho = doc.internal.pageSize.getWidth(), alto = doc.internal.pageSize.getHeight(), margen = 12;
+      const limpiar = (s) => String(s ?? "-").replace(/\r?\n/g, " ");
+      const estilo = { font: 'helvetica', fontSize: 8, cellPadding: 2.2, textColor: [51, 65, 85], lineColor: [226, 232, 240], lineWidth: 0.1, overflow: 'linebreak' };
+      const datos = currentFilteredRatings;
+      const total = datos.length;
+      const promedio = (datos.reduce((s, r) => s + (r.rating || 0), 0) / total).toFixed(1);
+      const pendientes = datos.filter(r => esCritico(r) && !r.resolved);
+      const solucionados = datos.filter(r => esCritico(r) && r.resolved);
+      const titulo = 'Reporte de calificaciones y casos';
 
-      doc.setFontSize(14);
-      doc.text("Reporte de Calificaciones y Casos", 14, 18);
-      doc.setFontSize(10);
-      doc.text(`Generado: ${new Date().toLocaleString("es-CO")}`, 14, 24);
-      
-      // 1. TODAS LAS CALIFICACIONES
-      doc.text("1. CALIFICACIONES COMPLETAS (Filtros Aplicados)", 14, 32);
-      const allBody = currentFilteredRatings.map(r => {
-        const estado = (r.rating || 0) <= 2 ? (r.resolved ? "SOLUCIONADO" : "PENDIENTE") : "SIN NOVEDAD";
-        return [cleanText(r.advisorName), String(r.rating) + "★", cleanText(r.comments), formatFecha(r.timestamp), cleanText(r.clientPhone), estado];
-      });
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(16); doc.setTextColor(15, 23, 42);
+      doc.text(titulo, margen, 16);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(100, 116, 139);
+      doc.text(`Atención al cliente   ·   ${$("vista-actual").textContent.replace('Viendo: ', '')}   ·   Generado el ${new Date().toLocaleString('es-CO')}`, margen, 22);
 
       doc.autoTable({
-        startY: 36,
+        startY: 27, margin: { left: margen, right: margen }, theme: 'grid',
+        head: [['Calificación promedio', 'Respuestas', 'Con 4 o 5 estrellas', 'Asesores', 'Por contactar', 'Solucionados']],
+        body: [[`${promedio} de 5`, total, `${Math.round(datos.filter(r => (r.rating || 0) >= 4).length / total * 100)}%`, new Set(datos.map(r => r.advisorId)).size, pendientes.length, solucionados.length]],
+        styles: { ...estilo, fontSize: 9 }, headStyles: { fillColor: [248, 250, 252], textColor: [100, 116, 139], fontStyle: 'normal', fontSize: 8 },
+        bodyStyles: { textColor: [15, 23, 42], fontStyle: 'bold', fontSize: 11 },
+        didParseCell: (d) => { if (d.section === 'body' && d.column.index === 0) d.cell.styles.textColor = [234, 179, 8]; if (d.section === 'body' && d.column.index === 4 && pendientes.length) d.cell.styles.textColor = [220, 38, 38]; }
+      });
+
+      // Si el título quedaría al fondo de la página, pasa con su tabla a la siguiente
+      const seccion = (texto, y) => { if (y > alto - 40) { doc.addPage(); y = 16; } doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(15, 23, 42); doc.text(texto, margen, y); return y + 4; };
+      let y = seccion('Desempeño por asesor', doc.lastAutoTable.finalY + 9);
+      doc.autoTable({
+        startY: y, margin: { left: margen, right: margen, bottom: 14 }, theme: 'grid',
+        head: [['Asesor', 'Respuestas', 'Promedio', '4 y 5 estrellas', 'Por contactar']],
+        body: resumenAsesores(datos).map(a => [a.nombre, a.n, (a.suma / a.n).toFixed(1), `${Math.round(a.altas / a.n * 100)}%`, a.pendientes]),
+        styles: estilo, headStyles: { fillColor: [15, 23, 42], textColor: 255, fontStyle: 'bold' }, alternateRowStyles: { fillColor: [248, 250, 252] }
+      });
+
+      y = seccion('1. Calificaciones (con los filtros aplicados)', doc.lastAutoTable.finalY + 9);
+      doc.autoTable({
+        startY: y, margin: { left: margen, right: margen, bottom: 14 }, theme: 'grid',
         head: [["Asesor", "Calif.", "Comentario", "Fecha", "Teléfono", "Estado"]],
-        body: allBody,
-        styles: { fontSize: 8, cellPadding: 2 },
-        headStyles: { fillColor: [15, 23, 42] },
-        didParseCell: (data) => {
-          if (data.section === 'body' && data.column.index === 5) {
-            if (data.cell.raw === 'PENDIENTE') data.cell.styles.textColor = [220, 38, 38];
-            else if (data.cell.raw === 'SOLUCIONADO') data.cell.styles.textColor = [5, 150, 105];
-            else data.cell.styles.textColor = [107, 114, 128];
-          }
+        body: datos.map(r => [limpiar(r.advisorName), `${r.rating}`, limpiar(r.comments), fechaCorta(r.timestamp), limpiar(r.clientPhone), !esCritico(r) ? 'Sin novedad' : (r.resolved ? 'Solucionado' : 'Pendiente')]),
+        styles: estilo, headStyles: { fillColor: [15, 23, 42], textColor: 255, fontStyle: 'bold' }, alternateRowStyles: { fillColor: [248, 250, 252] },
+        columnStyles: { 2: { cellWidth: 100 } },
+        didParseCell: (d) => {
+          if (d.section !== 'body') return;
+          if (d.column.index === 5) d.cell.styles.textColor = d.cell.raw === 'Pendiente' ? [220, 38, 38] : d.cell.raw === 'Solucionado' ? [5, 150, 105] : [107, 114, 128];
+          if (d.column.index === 1) { const n = Number(d.cell.raw); d.cell.styles.textColor = n >= 4 ? [16, 185, 129] : n === 3 ? [245, 158, 11] : [239, 68, 68]; d.cell.styles.fontStyle = 'bold'; }
         }
       });
-      finalY = doc.lastAutoTable.finalY;
 
-      // 2. CASOS CRÍTICOS PENDIENTES
-      const critical = currentFilteredRatings.filter(r => (r.rating || 0) <= 2 && !r.resolved);
-      if (critical.length > 0) {
-        doc.addPage();
-        finalY = 20;
-        doc.setFontSize(12);
-        doc.text("2. CASOS CRÍTICOS PENDIENTES DE CONTACTO", 14, finalY);
-        finalY += 6;
-        
-        const critBody = critical.map(r => [cleanText(r.advisorName), String(r.rating) + "★", cleanText(r.comments), cleanText(r.clientPhone), formatFecha(r.timestamp)]);
-        doc.autoTable({
-          startY: finalY,
-          head: [["Asesor", "Calif.", "Comentario", "Teléfono", "Fecha"]],
-          body: critBody,
-          styles: { fontSize: 8, cellPadding: 2 },
-          headStyles: { fillColor: [220, 38, 38] } // Rojo para pendientes
-        });
-        finalY = doc.lastAutoTable.finalY;
-      }
-
-      // 3. CASOS SOLUCIONADOS
-      const resolved = currentFilteredRatings.filter(r => (r.rating || 0) <= 2 && r.resolved);
-      if (resolved.length > 0) {
-        doc.addPage();
-        finalY = 20;
-        doc.setFontSize(12);
-        doc.text("3. CASOS CRÍTICOS SOLUCIONADOS (Detalle)", 14, finalY);
-        finalY += 6;
-        
-        const resBody = resolved.map(r => [
-          cleanText(r.advisorName), String(r.rating) + "★", cleanText(r.resolvedBy), 
-          cleanText(r.resolution), formatFecha(r.timestamp), cleanText(r.clientPhone)
-        ]);
-        doc.autoTable({
-          startY: finalY,
-          head: [["Asesor", "Calif.", "Solucionado Por", "Solución Aplicada", "Fecha Reporte", "Teléfono"]],
-          body: resBody,
-          styles: { fontSize: 8, cellPadding: 2, overflow: 'linebreak' },
-          headStyles: { fillColor: [5, 150, 105] } // Verde para solucionados
-        });
-      }
-      
-      doc.save(`Reporte_Completo_Calificaciones.pdf`);
-    };
-    
-    // ==========================================
-    // EXPORTACIÓN AVANZADA EXCEL/CSV 
-    // ==========================================
-    document.getElementById("export-excel-button").onclick = () => {
-      if (!currentFilteredRatings.length) return alert("No hay datos para exportar");
-
-      let csv = "\uFEFF"; // BOM para caracteres especiales y tildes en Excel
-      const delimiter = ";";
-      
-      // FIX: Agregamos String() para que no falle al procesar números como la calificación
-      const formatString = (str) => `"${String(str || "").replace(/"/g, '""').replace(/\r?\n/g, ' ')}"`;
-      const formatFecha = (d) => d ? String(d).replace("T", " ").substring(0, 16) : "";
-
-      // 1. TODAS LAS CALIFICACIONES
-      csv += "--- CALIFICACIONES COMPLETAS (Filtros Aplicados) ---\n";
-      csv += "Asesor;Calificación;Comentario;Fecha;Teléfono;Estado;Solucionado Por;Detalle Solución\n";
-      
-      currentFilteredRatings.forEach(r => {
-        const estado = (r.rating || 0) <= 2 ? (r.resolved ? "SOLUCIONADO" : "PENDIENTE") : "SIN NOVEDAD";
-        csv += [
-          formatString(r.advisorName), formatString(r.rating), formatString(r.comments),
-          formatString(formatFecha(r.timestamp)), formatString(r.clientPhone),
-          formatString(estado), formatString(r.resolvedBy), formatString(r.resolution)
-        ].join(delimiter) + "\n";
+      y = seccion(`2. Casos pendientes de contacto (${pendientes.length})`, doc.lastAutoTable.finalY + 9);
+      doc.autoTable({
+        startY: y, margin: { left: margen, right: margen, bottom: 14 }, theme: 'grid',
+        head: [["Asesor", "Calif.", "Comentario", "Teléfono", "Fecha"]],
+        body: pendientes.length ? pendientes.map(r => [limpiar(r.advisorName), `${r.rating}`, limpiar(r.comments), limpiar(r.clientPhone), fechaCorta(r.timestamp)]) : [[{ content: 'No hay casos pendientes.', colSpan: 5 }]],
+        styles: estilo, headStyles: { fillColor: [220, 38, 38], textColor: 255, fontStyle: 'bold' }, columnStyles: { 2: { cellWidth: 110 } }
       });
 
-      csv += "\n\n";
+      y = seccion(`3. Casos solucionados (${solucionados.length})`, doc.lastAutoTable.finalY + 9);
+      doc.autoTable({
+        startY: y, margin: { left: margen, right: margen, bottom: 14 }, theme: 'grid',
+        head: [["Asesor", "Calif.", "Comentario del cliente", "Solucionado por", "Solución aplicada", "Fecha reporte", "Fecha solución"]],
+        body: solucionados.length ? solucionados.map(r => [limpiar(r.advisorName), `${r.rating}`, limpiar(r.comments), limpiar(r.resolvedBy), limpiar(r.resolution), fechaCorta(r.timestamp), fechaCorta(r.resolvedAt)]) : [[{ content: 'No hay casos solucionados.', colSpan: 7 }]],
+        styles: estilo, headStyles: { fillColor: [5, 150, 105], textColor: 255, fontStyle: 'bold' }
+      });
 
-      // 2. CASOS CRÍTICOS PENDIENTES
-      const critical = currentFilteredRatings.filter(r => (r.rating || 0) <= 2 && !r.resolved);
-      csv += "--- CASOS CRÍTICOS PENDIENTES DE CONTACTO ---\n";
-      if (critical.length > 0) {
+      const paginas = doc.internal.getNumberOfPages();
+      for (let i = 1; i <= paginas; i++) {
+        doc.setPage(i); doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(148, 163, 184);
+        doc.text(titulo, margen, alto - 7);
+        doc.text(`Página ${i} de ${paginas}`, ancho - margen, alto - 7, { align: 'right' });
+      }
+      doc.save(`Reporte_Calificaciones_${new Date().toISOString().slice(0, 10)}.pdf`);
+    };
+
+    // ==========================================
+    // EXCEL (CSV con las tres secciones)
+    // ==========================================
+    $("export-excel-button").onclick = () => {
+      if (!currentFilteredRatings.length) return alert("No hay datos para exportar");
+
+      let csv = "﻿"; // BOM para tildes en Excel
+      const delimiter = ";";
+      const formatString = (str) => `"${String(str ?? "").replace(/"/g, '""').replace(/\r?\n/g, ' ')}"`;
+      const formatFecha = (d) => d ? String(d).replace("T", " ").substring(0, 16) : "";
+
+      csv += "--- CALIFICACIONES COMPLETAS (Filtros Aplicados) ---\n";
+      csv += "Asesor;Calificación;Comentario;Fecha;Teléfono;Estado;Solucionado Por;Detalle Solución\n";
+      currentFilteredRatings.forEach(r => {
+        const estado = esCritico(r) ? (r.resolved ? "SOLUCIONADO" : "PENDIENTE") : "SIN NOVEDAD";
+        csv += [formatString(r.advisorName), formatString(r.rating), formatString(r.comments), formatString(formatFecha(r.timestamp)), formatString(r.clientPhone), formatString(estado), formatString(r.resolvedBy), formatString(r.resolution)].join(delimiter) + "\n";
+      });
+
+      csv += "\n\n--- CASOS CRÍTICOS PENDIENTES DE CONTACTO ---\n";
+      const critical = currentFilteredRatings.filter(r => esCritico(r) && !r.resolved);
+      if (critical.length) {
         csv += "Asesor;Calificación;Comentario;Fecha;Teléfono\n";
-        critical.forEach(r => {
-          csv += [
-            formatString(r.advisorName), formatString(r.rating), formatString(r.comments), 
-            formatString(formatFecha(r.timestamp)), formatString(r.clientPhone)
-          ].join(delimiter) + "\n";
-        });
-      } else {
-        csv += "No hay casos críticos pendientes.\n";
-      }
+        critical.forEach(r => { csv += [formatString(r.advisorName), formatString(r.rating), formatString(r.comments), formatString(formatFecha(r.timestamp)), formatString(r.clientPhone)].join(delimiter) + "\n"; });
+      } else csv += "No hay casos críticos pendientes.\n";
 
-      csv += "\n\n";
-
-      // 3. CASOS SOLUCIONADOS
-      const resolved = currentFilteredRatings.filter(r => (r.rating || 0) <= 2 && r.resolved);
-      csv += "--- CASOS CRÍTICOS SOLUCIONADOS (Detalle) ---\n";
-      if (resolved.length > 0) {
+      csv += "\n\n--- CASOS CRÍTICOS SOLUCIONADOS (Detalle) ---\n";
+      const resolved = currentFilteredRatings.filter(r => esCritico(r) && r.resolved);
+      if (resolved.length) {
         csv += "Asesor;Calificación;Comentario Cliente;Fecha Reporte;Teléfono Cliente;Solucionado Por;Detalle Solución;Fecha Solución\n";
-        resolved.forEach(r => {
-          csv += [
-            formatString(r.advisorName), formatString(r.rating), formatString(r.comments), 
-            formatString(formatFecha(r.timestamp)), formatString(r.clientPhone),
-            formatString(r.resolvedBy), formatString(r.resolution), formatString(formatFecha(r.resolvedAt))
-          ].join(delimiter) + "\n";
-        });
-      } else {
-        csv += "No hay casos críticos solucionados.\n";
-      }
+        resolved.forEach(r => { csv += [formatString(r.advisorName), formatString(r.rating), formatString(r.comments), formatString(formatFecha(r.timestamp)), formatString(r.clientPhone), formatString(r.resolvedBy), formatString(r.resolution), formatString(formatFecha(r.resolvedAt))].join(delimiter) + "\n"; });
+      } else csv += "No hay casos críticos solucionados.\n";
 
       const link = document.createElement("a");
-      link.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8;'}));
-      link.download = "Reporte_Completo_Calificaciones.csv";
+      link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+      link.download = `Reporte_Calificaciones_${new Date().toISOString().slice(0, 10)}.csv`;
       link.click();
     };
-    // Funciones Globales para botones de la lista
-    window.viewItem = (id) => {
+
+    // ==========================================
+    // Ventanas
+    // ==========================================
+    const abrir = (id) => $(id).classList.add('abierta');
+    const cerrar = (id) => $(id).classList.remove('abierta');
+
+    function verDetalle(id) {
       const r = allRatings.find(x => x.id === id);
-      
-      // Llenar datos básicos
-      document.getElementById("detail-content").innerHTML = `
-        <h3 class="text-xl font-bold uppercase">${r.advisorName}</h3>
-        <p class="text-4xl font-black ${r.rating <= 2 ? 'text-red-500' : 'text-yellow-500'}">${r.rating}★</p>
-        <p class="p-4 bg-slate-50 rounded-xl italic">"${r.comments || 'Sin comentarios'}"</p>
-        <p class="text-xs text-gray-400">Fecha: ${r.timestamp}</p>
-        <p class="text-sm">Tel: ${r.clientPhone || 'No proporcionado'}</p>
+      if (!r) return;
+      $("detail-content").innerHTML = `
+        <div class="flex items-start justify-between gap-3">
+          <div><p class="text-lg font-bold text-slate-900">${esc(r.advisorName)}</p><p class="ayuda">${esc(fechaCorta(r.timestamp))}</p></div>
+          <p class="text-4xl font-black ${r.rating <= 2 ? 'text-red-500' : 'text-yellow-500'}">${esc(r.rating)}★</p>
+        </div>
+        <p class="p-4 bg-slate-50 rounded-lg italic text-slate-700 whitespace-pre-line">${r.comments ? '“' + esc(r.comments) + '”' : 'Sin comentarios'}</p>
+        <p class="text-sm"><span class="text-slate-500">Teléfono del cliente:</span> <b class="font-mono">${esc(r.clientPhone || 'No proporcionado')}</b></p>
       `;
-
-      // Mostrar o esconder el bloque de solución
-      const resolutionBlock = document.getElementById("detail-resolution-block");
+      const bloque = $("detail-resolution-block");
       if (r.resolved) {
-        document.getElementById("detail-resolved-by").textContent = r.resolvedBy || 'No registrado';
-        document.getElementById("detail-resolution-text").textContent = r.resolution || 'Sin detalle';
-        document.getElementById("detail-resolved-at").textContent = r.resolvedAt ? `Solucionado el: ${r.resolvedAt.substring(0, 10)}` : '';
-        resolutionBlock.classList.remove("hidden");
-      } else {
-        resolutionBlock.classList.add("hidden");
-      }
+        $("detail-resolved-by").textContent = r.resolvedBy || 'No registrado';
+        $("detail-resolution-text").textContent = r.resolution || 'Sin detalle';
+        $("detail-resolved-at").textContent = r.resolvedAt ? `Solucionado el ${fechaCorta(r.resolvedAt)}` : '';
+        bloque.classList.remove("hidden");
+      } else bloque.classList.add("hidden");
+      abrir("view-rating-modal");
+    }
 
-      document.getElementById("view-rating-modal").classList.replace("hidden", "flex");
-    };
-
-    window.solItem = (id) => {
+    function abrirSolucion(id) {
+      const r = allRatings.find(x => x.id === id);
+      if (!r) return;
       resolveTargetId = id;
-      document.getElementById("solution-modal").classList.replace("hidden", "flex");
-    };
+      $("solution-resumen").innerHTML = `<b class="text-slate-900">${esc(r.advisorName)}</b> · <span class="nota-baja font-bold">${esc(r.rating)}★</span> · Tel. <span class="font-mono">${esc(r.clientPhone || 'N/A')}</span><br><span class="italic">${esc(r.comments || 'Sin comentarios')}</span>`;
+      $("solution-solver-name").value = nombreUsuario;
+      $("solution-description").value = '';
+      abrir("solution-modal");
+      $("solution-description").focus();
+    }
 
-    document.getElementById("close-view-rating-modal").onclick = () => document.getElementById("view-rating-modal").classList.replace("flex", "hidden");
-    document.getElementById("solution-cancel-button").onclick = () => document.getElementById("solution-modal").classList.replace("flex", "hidden");
+    // Botones de las tablas (se dibujan de nuevo con cada cambio)
+    document.addEventListener('click', (e) => {
+      const ver = e.target.closest('[data-ver]'); if (ver) return verDetalle(ver.dataset.ver);
+      const sol = e.target.closest('[data-solucionar]'); if (sol) return abrirSolucion(sol.dataset.solucionar);
+      if (e.target.classList.contains('ventana-fondo')) e.target.classList.remove('abierta');
+    });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') document.querySelectorAll('.ventana-fondo.abierta').forEach(v => v.classList.remove('abierta')); });
+    $("close-view-rating-modal").onclick = () => cerrar("view-rating-modal");
+    $("solution-cancel-button").onclick = () => cerrar("solution-modal");
 
-    document.getElementById("solution-save-button").onclick = async () => {
-      const name = document.getElementById("solution-solver-name").value;
-      const desc = document.getElementById("solution-description").value;
-      if(!name || !desc) return alert("Llena todos los campos");
-      await setDoc(doc(db, PUBLIC_RATINGS_COLLECTION, resolveTargetId), { 
-        resolved:true, resolvedBy:name, resolution:desc, resolvedAt:new Date().toISOString() 
-      }, { merge:true });
-      document.getElementById("solution-modal").classList.replace("flex", "hidden");
+    $("solution-save-button").onclick = async () => {
+      const name = $("solution-solver-name").value.trim();
+      const desc = $("solution-description").value.trim();
+      if (!name || !desc) return alert("Escribe quién lo solucionó y qué se hizo.");
+      const boton = $("solution-save-button");
+      boton.disabled = true; boton.textContent = 'Guardando...';
+      try {
+        await setDoc(doc(db, PUBLIC_RATINGS_COLLECTION, resolveTargetId), { resolved: true, resolvedBy: name, resolution: desc, resolvedAt: new Date().toISOString() }, { merge: true });
+        cerrar("solution-modal");
+      } catch (e) {
+        console.error(e);
+        alert('No se pudo guardar la solución: ' + e.message);
+      } finally {
+        boton.disabled = false; boton.textContent = 'Guardar solución';
+      }
     };
 
     function updateFilterOptions() {
-      const sel = document.getElementById("advisor-filter");
+      const sel = $("advisor-filter");
       const current = sel.value;
-      const names = [...new Set(allRatings.map(r => JSON.stringify({id: r.advisorId, name: r.advisorName})))].map(s => JSON.parse(s));
-      sel.innerHTML = '<option value="">Todos los asesores</option>';
-      names.forEach(n => {
-        if(n.id) sel.innerHTML += `<option value="${n.id}" ${n.id===current?'selected':''}>${n.name}</option>`;
-      });
+      const asesores = new Map();
+      allRatings.forEach(r => { if (r.advisorId && !asesores.has(r.advisorId)) asesores.set(r.advisorId, r.advisorName || r.advisorId); });
+      sel.innerHTML = '<option value="">Todos los asesores</option>' + [...asesores.entries()].sort((a, b) => a[1].localeCompare(b[1]))
+        .map(([id, nombre]) => `<option value="${esc(id)}">${esc(nombre)}</option>`).join('');
+      sel.value = asesores.has(current) ? current : '';
     }
 
-    document.getElementById("advisor-filter").onchange = filterAndDisplay;
-    document.getElementById("month-filter").onchange = filterAndDisplay;
-    document.getElementById("date-filter").onchange = filterAndDisplay;
-
+    $("advisor-filter").onchange = filterAndDisplay;
+    $("month-filter").onchange = filterAndDisplay;
+    $("date-filter").onchange = filterAndDisplay;
+    $("limpiar-filtros").onclick = () => { $("advisor-filter").value = ''; $("month-filter").value = ''; $("date-filter").value = ''; filterAndDisplay(); };
   </script>
 </body>
 </html>
