@@ -5,184 +5,163 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TRASLADOS ENTRE BODEGAS PARABARBEROS S.A.S.</title>
     <link rel="icon" type="image/jpeg" href="https://parabarberos.github.io/1.jpg">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-storage-compat.js"></script>
-    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
     <style>
-/* ==============================
-   MENÚ INTERNO TRASLADOS
-============================== */
-
-.traslados-tabs-nav {
-    width: 100%;
-    height: 54px;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    background: #ffffff;
-    border-bottom: 1px solid #dbe4f0;
-    margin-bottom: 28px;
-    padding: 0 8px;
-}
-
-.traslados-tab {
-    height: 54px;
-    padding: 0 34px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    color: #475569;
-    font-size: 13px;
-    font-weight: 900;
-    text-decoration: none;
-    text-transform: uppercase;
-
-    border-bottom: 3px solid transparent;
-    transition: all 0.2s ease;
-}
-
-.traslados-tab:hover {
-    color: #2563eb;
-    background: #f8fbff;
-}
-
-.traslados-tab.active {
-    color: #2563eb;
-    border-bottom-color: #2563eb;
-    background: #ffffff;
-}
-
-#requesterView,
-#adminView,
-#managerView {
-    scroll-margin-top: 90px;
-}
-
-/* Vista por pestañas: al cambiar de módulo no debe quedar como una sección más abajo */
-#adminView,
-#managerView {
-    margin-top: 0 !important;
-    padding-top: 0 !important;
-    border-top: none !important;
-}
-
-</style>
-   
-<style>
 /* =====================================================
-   SCROLL INTERNO PRODUCTOS - TRASLADOS
+   DISEÑO SOBRIO (igual que Gestión de TI y Reposición)
 ===================================================== */
-
-#productList {
-    height: 420px !important;
-    max-height: 420px !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
+:root {
+    --tinta: #0f172a; --tinta-2: #334155; --gris: #64748b; --gris-claro: #94a3b8;
+    --linea: #e2e8f0; --linea-2: #eef2f7; --fondo: #f6f8fb; --peligro: #dc2626; --radio: 6px;
+}
+body.tras-sobrio {
+    background: var(--fondo);
+    font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    color: var(--tinta);
 }
 
-#currentTransferRequest {
-    height: 260px !important;
-    max-height: 260px !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-}
+/* Encabezado: solo el título */
+.tras-titulo { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.02em; color: var(--tinta); }
 
-#productList::-webkit-scrollbar,
-#currentTransferRequest::-webkit-scrollbar {
-    width: 10px !important;
-}
+/* Pestañas: como el menú de TI */
+.traslados-tabs-nav { display: flex; gap: 4px; align-items: center; background: #fff; border: 1px solid var(--linea); border-radius: var(--radio); padding: 6px; width: fit-content; max-width: 100%; overflow-x: auto; }
+.traslados-tab { height: 38px; padding: 0 14px; display: flex; align-items: center; border-radius: 4px; color: var(--tinta-2); font-size: 14px; font-weight: 600; background: none; border: 0; cursor: pointer; white-space: nowrap; }
+.traslados-tab:hover { background: #f1f5f9; color: var(--tinta); }
+.traslados-tab.active { background: var(--tinta); color: #fff; }
 
-#productList::-webkit-scrollbar-track,
-#currentTransferRequest::-webkit-scrollbar-track {
-    background: #f1f5f9 !important;
-    border-radius: 999px !important;
-}
+#requesterView, #adminView, #managerView { scroll-margin-top: 90px; }
+/* Vista por pestañas: al cambiar de módulo no debe quedar como una sección más abajo */
+#adminView, #managerView { margin-top: 1.25rem !important; padding-top: 0 !important; border-top: none !important; }
 
-#productList::-webkit-scrollbar-thumb,
-#currentTransferRequest::-webkit-scrollbar-thumb {
-    background: #94a3b8 !important;
-    border-radius: 999px !important;
-}
+/* Tarjetas grandes de cada vista */
+.tras-sobrio .tras-card { background: #fff; border: 1px solid var(--linea); border-radius: var(--radio); padding: 20px; }
+.tras-sobrio .tras-card-titulo { font-size: 17px; font-weight: 700; color: var(--tinta); }
+.tras-sobrio .tras-subtitulo { font-size: 15px; font-weight: 700; color: var(--tinta); }
 
-#productList::-webkit-scrollbar-thumb:hover,
-#currentTransferRequest::-webkit-scrollbar-thumb:hover {
-    background: #64748b !important;
-}
+/* Campos */
+.tras-sobrio .tras-campo { width: 100%; height: 42px; padding: 0 12px; background-color: #fff; border: 1px solid var(--linea); border-radius: var(--radio); font-size: 14px; color: var(--tinta); outline: none; }
+.tras-sobrio textarea.tras-campo { height: auto; padding: 10px 12px; }
+.tras-sobrio select.tras-campo { -webkit-appearance: none; appearance: none; padding-right: 34px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 10px center; background-size: 16px; }
+.tras-sobrio .tras-campo:focus { border-color: var(--gris-claro); box-shadow: 0 0 0 3px rgba(15, 23, 42, .06); }
+.tras-sobrio .tras-campo:disabled { background-color: #f8fafc; color: var(--tinta-2); }
+.tras-sobrio .tras-etiqueta { display: block; margin-bottom: 6px; font-size: 13px; font-weight: 600; color: var(--tinta-2); }
+
+/* Botones */
+.tras-sobrio .tras-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 42px; padding: 0 18px; border-radius: var(--radio); font-size: 14px; font-weight: 600; border: 1px solid transparent; cursor: pointer; white-space: nowrap; }
+.tras-sobrio .tras-btn-pri { background: var(--tinta); border-color: var(--tinta); color: #fff; }
+.tras-sobrio .tras-btn-pri:hover { background: #1e293b; }
+.tras-sobrio .tras-btn-pri.modo-edicion { background: #fff; color: var(--tinta); border-color: var(--tinta); }
+.tras-sobrio .tras-btn-sec { background: #fff; border-color: var(--linea); color: var(--tinta); }
+.tras-sobrio .tras-btn-sec:hover { background: #f8fafc; border-color: #cbd5e1; }
+
+/* Catálogo de productos */
+#productList { height: 420px !important; max-height: 420px !important; overflow-y: auto !important; overflow-x: hidden !important; }
+.tras-sobrio #productList { align-content: start; background: #f8fafc; border: 1px solid var(--linea-2); border-radius: var(--radio); }
+.tras-sobrio .tras-producto { display: flex; flex-direction: column; gap: 6px; padding: 12px; background: #fff; border: 1px solid var(--linea); border-radius: var(--radio); }
+.tras-sobrio .tras-producto:hover { border-color: #cbd5e1; }
+.tras-sobrio .tras-producto h3 { font-size: 13px; font-weight: 600; line-height: 1.35; color: var(--tinta); }
+.tras-sobrio .tras-producto p { font-size: 12px; color: var(--gris-claro); }
+.tras-sobrio .tras-cant { width: 64px; height: 34px; border: 1px solid var(--linea); border-radius: var(--radio); text-align: center; font-size: 14px; color: var(--tinta); outline: none; }
+.tras-sobrio .tras-cant:focus { border-color: var(--gris-claro); box-shadow: 0 0 0 3px rgba(15, 23, 42, .06); }
+.tras-sobrio .add-to-transfer-btn { height: 34px; flex: 1; border-radius: var(--radio); background: var(--tinta); color: #fff; font-size: 13px; font-weight: 600; }
+.tras-sobrio .add-to-transfer-btn:hover { background: #1e293b; }
+.tras-sobrio .tras-producto.recien-anadido { border-color: var(--tinta); }
+
+/* Productos seleccionados */
+#currentTransferRequest { height: 260px !important; max-height: 260px !important; overflow-y: auto !important; overflow-x: hidden !important; }
+.tras-sobrio #currentTransferRequest { background: #f8fafc; border: 1px solid var(--linea-2); border-radius: var(--radio); }
+.tras-sobrio .tras-item { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 12px; background: #fff; border: 1px solid var(--linea); border-radius: var(--radio); }
+.tras-sobrio .tras-item-nombre { font-size: 13px; font-weight: 600; color: var(--tinta); }
+.tras-sobrio .tras-item-id { display: block; font-size: 12px; color: var(--gris-claro); }
+.tras-sobrio .remove-item-btn { height: 34px; padding: 0 10px; border: 1px solid transparent; border-radius: var(--radio); font-size: 13px; font-weight: 600; color: var(--gris); }
+.tras-sobrio .remove-item-btn:hover { border-color: #fecaca; color: var(--peligro); background: #fff; }
+.tras-sobrio .tras-contador { display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border: 1px solid var(--linea); border-radius: 4px; background: #fff; font-size: 12px; font-weight: 600; color: var(--tinta-2); white-space: nowrap; }
+.tras-sobrio .tras-contador.con-items { background: var(--tinta); border-color: var(--tinta); color: #fff; }
+.tras-sobrio .tras-vacio { padding: 24px 12px; text-align: center; font-size: 13px; color: var(--gris); }
+
+/* Mis solicitudes */
+.tras-sobrio .tras-seccion { font-size: 14px; font-weight: 700; color: var(--tinta); margin-bottom: 8px; }
+.tras-sobrio .tras-seccion-sub { font-size: 13px; font-weight: 600; color: var(--gris); margin: 16px 0 8px; }
+
+#productList::-webkit-scrollbar, #currentTransferRequest::-webkit-scrollbar { width: 10px; }
+#productList::-webkit-scrollbar-track, #currentTransferRequest::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 999px; }
+#productList::-webkit-scrollbar-thumb, #currentTransferRequest::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+#productList::-webkit-scrollbar-thumb:hover, #currentTransferRequest::-webkit-scrollbar-thumb:hover { background: var(--gris-claro); }
 </style>
 </head>
-<body class="bg-gray-100 font-sans">
-    <div class="container mx-auto p-4 md:p-8 space-y-16">
-        <header class="mb-8 text-center pt-4">
-            <h1 class="text-4xl md:text-5xl font-extrabold text-gray-800 tracking-tight">TRASLADOS ENTRE BODEGAS PARABARBEROS</h1>
+<body class="tras-sobrio">
+    <div class="w-full px-5 md:px-8 py-6 space-y-5">
+        <header>
+            <h1 class="tras-titulo">Traslados</h1>
             <div id="userInfo" style="display: none !important;">
                 <span id="userEmailDisplay"></span>
                 <button id="logoutBtn"></button>
             </div>
-       </header>
-<nav id="trasladosTabsNav" class="traslados-tabs-nav" style="display: none;">
-    <button type="button" class="traslados-tab active" data-view="requesterView">
-        SOLICITANTE
-    </button>
+        </header>
+        <nav id="trasladosTabsNav" class="traslados-tabs-nav" style="display: none;">
+            <button type="button" class="traslados-tab active" data-view="requesterView">Solicitante</button>
+            <button type="button" class="traslados-tab" data-view="adminView">Administrador</button>
+            <button type="button" class="traslados-tab" data-view="managerView">Gerencia</button>
+        </nav>
 
-    <button type="button" class="traslados-tab" data-view="adminView">
-        ADMINISTRADOR
-    </button>
-
-    <button type="button" class="traslados-tab" data-view="managerView">
-        GERENCIA
-    </button>
-</nav>
-        
-        <div id="requesterView" class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start" style="display: none;">
-            <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-lg">
-                <h2 class="text-2xl font-semibold mb-4 text-gray-800 border-b pb-3">Nueva solicitud de traslado</h2>
-                <div class="mb-4"><input type="search" id="searchInput" placeholder="Buscar producto..." class="w-full px-4 py-2 border border-gray-300 rounded-lg"></div>
-                <div id="productList" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mb-6 min-h-[140px] max-h-[50vh] overflow-y-auto p-4 bg-gray-50 rounded-lg"></div>
-       <h3 class="text-xl font-semibold mb-3 text-gray-800"> Productos seleccionados</h3>
-                <div id="currentTransferRequest" class="space-y-3 mb-6 min-h-[140px] max-h-[40vh] overflow-y-auto p-4 bg-gray-50 rounded-lg"></div>
-                <form id="transferForm" class="space-y-4 border-t pt-6">
+        <div id="requesterView" class="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start" style="display: none;">
+            <div class="lg:col-span-2 tras-card">
+                <h2 class="tras-card-titulo mb-4">Nueva solicitud de traslado</h2>
+                <div class="mb-3 flex items-center gap-3">
+                    <input type="search" id="searchInput" placeholder="Buscar producto por nombre o código..." title="Escribe y presiona Enter para ir a la cantidad del primer resultado" class="tras-campo flex-1">
+                </div>
+                <div id="productList" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 mb-5 p-3"></div>
+                <div class="flex items-center justify-between gap-3 mb-2">
+                    <h3 class="tras-subtitulo">Productos seleccionados</h3>
+                    <span id="trasContador" class="tras-contador">Sin productos</span>
+                </div>
+                <div id="currentTransferRequest" class="mb-5 p-3"></div>
+                <form id="transferForm" class="space-y-4 border-t pt-5" style="border-color: var(--linea);">
                     <input type="hidden" id="editingRequestId">
-                    <h3 class="text-xl font-semibold mb-3 text-gray-800"> Detalles de traslado</h3>
+                    <h3 class="tras-subtitulo">Detalles del traslado</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div><label for="fromWarehouse" class="block text-sm font-medium text-gray-700">Bodega Origen:</label><select id="fromWarehouse" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm"></select></div>
-                        <div><label for="toWarehouse" class="block text-sm font-medium text-gray-700">Bodega Destino:</label><select id="toWarehouse" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm"></select></div>
-                        <div><label for="requesterName" class="block text-sm font-medium text-gray-700">Solicitante:</label><select id="requesterName" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm bg-gray-100" disabled></select></div>
-                        <div><label for="deliveryDate" class="block text-sm font-medium text-gray-700">Fecha de solicitud</label><input type="date" id="deliveryDate" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm"></div>
+                        <div><label for="fromWarehouse" class="tras-etiqueta">Bodega origen</label><select id="fromWarehouse" required class="tras-campo"></select></div>
+                        <div><label for="toWarehouse" class="tras-etiqueta">Bodega destino</label><select id="toWarehouse" required class="tras-campo"></select></div>
+                        <div><label for="requesterName" class="tras-etiqueta">Solicitante</label><select id="requesterName" required class="tras-campo" disabled></select></div>
+                        <div><label for="deliveryDate" class="tras-etiqueta">Fecha de solicitud</label><input type="date" id="deliveryDate" required class="tras-campo"></div>
                     </div>
                     <input type="hidden" id="fromWarehouseHidden" value="Bodega Principal">
-                    <div><label for="requesterNotes" class="block text-sm font-medium text-gray-700">Observaciones</label><textarea id="requesterNotes" rows="2" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm" placeholder="Ej: Necesito este pedido con urgencia..."></textarea></div>
-                    <button type="submit" class="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg shadow-lg">ENVIAR SOLICITUD DE TRASLADO</button>
+                    <div><label for="requesterNotes" class="tras-etiqueta">Observaciones</label><textarea id="requesterNotes" rows="2" class="tras-campo" placeholder="Ej: Necesito este pedido con urgencia..."></textarea></div>
+                    <button type="submit" class="tras-btn tras-btn-pri w-full">Enviar solicitud de traslado</button>
                 </form>
             </div>
             <div class="lg:col-span-1">
-                <div class="bg-white p-6 rounded-xl shadow-lg">
-                    <h3 class="text-2xl font-semibold mb-4 text-gray-800 border-b pb-3">Mis solicitudes</h3>
+                <div class="tras-card">
+                    <h3 class="tras-card-titulo mb-4">Mis solicitudes</h3>
                     <div class="space-y-2 mb-4">
-                        <input type="text" id="requesterSearchId" placeholder="Buscar por ID..." class="w-full px-3 py-2 border rounded-lg">
+                        <input type="text" id="requesterSearchId" placeholder="Buscar por ID..." class="tras-campo">
                         <div class="grid grid-cols-2 gap-2">
-                            <input type="date" id="requesterDateFrom" class="w-full px-3 py-2 border rounded-lg text-sm" title="Fecha Desde">
-                            <input type="date" id="requesterDateTo" class="w-full px-3 py-2 border rounded-lg text-sm" title="Fecha Hasta">
+                            <input type="date" id="requesterDateFrom" class="tras-campo" title="Fecha desde">
+                            <input type="date" id="requesterDateTo" class="tras-campo" title="Fecha hasta">
                         </div>
                     </div>
                     <div class="max-h-[80vh] overflow-y-auto">
-                        <h4 class="text-xl font-bold text-yellow-600 mb-2">Por Recibir</h4>
-                        <div id="myShippedRequests" class="grid gap-4 mb-6 border-b pb-6"></div>
-                        <h4 class="text-lg font-semibold text-black mb-2">Activas</h4>
-                        <div id="myPendingRequests" class="grid gap-4 mb-6"></div>
-                        <h4 class="text-lg font-semibold text-black mb-2">Historial</h4>
-                        <h5 class="text-md font-semibold text-yellow-600 mb-2 mt-4">Con Novedad</h5>
-                        <div id="myNoveltyRequests" class="grid gap-4 mb-6"></div>
-                        <h5 class="text-md font-semibold text-green-600 mb-2">Completadas</h5>
-                        <div id="myCompletedRequests" class="grid gap-4 mb-6"></div>
-                        <h5 class="text-md font-semibold text-red-700 mb-2">Canceladas</h5>
-                        <div id="myCancelledRequests" class="grid gap-4"></div>
+                        <h4 class="tras-seccion">Por recibir</h4>
+                        <div id="myShippedRequests" class="grid gap-3 mb-5 border-b pb-5" style="border-color: var(--linea);"></div>
+                        <h4 class="tras-seccion">Activas</h4>
+                        <div id="myPendingRequests" class="grid gap-3 mb-5"></div>
+                        <h4 class="tras-seccion">Historial</h4>
+                        <h5 class="tras-seccion-sub">Con novedad</h5>
+                        <div id="myNoveltyRequests" class="grid gap-3 mb-2"></div>
+                        <h5 class="tras-seccion-sub">Completadas</h5>
+                        <div id="myCompletedRequests" class="grid gap-3 mb-2"></div>
+                        <h5 class="tras-seccion-sub">Canceladas</h5>
+                        <div id="myCancelledRequests" class="grid gap-3"></div>
                     </div>
                 </div>
             </div>
@@ -1102,6 +1081,9 @@ const allMyRequests = sortedRequests.filter(r =>
             qtyInput.value = "1";
             localStorage.setItem('currentTransferDraft', JSON.stringify(currentTransferItems));
             renderCurrentTransfer();
+            // Marca un instante la tarjeta añadida para que se note
+            const tarjeta = qtyInput.closest('.tras-producto');
+            if (tarjeta) { tarjeta.classList.add('recien-anadido'); setTimeout(() => tarjeta.classList.remove('recien-anadido'), 700); }
         }
 
         async function handleSubmitTransferForm(event) {
@@ -1140,9 +1122,8 @@ const allMyRequests = sortedRequests.filter(r =>
             currentTransferItems = JSON.parse(JSON.stringify(requestToEdit.items));
             renderCurrentTransfer();
             const submitButton = dom.transferForm.querySelector('button[type="submit"]');
-            submitButton.textContent = 'GUARDAR CAMBIOS';
-            submitButton.classList.remove('bg-gray-500', 'hover:bg-gray-600');
-            submitButton.classList.add('bg-blue-600', 'hover:bg-blue-700');
+            submitButton.textContent = `Guardar cambios de la solicitud ${requestToEdit.id}`;
+            submitButton.classList.add('modo-edicion');
             dom.transferForm.scrollIntoView({ behavior: 'smooth' });
         }
 
@@ -1153,9 +1134,8 @@ const allMyRequests = sortedRequests.filter(r =>
             dom.transferForm.reset();
             document.getElementById('editingRequestId').value = '';
             const submitButton = dom.transferForm.querySelector('button[type="submit"]');
-            submitButton.textContent = 'ENVIAR SOLICITUD DE TRASLADO';
-            submitButton.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-            submitButton.classList.add('bg-gray-500', 'hover:bg-gray-600'); 
+            submitButton.textContent = 'Enviar solicitud de traslado';
+            submitButton.classList.remove('modo-edicion');
             if (currentUserData) dom.requesterName.value = currentUserData.name;
             document.getElementById('deliveryDate').valueAsDate = new Date();
         }
@@ -1224,16 +1204,32 @@ const allMyRequests = sortedRequests.filter(r =>
             return result;
         }
         
+        // Texto seguro para meter en HTML (nombres y notas los escriben los usuarios)
+        function esc(valor) {
+            return String(valor ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+
+        // "3 productos · 12 unidades" junto a "Productos seleccionados"
+        function actualizarContador() {
+            const contador = document.getElementById('trasContador');
+            if (!contador) return;
+            const productos = currentTransferItems.length;
+            const unidades = currentTransferItems.reduce((s, i) => s + (Number(i.quantity) || 0), 0);
+            contador.textContent = productos ? `${productos} ${productos === 1 ? 'producto' : 'productos'} · ${unidades} ${unidades === 1 ? 'unidad' : 'unidades'}` : 'Sin productos';
+            contador.classList.toggle('con-items', productos > 0);
+        }
+
         function renderCurrentTransfer() {
             if (!dom.currentTransferRequest) return;
-            dom.currentTransferRequest.innerHTML = currentTransferItems.length === 0 ? '<p class="text-gray-500 italic text-center py-4">Añade productos.</p>' : '';
+            actualizarContador();
+            dom.currentTransferRequest.innerHTML = currentTransferItems.length === 0 ? '<p class="tras-vacio">Aún no has añadido productos. Búscalos arriba, escribe la cantidad y presiona Añadir o Enter.</p>' : '';
             if (currentTransferItems.length > 0) {
                 const ul = document.createElement('ul');
                 ul.className = 'space-y-2';
                 currentTransferItems.forEach((item, index) => {
                     const li = document.createElement('li');
-                    li.className = 'flex justify-between items-center p-3 bg-white rounded-lg shadow-sm';
-                    li.innerHTML = `<div><span class="font-medium">${item.productName}</span><span class="text-xs text-gray-500 block">ID: ${item.productId}</span></div><div class="flex items-center space-x-2"><input type="number" min="1" value="${item.quantity}" data-index="${index}" class="w-16 p-1 border rounded item-quantity-input text-center"><button data-index="${index}" class="remove-item-btn text-red-500 font-bold p-1">✕</button></div>`;
+                    li.className = 'tras-item';
+                    li.innerHTML = `<div><span class="tras-item-nombre">${esc(item.productName)}</span><span class="tras-item-id">Código: ${esc(item.productId)}</span></div><div class="flex items-center gap-2"><input type="number" min="1" value="${esc(item.quantity)}" data-index="${index}" class="tras-cant item-quantity-input" title="Cantidad"><button type="button" data-index="${index}" class="remove-item-btn" title="Quitar de la solicitud">Quitar</button></div>`;
                     ul.appendChild(li);
                 });
                 dom.currentTransferRequest.appendChild(ul);
@@ -1241,6 +1237,7 @@ const allMyRequests = sortedRequests.filter(r =>
                     const index = e.target.dataset.index;
                     currentTransferItems[index].quantity = parseInt(e.target.value, 10);
                     localStorage.setItem('currentTransferDraft', JSON.stringify(currentTransferItems));
+                    actualizarContador();
                 });
                 ul.querySelectorAll('.remove-item-btn').forEach(b => b.onclick = (e) => {
                     const index = e.target.dataset.index;
@@ -1335,12 +1332,20 @@ const allMyRequests = sortedRequests.filter(r =>
             }
             productsToRender.forEach(product => {
                 const card = document.createElement('div');
-                card.className = 'border p-3 rounded-lg shadow-sm hover:shadow-md transition bg-white';
+                card.className = 'tras-producto';
                 const safeId = product.id.replace(/[^a-zA-Z0-9-_]/g, '');
-                card.innerHTML = `<h3 class="text-sm font-semibold text-gray-900" title="${product.description}">${product.name.length > 50 ? product.name.substring(0, 47) + '...' : product.name}</h3><p class="text-xs text-gray-400 mb-2">ID: ${product.id}</p><div class="flex items-center space-x-2 mt-auto"><input type="number" min="1" value="1" id="qty-${safeId}" class="w-16 border-gray-300 rounded-md text-center p-1"><button data-product-id="${product.id}" class="add-to-transfer-btn w-full bg-gray-800 hover:bg-black text-white text-xs font-bold py-2 px-2 rounded-md transition">Añadir</button></div>`;
+                const nombre = product.name.length > 50 ? product.name.substring(0, 47) + '...' : product.name;
+                card.innerHTML = `<h3 title="${esc(product.description)}">${esc(nombre)}</h3><p>Código: ${esc(product.id)}</p><div class="flex items-center gap-2 mt-auto"><input type="number" min="1" value="1" id="qty-${safeId}" class="tras-cant" title="Cantidad (Enter para añadir)"><button type="button" data-product-id="${esc(product.id)}" class="add-to-transfer-btn">Añadir</button></div>`;
                 dom.productList.appendChild(card);
             });
             dom.productList.querySelectorAll('.add-to-transfer-btn').forEach(b => b.onclick = handleAddToTransfer);
+            // Enter en la cantidad = Añadir, y vuelve al buscador para seguir con el siguiente producto
+            dom.productList.querySelectorAll('.tras-cant').forEach(input => input.addEventListener('keydown', (e) => {
+                if (e.key !== 'Enter') return;
+                e.preventDefault();
+                input.closest('.tras-producto').querySelector('.add-to-transfer-btn').click();
+                if (dom.searchInput) { dom.searchInput.focus(); dom.searchInput.select(); }
+            }));
         }
 
         function destroyCharts() {
@@ -1673,6 +1678,13 @@ const allMyRequests = sortedRequests.filter(r =>
                     p.id.toLowerCase().includes(term)
                 );
                 renderProducts(filtered);
+            });
+            // Enter en el buscador: salta a la cantidad del primer producto encontrado
+            if (dom.searchInput) dom.searchInput.addEventListener('keydown', (e) => {
+                if (e.key !== 'Enter') return;
+                e.preventDefault();
+                const primera = dom.productList && dom.productList.querySelector('.tras-cant');
+                if (primera) { primera.focus(); primera.select(); }
             });
             if (dom.productFile) dom.productFile.addEventListener('change', () => { dom.fileNameDisplay.textContent = dom.productFile.files.length > 0 ? dom.productFile.files[0].name : 'Ningún archivo seleccionado.'; dom.uploadStatus.textContent = ''; });
             
