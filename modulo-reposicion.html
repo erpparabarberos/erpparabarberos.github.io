@@ -32,6 +32,19 @@
   #kpis .kpi-num { font-size: 24px; font-weight: 800; line-height: 1.15; font-variant-numeric: tabular-nums; color: var(--tinta) !important; }
   #kpis .card > div:first-child { text-transform: none !important; font-size: 13px !important; font-weight: 600 !important; color: var(--tinta-2) !important; }
   h3.font-bold { font-size: 15px; font-weight: 700; color: var(--tinta); }
+  /* Indicadores del Inicio */
+  .kpi { padding: 14px 16px; }
+  .kpi-t { font-size: 13px; font-weight: 600; color: var(--tinta-2); }
+  .kpi-n { font-size: 24px; font-weight: 800; line-height: 1.2; margin-top: 4px; font-variant-numeric: tabular-nums; }
+  .kpi-n small { font-size: 13px; font-weight: 600; color: var(--gris); margin-left: 6px; }
+  .kpi-n.rojo { color: var(--peligro); }
+  .kpi-n, #anSedes td { white-space: nowrap; }
+  @media (max-width: 640px) { .kpi { padding: 12px; } .kpi-n { font-size: 19px; } .kpi-n small { display: block; margin: 2px 0 0; } }
+  #anSedes tbody tr { cursor: pointer; }
+  #anSedes tr.sel td { background: #f1f5f9; font-weight: 600; color: var(--tinta); }
+  #anSedes tr.total td { font-weight: 700; color: var(--tinta); border-top: 1px solid var(--linea); }
+  .sube { color: #15803d; font-weight: 600; } .baja { color: var(--peligro); font-weight: 600; }
+  .aviso { border: 1px solid #fecaca; background: #fef2f2; color: #991b1b; border-radius: var(--radio); padding: 10px 14px; font-size: 13px; font-weight: 600; margin-bottom: 16px; }
 
   /* Tablas: encabezado claro, como Inventario de TI */
   .tbl { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; }
@@ -104,12 +117,14 @@
 
 
 <nav class="rep-tabs" id="tabs">
-  <button class="rep-tab active" data-tab="resumen">Resumen</button>
+  <button class="rep-tab active" data-tab="inicio">Inicio</button>
+  <!-- Pantallas del cálculo anterior que quedan ocultas por ahora (el código sigue abajo) -->
+  <button class="rep-tab" data-tab="resumen" style="display:none">Resumen</button>
   <button class="rep-tab" data-tab="reposicion">Reposición</button>
-  <button class="rep-tab" data-tab="china">Pedidos a China</button>
-  <button class="rep-tab" data-tab="puente">Puente nacional</button>
+  <button class="rep-tab" data-tab="china" style="display:none">Pedidos a China</button>
+  <button class="rep-tab" data-tab="puente" style="display:none">Puente nacional</button>
   <button class="rep-tab" data-tab="traslados">Traslados sugeridos</button>
-  <button class="rep-tab" data-tab="pedidos">Pedidos y tránsito</button>
+  <button class="rep-tab" data-tab="pedidos" style="display:none">Pedidos y tránsito</button>
   <button class="rep-tab" data-tab="config" id="tabConfigBtn">Configuración</button>
 </nav>
 
@@ -120,8 +135,31 @@
       Cuando corra, aparecerán aquí los productos y sugerencias.</p>
   </div>
 
+  <!-- ====== INICIO (analista de inventarios) ====== -->
+  <section id="tab-inicio">
+    <div id="anSinDatos" class="card p-6 mb-4 hidden"><h2 class="font-bold text-lg">Todavía no hay datos del analista de inventarios</h2></div>
+    <div class="card p-3 mb-4 flex flex-wrap gap-2 items-center" id="anFiltros">
+      <select id="anSede" class="inp"></select>
+      <select id="anCat" class="inp"><option value="">Todas las categorías</option></select>
+      <select id="anProv" class="inp max-w-xs"><option value="">Todos los proveedores</option></select>
+      <select id="anAbc" class="inp"><option value="">Todas las clases</option><option>A</option><option>B</option><option>C</option></select>
+      <span class="flex-1"></span>
+      <span class="text-sm muted" id="anSync"></span>
+    </div>
+    <div id="anAviso"></div>
+    <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 mb-4" id="anKpis"></div>
+    <div class="card p-4 mb-4">
+      <h3 class="font-bold mb-2">Comparativo de sedes</h3>
+      <div class="tbl-wrap"><table class="tbl" id="anSedes"></table></div>
+    </div>
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+      <div class="card p-4 xl:col-span-2"><h3 class="font-bold mb-2" id="anTempTitulo">Temporadas</h3><div style="height:250px"><canvas id="chTemporada"></canvas></div></div>
+      <div class="card p-4"><h3 class="font-bold mb-2">Próximos 3 meses por categoría</h3><div class="tbl-wrap" style="max-height:250px"><table class="tbl" id="anTempCat"></table></div></div>
+    </div>
+  </section>
+
   <!-- ====== RESUMEN ====== -->
-  <section id="tab-resumen">
+  <section id="tab-resumen" class="hidden-tab">
     <p class="text-xs muted mb-3" id="hdrDatos">Cargando datos…</p>
     <div class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-3 mb-4" id="kpis"></div>
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-4 mb-4">
@@ -390,6 +428,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const snap = await db.collection('rep_sync_log').orderBy(firebase.firestore.FieldPath.documentId(), 'desc').limit(15).get();
       S.syncLog = []; snap.forEach(d => S.syncLog.push({ id: d.id, ...d.data() }));
       const ult = S.syncLog[0];
+      AN.log = ult || null;
+      if (S.tab === 'inicio') renderInicio();
       if (ult && ult.estado === 'error') $('hdrDatos').innerHTML += ` · <span class="text-red-600 font-bold">La última sincronización falló</span>`;
     } catch (e) { console.warn('No se pudo leer rep_sync_log', e); }
   }
@@ -402,8 +442,145 @@ document.addEventListener('DOMContentLoaded', () => {
     render();
   }
   function render() {
-    ({ resumen: renderResumen, reposicion: renderRepo, china: renderChina, puente: renderPuente,
+    ({ inicio: renderInicio, resumen: renderResumen, reposicion: renderRepo, china: renderChina, puente: renderPuente,
        traslados: renderTraslados, pedidos: renderPedidos, config: renderConfig })[S.tab]();
+  }
+
+  // ---------------------------------------------------------------- ANALISTA DE INVENTARIOS (lo calcula nexus-sync/analista.py)
+  const SEDES_AN = ['PRINCIPAL', 'CALI CENTRO', 'CALI SUR', 'PASTO', 'TULUA', 'MEDELLIN CENTRO', 'BOGOTA', 'BARRANQUILLA'];
+  const NOMBRE_SEDE = { PRINCIPAL: 'Bodega principal', 'CALI CENTRO': 'Cali Centro', 'CALI SUR': 'Cali Sur', PASTO: 'Pasto', TULUA: 'Tuluá',
+    'MEDELLIN CENTRO': 'Medellín', BOGOTA: 'Bogotá', BARRANQUILLA: 'Barranquilla' };
+  const nombreSede = b => NOMBRE_SEDE[b] || b;
+  const MESES_CORTOS = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+  const AN = { meta: null, filas: [], historial: {}, traslados: [], log: null };
+
+  async function cargarAnalista() {
+    const m = await db.collection('rep_snapshot').doc('an_meta').get();
+    if (!m.exists) return;
+    AN.meta = m.data();
+    const ps = [];
+    for (let i = 1; i <= (AN.meta.partes || 0); i++) ps.push(db.collection('rep_snapshot').doc('an_parte_' + String(i).padStart(2, '0')).get());
+    const [partes, hist, tras] = await Promise.all([Promise.all(ps),
+      db.collection('rep_snapshot').doc('an_historial').get(), db.collection('rep_traslados_sugeridos').doc('analista').get()]);
+    AN.filas = partes.flatMap(d => (d.exists ? (d.data().filas || []) : []));
+    AN.historial = hist.exists ? (hist.data().dias || {}) : {};
+    AN.traslados = tras.exists ? (tras.data().items || []) : [];
+  }
+
+  // Un producto visto en el alcance elegido: total (sede vacía) o una sede
+  function vista(f, sede) {
+    if (!sede) return { st: f.st, d: f.d || 0, abc: f.abc, sem: f.sem, muerto: f.muerto, agotado: f.agotado, c12: f.c12 || 0, q: f.q, vq: f.vq || 0, perdida: f.perdida || 0 };
+    const s = (f.s || {})[sede];
+    if (!s) return null;
+    const dias = (AN.meta.parametros || {}).dias_venta || 90;
+    return { st: s.st, d: s.d || 0, abc: s.abc, sem: s.sem, muerto: s.muerto, agotado: s.agotado, c12: s.c12 || 0, q: s.q,
+      vq: f.costo ? s.q * f.costo : 0, perdida: s.agotado && f.precio ? s.d * f.precio * Math.min(s.dsv ?? dias, dias) : 0 };
+  }
+
+  const filtrosAn = () => ({ cat: $('anCat').value, prov: $('anProv').value, abc: $('anAbc').value });
+  const pasaFiltros = (f, v, fl) => (!fl.cat || f.g === fl.cat) && (!fl.prov || f.prov === fl.prov) && (!fl.abc || v.abc === fl.abc);
+
+  // Indicadores de la sección 6 para un alcance (total o sede) con los filtros aplicados
+  function indicadores(sede, fl) {
+    const r = { valor: 0, muerto: 0, costoDia: 0, c12: 0, conVenta: 0, agotados: 0, perdida: 0, rojos: 0, valorRojos: 0, sugerido: 0 };
+    for (const f of AN.filas) {
+      const v = vista(f, sede);
+      if (!v || !pasaFiltros(f, v, fl)) continue;
+      const c = f.costo || 0;
+      r.valor += v.st * c;
+      if (v.muerto) r.muerto += v.st * c;
+      r.costoDia += v.d * c;
+      r.c12 += v.c12;
+      if (v.d > 0) r.conVenta++;
+      if (v.agotado) { r.agotados++; r.perdida += v.perdida; }
+      if (v.sem === 'rojo') { r.rojos++; r.valorRojos += v.vq; }
+      r.sugerido += v.vq;
+    }
+    r.pctMuerto = r.valor ? r.muerto / r.valor : null;
+    r.dias = r.costoDia ? r.valor / r.costoDia : null;
+    r.pctAgotados = r.conVenta ? r.agotados / r.conVenta : null;
+    // Rotación: costo de lo vendido en 12 meses ÷ valor promedio del inventario (historial diario si hay un mes o más)
+    const h = Object.values(AN.historial).map(x => sede ? (x.sedes || {})[sede] : x.total).filter(x => x > 0);
+    const sinFiltros = !fl.cat && !fl.prov && !fl.abc;
+    const prom = sinFiltros && h.length >= 30 ? h.reduce((a, b) => a + b, 0) / h.length : r.valor;
+    r.rotacion = prom ? r.c12 / prom : null;
+    return r;
+  }
+
+  const pct = (v, d = 0) => v == null || isNaN(v) ? '–' : (v * 100).toLocaleString('es-CO', { maximumFractionDigits: d }) + '%';
+  const variacion = (a, b) => b ? a / b - 1 : null;
+  const flecha = v => v == null ? '–' : `<span class="${v >= 0 ? 'sube' : 'baja'}">${v >= 0 ? '+' : ''}${pct(v)}</span>`;
+  const plata = v => (v == null || isNaN(v)) ? '–' : Math.abs(v) >= 1e6 ? '$' + (v / 1e6).toLocaleString('es-CO', { maximumFractionDigits: 1 }) + ' M' : pesos(v);
+
+  function ventasSede(b) {
+    const vs = (AN.meta && AN.meta.ventas_sede) || {};
+    const lista = b ? [vs[b] || {}] : Object.values(vs);
+    return lista.reduce((a, x) => ({ mes: a.mes + (x.mes || 0), ant: a.ant + (x.mes_ant_corte || 0) }), { mes: 0, ant: 0 });
+  }
+
+  function llenarFiltrosAn() {
+    if ($('anSede').options.length) return;
+    $('anSede').innerHTML = '<option value="">Total (todas las sedes)</option>' + SEDES_AN.map(b => `<option value="${esc(b)}">${esc(nombreSede(b))}</option>`).join('');
+    [...new Set(AN.filas.map(f => f.g).filter(Boolean))].sort().forEach(g => $('anCat').add(new Option(g, g)));
+    [...new Set(AN.filas.map(f => f.prov).filter(Boolean))].sort().forEach(p => $('anProv').add(new Option(p, p)));
+  }
+
+  function renderInicio() {
+    const sin = !AN.meta;
+    $('anSinDatos').classList.toggle('hidden', !sin);
+    ['anFiltros', 'anKpis'].forEach(id => $(id).classList.toggle('hidden', sin));
+    document.querySelectorAll('#tab-inicio > .card:not(#anSinDatos):not(#anFiltros), #tab-inicio > .grid:last-child').forEach(e => e.classList.toggle('hidden', sin));
+    if (sin) return;
+    llenarFiltrosAn();
+    const sede = $('anSede').value, fl = filtrosAn(), r = indicadores(sede, fl);
+
+    // Última actualización y aviso si la sincronización falló
+    const gen = AN.meta.generado ? new Date(AN.meta.generado) : null;
+    $('anSync').textContent = gen ? 'Actualizado: ' + gen.toLocaleString('es-CO', { day: '2-digit', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit' }) : '';
+    $('anAviso').innerHTML = AN.log && AN.log.estado === 'error'
+      ? `<div class="aviso">La última actualización con Siigo falló. Se muestran los datos del ${esc(fmtFecha(AN.meta.fecha_datos))}.</div>` : '';
+
+    const enSede = !!sede;
+    const kp = [
+      ['Valor del inventario', plata(r.valor)],
+      ['Plata en producto muerto', `${plata(r.muerto)}<small>${pct(r.pctMuerto, 1)}</small>`],
+      [enSede ? 'Para trasladar ya' : 'Para pedir ya', `${num(r.rojos)}<small>${plata(r.valorRojos)}</small>`, r.rojos ? 'rojo' : ''],
+      [enSede ? 'Traslado sugerido' : 'Compra sugerida', plata(r.sugerido)],
+      ['Agotados', `${num(r.agotados)}<small>${pct(r.pctAgotados, 1)}</small>`, r.agotados ? 'rojo' : ''],
+      ['Ventas perdidas estimadas', plata(r.perdida)]
+    ];
+    $('anKpis').innerHTML = kp.map(([t, v, c]) => `<div class="card kpi"><div class="kpi-t">${t}</div><div class="kpi-n ${c || ''}">${v}</div></div>`).join('');
+
+    // Comparativo de sedes (con los mismos filtros)
+    const fila = (b, cls) => {
+      const x = indicadores(b, fl), vs = ventasSede(b);
+      return `<tr class="${cls}" data-sede="${esc(b)}"><td>${esc(b ? nombreSede(b) : 'Total')}</td>
+        <td class="num">${plata(x.valor)}</td><td class="num">${plata(x.muerto)}</td><td class="num">${pct(x.pctMuerto, 1)}</td>
+        <td class="num">${num(x.dias)}</td><td class="num">${num(x.rotacion, 1)}</td><td class="num">${num(x.agotados)}</td>
+        <td class="num">${x.rojos ? `<b class="text-red-700">${num(x.rojos)}</b>` : '0'}</td>
+        <td class="num">${plata(vs.mes)}</td><td class="num">${flecha(variacion(vs.mes, vs.ant))}</td></tr>`;
+    };
+    $('anSedes').innerHTML = `<thead><tr><th>Sede</th><th class="num">Inventario</th><th class="num">Producto muerto</th><th class="num">% muerto</th>
+      <th class="num">Días de inventario</th><th class="num">Rotación</th><th class="num">Agotados</th><th class="num">Pedir ya</th>
+      <th class="num">Ventas del mes</th><th class="num">vs. mes anterior</th></tr></thead><tbody>` +
+      SEDES_AN.map(b => fila(b, b === sede ? 'sel' : '')).join('') + fila('', 'total' + (sede ? '' : ' sel')) + '</tbody>';
+
+    // Temporadas: de la empresa o de la categoría elegida
+    const est = AN.meta.estacionalidad || {}, cats = est.categorias || {};
+    const indice = fl.cat ? (cats[fl.cat] || {}).est : est.empresa;
+    $('anTempTitulo').textContent = 'Temporadas · ' + (fl.cat || 'toda la empresa');
+    const datos = (indice || []).map(x => x == null ? null : Math.round((x - 1) * 100));
+    dibujar('chTemporada', { type: 'bar', data: { labels: MESES_CORTOS, datasets: [{ data: datos,
+        backgroundColor: datos.map(v => v > 0 ? '#0f172a' : '#cbd5e1'), borderRadius: 3 }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false },
+          tooltip: { callbacks: { label: c => `${c.raw > 0 ? '+' : ''}${c.raw}% frente a un mes normal` } } },
+        scales: { y: { ticks: { callback: v => (v > 0 ? '+' : '') + v + '%' } } } } });
+    const lista = Object.entries(cats).filter(([, x]) => x.prox).sort((a, b) => b[1].prox - a[1].prox);
+    $('anTempCat').innerHTML = '<thead><tr><th>Categoría</th><th class="num">Próximos 3 meses</th><th>Mes más fuerte</th></tr></thead><tbody>' +
+      (lista.map(([g, x]) => {
+        const i = x.est.indexOf(Math.max(...x.est.filter(v => v != null)));
+        return `<tr><td>${esc(g)}</td><td class="num">${flecha(x.prox - 1)}</td><td>${MESES_CORTOS[i]}</td></tr>`;
+      }).join('') || '<tr><td colspan="3" class="muted" style="padding:16px;text-align:center">Se necesita al menos un año de ventas</td></tr>') + '</tbody>';
   }
 
   // ---------------------------------------------------------------- RESUMEN
@@ -989,6 +1166,9 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.rep-tab').forEach(b => b.onclick = () => mostrarTab(b.dataset.tab));
   ['fEstado', 'fOrigen', 'fAbc', 'fProv', 'fBodega', 'fAccion'].forEach(id => $(id).addEventListener('change', () => { S.limiteRepo = PASO_FILAS; renderRepo(); }));
   ['fPedEstado', 'fPedTipo'].forEach(id => $(id).addEventListener('change', renderPedidos));
+  ['anSede', 'anCat', 'anProv', 'anAbc'].forEach(id => $(id).addEventListener('change', renderInicio));
+  // Clic en una fila del comparativo = ver esa sede
+  $('anSedes').addEventListener('click', ev => { const tr = ev.target.closest('tr[data-sede]'); if (tr) { $('anSede').value = tr.dataset.sede; renderInicio(); } });
   $('fPedBuscar').addEventListener('input', renderPedidos);
   let tBusq; $('busquedaGlobal').addEventListener('input', () => {
     clearTimeout(tBusq); tBusq = setTimeout(() => { S.limiteRepo = PASO_FILAS; render(); }, 250);
@@ -1015,11 +1195,12 @@ document.addEventListener('DOMContentLoaded', () => {
       S.puedeTrasladar = S.puedeEditar;
       if (!S.puedeEditar) { document.body.innerHTML = '<div class="p-10 text-center muted">No tienes permiso para ver el módulo de Reposición.</div>'; return; }
       if (!S.puedeEditar) $('tabConfigBtn').style.display = 'none';
-      await cargarTodo();
-      mostrarTab('resumen');
+      await Promise.all([cargarTodo(), cargarAnalista()]);
+      mostrarTab('inicio');
     } catch (e) {
       console.error(e);
       $('hdrDatos').innerHTML = '<span class="text-red-700 font-bold">No se pudieron cargar los datos: ' + esc(e.message) + '</span>';
+      $('anAviso').innerHTML = '<div class="aviso">No se pudieron cargar los datos: ' + esc(e.message) + '</div>';
     }
   });
 });
