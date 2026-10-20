@@ -667,8 +667,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function llenarFiltrosCq() {
     if ($('cqSede').options.length) return;
-    // La Principal no aparece: lo que ella necesita es la compra, que es la vista Total
-    $('cqSede').innerHTML = '<option value="">Total (todas las sedes)</option>' + SEDES_AN.filter(b => b !== 'PRINCIPAL').map(b => `<option value="${esc(b)}">${esc(nombreSede(b))}</option>`).join('');
+    // La opción vacía es la compra: todo llega a la Principal y se decide con el inventario de todas las sedes
+    $('cqSede').innerHTML = '<option value="">Bodega principal</option>' + SEDES_AN.filter(b => b !== 'PRINCIPAL').map(b => `<option value="${esc(b)}">${esc(nombreSede(b))}</option>`).join('');
     [...new Set(AN.filas.map(f => f.g).filter(Boolean))].sort().forEach(g => $('cqCat').add(new Option(g, g)));
     [...new Set(AN.filas.map(f => f.prov).filter(Boolean))].sort().forEach(p => $('cqProv').add(new Option(p, p)));
   }
@@ -679,7 +679,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('#cqVista button').forEach(b => b.classList.toggle('on', b.dataset.v === CQ.vista));
     const sede = $('cqSede').value, enSede = !!sede, F = filasCompra();
     if (CQ.vista === 'proveedor') return renderPorProveedor(F, enSede);
-    const cols = COLS_CQ.map(c => c[0] === 'q' && enSede ? ['q', 'Trasladar', 1] : c[0] === 'vq' && enSede ? ['vq', 'Valor del traslado', 1] : c);
+    const cols = COLS_CQ.map(c => c[0] === 'q' && enSede ? ['q', 'Trasladar', 1] : c[0] === 'vq' && enSede ? ['vq', 'Valor del traslado', 1]
+      : c[0] === 'st' && !enSede ? ['st', 'Inventario total', 1] : c);
     $('cqCuenta').textContent = `${num(F.length)} productos · ${plata(F.reduce((a, r) => a + r.vq, 0))}`;
     $('cqMas').style.display = F.length > CQ.limite ? '' : 'none';
     const fl = c => CQ.orden.col === c ? (CQ.orden.dir > 0 ? ' ▲' : ' ▼') : '';
@@ -727,8 +728,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof XLSX === 'undefined') return toast('No se cargó la librería de Excel');
     const sede = $('cqSede').value;
     const rows = filasCompra().map(r => ({
-      'Semáforo': nombreSem(r.sem, !!sede), 'SKU': r.f.c, 'Producto': r.f.n, 'Categoría': r.f.g, 'Sede': sede ? nombreSede(sede) : 'Total',
-      'ABC': r.abc, 'Inventario': r.st, 'En camino': r.tr, 'Venta diaria': Math.round(r.d * 100) / 100,
+      'Semáforo': nombreSem(r.sem, !!sede), 'SKU': r.f.c, 'Producto': r.f.n, 'Categoría': r.f.g, 'Sede': sede ? nombreSede(sede) : 'Bodega principal (compra)',
+      'ABC': r.abc, [sede ? 'Inventario' : 'Inventario total']: r.st, 'En camino': r.tr, 'Venta diaria': Math.round(r.d * 100) / 100,
       'Días de inventario': r.cob == null ? '' : Math.round(r.cob), 'Punto de reorden': Math.round(r.pr || 0),
       [sede ? 'Trasladar' : 'Cantidad sugerida']: r.q, 'Costo unitario': r.f.costo || '', [sede ? 'Valor del traslado' : 'Costo de la compra']: Math.round(r.vq),
       'Proveedor': r.f.prov || '', 'Origen': r.f.origen || '', 'Días de entrega': r.f.lead
