@@ -183,6 +183,71 @@ body.tras-sobrio {
 #productList::-webkit-scrollbar-track, #currentTransferRequest::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 999px; }
 #productList::-webkit-scrollbar-thumb, #currentTransferRequest::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
 #productList::-webkit-scrollbar-thumb:hover, #currentTransferRequest::-webkit-scrollbar-thumb:hover { background: var(--gris-claro); }
+
+/* =====================================================
+   COLORES DE TRASLADOS (los originales del módulo, sobre el diseño nuevo)
+   azul = acción principal · verde = terminar / exportar Excel · amarillo = devolver / novedad · rojo = cancelar / PDF
+===================================================== */
+:root { --azul: #2563eb; --azul-2: #1d4ed8; --verde: #16a34a; --verde-2: #15803d; --amarillo: #ca8a04; --amarillo-2: #a16207;
+        --rojo: #dc2626; --rojo-2: #b91c1c; --teal: #0d9488; --teal-2: #0f766e; }
+.traslados-tab:hover { background: #eff6ff; color: var(--azul); }
+.traslados-tab.active { background: var(--azul); color: #fff; }
+
+/* Botones principales */
+.tras-sobrio .tras-btn-pri, .tras-sobrio .sol-btn-pri, .tras-sobrio .add-to-transfer-btn { background: var(--azul); border-color: var(--azul); color: #fff; }
+.tras-sobrio .tras-btn-pri:hover, .tras-sobrio .sol-btn-pri:hover:not(:disabled), .tras-sobrio .add-to-transfer-btn:hover { background: var(--azul-2); border-color: var(--azul-2); }
+.tras-sobrio .tras-btn-pri.modo-edicion { background: var(--amarillo); border-color: var(--amarillo); color: #fff; }
+.tras-sobrio .tras-btn-pri.modo-edicion:hover { background: var(--amarillo-2); }
+.tras-sobrio #exportExcelBtn, .tras-sobrio #exportManagerReportBtn { background: var(--verde); border-color: var(--verde); color: #fff; }
+.tras-sobrio #exportExcelBtn:hover, .tras-sobrio #exportManagerReportBtn:hover { background: var(--verde-2); }
+.tras-sobrio #downloadPdfBtn { background: var(--rojo); border-color: var(--rojo); color: #fff; }
+.tras-sobrio #downloadPdfBtn:hover { background: var(--rojo-2); }
+
+/* Botones de cada solicitud según lo que hacen */
+.tras-sobrio .sol-btn[data-action="finalize_processing"] { background: var(--teal); border-color: var(--teal); color: #fff; }
+.tras-sobrio .sol-btn[data-action="finalize_processing"]:hover:not(:disabled) { background: var(--teal-2); }
+.tras-sobrio .sol-btn[data-action="return_to_pending"], .tras-sobrio .sol-btn[data-action="start_novelty_review"] { background: var(--amarillo); border-color: var(--amarillo); color: #fff; }
+.tras-sobrio .sol-btn[data-action="return_to_pending"]:hover:not(:disabled), .tras-sobrio .sol-btn[data-action="start_novelty_review"]:hover:not(:disabled) { background: var(--amarillo-2); }
+.tras-sobrio .sol-btn[data-action="finalize_shipment"], .tras-sobrio .sol-btn[data-action="finalize_novelty"], .tras-sobrio .sol-btn[data-action="finalize_reception"] { background: var(--verde); border-color: var(--verde); color: #fff; }
+.tras-sobrio .sol-btn[data-action="finalize_shipment"]:hover:not(:disabled), .tras-sobrio .sol-btn[data-action="finalize_novelty"]:hover:not(:disabled), .tras-sobrio .sol-btn[data-action="finalize_reception"]:hover:not(:disabled) { background: var(--verde-2); }
+.tras-sobrio .sol-btn[data-action="edit_my_request"] { background: var(--azul); border-color: var(--azul); color: #fff; }
+.tras-sobrio .sol-btn-peligro { background: var(--rojo); border-color: var(--rojo); color: #fff; }
+.tras-sobrio .sol-btn-peligro:hover:not(:disabled) { background: var(--rojo-2); }
+
+/* Estado de cada solicitud: borde izquierdo y etiqueta de color */
+.tras-sobrio .sol-card.est-pendiente { border-left: 4px solid #ef4444; background: #fef2f2; }
+.tras-sobrio .sol-card.est-proceso { border-left: 4px solid #eab308; background: #fefce8; }
+.tras-sobrio .sol-card.est-enviado { border-left: 4px solid #3b82f6; background: #eff6ff; }
+.tras-sobrio .sol-card.est-completo { border-left: 4px solid #22c55e; background: #f0fdf4; }
+.tras-sobrio .sol-card.est-novedad { border-left: 4px solid #f97316; background: #fff7ed; }
+.tras-sobrio .sol-card.est-cancelada { border-left: 4px solid #991b1b; background: #fee2e2; }
+.tras-sobrio .sol-chip.sol-chip-pendiente { background: #fee2e2; border-color: #fca5a5; color: #b91c1c; }
+.tras-sobrio .sol-chip.sol-chip-proceso { background: #fef9c3; border-color: #fde047; color: #854d0e; }
+.tras-sobrio .sol-chip.sol-chip-enviado { background: #dbeafe; border-color: #93c5fd; color: #1d4ed8; }
+.tras-sobrio .sol-chip.sol-chip-completo { background: #dcfce7; border-color: #86efac; color: #15803d; }
+.tras-sobrio .sol-chip.sol-chip-novedad { background: #ffedd5; border-color: #fdba74; color: #c2410c; }
+.tras-sobrio .sol-chip.sol-chip-cancelada { background: #fecaca; border-color: #f87171; color: #7f1d1d; }
+
+/* Línea de avance y productos revisados */
+.tras-sobrio .sol-pasos span.hecho { background: #22c55e; }
+.tras-sobrio .sol-pasos span.actual { background: var(--azul); }
+.tras-sobrio .sol-item.ok { border-left: 3px solid #22c55e; background: #f0fdf4; }
+.tras-sobrio .sol-item.falta { border-left: 3px solid #f59e0b; }
+.tras-sobrio .sol-check { accent-color: var(--verde); }
+.tras-sobrio .sol-ver { color: var(--azul); text-decoration-color: #93c5fd; }
+.tras-sobrio .sol-ver:hover { color: var(--azul-2); text-decoration-color: var(--azul); }
+
+/* Catálogo y campos */
+.tras-sobrio .tras-contador.con-items { background: var(--azul); border-color: var(--azul); color: #fff; }
+.tras-sobrio .tras-producto:hover { border-color: #93c5fd; }
+.tras-sobrio .tras-producto.recien-anadido { border-color: var(--verde); box-shadow: 0 0 0 2px #bbf7d0; }
+.tras-sobrio .tras-campo:focus, .tras-sobrio .tras-cant:focus, .tras-sobrio .sol-cant:focus, .tras-sobrio .sol-input:focus { border-color: #93c5fd; box-shadow: 0 0 0 3px rgba(37, 99, 235, .15); }
+
+/* Gerencia: números con su color */
+.tras-sobrio #kpiTotalRequests { color: var(--azul); }
+.tras-sobrio #kpiCompleted { color: var(--verde); }
+.tras-sobrio #kpiWithNovelty { color: var(--amarillo); }
+.tras-sobrio #kpiCancelled { color: var(--rojo); }
 </style>
 </head>
 <body class="tras-sobrio">
@@ -808,20 +873,23 @@ const allMyRequests = sortedRequests.filter(r =>
             ready_to_ship: 3, shipping_details: 3, shipped: 4, completed: 5, completed_incomplete: 5, novelty_review: 5
         })[s];
 
-        // Tono del estado (escala de grises; la novedad con borde rojo suave)
-        const tonoEstado = (s) => {
-            if (s === 'cancelled') return 'sol-chip-apagado';
-            if (s === 'completed') return 'sol-chip-claro';
-            if (s === 'completed_incomplete' || s === 'novelty_review') return 'sol-chip-novedad';
-            if (s === 'pending' || s === 'shipped') return 'sol-chip-fuerte';
-            return 'sol-chip-medio';
+        // Color del estado (los del módulo original): rojo pendiente, amarillo en proceso, azul en camino,
+        // verde recibida, naranja con novedad, rojo oscuro cancelada
+        const colorEstado = (s) => {
+            if (s === 'pending' || s === 'processing_partial_items') return 'pendiente';
+            if (s === 'shipped') return 'enviado';
+            if (s === 'completed') return 'completo';
+            if (s === 'completed_incomplete' || s === 'novelty_review') return 'novedad';
+            if (s === 'cancelled') return 'cancelada';
+            return 'proceso';
         };
+        const tonoEstado = (s) => 'sol-chip-' + colorEstado(s);
 
         // completo = false: tarjeta de resumen para las listas ("Ver detalle" abre la ventana)
         // completo = true: tarjeta con todo el detalle y las acciones, dentro de la ventana
         function createRequestCard(req, role, completo = false) {
             const card = document.createElement('div');
-            card.className = completo ? 'sol-card sol-card-ventana' : 'sol-card';
+            card.className = completo ? 'sol-card sol-card-ventana' : `sol-card est-${colorEstado(req.status)}`;
             // Solo la tarjeta de la ventana lleva "card-ID": las validaciones buscan sus casillas por ese id
             card.id = completo ? `card-${req.id}` : `resumen-${req.id}`;
             const id = esc(req.id);
@@ -1602,13 +1670,20 @@ const allMyRequests = sortedRequests.filter(r =>
             handleReportGeneration(); 
         }
 
-        // Colores de los gráficos: escala de grises con un solo azul de acento (igual que TI y Reposición)
-        const COLORES_GRAFICO = ['#0f172a', '#1d4ed8', '#64748b', '#94a3b8', '#334155', '#93c5fd', '#cbd5e1', '#475569'];
+        // Colores de los gráficos: los del módulo original
+        const COLORES_BODEGAS = ['#1d4ed8', '#059669', '#d97706', '#dc2626', '#6d28d9', '#db2777', '#0891b2', '#65a30d'];
+        // En "Solicitudes por estado" cada estado lleva el color de su etiqueta
+        const COLOR_DE_ESTADO = {
+            pending: '#ef4444', processing_partial_items: '#f87171', pending_nt_start: '#facc15', pending_nt_active: '#eab308',
+            ready_to_ship: '#ca8a04', shipping_details: '#a16207', shipped: '#3b82f6', completed: '#22c55e',
+            completed_incomplete: '#f97316', novelty_review: '#fb923c', cancelled: '#991b1b'
+        };
         const pct = (parte, total) => total ? `${Math.round((parte / total) * 100)}%` : '0%';
 
         // Cálculos del informe (los usan la pantalla y el PDF)
         function calcularInforme(data) {
             const estados = {};
+            const colorEstados = {};
             const bodegas = {};
             const productos = {};
             const cumplimiento = { sent: 0, received: 0 };
@@ -1616,6 +1691,7 @@ const allMyRequests = sortedRequests.filter(r =>
             data.forEach(req => {
                 const estado = translateStatus(req.status, req);
                 estados[estado] = (estados[estado] || 0) + 1;
+                colorEstados[estado] = COLOR_DE_ESTADO[req.status] || '#6b7280';
                 if (req.toWarehouse) bodegas[req.toWarehouse] = (bodegas[req.toWarehouse] || 0) + 1;
                 (req.items || []).forEach(item => {
                     if (!item) return;
@@ -1634,6 +1710,7 @@ const allMyRequests = sortedRequests.filter(r =>
                 novedad: data.filter(r => r.status === 'completed_incomplete' || r.status === 'novelty_review').length,
                 canceladas: data.filter(r => r.status === 'cancelled').length,
                 estados: Object.entries(estados).sort((a, b) => b[1] - a[1]),
+                colorEstados,
                 bodegas: Object.entries(bodegas).sort((a, b) => b[1] - a[1]),
                 productos: Object.entries(productos).sort((a, b) => b[1] - a[1]).slice(0, 50),
                 cumplimiento, solicitadoEnviado
@@ -1657,7 +1734,7 @@ const allMyRequests = sortedRequests.filter(r =>
             const leyendaDerecha = { ...chartOptions, plugins: { legend: { position: window.innerWidth < 640 ? 'bottom' : 'right' } } };
 
             charts.statusChart = new Chart(dom.statusChart, {
-                type: 'doughnut', data: { labels: inf.estados.map(e => e[0]), datasets: [{ data: inf.estados.map(e => e[1]), backgroundColor: COLORES_GRAFICO, borderWidth: 0 }] },
+                type: 'doughnut', data: { labels: inf.estados.map(e => e[0]), datasets: [{ data: inf.estados.map(e => e[1]), backgroundColor: inf.estados.map(e => inf.colorEstados[e[0]]), borderWidth: 0 }] },
                 options: { ...leyendaDerecha, cutout: '62%' }
             });
 
@@ -1681,22 +1758,22 @@ const allMyRequests = sortedRequests.filter(r =>
             });
 
             charts.warehouseChart = new Chart(dom.warehouseChart, {
-                type: 'doughnut', data: { labels: inf.bodegas.map(b => b[0]), datasets: [{ data: inf.bodegas.map(b => b[1]), backgroundColor: COLORES_GRAFICO, borderWidth: 0 }] },
+                type: 'doughnut', data: { labels: inf.bodegas.map(b => b[0]), datasets: [{ data: inf.bodegas.map(b => b[1]), backgroundColor: COLORES_BODEGAS, borderWidth: 0 }] },
                 options: { ...leyendaDerecha, cutout: '62%' }
             });
 
             charts.fulfillmentChart = new Chart(dom.fulfillmentChart, {
                 type: 'bar', data: { labels: ['Unidades'], datasets: [
-                    { label: 'Enviadas', data: [inf.cumplimiento.sent], backgroundColor: '#94a3b8', borderRadius: 3 },
-                    { label: 'Recibidas', data: [inf.cumplimiento.received], backgroundColor: '#0f172a', borderRadius: 3 }
+                    { label: 'Enviadas', data: [inf.cumplimiento.sent], backgroundColor: '#a8a29e', borderRadius: 3 },
+                    { label: 'Recibidas', data: [inf.cumplimiento.received], backgroundColor: '#16a34a', borderRadius: 3 }
                 ]},
                 options: { ...chartOptions, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
             });
 
             charts.requestedVsSentChart = new Chart(dom.requestedVsSentChart, {
                 type: 'bar', data: { labels: ['Unidades'], datasets: [
-                    { label: 'Solicitadas', data: [inf.solicitadoEnviado.requested], backgroundColor: '#94a3b8', borderRadius: 3 },
-                    { label: 'Enviadas', data: [inf.solicitadoEnviado.sent], backgroundColor: '#1d4ed8', borderRadius: 3 }
+                    { label: 'Solicitadas', data: [inf.solicitadoEnviado.requested], backgroundColor: '#3b82f6', borderRadius: 3 },
+                    { label: 'Enviadas', data: [inf.solicitadoEnviado.sent], backgroundColor: '#f97316', borderRadius: 3 }
                 ]},
                 options: { ...chartOptions, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
             });
