@@ -529,8 +529,10 @@ document.addEventListener('DOMContentLoaded', () => {
       r.c12 += v.c12;
       if (v.d > 0) r.conVenta++;
       if (v.agotado) { r.agotados++; r.perdida += v.perdida; }
-      if (v.sem === 'rojo') { r.rojos++; r.valorRojos += v.vq; }
-      r.sugerido += v.vq;
+      // A la Principal no se le traslada: lo que necesita es la compra (todo lo comprado llega allá)
+      const vc = sede === 'PRINCIPAL' ? vista(f, '') : v;
+      if (vc.sem === 'rojo') { r.rojos++; r.valorRojos += vc.vq; }
+      r.sugerido += vc.vq;
     }
     r.pctMuerto = r.valor ? r.muerto / r.valor : null;
     r.dias = r.costoDia ? r.valor / r.costoDia : null;
@@ -576,7 +578,7 @@ document.addEventListener('DOMContentLoaded', () => {
     $('anAviso').innerHTML = AN.log && AN.log.estado === 'error'
       ? `<div class="aviso">La última actualización con Siigo falló. Se muestran los datos del ${esc(fmtFecha(AN.meta.fecha_datos))}.</div>` : '';
 
-    const enSede = !!sede;
+    const enSede = !!sede && sede !== 'PRINCIPAL';
     const kp = [
       ['Valor del inventario', plata(r.valor)],
       ['Plata en producto muerto', `${plata(r.muerto)}<small>${pct(r.pctMuerto, 1)}</small>`],
@@ -593,7 +595,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return `<tr class="${cls}" data-sede="${esc(b)}"><td>${esc(b ? nombreSede(b) : 'Total')}</td>
         <td class="num">${plata(x.valor)}</td><td class="num">${plata(x.muerto)}</td><td class="num">${pct(x.pctMuerto, 1)}</td>
         <td class="num">${num(x.dias)}</td><td class="num">${num(x.rotacion, 1)}</td><td class="num">${num(x.agotados)}</td>
-        <td class="num">${x.rojos ? `<b class="text-red-700">${num(x.rojos)}</b>` : '0'}</td>
+        <td class="num">${b === 'PRINCIPAL' ? '–' : x.rojos ? `<b class="text-red-700">${num(x.rojos)}</b>` : '0'}</td>
         <td class="num">${plata(vs.mes)}</td><td class="num">${flecha(variacion(vs.mes, vs.ant))}</td></tr>`;
     };
     $('anSedes').innerHTML = `<thead><tr><th>Sede</th><th class="num">Inventario</th><th class="num">Producto muerto</th><th class="num">% muerto</th>
@@ -665,7 +667,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function llenarFiltrosCq() {
     if ($('cqSede').options.length) return;
-    $('cqSede').innerHTML = '<option value="">Total (todas las sedes)</option>' + SEDES_AN.map(b => `<option value="${esc(b)}">${esc(nombreSede(b))}</option>`).join('');
+    // La Principal no aparece: lo que ella necesita es la compra, que es la vista Total
+    $('cqSede').innerHTML = '<option value="">Total (todas las sedes)</option>' + SEDES_AN.filter(b => b !== 'PRINCIPAL').map(b => `<option value="${esc(b)}">${esc(nombreSede(b))}</option>`).join('');
     [...new Set(AN.filas.map(f => f.g).filter(Boolean))].sort().forEach(g => $('cqCat').add(new Option(g, g)));
     [...new Set(AN.filas.map(f => f.prov).filter(Boolean))].sort().forEach(p => $('cqProv').add(new Option(p, p)));
   }
