@@ -235,6 +235,8 @@ body.tras-sobrio {
 .tras-sobrio .sol-item.falta { border-left: 3px solid #f59e0b; }
 .tras-sobrio .sol-check { accent-color: var(--verde); }
 .tras-sobrio .sol-ver { color: var(--azul); text-decoration-color: #93c5fd; }
+.tras-sobrio .sol-fila-acciones { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin-top: 12px; }
+.tras-sobrio .sol-fila-acciones .sol-ver { margin-top: 0; }
 .tras-sobrio .sol-ver:hover { color: var(--azul-2); text-decoration-color: var(--azul); }
 
 /* Catálogo y campos */
@@ -885,7 +887,42 @@ const allMyRequests = sortedRequests.filter(r =>
         };
         const tonoEstado = (s) => 'sol-chip-' + colorEstado(s);
 
-        // completo = false: tarjeta de resumen para las listas ("Ver detalle" abre la ventana)
+        // Lo que sigue en cada solicitud, para el botón de la tarjeta (como en el módulo original).
+        // Con "accion" el botón hace el paso de una vez (no necesita datos) y abre la ventana para continuar;
+        // sin "accion" solo abre la ventana, donde están las casillas y campos de ese paso.
+        function siguientePaso(req, role) {
+            const s = req.status;
+            if (role === 'admin' || role === 'reviewer') {
+                if (s === 'pending') return { texto: 'Iniciar revisión', accion: 'start_processing' };
+                if (s === 'processing_partial_items') return { texto: 'Continuar revisión' };
+            }
+            if (role === 'admin') {
+                if (s === 'pending_nt_start') return { texto: 'Iniciar preparación de NT', accion: 'start_nt_preparation' };
+                if (s === 'pending_nt_active') return { texto: 'Completar NT' };
+                if (s === 'ready_to_ship') return { texto: 'Proceder a envío', accion: 'proceed_to_shipping' };
+                if (s === 'shipping_details') return { texto: 'Registrar envío' };
+                if (s === 'completed_incomplete') return { texto: 'Iniciar revisión de novedad', accion: 'start_novelty_review' };
+                if (s === 'novelty_review') return { texto: 'Gestionar novedad' };
+                if (s === 'cancelled') return { texto: 'Reactivar', accion: 'reactivate' };
+            }
+            if (role === 'requester' && s === 'shipped') return { texto: 'Confirmar recepción' };
+            return null;
+        }
+
+        async function handleSiguientePaso(evento) {
+            const boton = evento.currentTarget;
+            const { requestId, role, action } = boton.dataset;
+            if (action) {
+                boton.disabled = true;
+                try { await handleAdminAction(evento); } finally { boton.disabled = false; }
+                if (action === 'reactivate') return;   // vuelve a "Pendiente": no hay nada más que hacer en la ventana
+            }
+            detalleAbierto = { id: requestId, role };
+            pintarDetalle();
+            document.getElementById('solVentanaCuerpo').scrollTop = 0;
+        }
+
+        // completo = false: tarjeta de resumen para las listas (el botón del paso siguiente y "Ver más" abren la ventana)
         // completo = true: tarjeta con todo el detalle y las acciones, dentro de la ventana
         function createRequestCard(req, role, completo = false) {
             const card = document.createElement('div');
@@ -1066,11 +1103,16 @@ const allMyRequests = sortedRequests.filter(r =>
                     <ul class="space-y-2">${itemsHtml}</ul>
                     ${contentHtml}
                 </div>
-                </div>` : `<button type="button" data-request-id="${id}" data-role="${role}" class="toggle-details-btn sol-ver">Ver detalle</button>`}
+                </div>` : (() => {
+                    const sig = siguientePaso(req, role);
+                    const botonSig = sig ? `<button type="button" data-request-id="${id}" data-role="${role}" ${sig.accion ? `data-action="${sig.accion}"` : ''} class="siguiente-btn sol-btn sol-btn-pri" data-pequeno>${sig.texto}</button>` : '';
+                    return `<div class="sol-fila-acciones">${botonSig}<button type="button" data-request-id="${id}" data-role="${role}" class="toggle-details-btn sol-ver">Ver más</button></div>`;
+                })()}
             `;
 
             card.querySelectorAll('.action-btn').forEach(b => b.onclick = handleAdminAction);
             card.querySelectorAll('.toggle-details-btn').forEach(b => b.onclick = handleToggleDetails);
+            card.querySelectorAll('.siguiente-btn').forEach(b => b.onclick = handleSiguientePaso);
             card.querySelectorAll('.admin-qty-input').forEach(i => i.onchange = handleAdminQuantityChange);
             card.querySelectorAll('.reception-qty-input').forEach(i => i.onchange = () => {});
             card.querySelectorAll('.tracking-option').forEach(r => r.onchange = handleTrackingOptionChange);
