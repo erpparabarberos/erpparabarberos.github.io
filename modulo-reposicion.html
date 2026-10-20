@@ -44,6 +44,19 @@
   #anSedes tr.sel td { background: #f1f5f9; font-weight: 600; color: var(--tinta); }
   #anSedes tr.total td { font-weight: 700; color: var(--tinta); border-top: 1px solid var(--linea); }
   .sube { color: #15803d; font-weight: 600; } .baja { color: var(--peligro); font-weight: 600; }
+  /* Semáforo del tablero de compras */
+  .sem { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; white-space: nowrap; color: var(--tinta-2); }
+  .sem::before { content: ''; width: 9px; height: 9px; border-radius: 50%; background: #cbd5e1; flex: none; }
+  .sem-rojo { color: var(--peligro); } .sem-rojo::before { background: #dc2626; }
+  .sem-amarillo::before { background: #eab308; } .sem-verde::before { background: #16a34a; }
+  .sem-gris { color: var(--gris); } .sem-gris::before { background: #475569; }
+  .sem-sin { color: var(--gris-claro); } .sem-sin::before { background: #e2e8f0; }
+  .seg { display: inline-flex; border: 1px solid var(--linea); border-radius: var(--radio); overflow: hidden; }
+  .seg button { height: 36px; padding: 0 12px; font-size: 13px; font-weight: 600; color: var(--tinta-2); background: #fff; }
+  .seg button + button { border-left: 1px solid var(--linea); }
+  .seg button.on { background: var(--tinta); color: #fff; }
+  #cqTabla td.prod { min-width: 260px; }
+  #cqTabla tr[data-prov] { cursor: pointer; }
   .aviso { border: 1px solid #fecaca; background: #fef2f2; color: #991b1b; border-radius: var(--radio); padding: 10px 14px; font-size: 13px; font-weight: 600; margin-bottom: 16px; }
 
   /* Tablas: encabezado claro, como Inventario de TI */
@@ -118,6 +131,7 @@
 
 <nav class="rep-tabs" id="tabs">
   <button class="rep-tab active" data-tab="inicio">Inicio</button>
+  <button class="rep-tab" data-tab="comprar">Qué comprar</button>
   <!-- Pantallas del cálculo anterior que quedan ocultas por ahora (el código sigue abajo) -->
   <button class="rep-tab" data-tab="resumen" style="display:none">Resumen</button>
   <button class="rep-tab" data-tab="reposicion">Reposición</button>
@@ -156,6 +170,28 @@
       <div class="card p-4 xl:col-span-2"><h3 class="font-bold mb-2" id="anTempTitulo">Temporadas</h3><div style="height:250px"><canvas id="chTemporada"></canvas></div></div>
       <div class="card p-4"><h3 class="font-bold mb-2">Próximos 3 meses por categoría</h3><div class="tbl-wrap" style="max-height:250px"><table class="tbl" id="anTempCat"></table></div></div>
     </div>
+  </section>
+
+  <!-- ====== QUÉ COMPRAR (tablero de compras con semáforo) ====== -->
+  <section id="tab-comprar" class="hidden-tab">
+    <div class="card p-3 mb-3 flex flex-wrap gap-2 items-center">
+      <input id="cqBuscar" class="inp w-64" placeholder="Buscar producto o SKU…">
+      <select id="cqSede" class="inp"></select>
+      <select id="cqSem" class="inp">
+        <option value="rojo,amarillo">Rojo y amarillo</option><option value="rojo">Rojo</option><option value="amarillo">Amarillo</option>
+        <option value="verde">Verde</option><option value="gris">Gris</option><option value="">Todos</option>
+      </select>
+      <select id="cqCat" class="inp"><option value="">Todas las categorías</option></select>
+      <select id="cqProv" class="inp max-w-xs"><option value="">Todos los proveedores</option></select>
+      <select id="cqAbc" class="inp"><option value="">Todas las clases</option><option>A</option><option>B</option><option>C</option></select>
+      <select id="cqOrigen" class="inp"><option value="">China y nacional</option><option>China</option><option>Nacional</option></select>
+      <span class="flex-1"></span>
+      <div class="seg" id="cqVista"><button data-v="producto" class="on">Por producto</button><button data-v="proveedor">Por proveedor</button></div>
+      <span class="text-sm muted" id="cqCuenta"></span>
+      <button class="btn btn-sec" id="cqExportar">Exportar a Excel</button>
+    </div>
+    <div class="tbl-wrap"><table class="tbl" id="cqTabla"></table></div>
+    <div class="text-center mt-3"><button class="btn btn-sec" id="cqMas">Mostrar más</button></div>
   </section>
 
   <!-- ====== RESUMEN ====== -->
@@ -442,7 +478,7 @@ document.addEventListener('DOMContentLoaded', () => {
     render();
   }
   function render() {
-    ({ inicio: renderInicio, resumen: renderResumen, reposicion: renderRepo, china: renderChina, puente: renderPuente,
+    ({ inicio: renderInicio, comprar: renderComprar, resumen: renderResumen, reposicion: renderRepo, china: renderChina, puente: renderPuente,
        traslados: renderTraslados, pedidos: renderPedidos, config: renderConfig })[S.tab]();
   }
 
@@ -581,6 +617,121 @@ document.addEventListener('DOMContentLoaded', () => {
         const i = x.est.indexOf(Math.max(...x.est.filter(v => v != null)));
         return `<tr><td>${esc(g)}</td><td class="num">${flecha(x.prox - 1)}</td><td>${MESES_CORTOS[i]}</td></tr>`;
       }).join('') || '<tr><td colspan="3" class="muted" style="padding:16px;text-align:center">Se necesita al menos un año de ventas</td></tr>') + '</tbody>';
+  }
+
+  // ---------------------------------------------------------------- QUÉ COMPRAR (sección 7.2)
+  const CQ = { orden: { col: 'sem', dir: 1 }, limite: PASO_FILAS, vista: 'producto' };
+  const RANGO_SEM = { rojo: 0, amarillo: 1, verde: 2, gris: 3, sin: 4 };
+  const nombreSem = (s, enSede) => ({ rojo: enSede ? 'Trasladar ya' : 'Pedir ya', amarillo: 'Preparar', verde: 'Suficiente', gris: 'Muerto', sin: 'Sin movimiento' }[s] || s);
+  const semaforoHTML = (s, enSede) => `<span class="sem sem-${esc(s)}">${esc(nombreSem(s, enSede))}</span>`;
+
+  // Fila del tablero en el alcance elegido. En una sede la "compra" es el traslado desde la principal.
+  function filaCompra(f, sede) {
+    if (!sede) return { f, sem: f.sem, abc: f.abc, st: f.st, tr: f.tr || 0, d: f.d || 0, cob: f.cob, pr: f.pr, q: f.q, vq: f.vq || 0, dpp: f.dpp };
+    const s = (f.s || {})[sede];
+    if (!s) return null;
+    return { f, sem: s.sem, abc: s.abc, st: s.st, tr: 0, d: s.d || 0, cob: s.cob, pr: s.pr, q: s.q, vq: f.costo ? s.q * f.costo : 0,
+      dpp: s.d > 0 ? (s.st - s.pr) / s.d : null };
+  }
+
+  function filasCompra() {
+    const sede = $('cqSede').value, sems = $('cqSem').value.split(',').filter(Boolean);
+    const cat = $('cqCat').value, prov = $('cqProv').value, abc = $('cqAbc').value, origen = $('cqOrigen').value;
+    const toks = $('cqBuscar').value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    const out = [];
+    for (const f of AN.filas) {
+      const r = filaCompra(f, sede);
+      if (!r || (sems.length && !sems.includes(r.sem)) || (cat && f.g !== cat) || (prov && f.prov !== prov) || (abc && r.abc !== abc) || (origen && f.origen !== origen)) continue;
+      if (toks.length && !toks.every(t => (f.c + ' ' + f.n).toLowerCase().includes(t))) continue;
+      out.push(r);
+    }
+    const { col, dir } = CQ.orden;
+    const val = (r, k) => ({ sem: RANGO_SEM[r.sem] ?? 9, n: r.f.n, c: r.f.c, prov: r.f.prov || '', abc: 'ABC-'.indexOf(r.abc) }[k] ?? r[k]);
+    out.sort((x, y) => {
+      let a = val(x, col), b = val(y, col);
+      if (a == null && b == null) return 0; if (a == null) return 1; if (b == null) return -1;
+      const c = (a > b ? 1 : a < b ? -1 : 0) * dir;
+      if (c || col !== 'sem') return c;
+      // dentro del mismo color: primero los A y los que menos días tienen
+      return ('ABC-'.indexOf(x.abc) - 'ABC-'.indexOf(y.abc)) || ((x.dpp ?? 1e9) - (y.dpp ?? 1e9));
+    });
+    return out;
+  }
+
+  const COLS_CQ = [
+    ['sem', 'Semáforo'], ['n', 'Producto'], ['abc', 'ABC'], ['st', 'Inventario', 1], ['tr', 'En camino', 1], ['d', 'Venta diaria', 1],
+    ['cob', 'Días de inventario', 1], ['pr', 'Punto de reorden', 1], ['q', 'Cantidad sugerida', 1], ['vq', 'Costo de la compra', 1], ['prov', 'Proveedor']
+  ];
+
+  function llenarFiltrosCq() {
+    if ($('cqSede').options.length) return;
+    $('cqSede').innerHTML = '<option value="">Total (todas las sedes)</option>' + SEDES_AN.map(b => `<option value="${esc(b)}">${esc(nombreSede(b))}</option>`).join('');
+    [...new Set(AN.filas.map(f => f.g).filter(Boolean))].sort().forEach(g => $('cqCat').add(new Option(g, g)));
+    [...new Set(AN.filas.map(f => f.prov).filter(Boolean))].sort().forEach(p => $('cqProv').add(new Option(p, p)));
+  }
+
+  function renderComprar() {
+    if (!AN.meta) { $('cqTabla').innerHTML = '<tbody><tr><td class="muted" style="padding:24px;text-align:center">Todavía no hay datos del analista de inventarios</td></tr></tbody>'; return; }
+    llenarFiltrosCq();
+    document.querySelectorAll('#cqVista button').forEach(b => b.classList.toggle('on', b.dataset.v === CQ.vista));
+    const sede = $('cqSede').value, enSede = !!sede, F = filasCompra();
+    if (CQ.vista === 'proveedor') return renderPorProveedor(F, enSede);
+    const cols = COLS_CQ.map(c => c[0] === 'q' && enSede ? ['q', 'Trasladar', 1] : c[0] === 'vq' && enSede ? ['vq', 'Valor del traslado', 1] : c);
+    $('cqCuenta').textContent = `${num(F.length)} productos · ${plata(F.reduce((a, r) => a + r.vq, 0))}`;
+    $('cqMas').style.display = F.length > CQ.limite ? '' : 'none';
+    const fl = c => CQ.orden.col === c ? (CQ.orden.dir > 0 ? ' ▲' : ' ▼') : '';
+    $('cqTabla').innerHTML = '<thead><tr>' + cols.map(([k, t, n]) => `<th class="${n ? 'num' : ''}" data-cqord="${k}">${t}${fl(k)}</th>`).join('') + '</tr></thead><tbody>' +
+      (F.slice(0, CQ.limite).map(r => `<tr>
+        <td>${semaforoHTML(r.sem, enSede)}</td>
+        <td class="prod"><span class="linkish" data-an="${esc(r.f.c)}">${esc(r.f.n)}</span><div class="text-xs muted">${esc(r.f.c)}${sede ? ' · ' + esc(nombreSede(sede)) : ''}</div></td>
+        <td>${esc(r.abc)}</td><td class="num">${num(r.st)}</td><td class="num">${r.tr ? num(r.tr) : '–'}</td>
+        <td class="num"${r.f.bd === '12m' && !sede ? ' title="Agotado hace más de 90 días: se usa la venta de 12 meses"' : ''}>${num(r.d, r.d && r.d < 1 ? 2 : 1)}</td>
+        <td class="num">${r.cob == null ? '–' : num(r.cob)}</td><td class="num">${num(r.pr)}</td>
+        <td class="num font-bold">${r.q ? num(r.q) : '–'}</td><td class="num">${r.vq ? pesos(r.vq) : '–'}</td>
+        <td class="text-xs">${esc(r.f.prov || '—')}${r.f.origen ? `<div class="muted">${esc(r.f.origen)} · ${num(r.f.lead)} días</div>` : ''}</td></tr>`).join('')
+       || `<tr><td colspan="${cols.length}" class="muted" style="padding:24px;text-align:center">Sin productos con estos filtros</td></tr>`) + '</tbody>';
+  }
+
+  // Vista por proveedor: lo que habría que pedirle a cada uno (para agrupar en una sola orden, sección 5.6)
+  function renderPorProveedor(F, enSede) {
+    const g = new Map();
+    for (const r of F) {
+      const k = r.f.prov || '(sin proveedor)';
+      const x = g.get(k) || { prov: k, origen: r.f.origen, lead: r.f.lead, rojo: 0, amarillo: 0, prods: 0, unid: 0, valor: 0 };
+      x.prods++; if (r.sem === 'rojo') x.rojo++; if (r.sem === 'amarillo') x.amarillo++;
+      x.unid += r.q || 0; x.valor += r.vq; x.lead = Math.max(x.lead || 0, r.f.lead || 0);
+      g.set(k, x);
+    }
+    const L = [...g.values()].sort((a, b) => b.rojo - a.rojo || b.valor - a.valor);
+    const provs = (AN.meta && AN.meta.proveedores) || {};
+    const hoy = new Date().toISOString().slice(0, 10);
+    $('cqCuenta').textContent = `${num(L.length)} proveedores · ${plata(L.reduce((a, x) => a + x.valor, 0))}`;
+    $('cqMas').style.display = 'none';
+    $('cqTabla').innerHTML = `<thead><tr><th>Proveedor</th><th>Origen</th><th class="num">Días de entrega</th><th class="num">Pedir ya</th><th class="num">Preparar</th>
+      <th class="num">Productos</th><th class="num">Unidades</th><th class="num">${enSede ? 'Valor del traslado' : 'Costo de la compra'}</th><th class="num">Pedido mínimo</th><th>Llegaría</th></tr></thead><tbody>` +
+      (L.map(x => {
+        const pm = (provs[x.prov] || {}).pedido_minimo, tipo = (provs[x.prov] || {}).pedido_minimo_tipo;
+        const cumple = !pm ? null : (tipo === 'unidades' ? x.unid >= pm : x.valor >= pm);
+        return `<tr data-prov="${esc(x.prov)}"><td class="font-bold" style="color:var(--tinta)">${esc(x.prov)}</td><td>${esc(x.origen || '')}</td>
+          <td class="num">${num(x.lead)}</td><td class="num">${x.rojo ? `<b class="text-red-700">${num(x.rojo)}</b>` : '0'}</td><td class="num">${num(x.amarillo)}</td>
+          <td class="num">${num(x.prods)}</td><td class="num">${num(x.unid)}</td><td class="num font-bold">${pesos(x.valor)}</td>
+          <td class="num">${pm ? (tipo === 'unidades' ? num(pm) + ' unid.' : pesos(pm)) + (cumple ? '' : ' <span class="text-red-700">✕</span>') : '–'}</td>
+          <td>${enSede ? '–' : fmtFecha(sumarDias(hoy, x.lead || 0))}</td></tr>`;
+      }).join('') || '<tr><td colspan="10" class="muted" style="padding:24px;text-align:center">Sin productos con estos filtros</td></tr>') + '</tbody>';
+  }
+
+  function exportarComprar() {
+    if (typeof XLSX === 'undefined') return toast('No se cargó la librería de Excel');
+    const sede = $('cqSede').value;
+    const rows = filasCompra().map(r => ({
+      'Semáforo': nombreSem(r.sem, !!sede), 'SKU': r.f.c, 'Producto': r.f.n, 'Categoría': r.f.g, 'Sede': sede ? nombreSede(sede) : 'Total',
+      'ABC': r.abc, 'Inventario': r.st, 'En camino': r.tr, 'Venta diaria': Math.round(r.d * 100) / 100,
+      'Días de inventario': r.cob == null ? '' : Math.round(r.cob), 'Punto de reorden': Math.round(r.pr || 0),
+      [sede ? 'Trasladar' : 'Cantidad sugerida']: r.q, 'Costo unitario': r.f.costo || '', [sede ? 'Valor del traslado' : 'Costo de la compra']: Math.round(r.vq),
+      'Proveedor': r.f.prov || '', 'Origen': r.f.origen || '', 'Días de entrega': r.f.lead
+    }));
+    const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), 'Qué comprar');
+    XLSX.writeFile(wb, `que_comprar_${sede ? sede.toLowerCase().replace(/\s+/g, '_') + '_' : ''}${hoyISO()}.xlsx`);
   }
 
   // ---------------------------------------------------------------- RESUMEN
@@ -1167,6 +1318,17 @@ document.addEventListener('DOMContentLoaded', () => {
   ['fEstado', 'fOrigen', 'fAbc', 'fProv', 'fBodega', 'fAccion'].forEach(id => $(id).addEventListener('change', () => { S.limiteRepo = PASO_FILAS; renderRepo(); }));
   ['fPedEstado', 'fPedTipo'].forEach(id => $(id).addEventListener('change', renderPedidos));
   ['anSede', 'anCat', 'anProv', 'anAbc'].forEach(id => $(id).addEventListener('change', renderInicio));
+  ['cqSede', 'cqSem', 'cqCat', 'cqProv', 'cqAbc', 'cqOrigen'].forEach(id => $(id).addEventListener('change', () => { CQ.limite = PASO_FILAS; renderComprar(); }));
+  let tCq; $('cqBuscar').addEventListener('input', () => { clearTimeout(tCq); tCq = setTimeout(() => { CQ.limite = PASO_FILAS; renderComprar(); }, 250); });
+  $('cqMas').onclick = () => { CQ.limite += PASO_FILAS; renderComprar(); };
+  $('cqExportar').onclick = exportarComprar;
+  $('cqVista').addEventListener('click', ev => { const b = ev.target.closest('button[data-v]'); if (b) { CQ.vista = b.dataset.v; renderComprar(); } });
+  $('cqTabla').addEventListener('click', ev => {
+    const th = ev.target.closest('th[data-cqord]');
+    if (th) { const k = th.dataset.cqord; CQ.orden = { col: k, dir: CQ.orden.col === k ? -CQ.orden.dir : (['sem', 'n', 'abc', 'prov'].includes(k) ? 1 : -1) }; return renderComprar(); }
+    const pv = ev.target.closest('tr[data-prov]');   // clic en un proveedor = ver sus productos
+    if (pv) { $('cqProv').value = pv.dataset.prov === '(sin proveedor)' ? '' : pv.dataset.prov; CQ.vista = 'producto'; renderComprar(); }
+  });
   // Clic en una fila del comparativo = ver esa sede
   $('anSedes').addEventListener('click', ev => { const tr = ev.target.closest('tr[data-sede]'); if (tr) { $('anSede').value = tr.dataset.sede; renderInicio(); } });
   $('fPedBuscar').addEventListener('input', renderPedidos);
