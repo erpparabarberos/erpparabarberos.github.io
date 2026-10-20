@@ -38,6 +38,9 @@
   .kpi-n { font-size: 24px; font-weight: 800; line-height: 1.2; margin-top: 4px; font-variant-numeric: tabular-nums; }
   .kpi-n small { font-size: 13px; font-weight: 600; color: var(--gris); margin-left: 6px; }
   .kpi-n.rojo { color: var(--peligro); }
+  .kpi-clic { text-align: left; cursor: pointer; width: 100%; transition: border-color .15s; }
+  .kpi-clic:hover { border-color: var(--gris-claro); }
+  #dgTabla td { white-space: nowrap; } #dgTabla td.parte { white-space: normal; min-width: 170px; }
   .kpi-n, #anSedes td { white-space: nowrap; }
   @media (max-width: 640px) { .kpi { padding: 12px; } .kpi-n { font-size: 19px; } .kpi-n small { display: block; margin: 2px 0 0; } }
   #anSedes tbody tr { cursor: pointer; }
@@ -301,6 +304,7 @@
 </main>
 
 <!-- ====== MODAL DETALLE ====== -->
+<div class="modal-bg" id="mdDesglose"><div class="modal" style="max-width:1280px"><div id="mdDesgloseBody"></div></div></div>
 <div class="modal-bg" id="mdDetalle"><div class="modal"><div id="mdDetalleBody"></div></div></div>
 <!-- ====== MODAL PEDIDO ====== -->
 <div class="modal-bg" id="mdPedido"><div class="modal"><div id="mdPedidoBody"></div></div></div>
@@ -505,12 +509,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Un producto visto en el alcance elegido: total (sede vacía) o una sede
   function vista(f, sede) {
-    if (!sede) return { st: f.st, d: f.d || 0, abc: f.abc, sem: f.sem, muerto: f.muerto, agotado: f.agotado, c12: f.c12 || 0, q: f.q, vq: f.vq || 0, perdida: f.perdida || 0 };
+    if (!sede) return { st: f.st, d: f.d || 0, abc: f.abc, sem: f.sem, muerto: f.muerto, agotado: f.agotado, c12: f.c12 || 0, q: f.q, vq: f.vq || 0, perdida: f.perdida || 0,
+      tr: f.tr || 0, cob: f.cob, pr: f.pr, dsv: f.dsv, ult: f.ult, da: f.dias_agotado || 0 };
     const s = (f.s || {})[sede];
     if (!s) return null;
     const dias = (AN.meta.parametros || {}).dias_venta || 90;
+    const da = s.agotado ? Math.min(s.dsv ?? dias, dias) : 0;
     return { st: s.st, d: s.d || 0, abc: s.abc, sem: s.sem, muerto: s.muerto, agotado: s.agotado, c12: s.c12 || 0, q: s.q,
-      vq: f.costo ? s.q * f.costo : 0, perdida: s.agotado && f.precio ? s.d * f.precio * Math.min(s.dsv ?? dias, dias) : 0 };
+      vq: f.costo ? s.q * f.costo : 0, perdida: s.agotado && f.precio ? s.d * f.precio * da : 0,
+      tr: 0, cob: s.cob, pr: s.pr, dsv: s.dsv, ult: s.ult, da };
   }
 
   const filtrosAn = () => ({ cat: $('anCat').value, prov: $('anProv').value, abc: $('anAbc').value });
@@ -587,7 +594,8 @@ document.addEventListener('DOMContentLoaded', () => {
       ['Agotados', `${num(r.agotados)}<small>${pct(r.pctAgotados, 1)}</small>`, r.agotados ? 'rojo' : ''],
       ['Ventas perdidas estimadas', plata(r.perdida)]
     ];
-    $('anKpis').innerHTML = kp.map(([t, v, c]) => `<div class="card kpi"><div class="kpi-t">${t}</div><div class="kpi-n ${c || ''}">${v}</div></div>`).join('');
+    const tipos = ['valor', 'muerto', 'pedir', 'compra', 'agotados', 'perdidas'];
+    $('anKpis').innerHTML = kp.map(([t, v, c], i) => `<button type="button" class="card kpi kpi-clic" data-dg="${tipos[i]}"><div class="kpi-t">${t}</div><div class="kpi-n ${c || ''}">${v}</div></button>`).join('');
 
     // Comparativo de sedes (con los mismos filtros)
     const fila = (b, cls) => {
@@ -619,6 +627,109 @@ document.addEventListener('DOMContentLoaded', () => {
         const i = x.est.indexOf(Math.max(...x.est.filter(v => v != null)));
         return `<tr><td>${esc(g)}</td><td class="num">${flecha(x.prox - 1)}</td><td>${MESES_CORTOS[i]}</td></tr>`;
       }).join('') || '<tr><td colspan="3" class="muted" style="padding:16px;text-align:center">Se necesita al menos un año de ventas</td></tr>') + '</tbody>';
+  }
+
+  // ---------------------------------------------------------------- DESGLOSE DE LOS INDICADORES DEL INICIO
+  // Clic en una tarjeta = lista de los productos que forman ese número (con los filtros del Inicio)
+  const DG = { tipo: '', orden: null, filas: [] };
+  const dondeEsta = f => Object.entries(f.s || {}).filter(([, s]) => s.st > 0).sort((a, b) => b[1].st - a[1].st)
+    .map(([b, s]) => `${nombreSede(b).replace('Bodega principal', 'Principal')} ${num(s.st)}`).join(' · ');
+  const fechaUlt = v => v ? fmtFecha(v) : 'Sin ventas en 2 años';
+  const diasSin = v => v == null ? 'Más de 730' : num(v);
+  const COL = {
+    sku: { t: 'SKU', v: r => r.f.c },
+    prod: { t: 'Producto', parte: 1, v: r => r.f.n, h: r => `<b style="color:var(--tinta)">${esc(r.f.n)}</b>` },
+    cat: { t: 'Categoría', parte: 1, v: r => r.f.g },
+    abc: { t: 'ABC', v: r => r.v.abc },
+    sem: { t: 'Semáforo', v: r => RANGO_SEM[r.v.sem] ?? 9, h: r => semaforoHTML(r.v.sem, r.enSede) },
+    unid: { t: 'Unidades', n: 1, v: r => r.v.st },
+    costo: { t: 'Costo unitario', n: 1, v: r => r.f.costo, fm: pesos },
+    valor: { t: 'Valor', n: 1, v: r => r.v.st * (r.f.costo || 0), fm: v => v ? pesos(v) : '–' },
+    quieta: { t: 'Plata quieta', n: 1, v: r => r.v.st * (r.f.costo || 0), fm: v => v ? pesos(v) : '–' },
+    ult: { t: 'Última venta', v: r => r.v.ult || '', fm: fechaUlt },
+    dsv: { t: 'Días sin venta', n: 1, v: r => r.v.dsv ?? 1e6, fm: v => diasSin(v >= 1e6 ? null : v) },
+    tr: { t: 'En camino', n: 1, v: r => r.v.tr, fm: v => v ? num(v) : '–' },
+    d: { t: 'Venta diaria', n: 1, v: r => r.v.d, fm: v => num(v, v && v < 1 ? 2 : 1) },
+    cob: { t: 'Días de inventario', n: 1, v: r => r.v.cob, fm: v => v == null ? '–' : num(v) },
+    pr: { t: 'Punto de reorden', n: 1, v: r => r.v.pr, fm: v => num(v) },
+    q: { t: 'Cantidad sugerida', n: 1, v: r => r.v.q, fm: v => v ? num(v) : '–' },
+    vq: { t: 'Costo de la compra', n: 1, v: r => r.v.vq, fm: v => v ? pesos(v) : '–' },
+    precio: { t: 'Precio de venta', n: 1, v: r => r.f.precio, fm: pesos },
+    da: { t: 'Días agotado', n: 1, v: r => r.v.da, fm: v => num(v) },
+    perdida: { t: 'Venta perdida', n: 1, v: r => r.v.perdida, fm: v => v ? pesos(v) : '–' },
+    donde: { t: 'Dónde está', v: r => dondeEsta(r.f), h: r => `<span class="text-xs">${esc(dondeEsta(r.f)) || '–'}</span>` },
+    hayEn: { t: 'Hay en', v: r => dondeEsta(r.f), h: r => `<span class="text-xs">${esc(dondeEsta(r.f)) || 'Ninguna sede'}</span>` }
+  };
+  // tipo: título, qué productos entran, columnas, columna de plata para el total y orden inicial
+  const DESGLOSES = {
+    valor: { t: 'Valor del inventario', entra: v => v.st > 0, cols: ['sku', 'prod', 'cat', 'abc', 'unid', 'costo', 'valor', 'donde'], suma: 'valor', orden: 'valor' },
+    muerto: { t: 'Plata en producto muerto', entra: v => v.muerto, cols: ['sku', 'prod', 'cat', 'abc', 'unid', 'costo', 'quieta', 'ult', 'dsv', 'donde'], suma: 'quieta', orden: 'quieta' },
+    pedir: { t: 'Para pedir ya', compra: 1, entra: v => v.sem === 'rojo', cols: ['sku', 'prod', 'cat', 'abc', 'unid', 'tr', 'd', 'cob', 'pr', 'q', 'vq', 'donde'], suma: 'vq', orden: 'vq' },
+    compra: { t: 'Compra sugerida', compra: 1, entra: v => v.q > 0, cols: ['sem', 'sku', 'prod', 'cat', 'abc', 'unid', 'tr', 'd', 'cob', 'pr', 'q', 'vq', 'donde'], suma: 'vq', orden: 'vq' },
+    agotados: { t: 'Agotados', entra: v => v.agotado, cols: ['sku', 'prod', 'cat', 'abc', 'd', 'ult', 'da', 'perdida', 'hayEn'], suma: 'perdida', orden: 'perdida' },
+    perdidas: { t: 'Ventas perdidas estimadas', entra: v => v.agotado && v.perdida > 0, cols: ['sku', 'prod', 'cat', 'abc', 'd', 'precio', 'da', 'perdida', 'hayEn'], suma: 'perdida', orden: 'perdida' }
+  };
+
+  function abrirDesglose(tipo) {
+    const D = DESGLOSES[tipo]; if (!D || !AN.meta) return;
+    const sede = $('anSede').value, fl = filtrosAn();
+    // A la Principal no se le traslada: en "pedir" y "compra" se ve la compra
+    const alcance = D.compra && sede === 'PRINCIPAL' ? '' : sede;
+    const enSede = !!alcance;
+    DG.tipo = tipo; DG.orden = { k: D.orden, dir: -1 };
+    DG.filas = [];
+    for (const f of AN.filas) {
+      const v = vista(f, alcance);
+      if (v && pasaFiltros(f, v, fl) && D.entra(v)) DG.filas.push({ f, v, enSede });
+    }
+    const partes = [sede ? nombreSede(sede) : 'Total', fl.cat, fl.prov, fl.abc && 'Clase ' + fl.abc].filter(Boolean);
+    const titulo = tipo === 'pedir' && enSede ? 'Para trasladar ya' : tipo === 'compra' && enSede ? 'Traslado sugerido' : D.t;
+    $('mdDesgloseBody').innerHTML = `
+      <div class="p-5 border-b flex flex-wrap items-start gap-3">
+        <div class="flex-1"><h2>${esc(titulo)}</h2><div class="text-sm muted mt-1">${esc(partes.join(' · '))}</div></div>
+        <button class="btn btn-sec" id="dgExportar">Exportar a Excel</button>
+        <button class="btn btn-sec" data-cerrar="mdDesglose">Cerrar</button>
+      </div>
+      <div class="p-5">
+        <div class="flex flex-wrap items-center gap-3 mb-3">
+          <input id="dgBuscar" class="inp w-72" placeholder="Buscar producto o SKU…">
+          <span class="flex-1"></span><span class="text-sm" id="dgTotal"></span>
+        </div>
+        <div class="tbl-wrap" style="max-height:62vh"><table class="tbl" id="dgTabla"></table></div>
+      </div>`;
+    $('dgBuscar').addEventListener('input', pintarDesglose);
+    $('dgExportar').onclick = () => exportarDesglose(titulo, partes);
+    $('mdDesglose').classList.add('open');
+    pintarDesglose();
+  }
+
+  function filasDesglose() {
+    const D = DESGLOSES[DG.tipo], c = COL[DG.orden.k];
+    const toks = ($('dgBuscar') ? $('dgBuscar').value : '').trim().toLowerCase().split(/\s+/).filter(Boolean);
+    const F = DG.filas.filter(r => !toks.length || toks.every(t => (r.f.c + ' ' + r.f.n).toLowerCase().includes(t)));
+    return F.sort((x, y) => {
+      const a = c.v(x), b = c.v(y);
+      if (a == null && b == null) return 0; if (a == null) return 1; if (b == null) return -1;
+      return (a > b ? 1 : a < b ? -1 : 0) * DG.orden.dir;
+    });
+  }
+
+  function pintarDesglose() {
+    const D = DESGLOSES[DG.tipo], F = filasDesglose();
+    const total = F.reduce((a, r) => a + (COL[D.suma].v(r) || 0), 0);
+    $('dgTotal').innerHTML = `${num(F.length)} productos · <b>${pesos(total)}</b>`;
+    $('dgTabla').innerHTML = '<thead><tr>' + D.cols.map(k => `<th class="${COL[k].n ? 'num' : ''}" data-dgord="${k}">${COL[k].t}${DG.orden.k === k ? (DG.orden.dir > 0 ? ' ▲' : ' ▼') : ''}</th>`).join('') + '</tr></thead><tbody>' +
+      (F.map(r => '<tr>' + D.cols.map(k => { const c = COL[k]; return `<td class="${c.n ? 'num' : c.parte ? 'parte' : ''}">${c.h ? c.h(r) : esc(c.fm ? c.fm(c.v(r)) : (c.v(r) ?? '–'))}</td>`; }).join('') + '</tr>').join('')
+       || `<tr><td colspan="${D.cols.length}" class="muted" style="padding:24px;text-align:center">Sin productos</td></tr>`) + '</tbody>';
+  }
+
+  function exportarDesglose(titulo, partes) {
+    if (typeof XLSX === 'undefined') return toast('No se cargó la librería de Excel');
+    const D = DESGLOSES[DG.tipo];
+    const crudo = (k, r) => { const v = COL[k].v(r); return k === 'sem' ? nombreSem(r.v.sem, r.enSede) : k === 'dsv' && v >= 1e6 ? '' : typeof v === 'number' ? Math.round(v * 100) / 100 : v; };
+    const rows = filasDesglose().map(r => Object.fromEntries(D.cols.map(k => [COL[k].t, crudo(k, r)])));
+    const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), titulo.slice(0, 31));
+    XLSX.writeFile(wb, `${titulo.toLowerCase().replace(/\s+/g, '_')}_${partes.join('_').toLowerCase().replace(/[^a-z0-9áéíóúñ_]+/g, '_')}_${hoyISO()}.xlsx`);
   }
 
   // ---------------------------------------------------------------- QUÉ COMPRAR (sección 7.2)
@@ -1332,6 +1443,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (th) { const k = th.dataset.cqord; CQ.orden = { col: k, dir: CQ.orden.col === k ? -CQ.orden.dir : (['sem', 'n', 'abc', 'prov'].includes(k) ? 1 : -1) }; return renderComprar(); }
     const pv = ev.target.closest('tr[data-prov]');   // clic en un proveedor = ver sus productos
     if (pv) { $('cqProv').value = pv.dataset.prov === '(sin proveedor)' ? '' : pv.dataset.prov; CQ.vista = 'producto'; renderComprar(); }
+  });
+  $('anKpis').addEventListener('click', ev => { const k = ev.target.closest('[data-dg]'); if (k) abrirDesglose(k.dataset.dg); });
+  $('mdDesglose').addEventListener('click', ev => {
+    const th = ev.target.closest('th[data-dgord]'); if (!th) return;
+    const k = th.dataset.dgord;
+    DG.orden = { k, dir: DG.orden.k === k ? -DG.orden.dir : (COL[k].n ? -1 : 1) };
+    pintarDesglose();
   });
   // Clic en una fila del comparativo = ver esa sede
   $('anSedes').addEventListener('click', ev => { const tr = ev.target.closest('tr[data-sede]'); if (tr) { $('anSede').value = tr.dataset.sede; renderInicio(); } });
