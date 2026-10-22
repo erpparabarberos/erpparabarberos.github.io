@@ -492,7 +492,8 @@ document.addEventListener('DOMContentLoaded', () => {
     'MEDELLIN CENTRO': 'Medellín', BOGOTA: 'Bogotá', BARRANQUILLA: 'Barranquilla' };
   const nombreSede = b => NOMBRE_SEDE[b] || b;
   // Clase ABC; los productos que llevan menos de 90 días a la venta se marcan "Nuevo"
-  const claseTexto = (abc, f) => f && f.nuevo ? (abc && abc !== '-' ? abc + ' · Nuevo' : 'Nuevo') : abc;
+  // y los que no vendieron nada en 12 meses (sin clase) "Sin ventas"
+  const claseTexto = (abc, f) => f && f.nuevo ? (abc && abc !== '-' ? abc + ' · Nuevo' : 'Nuevo') : (!abc || abc === '-' ? 'Sin ventas' : abc);
   const MESES_CORTOS = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
   const AN = { meta: null, filas: [], historial: {}, traslados: [], log: null };
 
