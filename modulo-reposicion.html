@@ -491,6 +491,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const NOMBRE_SEDE = { PRINCIPAL: 'Bodega principal', 'CALI CENTRO': 'Cali Centro', 'CALI SUR': 'Cali Sur', PASTO: 'Pasto', TULUA: 'Tuluá',
     'MEDELLIN CENTRO': 'Medellín', BOGOTA: 'Bogotá', BARRANQUILLA: 'Barranquilla' };
   const nombreSede = b => NOMBRE_SEDE[b] || b;
+  // Clase ABC; los productos que llevan menos de 90 días a la venta se marcan "Nuevo"
+  const claseTexto = (abc, f) => f && f.nuevo ? (abc && abc !== '-' ? abc + ' · Nuevo' : 'Nuevo') : abc;
   const MESES_CORTOS = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
   const AN = { meta: null, filas: [], historial: {}, traslados: [], log: null };
 
@@ -640,7 +642,7 @@ document.addEventListener('DOMContentLoaded', () => {
     sku: { t: 'SKU', v: r => r.f.c },
     prod: { t: 'Producto', parte: 1, v: r => r.f.n, h: r => `<b style="color:var(--tinta)">${esc(r.f.n)}</b>` },
     cat: { t: 'Categoría', parte: 1, v: r => r.f.g },
-    abc: { t: 'ABC', v: r => r.v.abc },
+    abc: { t: 'ABC', v: r => r.v.abc, h: r => esc(claseTexto(r.v.abc, r.f)) },
     sem: { t: 'Semáforo', v: r => RANGO_SEM[r.v.sem] ?? 9, h: r => semaforoHTML(r.v.sem, r.enSede) },
     unid: { t: 'Unidades', n: 1, v: r => r.v.st },
     costo: { t: 'Costo unitario', n: 1, v: r => r.f.costo, fm: pesos },
@@ -717,7 +719,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function pintarDesglose() {
     const D = DESGLOSES[DG.tipo], F = filasDesglose();
     const total = F.reduce((a, r) => a + (COL[D.suma].v(r) || 0), 0);
-    $('dgTotal').innerHTML = `${num(F.length)} productos · <b>${pesos(total)}</b>`;
+    $('dgTotal').innerHTML = `${num(F.length)} producto${F.length === 1 ? '' : 's'} · <b>${pesos(total)}</b>`;
     $('dgTabla').innerHTML = '<thead><tr>' + D.cols.map(k => `<th class="${COL[k].n ? 'num' : ''}" data-dgord="${k}">${COL[k].t}${DG.orden.k === k ? (DG.orden.dir > 0 ? ' ▲' : ' ▼') : ''}</th>`).join('') + '</tr></thead><tbody>' +
       (F.map(r => '<tr>' + D.cols.map(k => { const c = COL[k]; return `<td class="${c.n ? 'num' : c.parte ? 'parte' : ''}">${c.h ? c.h(r) : esc(c.fm ? c.fm(c.v(r)) : (c.v(r) ?? '–'))}</td>`; }).join('') + '</tr>').join('')
        || `<tr><td colspan="${D.cols.length}" class="muted" style="padding:24px;text-align:center">Sin productos</td></tr>`) + '</tbody>';
@@ -726,7 +728,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function exportarDesglose(titulo, partes) {
     if (typeof XLSX === 'undefined') return toast('No se cargó la librería de Excel');
     const D = DESGLOSES[DG.tipo];
-    const crudo = (k, r) => { const v = COL[k].v(r); return k === 'sem' ? nombreSem(r.v.sem, r.enSede) : k === 'dsv' && v >= 1e6 ? '' : typeof v === 'number' ? Math.round(v * 100) / 100 : v; };
+    const crudo = (k, r) => { const v = COL[k].v(r); return k === 'sem' ? nombreSem(r.v.sem, r.enSede) : k === 'abc' ? claseTexto(v, r.f) : k === 'dsv' && v >= 1e6 ? '' : typeof v === 'number' ? Math.round(v * 100) / 100 : v; };
     const rows = filasDesglose().map(r => Object.fromEntries(D.cols.map(k => [COL[k].t, crudo(k, r)])));
     const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), titulo.slice(0, 31));
     XLSX.writeFile(wb, `${titulo.toLowerCase().replace(/\s+/g, '_')}_${partes.join('_').toLowerCase().replace(/[^a-z0-9áéíóúñ_]+/g, '_')}_${hoyISO()}.xlsx`);
@@ -792,14 +794,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (CQ.vista === 'proveedor') return renderPorProveedor(F, enSede);
     const cols = COLS_CQ.map(c => c[0] === 'q' && enSede ? ['q', 'Trasladar', 1] : c[0] === 'vq' && enSede ? ['vq', 'Valor del traslado', 1]
       : c[0] === 'st' && !enSede ? ['st', 'Inventario total', 1] : c);
-    $('cqCuenta').textContent = `${num(F.length)} productos · ${plata(F.reduce((a, r) => a + r.vq, 0))}`;
+    $('cqCuenta').textContent = `${num(F.length)} producto${F.length === 1 ? '' : 's'} · ${plata(F.reduce((a, r) => a + r.vq, 0))}`;
     $('cqMas').style.display = F.length > CQ.limite ? '' : 'none';
     const fl = c => CQ.orden.col === c ? (CQ.orden.dir > 0 ? ' ▲' : ' ▼') : '';
     $('cqTabla').innerHTML = '<thead><tr>' + cols.map(([k, t, n]) => `<th class="${n ? 'num' : ''}" data-cqord="${k}">${t}${fl(k)}</th>`).join('') + '</tr></thead><tbody>' +
       (F.slice(0, CQ.limite).map(r => `<tr>
         <td>${semaforoHTML(r.sem, enSede)}</td>
         <td class="prod"><span class="linkish" data-an="${esc(r.f.c)}">${esc(r.f.n)}</span><div class="text-xs muted">${esc(r.f.c)}${sede ? ' · ' + esc(nombreSede(sede)) : ''}</div></td>
-        <td>${esc(r.abc)}</td><td class="num">${num(r.st)}</td><td class="num">${r.tr ? num(r.tr) : '–'}</td>
+        <td>${esc(claseTexto(r.abc, r.f))}</td><td class="num">${num(r.st)}</td><td class="num">${r.tr ? num(r.tr) : '–'}</td>
         <td class="num"${r.f.bd === '12m' && !sede ? ' title="Agotado hace más de 90 días: se usa la venta de 12 meses"' : ''}>${num(r.d, r.d && r.d < 1 ? 2 : 1)}</td>
         <td class="num">${r.cob == null ? '–' : num(r.cob)}</td><td class="num">${num(r.pr)}</td>
         <td class="num font-bold">${r.q ? num(r.q) : '–'}</td><td class="num">${r.vq ? pesos(r.vq) : '–'}</td>
@@ -840,7 +842,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const sede = $('cqSede').value;
     const rows = filasCompra().map(r => ({
       'Semáforo': nombreSem(r.sem, !!sede), 'SKU': r.f.c, 'Producto': r.f.n, 'Categoría': r.f.g, 'Sede': sede ? nombreSede(sede) : 'Bodega principal (compra)',
-      'ABC': r.abc, [sede ? 'Inventario' : 'Inventario total']: r.st, 'En camino': r.tr, 'Venta diaria': Math.round(r.d * 100) / 100,
+      'ABC': claseTexto(r.abc, r.f), [sede ? 'Inventario' : 'Inventario total']: r.st, 'En camino': r.tr, 'Venta diaria': Math.round(r.d * 100) / 100,
       'Días de inventario': r.cob == null ? '' : Math.round(r.cob), 'Punto de reorden': Math.round(r.pr || 0),
       [sede ? 'Trasladar' : 'Cantidad sugerida']: r.q, 'Costo unitario': r.f.costo || '', [sede ? 'Valor del traslado' : 'Costo de la compra']: Math.round(r.vq),
       'Proveedor': r.f.prov || '', 'Origen': r.f.origen || '', 'Días de entrega': r.f.lead
