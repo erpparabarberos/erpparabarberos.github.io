@@ -13,6 +13,8 @@
 <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-functions-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
 <style>
   /* Diseño sobrio, igual que Gestión de TI */
   :root {
@@ -142,7 +144,7 @@
   <button class="rep-tab" data-tab="china" style="display:none">Pedidos a China</button>
   <button class="rep-tab" data-tab="puente" style="display:none">Puente nacional</button>
   <button class="rep-tab" data-tab="traslados">Traslados sugeridos</button>
-  <button class="rep-tab" data-tab="pedidos" style="display:none">Pedidos y tránsito</button>
+  <button class="rep-tab" data-tab="pedidos">Pedidos</button>
   <button class="rep-tab" data-tab="config" id="tabConfigBtn">Configuración</button>
 </nav>
 
@@ -194,6 +196,7 @@
       <div class="seg" id="cqVista"><button data-v="producto" class="on">Por producto</button><button data-v="proveedor">Por proveedor</button></div>
       <span class="text-sm muted" id="cqCuenta"></span>
       <button class="btn btn-sec" id="cqExportar">Exportar a Excel</button>
+      <button class="btn btn-pri" id="cqPedido" disabled>Armar pedido</button>
     </div>
     <div class="tbl-wrap"><table class="tbl" id="cqTabla"></table></div>
     <div class="text-center mt-3"><button class="btn btn-sec" id="cqMas">Mostrar más</button></div>
@@ -272,13 +275,13 @@
     <div class="card p-3 mb-3 flex flex-wrap gap-2 items-center">
       <input id="fPedBuscar" class="inp w-64" placeholder="Buscar pedido, proveedor o producto…">
       <select id="fPedEstado" class="inp">
-        <option value="abiertos">Abiertos (borrador, confirmado, en tránsito)</option>
-        <option value="">Todos</option><option value="borrador">Borrador</option><option value="confirmado">Confirmado</option>
-        <option value="en_transito">En tránsito</option><option value="recibido">Recibido</option><option value="cancelado">Cancelado</option>
+        <option value="abiertos">Abiertos (cotización, en camino, recibido parcial)</option>
+        <option value="">Todos</option><option value="borrador">Cotización</option><option value="en_transito">En camino</option>
+        <option value="recibido_parcial">Recibido parcial</option><option value="recibido">Recibido</option><option value="cancelado">Cancelado</option>
       </select>
       <select id="fPedTipo" class="inp"><option value="">China y nacional</option><option value="china">China</option><option value="nacional">Nacional</option></select>
       <span class="flex-1"></span>
-      <button class="btn btn-pri" id="btnNuevoPedido">Nuevo pedido</button>
+      <button class="btn btn-pri" id="btnNuevoPedido">Nueva cotización</button>
     </div>
     <div class="tbl-wrap"><table class="tbl" id="tblPedidos"></table></div>
   </section>
@@ -349,7 +352,9 @@ document.addEventListener('DOMContentLoaded', () => {
     'PASTO': 'Punto de venta Pasto', 'TULUA': 'Punto de venta Tulua', 'MEDELLIN CENTRO': 'Punto de venta Medellin',
     'BOGOTA': 'Punto de venta Bogota', 'BARRANQUILLA': 'Punto de venta Barranquilla'
   };
-  const ESTADO_PEDIDO = { borrador: 'Borrador', confirmado: 'Confirmado', en_transito: 'En tránsito', recibido: 'Recibido', cancelado: 'Cancelado' };
+  // borrador = cotización (se le pidió precio y disponibilidad al proveedor; todavía no cuenta como en camino)
+  const ESTADO_PEDIDO = { borrador: 'Cotización', confirmado: 'Confirmado', en_transito: 'En camino', recibido_parcial: 'Recibido parcial', recibido: 'Recibido', cancelado: 'Cancelado' };
+  const PEDIDO_ABIERTO = ['confirmado', 'en_transito', 'recibido_parcial'];   // lo que cuenta como en camino (igual que analista.py)
   const PASO_FILAS = 150;
 
   // ---------------------------------------------------------------- ESTADO
@@ -381,7 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function transitoPorCodigo() {
     const t = {};
     for (const p of S.pedidos) {
-      if (p.estado !== 'confirmado' && p.estado !== 'en_transito') continue;
+      if (!PEDIDO_ABIERTO.includes(p.estado)) continue;
       for (const it of (p.items || [])) {
         const pend = (Number(it.cantidad) || 0) - (Number(it.recibido) || 0);
         if (pend > 0) t[it.codigo] = (t[it.codigo] || 0) + pend;
@@ -508,6 +513,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const [partes, hist, tras] = await Promise.all([Promise.all(ps),
       db.collection('rep_snapshot').doc('an_historial').get(), db.collection('rep_traslados_sugeridos').doc('analista').get()]);
     AN.filas = partes.flatMap(d => (d.exists ? (d.data().filas || []) : []));
+    AN.porCodigo = new Map(AN.filas.map(f => [f.c, f]));
     AN.historial = hist.exists ? (hist.data().dias || {}) : {};
     AN.traslados = tras.exists ? (tras.data().items || []) : [];
   }
@@ -812,7 +818,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ---------------------------------------------------------------- QUÉ COMPRAR (sección 7.2)
-  const CQ = { orden: { col: 'sem', dir: 1 }, limite: PASO_FILAS, vista: 'producto' };
+  const CQ = { orden: { col: 'sem', dir: 1 }, limite: PASO_FILAS, vista: 'producto', sel: new Set() };
   const RANGO_SEM = { rojo: 0, amarillo: 1, verde: 2, gris: 3, sin: 4 };
   const nombreSem = (s, enSede) => ({ rojo: enSede ? 'Trasladar ya' : 'Pedir ya', amarillo: 'Preparar', verde: 'Suficiente', gris: 'Muerto', sin: 'Sin movimiento' }[s] || s);
   const semaforoHTML = (s, enSede) => `<span class="sem sem-${esc(s)}">${esc(nombreSem(s, enSede))}</span>`;
@@ -879,8 +885,11 @@ document.addEventListener('DOMContentLoaded', () => {
     $('cqCuenta').textContent = `${num(F.length)} producto${F.length === 1 ? '' : 's'} · ${plata(F.reduce((a, r) => a + r.vq, 0))}`;
     $('cqMas').style.display = F.length > CQ.limite ? '' : 'none';
     const fl = c => CQ.orden.col === c ? (CQ.orden.dir > 0 ? ' ▲' : ' ▼') : '';
-    $('cqTabla').innerHTML = '<thead><tr>' + cols.map(([k, t, n]) => `<th class="${n ? 'num' : ''}" data-cqord="${k}">${t}${fl(k)}</th>`).join('') + '</tr></thead><tbody>' +
-      (F.slice(0, CQ.limite).map(r => `<tr>
+    const conSel = !enSede && S.puedeEditar;
+    const visibles = F.slice(0, CQ.limite);
+    $('cqTabla').innerHTML = '<thead><tr>' + (conSel ? `<th><input type="checkbox" id="cqSelTodos" ${visibles.length && visibles.every(r => CQ.sel.has(r.f.c)) ? 'checked' : ''}></th>` : '') +
+      cols.map(([k, t, n]) => `<th class="${n ? 'num' : ''}" data-cqord="${k}">${t}${fl(k)}</th>`).join('') + '</tr></thead><tbody>' +
+      (visibles.map(r => `<tr>${conSel ? `<td><input type="checkbox" class="cqSel" data-c="${esc(r.f.c)}" ${CQ.sel.has(r.f.c) ? 'checked' : ''}></td>` : ''}
         <td>${semaforoHTML(r.sem, enSede)}</td>
         <td class="prod"><span class="linkish" data-an="${esc(r.f.c)}">${esc(r.f.n)}</span><div class="text-xs muted">${esc(r.f.c)}${sede ? ' · ' + esc(nombreSede(sede)) : ''}</div></td>
         <td>${esc(claseTexto(r.abc, r.f))}</td><td class="num">${num(r.st)}</td><td class="num">${r.tr ? num(r.tr) : '–'}</td>
@@ -888,7 +897,15 @@ document.addEventListener('DOMContentLoaded', () => {
         <td class="num">${r.cob == null ? '–' : num(r.cob)}</td><td class="num">${num(r.pr)}</td><td class="num" style="white-space:nowrap">${fechaLimite(r.dpp)}</td>
         <td class="num font-bold">${r.q ? num(r.q) : '–'}</td><td class="num">${r.vq ? pesos(r.vq) : '–'}</td>
         <td class="text-xs">${esc(r.f.prov || '—')}${r.f.origen ? `<div class="muted">${esc(r.f.origen)} · ${num(r.f.lead)} días</div>` : ''}</td></tr>`).join('')
-       || `<tr><td colspan="${cols.length}" class="muted" style="padding:24px;text-align:center">Sin productos con estos filtros</td></tr>`) + '</tbody>';
+       || `<tr><td colspan="${cols.length + 1}" class="muted" style="padding:24px;text-align:center">Sin productos con estos filtros</td></tr>`) + '</tbody>';
+    pintarBotonPedido();
+  }
+
+  function pintarBotonPedido() {
+    const b = $('cqPedido'), n = CQ.sel.size;
+    b.style.display = S.puedeEditar ? '' : 'none';
+    b.disabled = !n;
+    b.textContent = n ? `Armar pedido (${n})` : 'Armar pedido';
   }
 
   // Vista por proveedor: lo que habría que pedirle a cada uno (para agrupar en una sola orden, sección 5.6)
@@ -904,10 +921,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const L = [...g.values()].sort((a, b) => b.rojo - a.rojo || b.valor - a.valor);
     const provs = (AN.meta && AN.meta.proveedores) || {};
     const hoy = new Date().toISOString().slice(0, 10);
-    $('cqCuenta').textContent = `${num(L.length)} proveedores · ${plata(L.reduce((a, x) => a + x.valor, 0))}`;
+    $('cqCuenta').textContent = `${num(L.length)} proveedor${L.length === 1 ? '' : 'es'} · ${plata(L.reduce((a, x) => a + x.valor, 0))}`;
     $('cqMas').style.display = 'none';
     $('cqTabla').innerHTML = `<thead><tr><th>Proveedor</th><th>Origen</th><th class="num">Días de entrega</th><th class="num">Pedir ya</th><th class="num">Preparar</th>
-      <th class="num">Productos</th><th class="num">Unidades</th><th class="num">${enSede ? 'Valor del traslado' : 'Costo de la compra'}</th><th class="num">Pedido mínimo</th><th>Llegaría</th></tr></thead><tbody>` +
+      <th class="num">Productos</th><th class="num">Unidades</th><th class="num">${enSede ? 'Valor del traslado' : 'Costo de la compra'}</th><th class="num">Pedido mínimo</th><th>Llegaría</th>${enSede || !S.puedeEditar ? '' : '<th></th>'}</tr></thead><tbody>` +
       (L.map(x => {
         const pm = (provs[x.prov] || {}).pedido_minimo, tipo = (provs[x.prov] || {}).pedido_minimo_tipo;
         const cumple = !pm ? null : (tipo === 'unidades' ? x.unid >= pm : x.valor >= pm);
@@ -915,7 +932,8 @@ document.addEventListener('DOMContentLoaded', () => {
           <td class="num">${num(x.lead)}</td><td class="num">${x.rojo ? `<b class="text-red-700">${num(x.rojo)}</b>` : '0'}</td><td class="num">${num(x.amarillo)}</td>
           <td class="num">${num(x.prods)}</td><td class="num">${num(x.unid)}</td><td class="num font-bold">${pesos(x.valor)}</td>
           <td class="num">${pm ? (tipo === 'unidades' ? num(pm) + ' unid.' : pesos(pm)) + (cumple ? '' : ' <span class="text-red-700">✕</span>') : '–'}</td>
-          <td>${enSede ? '–' : fmtFecha(sumarDias(hoy, x.lead || 0))}</td></tr>`;
+          <td>${enSede ? '–' : fmtFecha(sumarDias(hoy, x.lead || 0))}</td>
+          ${enSede || !S.puedeEditar ? '' : `<td><button class="btn btn-sec" data-armar="${esc(x.prov)}">Armar pedido</button></td>`}</tr>`;
       }).join('') || '<tr><td colspan="10" class="muted" style="padding:24px;text-align:center">Sin productos con estos filtros</td></tr>') + '</tbody>';
   }
 
@@ -1232,7 +1250,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ---------------------------------------------------------------- PEDIDOS (lista)
   function renderPedidos() {
     const e = $('fPedEstado').value, t = $('fPedTipo').value, q = $('fPedBuscar').value.trim().toLowerCase();
-    const P = S.pedidos.filter(p => (e === 'abiertos' ? ['borrador', 'confirmado', 'en_transito'].includes(p.estado) : (!e || p.estado === e)) && (!t || p.tipo === t) &&
+    const P = S.pedidos.filter(p => (e === 'abiertos' ? ['borrador', ...PEDIDO_ABIERTO].includes(p.estado) : (!e || p.estado === e)) && (!t || p.tipo === t) &&
       (!q || (p.id + ' ' + (p.proveedor || '') + ' ' + (p.items || []).map(i => i.codigo + ' ' + i.nombre).join(' ')).toLowerCase().includes(q)))
       .sort((a, b) => String(b.creado || '').localeCompare(String(a.creado || '')));
     const hoy = hoyISO();
@@ -1241,9 +1259,9 @@ document.addEventListener('DOMContentLoaded', () => {
       (P.map(p => {
         const u = (p.items || []).reduce((s, i) => s + (Number(i.cantidad) || 0), 0), r = (p.items || []).reduce((s, i) => s + (Number(i.recibido) || 0), 0);
         const v = (p.items || []).reduce((s, i) => s + (Number(i.cantidad) || 0) * (Number(i.costo) || 0), 0);
-        const tarde = ['confirmado', 'en_transito'].includes(p.estado) && p.fecha_estimada_llegada && p.fecha_estimada_llegada < hoy;
+        const tarde = PEDIDO_ABIERTO.includes(p.estado) && p.fecha_estimada_llegada && p.fecha_estimada_llegada < hoy;
         return `<tr><td class="font-bold">${esc(p.id)}</td><td>${p.tipo === 'china' ? 'China' : 'Nacional'}</td><td>${esc(p.proveedor || '—')}</td>
-          <td><span class="chip ${p.estado === 'recibido' ? 'e4' : p.estado === 'cancelado' ? 'e6' : p.estado === 'borrador' ? 'e6' : 'e5'}">${esc(ESTADO_PEDIDO[p.estado] || p.estado)}</span></td>
+          <td><span class="chip ${p.estado === 'recibido' ? 'e4' : p.estado === 'cancelado' ? 'e6' : p.estado === 'borrador' ? 'e3' : 'e2'}">${esc(ESTADO_PEDIDO[p.estado] || p.estado)}</span></td>
           <td>${fmtFecha(p.fecha_pedido)}</td><td>${fmtFecha(p.fecha_estimada_llegada)}${tarde ? ' <b class="text-red-700">atrasado</b>' : ''}</td>
           <td class="num">${(p.items || []).length}</td><td class="num">${num(u)}</td><td class="num">${num(r)}</td><td class="num">${pesos(v)}</td>
           <td><button class="btn btn-sec" data-editped="${esc(p.id)}">Abrir</button></td></tr>`;
@@ -1256,9 +1274,9 @@ document.addEventListener('DOMContentLoaded', () => {
   function abrirEditorPedido(id, codigos = [], tipoForzado = null, cantidades = {}) {
     let p = id ? structuredClone(S.pedidos.find(x => x.id === id)) : null;
     if (!p) {
-      const filas = codigos.map(c => S.porCodigo.get(c)).filter(Boolean);
+      const filas = codigos.map(filaPedido).filter(Boolean);
       const tipo = tipoForzado || (filas[0] && filas[0].origen === 'China' ? 'china' : 'nacional');
-      const prov = tipo === 'china' ? (filas[0] && filas[0].proveedor) || '' : '';
+      const prov = (filas[0] && filas[0].proveedor) || '';
       // si hay un borrador del mismo proveedor, agregamos ahí
       const borr = S.pedidos.find(x => x.estado === 'borrador' && x.tipo === tipo && prov && x.proveedor === prov);
       p = borr ? structuredClone(borr) : { id: null, tipo, proveedor: prov, estado: 'borrador', fecha_pedido: hoyISO(), items: [], notas: '' };
@@ -1267,21 +1285,31 @@ document.addEventListener('DOMContentLoaded', () => {
         const ex = p.items.find(i => i.codigo === f.codigo);
         if (ex) ex.cantidad = Math.max(Number(ex.cantidad) || 0, cant);
         // En China cada producto trae su fábrica; en nacional se elige (vacío = el proveedor de arriba)
-        else p.items.push({ codigo: f.codigo, nombre: f.nombre, cantidad: cant, recibido: 0, costo: Math.round(f.costo || 0), proveedor: tipo === 'china' ? (f.proveedor || '') : '' });
+        else p.items.push({ codigo: f.codigo, nombre: f.nombre, cantidad: cant, recibido: 0, costo: Math.round(f.costo || 0), proveedor: f.proveedor || '' });
       }
     }
     ED = p; pintarEditor();
     $('mdPedido').classList.add('open');
   }
 
+  // Días de entrega: los del proveedor (Configuración → Proveedores) o, si no tiene, 120 China / 7 nacional
   function diasEntregaPedido(p) {
-    if (p.tipo === 'nacional') return S.cfg.origen.Nacional.entrega;
     const pr = S.proveedores[p.proveedor];
-    return (pr && pr.origen === 'China' && Number(pr.dias_entrega)) || S.cfg.origen.China.entrega;
+    if (pr && Number(pr.dias_entrega)) return Number(pr.dias_entrega);
+    const ent = (AN.meta && AN.meta.parametros && AN.meta.parametros.entrega) || { China: 120, Nacional: 7 };
+    return p.tipo === 'china' ? ent.China : ent.Nacional;
+  }
+
+  // Datos de un producto para el pedido: los mismos de la pantalla Reposición (analista); si no está, los del cálculo anterior
+  function filaPedido(codigo) {
+    const f = AN.porCodigo && AN.porCodigo.get(codigo);
+    if (f) return { codigo: f.c, nombre: f.n, cantidad_sugerida: f.q || 0, costo: f.costo, proveedor: f.prov || '', origen: f.origen };
+    return S.porCodigo.get(codigo);
   }
 
   function pintarEditor() {
-    const p = ED, editable = S.puedeEditar && ['borrador', 'confirmado'].includes(p.estado), recibiendo = S.puedeEditar && p.estado === 'en_transito';
+    const p = ED, editable = S.puedeEditar && ['borrador', 'confirmado'].includes(p.estado), recibiendo = S.puedeEditar && ['en_transito', 'recibido_parcial'].includes(p.estado);
+    const conRecibido = ['en_transito', 'recibido_parcial', 'recibido'].includes(p.estado);
     const provsChina = Object.values(S.proveedores).filter(v => v.origen === 'China').map(v => v.nombre).sort();
     if (!p.fecha_estimada_llegada && p.fecha_pedido) p.fecha_estimada_llegada = sumarDias(p.fecha_pedido, diasEntregaPedido(p));
     const total = p.items.reduce((s, i) => s + (Number(i.cantidad) || 0) * (Number(i.costo) || 0), 0);
@@ -1291,7 +1319,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const provsDistintos = [...new Set(p.items.map(provItem))];
     $('mdPedidoBody').innerHTML = `
       <div class="p-5 border-b flex items-start gap-3"><div class="flex-1"><div class="text-xs muted">${p.id ? esc(p.id) : 'Pedido nuevo'} · ${esc(ESTADO_PEDIDO[p.estado])}</div>
-        <h2 class="text-xl font-extrabold">Pedido ${p.tipo === 'china' ? 'a China' : 'nacional (puente)'}</h2></div>
+        <h2 class="text-xl font-extrabold">${p.estado === 'borrador' ? 'Cotización' : 'Pedido'} ${p.tipo === 'china' ? 'a China' : 'nacional'}</h2></div>
         <button class="btn btn-sec" data-cerrar="mdPedido">Cerrar</button></div>
       <div class="p-5 grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
         <label>Tipo<select id="edTipo" class="inp w-full" ${p.id ? 'disabled' : dis}><option value="china" ${p.tipo === 'china' ? 'selected' : ''}>China</option><option value="nacional" ${p.tipo === 'nacional' ? 'selected' : ''}>Nacional</option></select></label>
@@ -1302,29 +1330,32 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
       <div class="px-5">
         ${editable && provsDistintos.length > 1 ? `<div class="text-sm mb-2" style="color:var(--tinta-2)">Hay productos de <b>${provsDistintos.length} proveedores</b>. Al guardar se crea un pedido por cada uno: ${provsDistintos.map(v => esc(v || 'sin proveedor')).join(' · ')}.</div>` : ''}
-        <div class="tbl-wrap" style="max-height:45vh"><table class="tbl"><thead><tr><th>Producto</th>${editable ? '<th>Proveedor</th>' : ''}<th class="num">Cantidad</th>${p.estado === 'en_transito' || p.estado === 'recibido' ? '<th class="num">Recibido</th>' : ''}
+        <div class="tbl-wrap" style="max-height:45vh"><table class="tbl"><thead><tr><th>Producto</th>${editable ? '<th>Proveedor</th>' : ''}<th class="num">Cantidad</th>${conRecibido ? '<th class="num">Recibido</th>' : ''}
           <th class="num">Costo unit.</th><th class="num">Subtotal</th>${editable ? '<th></th>' : ''}</tr></thead><tbody>
-          ${p.items.map((i, k) => `<tr><td>${esc(i.nombre)}<div class="text-xs muted">${esc(i.codigo)}</div></td>
+          ${p.items.map((i, k) => `<tr><td>${esc(i.nombre)}<div class="text-xs muted">${esc(i.codigo)}${i.obs ? ' · Proveedor: ' + esc(i.obs) : ''}</div></td>
             ${editable ? `<td><input class="inp w-52 edProvItem" data-k="${k}" list="dlProv" value="${esc(i.proveedor || '')}" placeholder="${esc(p.proveedor || 'Elegir proveedor')}"></td>` : ''}
             <td class="num"><input type="number" min="0" class="inp w-24 text-right edCant" data-k="${k}" value="${esc(i.cantidad)}" ${dis}></td>
-            ${p.estado === 'en_transito' || p.estado === 'recibido' ? `<td class="num"><input type="number" min="0" class="inp w-24 text-right edRec" data-k="${k}" value="${esc(i.recibido || 0)}" ${recibiendo ? '' : 'disabled'}></td>` : ''}
+            ${conRecibido ? `<td class="num"><input type="number" min="0" class="inp w-24 text-right edRec" data-k="${k}" value="${esc(i.recibido || 0)}" ${recibiendo ? '' : 'disabled'}></td>` : ''}
             <td class="num"><input type="number" min="0" class="inp w-28 text-right edCosto" data-k="${k}" value="${esc(i.costo || 0)}" ${dis}></td>
             <td class="num">${pesos((Number(i.cantidad) || 0) * (Number(i.costo) || 0))}</td>
             ${editable ? `<td><button class="btn btn-sec edQuitar" data-k="${k}">Quitar</button></td>` : ''}</tr>`).join('') || '<tr><td colspan="6" class="muted p-3">Sin productos.</td></tr>'}
         </tbody></table></div>
         ${editable ? `<div class="flex gap-2 mt-3"><input id="edBuscar" class="inp flex-1" list="dlProd" placeholder="Agregar producto: escribe código o nombre…">
-          <datalist id="dlProd">${S.filas.slice(0, 3000).map(f => `<option value="${esc(f.codigo)} | ${esc(f.nombre)}">`).join('')}</datalist>
+          <datalist id="dlProd">${AN.filas.map(f => `<option value="${esc(f.c)} | ${esc(f.n)}">`).join('')}</datalist>
           <button class="btn btn-sec" id="edAgregar">Agregar</button></div>` : ''}
         <div class="text-right font-bold mt-3">Total: ${pesos(total)}</div>
         <label class="block text-sm mt-2">Notas<textarea id="edNotas" class="inp w-full" rows="2" ${S.puedeEditar ? '' : 'disabled'}>${esc(p.notas || '')}</textarea></label>
       </div>
       <div class="p-5 flex flex-wrap gap-2 border-t mt-4 bg-slate-50 rounded-b-2xl">
         ${S.puedeEditar ? `
-          ${p.estado === 'borrador' ? '<button class="btn btn-sec" id="edGuardar">Guardar borrador</button><button class="btn btn-pri" id="edConfirmar">Confirmar pedido (ya se hizo)</button>' : ''}
-          ${p.estado === 'confirmado' ? '<button class="btn btn-sec" id="edGuardar">Guardar cambios</button><button class="btn btn-pri" id="edTransito">Marcar en tránsito</button>' : ''}
-          ${p.estado === 'en_transito' ? '<button class="btn btn-sec" id="edGuardar">Guardar recibido parcial</button><button class="btn btn-ok" id="edRecibido">Marcar recibido</button>' : ''}
-          ${p.id && ['borrador', 'confirmado', 'en_transito'].includes(p.estado) ? '<button class="btn btn-red" id="edCancelar">Cancelar pedido</button>' : ''}` : ''}
-        <span class="flex-1"></span><button class="btn btn-sec" id="edExportar">Exportar a Excel</button>
+          ${p.estado === 'borrador' ? `<button class="btn btn-sec" id="edGuardar">Guardar cotización</button>
+            <button class="btn btn-sec" id="edCotizar">Excel para cotizar</button>
+            <label class="btn btn-sec" for="edRespuesta">Cargar respuesta del proveedor</label><input type="file" id="edRespuesta" accept=".xlsx,.xls,.csv" hidden>
+            <button class="btn btn-pri" id="edCrear">Crear pedido</button>` : ''}
+          ${p.estado === 'confirmado' ? '<button class="btn btn-sec" id="edGuardar">Guardar cambios</button><button class="btn btn-pri" id="edTransito">Marcar en camino</button>' : ''}
+          ${recibiendo ? '<button class="btn btn-sec" id="edGuardar">Guardar recibido</button><button class="btn btn-ok" id="edRecibido">Marcar todo recibido</button>' : ''}
+          ${p.id && ['borrador', 'confirmado', ...PEDIDO_ABIERTO].includes(p.estado) ? `<button class="btn btn-red" id="edCancelar">${p.estado === 'borrador' ? 'Descartar cotización' : 'Cancelar pedido'}</button>` : ''}` : ''}
+        <span class="flex-1"></span>${p.estado !== 'borrador' ? '<button class="btn btn-sec" id="edPdf">Descargar PDF</button>' : ''}<button class="btn btn-sec" id="edExportar">Exportar a Excel</button>
       </div>
       ${(p.historial || []).length ? `<div class="px-5 pb-5 text-xs muted">${p.historial.map(h => `${esc((h.fecha || '').slice(0, 16).replace('T', ' '))} · ${esc(h.usuario)} · ${esc(h.accion)}`).join('<br>')}</div>` : ''}`;
     // eventos
@@ -1336,7 +1367,10 @@ document.addEventListener('DOMContentLoaded', () => {
       ED.notas = $('edNotas').value;
       document.querySelectorAll('.edCant').forEach(x => ED.items[x.dataset.k].cantidad = Number(x.value) || 0);
       document.querySelectorAll('.edCosto').forEach(x => ED.items[x.dataset.k].costo = Number(x.value) || 0);
-      document.querySelectorAll('.edRec').forEach(x => ED.items[x.dataset.k].recibido = Number(x.value) || 0);
+      document.querySelectorAll('.edRec').forEach(x => {   // lo escrito a mano se respeta en la sincronización (recibido_manual)
+        const it = ED.items[x.dataset.k], v = Number(x.value) || 0;
+        if (v !== (Number(it.recibido) || 0)) { it.recibido = v; it.recibido_manual = true; }
+      });
       document.querySelectorAll('.edProvItem').forEach(x => ED.items[x.dataset.k].proveedor = x.value.trim());
     };
     $('mdPedidoBody').querySelectorAll('input,select,textarea').forEach(x => x.addEventListener('change', () => {
@@ -1347,17 +1381,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }));
     document.querySelectorAll('.edQuitar').forEach(b => b.onclick = () => { leer(); ED.items.splice(Number(b.dataset.k), 1); pintarEditor(); });
     if ($('edAgregar')) $('edAgregar').onclick = () => {
-      leer(); const v = $('edBuscar').value.split('|')[0].trim(); const f = S.porCodigo.get(v);
+      leer(); const v = $('edBuscar').value.split('|')[0].trim(); const f = filaPedido(v);
       if (!f) return toast('Producto no encontrado');
-      if (!ED.items.some(i => i.codigo === f.codigo)) ED.items.push({ codigo: f.codigo, nombre: f.nombre, cantidad: f.cantidad_sugerida || 1, recibido: 0, costo: Math.round(f.costo || 0), proveedor: ED.tipo === 'china' ? (f.proveedor || '') : '' });
+      if (!ED.items.some(i => i.codigo === f.codigo)) ED.items.push({ codigo: f.codigo, nombre: f.nombre, cantidad: f.cantidad_sugerida || 1, recibido: 0, costo: Math.round(f.costo || 0), proveedor: f.proveedor || '' });
       pintarEditor();
     };
     const accion = (nuevoEstado, texto) => async () => { leer(); await guardarPedido(nuevoEstado, texto); };
     if ($('edGuardar')) $('edGuardar').onclick = accion(null, 'guardado');
-    if ($('edConfirmar')) $('edConfirmar').onclick = accion('confirmado', 'confirmado');
+    if ($('edCrear')) $('edCrear').onclick = async () => {
+      leer();
+      if (!ED.fecha_pedido) ED.fecha_pedido = hoyISO();
+      ED.fecha_estimada_llegada = sumarDias(ED.fecha_pedido, diasEntregaPedido(ED));
+      await guardarPedido('en_transito', 'creado: quedó en camino');
+    };
+    if ($('edCotizar')) $('edCotizar').onclick = () => { leer(); exportarCotizacion(ED); };
+    if ($('edRespuesta')) $('edRespuesta').onchange = ev => { leer(); cargarRespuesta(ev.target.files[0]); ev.target.value = ''; };
+    if ($('edPdf')) $('edPdf').onclick = () => { leer(); pdfPedido(ED); };
     if ($('edTransito')) $('edTransito').onclick = accion('en_transito', 'marcado en tránsito');
-    if ($('edRecibido')) $('edRecibido').onclick = async () => { leer(); ED.items.forEach(i => { if (!i.recibido) i.recibido = i.cantidad; }); await guardarPedido('recibido', 'recibido'); };
-    if ($('edCancelar')) $('edCancelar').onclick = async () => { if (confirm('¿Cancelar este pedido?')) { leer(); await guardarPedido('cancelado', 'cancelado'); } };
+    if ($('edRecibido')) $('edRecibido').onclick = async () => { leer(); ED.items.forEach(i => { if ((Number(i.recibido) || 0) < (Number(i.cantidad) || 0)) { i.recibido = i.cantidad; i.recibido_manual = true; } }); await guardarPedido('recibido', 'recibido'); };
+    if ($('edCancelar')) $('edCancelar').onclick = async () => { leer(); await guardarPedido('cancelado', ED.estado === 'borrador' ? 'cotización descartada' : 'cancelado'); };
     $('edExportar').onclick = () => { leer(); exportarPedido(ED); };
   }
 
@@ -1370,7 +1412,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!p.items.length) return toast('El pedido no tiene productos');
     const separar = nuevoEstado !== 'cancelado';
     const clave = i => separar ? String(i.proveedor || p.proveedor || '').trim() : String(p.proveedor || '').trim();
-    if (nuevoEstado === 'confirmado' && p.items.some(i => !clave(i))) return toast('Indica el proveedor de todos los productos');
+    if (['confirmado', 'en_transito'].includes(nuevoEstado) && p.items.some(i => !clave(i))) return toast('Indica el proveedor de todos los productos (si no se sabe, escribe Por definir)');
     if (nuevoEstado === 'confirmado' && !p.fecha_pedido) return toast('Indica la fecha del pedido');
 
     const grupos = new Map();
@@ -1421,7 +1463,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const k = S.pedidos.findIndex(x => x.id === q.id);
         if (k >= 0) S.pedidos[k] = structuredClone(q); else S.pedidos.push(structuredClone(q));
       });
-      recalcularTodo(); S.seleccion.clear(); S.selPuente.clear();
+      recalcularTodo(); aplicarTransitoAn(); S.seleccion.clear(); S.selPuente.clear(); CQ.sel.clear();
+      if (nuevoEstado === 'en_transito') aGuardar.forEach(q => { pdfPedido(q); exportarPedido(q); });
       toast(aGuardar.length > 1
         ? `Se guardaron ${aGuardar.length} pedidos, uno por proveedor: ${aGuardar.map(q => q.id).join(', ')}`
         : `Pedido ${p.id} ${texto}`, 7000);
@@ -1436,6 +1479,89 @@ document.addEventListener('DOMContentLoaded', () => {
     XLSX.utils.sheet_add_aoa(ws, [[`Pedido ${p.id || '(nuevo)'} · ${p.proveedor || ''} · ${p.fecha_pedido || ''}`]], { origin: { r: rows.length + 2, c: 0 } });
     const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Pedido');
     XLSX.writeFile(wb, `pedido_${p.id || 'nuevo'}.xlsx`);
+  }
+
+  // ---------------------------------------------------------------- COTIZACIÓN Y PDF DEL PEDIDO
+  // Excel para pedirle al proveedor precio y disponibilidad: un archivo por proveedor, con columnas para que él llene
+  function exportarCotizacion(p) {
+    if (typeof XLSX === 'undefined') return toast('No se cargó la librería de Excel');
+    const items = p.items.filter(i => Number(i.cantidad) > 0);
+    if (!items.length) return toast('La cotización no tiene productos');
+    const grupos = new Map();
+    for (const i of items) { const k = String(i.proveedor || p.proveedor || '').trim() || 'Proveedor por definir'; if (!grupos.has(k)) grupos.set(k, []); grupos.get(k).push(i); }
+    for (const [prov, its] of grupos) {
+      const aoa = [
+        ['PARABARBEROS S.A.S.'],
+        ['Solicitud de cotización' + (p.id ? ' ' + p.id : '')],
+        ['Proveedor', prov], ['Fecha', fmtFecha(p.fecha_pedido || hoyISO())], ['Entrega', 'Bodega Principal'], [],
+        ['SKU', 'Producto', 'Cantidad solicitada', 'Cantidad disponible', 'Precio unitario', 'Observaciones'],
+        ...its.map(i => [i.codigo, i.nombre, Number(i.cantidad) || 0, '', '', ''])
+      ];
+      const ws = XLSX.utils.aoa_to_sheet(aoa);
+      ws['!cols'] = [{ wch: 18 }, { wch: 50 }, { wch: 18 }, { wch: 20 }, { wch: 16 }, { wch: 30 }];
+      const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Cotización');
+      XLSX.writeFile(wb, `cotizacion_${prov.toLowerCase().replace(/[^a-z0-9]+/g, '_').slice(0, 40)}_${hoyISO()}.xlsx`);
+    }
+    toast(grupos.size > 1 ? `Se descargaron ${grupos.size} archivos, uno por proveedor` : 'Excel de cotización descargado');
+  }
+
+  // Lee el Excel que devolvió el proveedor: por cada SKU toma la cantidad disponible y el precio unitario
+  function cargarRespuesta(archivo) {
+    if (!archivo) return;
+    if (typeof XLSX === 'undefined') return toast('No se cargó la librería de Excel');
+    const lector = new FileReader();
+    lector.onload = () => {
+      try {
+        const wb = XLSX.read(new Uint8Array(lector.result), { type: 'array' });
+        const filas = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: '' });
+        const norm = t => String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
+        const iTit = filas.findIndex(f => f.some(c => norm(c) === 'sku'));
+        if (iTit < 0) return toast('No encontré la columna SKU en el archivo');
+        const tit = filas[iTit].map(norm);
+        const col = (...nombres) => tit.findIndex(t => nombres.some(n => t.startsWith(n)));
+        const cSku = tit.indexOf('sku'), cDisp = col('cantidad disponible', 'disponible'), cPrecio = col('precio'), cObs = col('observ');
+        const numero = v => { if (typeof v === 'number') return v; const t = String(v).replace(/[^0-9,.-]/g, ''); if (!t) return null; const n = Number(t.replace(/\./g, '').replace(',', '.')); return isNaN(n) ? null : n; };
+        let actualizados = 0, sinDisp = 0;
+        for (const f of filas.slice(iTit + 1)) {
+          const it = ED.items.find(i => String(i.codigo) === String(f[cSku]).trim());
+          if (!it) continue;
+          const disp = cDisp >= 0 ? numero(f[cDisp]) : null, precio = cPrecio >= 0 ? numero(f[cPrecio]) : null;
+          if (disp !== null) { it.cantidad = disp; if (disp <= 0) sinDisp++; }
+          if (precio !== null && precio > 0) it.costo = precio;
+          if (cObs >= 0 && String(f[cObs]).trim()) it.obs = String(f[cObs]).trim().slice(0, 200);
+          if (disp !== null || precio !== null) actualizados++;
+        }
+        pintarEditor();
+        toast(`Respuesta cargada: ${actualizados} productos actualizados` + (sinDisp ? ` · ${sinDisp} sin disponibilidad (quedan en 0 y no se piden)` : ''), 7000);
+      } catch (e) { console.error(e); toast('No se pudo leer el archivo: ' + e.message); }
+    };
+    lector.readAsArrayBuffer(archivo);
+  }
+
+  // PDF del pedido para mandarle al proveedor
+  function pdfPedido(p) {
+    if (!window.jspdf || !window.jspdf.jsPDF) return toast('No se pudo cargar la librería de PDF. Recarga la página.');
+    const doc = new window.jspdf.jsPDF({ unit: 'mm', format: 'a4' });
+    const items = p.items.filter(i => Number(i.cantidad) > 0);
+    const unid = items.reduce((a, i) => a + (Number(i.cantidad) || 0), 0);
+    const total = items.reduce((a, i) => a + (Number(i.cantidad) || 0) * (Number(i.costo) || 0), 0);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(15); doc.setTextColor(15, 23, 42);
+    doc.text('PARABARBEROS S.A.S.', 14, 16);
+    doc.setFontSize(12); doc.text(`Orden de compra ${p.id || ''}`, 14, 24);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(71, 85, 105);
+    doc.text(`Proveedor: ${p.proveedor || 'Por definir'}`, 14, 31);
+    doc.text(`Fecha del pedido: ${fmtFecha(p.fecha_pedido)}   ·   Llegada estimada: ${fmtFecha(p.fecha_estimada_llegada)}   ·   Entregar en: Bodega Principal`, 14, 36);
+    doc.autoTable({
+      startY: 42, head: [['SKU', 'Producto', 'Cantidad', 'Costo unitario', 'Subtotal']],
+      body: items.map(i => [i.codigo, i.nombre, num(i.cantidad), pesos(i.costo), pesos((Number(i.cantidad) || 0) * (Number(i.costo) || 0))]),
+      foot: [['', 'Total', num(unid), '', pesos(total)]],
+      styles: { font: 'helvetica', fontSize: 8, cellPadding: 2.2, textColor: [51, 65, 85], lineColor: [226, 232, 240], lineWidth: 0.1 },
+      headStyles: { fillColor: [15, 23, 42], textColor: 255, fontStyle: 'bold' },
+      footStyles: { fillColor: [241, 245, 249], textColor: [15, 23, 42], fontStyle: 'bold' },
+      columnStyles: { 0: { cellWidth: 32 }, 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right' } }
+    });
+    if (p.notas) { doc.setFontSize(9); doc.setTextColor(71, 85, 105); doc.text(doc.splitTextToSize('Notas: ' + p.notas, 180), 14, doc.lastAutoTable.finalY + 8); }
+    doc.save(`pedido_${p.id || 'nuevo'}.pdf`);
   }
 
   // ---------------------------------------------------------------- CONFIGURACIÓN
@@ -1522,10 +1648,23 @@ document.addEventListener('DOMContentLoaded', () => {
   let tCq; $('cqBuscar').addEventListener('input', () => { clearTimeout(tCq); tCq = setTimeout(() => { CQ.limite = PASO_FILAS; renderComprar(); }, 250); });
   $('cqMas').onclick = () => { CQ.limite += PASO_FILAS; renderComprar(); };
   $('cqExportar').onclick = exportarComprar;
+  // Pedido desde Reposición: lo marcado (o lo sugerido de un proveedor) abre la cotización con la cantidad sugerida
+  $('cqPedido').onclick = () => abrirEditorPedido(null, [...CQ.sel], null, Object.fromEntries([...CQ.sel].map(c => [c, (AN.porCodigo.get(c) || {}).q || 1])));
+  $('cqTabla').addEventListener('change', ev => {
+    const t = ev.target;
+    if (t.classList.contains('cqSel')) { t.checked ? CQ.sel.add(t.dataset.c) : CQ.sel.delete(t.dataset.c); return pintarBotonPedido(); }
+    if (t.id === 'cqSelTodos') { document.querySelectorAll('#cqTabla .cqSel').forEach(cb => { cb.checked = t.checked; t.checked ? CQ.sel.add(cb.dataset.c) : CQ.sel.delete(cb.dataset.c); }); pintarBotonPedido(); }
+  });
   $('cqVista').addEventListener('click', ev => { const b = ev.target.closest('button[data-v]'); if (b) { CQ.vista = b.dataset.v; renderComprar(); } });
   $('cqTabla').addEventListener('click', ev => {
     const th = ev.target.closest('th[data-cqord]');
     if (th) { const k = th.dataset.cqord; CQ.orden = { col: k, dir: CQ.orden.col === k ? -CQ.orden.dir : (['sem', 'n', 'abc', 'prov', 'dpp'].includes(k) ? 1 : -1) }; return renderComprar(); }
+    const ar = ev.target.closest('[data-armar]');     // armar el pedido con lo sugerido (pedir ya y preparar) de ese proveedor
+    if (ar) {
+      const cods = filasCompra().filter(r => (r.f.prov || '(sin proveedor)') === ar.dataset.armar && r.q > 0).map(r => r.f.c);
+      if (!cods.length) return toast('Ese proveedor no tiene productos con cantidad sugerida');
+      return abrirEditorPedido(null, cods, null, Object.fromEntries(cods.map(c => [c, AN.porCodigo.get(c).q])));
+    }
     const pv = ev.target.closest('tr[data-prov]');   // clic en un proveedor = ver sus productos
     if (pv) { $('cqProv').value = pv.dataset.prov === '(sin proveedor)' ? '' : pv.dataset.prov; CQ.vista = 'producto'; renderComprar(); }
   });
