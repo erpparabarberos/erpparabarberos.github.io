@@ -10,6 +10,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-functions-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
@@ -162,6 +163,7 @@
       <select id="anAbc" class="inp"><option value="">Todas las clases</option><option>A</option><option>B</option><option>C</option></select>
       <span class="flex-1"></span>
       <span class="text-sm muted" id="anSync"></span>
+      <button class="btn btn-sec" id="btnActualizar" disabled>Actualizar ahora</button>
     </div>
     <div id="anAviso"></div>
     <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 mb-4" id="anKpis"></div>
@@ -535,6 +537,43 @@ document.addEventListener('DOMContentLoaded', () => {
       f.vq = f.costo ? Math.round(f.q * f.costo) : 0;
       f.dpp = d > 0 ? (f.st + t - (f.pr || 0)) / d : null;
     }
+  }
+
+  // Botón "Actualizar ahora": una función de Firebase (actualizarAhora) le pide a GitHub correr la sincronización con
+  // Siigo en ese momento. El avance llega por rep_snapshot/estado_sync: pedido -> corriendo -> ok / error.
+  const ESTADO_SYNC = { estado: null };
+  function pintarEstadoSync() {
+    const b = $('btnActualizar');
+    const corriendo = ['pedido', 'corriendo'].includes(ESTADO_SYNC.estado);
+    b.disabled = corriendo || !firebase.functions;
+    b.textContent = corriendo ? 'Actualizando…' : 'Actualizar ahora';
+  }
+  async function actualizarAhora() {
+    if (!firebase.functions) return toast('No se pudo cargar el servicio de actualización');
+    const b = $('btnActualizar');
+    b.disabled = true; b.textContent = 'Actualizando…';
+    try {
+      const r = await firebase.functions().httpsCallable('actualizarAhora')();
+      toast(r.data && r.data.lanzada ? 'Actualizando con Siigo: tarda unos 10 minutos' : 'Ya hay una actualización en curso', 5000);
+    } catch (e) {
+      toast('No se pudo actualizar: ' + (e.message || e));
+      pintarEstadoSync();
+    }
+  }
+  function escucharEstadoSync() {
+    db.collection('rep_snapshot').doc('estado_sync').onSnapshot(async s => {
+      const antes = ESTADO_SYNC.estado;
+      Object.assign(ESTADO_SYNC, s.exists ? s.data() : { estado: null });
+      pintarEstadoSync();
+      if (['pedido', 'corriendo'].includes(antes) && ESTADO_SYNC.estado === 'ok') {
+        await Promise.all([cargarTodo(), cargarAnalista()]);
+        aplicarTransitoAn();
+        render();
+        toast('Datos actualizados');
+      } else if (['pedido', 'corriendo'].includes(antes) && ESTADO_SYNC.estado === 'error') {
+        toast('La actualización con Siigo falló; se siguen mostrando los datos anteriores', 6000);
+      }
+    }, e => console.warn('No se pudo leer el estado de la sincronización', e));
   }
 
   // Si alguien crea, cambia o borra un pedido, todas las pantallas abiertas se actualizan solas
@@ -1523,6 +1562,8 @@ document.addEventListener('DOMContentLoaded', () => {
       aplicarTransitoAn();
       mostrarTab('inicio');
       escucharPedidos();
+      escucharEstadoSync();
+      $('btnActualizar').onclick = actualizarAhora;
     } catch (e) {
       console.error(e);
       $('hdrDatos').innerHTML = '<span class="text-red-700 font-bold">No se pudieron cargar los datos: ' + esc(e.message) + '</span>';
