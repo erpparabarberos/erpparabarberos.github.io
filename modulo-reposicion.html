@@ -1314,9 +1314,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!p.fecha_estimada_llegada && p.fecha_pedido) p.fecha_estimada_llegada = sumarDias(p.fecha_pedido, diasEntregaPedido(p));
     const total = p.items.reduce((s, i) => s + (Number(i.cantidad) || 0) * (Number(i.costo) || 0), 0);
     const dis = editable ? '' : 'disabled';
-    // Proveedor por producto: si quedan varios, al guardar se crea un pedido por cada proveedor
-    const provItem = i => String(i.proveedor || p.proveedor || '').trim();
-    const provsDistintos = [...new Set(p.items.map(provItem))];
+    // Proveedor por producto: si quedan varios, al guardar se crea un pedido por cada proveedor (sin mensaje en pantalla)
     $('mdPedidoBody').innerHTML = `
       <div class="p-5 border-b flex items-start gap-3"><div class="flex-1"><div class="text-xs muted">${p.id ? esc(p.id) : 'Pedido nuevo'} · ${esc(ESTADO_PEDIDO[p.estado])}</div>
         <h2 class="text-xl font-extrabold">${p.estado === 'borrador' ? 'Cotización' : 'Pedido'} ${p.tipo === 'china' ? 'a China' : 'nacional'}</h2></div>
@@ -1329,7 +1327,6 @@ document.addEventListener('DOMContentLoaded', () => {
         <label>Llegada estimada<input id="edLlegada" type="date" class="inp w-full" value="${esc(p.fecha_estimada_llegada || '')}" ${dis}></label>
       </div>
       <div class="px-5">
-        ${editable && provsDistintos.length > 1 ? `<div class="text-sm mb-2" style="color:var(--tinta-2)">Hay productos de <b>${provsDistintos.length} proveedores</b>. Al guardar se crea un pedido por cada uno: ${provsDistintos.map(v => esc(v || 'sin proveedor')).join(' · ')}.</div>` : ''}
         <div class="tbl-wrap" style="max-height:45vh"><table class="tbl"><thead><tr><th>Producto</th>${editable ? '<th>Proveedor</th>' : ''}<th class="num">Cantidad</th>${conRecibido ? '<th class="num">Recibido</th>' : ''}
           <th class="num">Costo unit.</th><th class="num">Subtotal</th>${editable ? '<th></th>' : ''}</tr></thead><tbody>
           ${p.items.map((i, k) => `<tr><td>${esc(i.nombre)}<div class="text-xs muted">${esc(i.codigo)}${i.obs ? ' · Proveedor: ' + esc(i.obs) : ''}</div></td>
