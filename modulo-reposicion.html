@@ -773,6 +773,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="p-5 border-b flex flex-wrap items-start gap-3">
         <div class="flex-1"><h2>${esc(titulo)}</h2><div class="text-sm muted mt-1">${esc(partes.join(' · '))}</div></div>
         <button class="btn btn-sec" id="dgExportar">Exportar a Excel</button>
+        ${D.compra && !enSede && S.puedeEditar ? '<button class="btn btn-pri" id="dgPedido">Armar pedido</button>' : ''}
         <button class="btn btn-sec" data-cerrar="mdDesglose">Cerrar</button>
       </div>
       <div class="p-5">
@@ -784,6 +785,13 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>`;
     $('dgBuscar').addEventListener('input', pintarDesglose);
     $('dgExportar').onclick = () => exportarDesglose(titulo, partes);
+    // Pedido directo con lo que muestra la lista (respeta la búsqueda): abre la cotización con la cantidad sugerida
+    if ($('dgPedido')) $('dgPedido').onclick = () => {
+      const F = filasDesglose().filter(r => r.v.q > 0);
+      if (!F.length) return toast('No hay productos con cantidad sugerida');
+      $('mdDesglose').classList.remove('open');
+      abrirEditorPedido(null, F.map(r => r.f.c), null, Object.fromEntries(F.map(r => [r.f.c, r.v.q])));
+    };
     $('mdDesglose').classList.add('open');
     pintarDesglose();
   }
