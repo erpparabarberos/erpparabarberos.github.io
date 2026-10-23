@@ -16429,3 +16429,21 @@ body.ti-sobrio .inventory-modern-tabs {
 body.ti-sobrio .inventory-modern-page > .inventory-modern-header {
     display: none !important;
 }
+
+/* Buscador en la misma fila de los botones (a la izquierda) para ahorrar espacio, en todas las secciones con
+   barra de filtros: arriba los filtros; abajo el buscador y los botones. En pantallas angostas, uno debajo del otro. */
+body.ti-sobrio .inventory-modern-page .inventory-modern-toolbar {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    grid-template-areas: "filtros filtros" "buscar acciones" !important;
+    align-items: end !important;
+}
+body.ti-sobrio .inventory-modern-page .inventory-modern-filters { grid-area: filtros !important; min-width: 0 !important; }
+body.ti-sobrio .inventory-modern-page .inventory-modern-search-wrap { grid-area: buscar !important; flex: none !important; min-width: 0 !important; }
+body.ti-sobrio .inventory-modern-page .inventory-modern-actions { grid-area: acciones !important; margin-left: 0 !important; flex-wrap: wrap !important; justify-content: flex-end !important; }
+@media (max-width: 900px) {
+    body.ti-sobrio .inventory-modern-page .inventory-modern-toolbar {
+        grid-template-columns: minmax(0, 1fr) !important;
+        grid-template-areas: "filtros" "buscar" "acciones" !important;
+    }
+}
