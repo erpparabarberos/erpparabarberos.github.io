@@ -16423,3 +16423,9 @@ body.ti-sobrio .planning-header {
 body.ti-sobrio .inventory-modern-tabs {
     margin-top: 0 !important;
 }
+
+/* Secciones con pestañas (Inventario, Servicios, Accesos, Ajustes): sin título grande arriba; la pestaña marcada
+   ya dice dónde se está. El título sigue en la página (oculto) porque las exportaciones a PDF y Excel lo usan. */
+body.ti-sobrio .inventory-modern-page > .inventory-modern-header {
+    display: none !important;
+}
