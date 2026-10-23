@@ -5721,7 +5721,7 @@ const credentialsTableColumns = {
     phones: ['id', 'phoneId', 'user', 'pin'],
     internet: ['id', 'provider', 'username', 'password', 'url', 'status'],
     servers: ['id', 'serverName', 'username', 'password', 'url', 'status'],
-    software: ['id', 'softwareName', 'version', 'assignedTo'],
+    software: ['id', 'softwareName', 'licenseKey', 'version', 'assignedTo'],
     siigo: ['id', 'username', 'password', 'assignedUser', 'url', 'status'],
     velocity: ['id', 'username', 'password', 'assignedUser', 'url', 'status'],
     traslados: ['id', 'username', 'password', 'assignedUser', 'url', 'status'],
