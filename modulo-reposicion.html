@@ -135,10 +135,10 @@
 
 <nav class="rep-tabs" id="tabs">
   <button class="rep-tab active" data-tab="inicio">Inicio</button>
-  <button class="rep-tab" data-tab="comprar">Qué comprar</button>
+  <button class="rep-tab" data-tab="comprar">Reposición</button>
   <!-- Pantallas del cálculo anterior que quedan ocultas por ahora (el código sigue abajo) -->
   <button class="rep-tab" data-tab="resumen" style="display:none">Resumen</button>
-  <button class="rep-tab" data-tab="reposicion">Reposición</button>
+  <button class="rep-tab" data-tab="reposicion" style="display:none">Reposición anterior</button>
   <button class="rep-tab" data-tab="china" style="display:none">Pedidos a China</button>
   <button class="rep-tab" data-tab="puente" style="display:none">Puente nacional</button>
   <button class="rep-tab" data-tab="traslados">Traslados sugeridos</button>
@@ -850,9 +850,11 @@ document.addEventListener('DOMContentLoaded', () => {
     return out;
   }
 
+  // Fecha límite para pedir (o trasladar): hoy + días que faltan para llegar al punto de reorden
+  const fechaLimite = dpp => dpp == null ? '–' : dpp <= 0 ? '<b class="text-red-700">YA</b>' : esc(fmtFecha(sumarDias(hoyISO(), dpp)));
   const COLS_CQ = [
     ['sem', 'Semáforo'], ['n', 'Producto'], ['abc', 'ABC'], ['st', 'Inventario', 1], ['tr', 'En camino', 1], ['d', 'Venta diaria', 1],
-    ['cob', 'Días de inventario', 1], ['pr', 'Punto de reorden', 1], ['q', 'Cantidad sugerida', 1], ['vq', 'Costo de la compra', 1], ['prov', 'Proveedor']
+    ['cob', 'Días de inventario', 1], ['pr', 'Punto de reorden', 1], ['dpp', 'Pedir antes de', 1], ['q', 'Cantidad sugerida', 1], ['vq', 'Costo de la compra', 1], ['prov', 'Proveedor']
   ];
 
   function llenarFiltrosCq() {
@@ -869,7 +871,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('#cqVista button').forEach(b => b.classList.toggle('on', b.dataset.v === CQ.vista));
     const sede = $('cqSede').value, enSede = !!sede, F = filasCompra();
     if (CQ.vista === 'proveedor') return renderPorProveedor(F, enSede);
-    const cols = COLS_CQ.map(c => c[0] === 'q' && enSede ? ['q', 'Trasladar', 1] : c[0] === 'vq' && enSede ? ['vq', 'Valor del traslado', 1]
+    const cols = COLS_CQ.map(c => c[0] === 'dpp' && enSede ? ['dpp', 'Trasladar antes de', 1] : c[0] === 'q' && enSede ? ['q', 'Trasladar', 1] : c[0] === 'vq' && enSede ? ['vq', 'Valor del traslado', 1]
       : c[0] === 'st' && !enSede ? ['st', 'Inventario total', 1] : c);
     $('cqCuenta').textContent = `${num(F.length)} producto${F.length === 1 ? '' : 's'} · ${plata(F.reduce((a, r) => a + r.vq, 0))}`;
     $('cqMas').style.display = F.length > CQ.limite ? '' : 'none';
@@ -880,7 +882,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <td class="prod"><span class="linkish" data-an="${esc(r.f.c)}">${esc(r.f.n)}</span><div class="text-xs muted">${esc(r.f.c)}${sede ? ' · ' + esc(nombreSede(sede)) : ''}</div></td>
         <td>${esc(claseTexto(r.abc, r.f))}</td><td class="num">${num(r.st)}</td><td class="num">${r.tr ? num(r.tr) : '–'}</td>
         <td class="num"${r.f.bd === '12m' && !sede ? ' title="Agotado hace más de 90 días: se usa la venta de 12 meses"' : ''}>${num(r.d, r.d && r.d < 1 ? 2 : 1)}</td>
-        <td class="num">${r.cob == null ? '–' : num(r.cob)}</td><td class="num">${num(r.pr)}</td>
+        <td class="num">${r.cob == null ? '–' : num(r.cob)}</td><td class="num">${num(r.pr)}</td><td class="num" style="white-space:nowrap">${fechaLimite(r.dpp)}</td>
         <td class="num font-bold">${r.q ? num(r.q) : '–'}</td><td class="num">${r.vq ? pesos(r.vq) : '–'}</td>
         <td class="text-xs">${esc(r.f.prov || '—')}${r.f.origen ? `<div class="muted">${esc(r.f.origen)} · ${num(r.f.lead)} días</div>` : ''}</td></tr>`).join('')
        || `<tr><td colspan="${cols.length}" class="muted" style="padding:24px;text-align:center">Sin productos con estos filtros</td></tr>`) + '</tbody>';
@@ -921,11 +923,12 @@ document.addEventListener('DOMContentLoaded', () => {
       'Semáforo': nombreSem(r.sem, !!sede), 'SKU': r.f.c, 'Producto': r.f.n, 'Categoría': r.f.g, 'Sede': sede ? nombreSede(sede) : 'Bodega principal (compra)',
       'ABC': claseTexto(r.abc, r.f), [sede ? 'Inventario' : 'Inventario total']: r.st, 'En camino': r.tr, 'Venta diaria': Math.round(r.d * 100) / 100,
       'Días de inventario': r.cob == null ? '' : Math.round(r.cob), 'Punto de reorden': Math.round(r.pr || 0),
+      [sede ? 'Trasladar antes de' : 'Pedir antes de']: r.dpp == null ? '' : r.dpp <= 0 ? 'YA' : sumarDias(hoyISO(), r.dpp),
       [sede ? 'Trasladar' : 'Cantidad sugerida']: r.q, 'Costo unitario': r.f.costo || '', [sede ? 'Valor del traslado' : 'Costo de la compra']: Math.round(r.vq),
       'Proveedor': r.f.prov || '', 'Origen': r.f.origen || '', 'Días de entrega': r.f.lead
     }));
-    const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), 'Qué comprar');
-    XLSX.writeFile(wb, `que_comprar_${sede ? sede.toLowerCase().replace(/\s+/g, '_') + '_' : ''}${hoyISO()}.xlsx`);
+    const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), 'Reposición');
+    XLSX.writeFile(wb, `reposicion_${sede ? sede.toLowerCase().replace(/\s+/g, '_') + '_' : ''}${hoyISO()}.xlsx`);
   }
 
   // ---------------------------------------------------------------- RESUMEN
@@ -1519,7 +1522,7 @@ document.addEventListener('DOMContentLoaded', () => {
   $('cqVista').addEventListener('click', ev => { const b = ev.target.closest('button[data-v]'); if (b) { CQ.vista = b.dataset.v; renderComprar(); } });
   $('cqTabla').addEventListener('click', ev => {
     const th = ev.target.closest('th[data-cqord]');
-    if (th) { const k = th.dataset.cqord; CQ.orden = { col: k, dir: CQ.orden.col === k ? -CQ.orden.dir : (['sem', 'n', 'abc', 'prov'].includes(k) ? 1 : -1) }; return renderComprar(); }
+    if (th) { const k = th.dataset.cqord; CQ.orden = { col: k, dir: CQ.orden.col === k ? -CQ.orden.dir : (['sem', 'n', 'abc', 'prov', 'dpp'].includes(k) ? 1 : -1) }; return renderComprar(); }
     const pv = ev.target.closest('tr[data-prov]');   // clic en un proveedor = ver sus productos
     if (pv) { $('cqProv').value = pv.dataset.prov === '(sin proveedor)' ? '' : pv.dataset.prov; CQ.vista = 'producto'; renderComprar(); }
   });
