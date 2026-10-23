@@ -2070,6 +2070,169 @@ const newTITicketFormHTML = `
         doc.save(`${archivo || nombreArchivo(titulo)}.pdf`);
     }
 
+    // ===================================================================== REVISIÓN
+    // Revisa inventario, licencias, servicios, accesos y soportes y dice qué falta: equipos sin licencia,
+    // datos incompletos, accesos sin dueño, soportes viejos... Cada hallazgo trae los códigos y lleva a su pestaña.
+    const escRev = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    async function renderRevisionPage(container) {
+        try { await revisarTI(container); }
+        catch (e) {
+            console.error(e);
+            const c = document.getElementById('rev-cuerpo');
+            if (c) c.innerHTML = `<div class="rev-error">No se pudo completar la revisión: ${escRev(e.message)}</div>`;
+        }
+    }
+    async function revisarTI(container) {
+        container.innerHTML = `
+<section class="rev-page">
+    <div class="rev-cabecera"><h1>Revisión</h1><span class="rev-fecha" id="rev-fecha"></span>
+        <span class="rev-espacio"></span><button type="button" class="export-btn" id="rev-pdf" disabled>Exportar PDF</button></div>
+    <div id="rev-cuerpo" class="rev-cargando">Revisando la información…</div>
+</section>`;
+        let inv, cred, serv, tick;
+        try {
+            [inv, cred, serv, tick] = await Promise.all(['inventory', 'credentials', 'services', 'tickets']
+                .map(c => db.collection(c).get().then(s => s.docs.map(d => ({ id: d.id, ...d.data() })))));
+        } catch (e) {
+            document.getElementById('rev-cuerpo').innerHTML = `<div class="rev-error">No se pudo leer la información: ${escRev(e.message)}</div>`;
+            return;
+        }
+
+        const vacio = v => v == null || String(v).trim() === '' || ['n/a', 'na', '-', 'sin asignar'].includes(String(v).trim().toLowerCase());
+        const inactivo = x => /retirad|baja|dañad|danad|vendid|inactiv|perdid|robad|desech/i.test(String(x.lifecycleStatus || x.status || ''));
+        const idCorto = v => String(v || '').split(':')[0].trim();
+        const hoy = new Date().toISOString().slice(0, 10);
+        const fechaTexto = v => { if (!v) return ''; const d = v.toDate ? v.toDate() : new Date(v); return isNaN(d) ? '' : d.toISOString().slice(0, 10); };
+        const de = cat => inv.filter(x => x.category === cat && !inactivo(x));
+        const acc = cat => cred.filter(x => x.category === cat);
+        const secciones = [];
+        const seccion = (titulo, enlace, resumen = '') => { const s = { titulo, enlace, resumen, hallazgos: [] }; secciones.push(s); return s; };
+        // tipo: 'falta' (hay que hacer algo) o 'revisar' (puede estar bien, pero conviene mirarlo)
+        const hallazgo = (s, tipo, texto, items, enlace) => { if (items.length) s.hallazgos.push({ tipo, texto, items, enlace: enlace || s.enlace }); };
+        const sinCampo = (s, lista, campo, texto, tipo = 'falta') => hallazgo(s, tipo, texto, lista.filter(x => vacio(x[campo])).map(x => x.id));
+
+        // ---- Computadores y licencias de Windows
+        const pcs = de('computers');
+        const todosPc = new Set(inv.filter(x => x.category === 'computers').map(x => x.id));
+        const lics = acc('software');
+        const licPorId = new Map(lics.map(l => [l.id, l]));
+        const licPorPc = new Map(lics.filter(l => !vacio(l.assignedTo)).map(l => [idCorto(l.assignedTo), l]));
+        const pcSinLic = pcs.filter(p => vacio(p.os) && !licPorPc.has(p.id));
+        const licLibres = lics.filter(l => vacio(l.assignedTo));
+        const faltanComprar = Math.max(0, pcSinLic.length - licLibres.length);
+        const sPc = seccion('Computadores', '#inventory-computers',
+            `${pcs.length} computadores en uso · ${lics.length} licencias de software · ${pcSinLic.length} sin licencia · ${licLibres.length} licencias sin asignar` +
+            (faltanComprar ? ` · faltan ${faltanComprar} licencias` : ''));
+        hallazgo(sPc, 'falta', 'Sin licencia de Windows asignada', pcSinLic.map(p => p.id));
+        if (faltanComprar) hallazgo(sPc, 'falta', `Faltan ${faltanComprar} licencias: hay más computadores sin licencia que licencias libres`, pcSinLic.slice(licLibres.length).map(p => p.id), '#credentials-software');
+        hallazgo(sPc, 'revisar', 'Licencias libres que se pueden asignar', licLibres.map(l => l.id), '#credentials-software');
+        hallazgo(sPc, 'revisar', 'Licencia que no existe en Accesos → Licencias', pcs.filter(p => !vacio(p.os) && !licPorId.has(idCorto(p.os))).map(p => p.id));
+        hallazgo(sPc, 'revisar', 'Licencia asignada a un equipo retirado o que no existe', lics.filter(l => !vacio(l.assignedTo) && (!todosPc.has(idCorto(l.assignedTo)) || inactivo(inv.find(x => x.id === idCorto(l.assignedTo)) || {}))).map(l => l.id), '#credentials-software');
+        hallazgo(sPc, 'revisar', 'La licencia del equipo no coincide con la de Accesos', pcs.filter(p => !vacio(p.os) && licPorId.has(idCorto(p.os)) && idCorto(licPorId.get(idCorto(p.os)).assignedTo) !== p.id).map(p => p.id));
+        sinCampo(sPc, pcs, 'user', 'Sin usuario');
+        sinCampo(sPc, pcs, 'sede', 'Sin sede');
+        sinCampo(sPc, pcs, 'serial', 'Sin serial');
+        sinCampo(sPc, pcs, 'purchaseDate', 'Sin fecha de compra', 'revisar');
+        hallazgo(sPc, 'revisar', 'Garantía vencida', pcs.filter(p => !vacio(p.warrantyEndDate) && fechaTexto(p.warrantyEndDate) && fechaTexto(p.warrantyEndDate) < hoy).map(p => p.id));
+        const pcConUsuario = new Set(acc('computers').map(c => idCorto(c.computerId)));
+        hallazgo(sPc, 'falta', 'Sin usuario y contraseña del equipo en Accesos → PCs', pcs.filter(p => !pcConUsuario.has(p.id)).map(p => p.id), '#credentials-computers');
+
+        // ---- Celulares
+        const tels = de('phones');
+        const sTel = seccion('Celulares', '#inventory-phones', `${tels.length} celulares en uso`);
+        sinCampo(sTel, tels, 'user', 'Sin usuario');
+        sinCampo(sTel, tels, 'phoneNumber', 'Sin número de teléfono');
+        sinCampo(sTel, tels, 'imei', 'Sin IMEI');
+        const telConPin = new Set(acc('phones').map(c => idCorto(c.phoneId)));
+        hallazgo(sTel, 'revisar', 'Sin PIN registrado en Accesos → Celulares', tels.filter(t => !telConPin.has(t.id)).map(t => t.id), '#credentials-phones');
+
+        // ---- Otros equipos
+        const sEq = seccion('Cámaras, red e impresoras', '#inventory-camaras');
+        const cams = de('camaras');
+        hallazgo(sEq, 'falta', 'Cámaras sin sede', cams.filter(c => vacio(c.sede)).map(c => c.id), '#inventory-camaras');
+        hallazgo(sEq, 'falta', 'Cámaras sin ubicación', cams.filter(c => vacio(c.location)).map(c => c.id), '#inventory-camaras');
+        hallazgo(sEq, 'falta', 'Cámaras IP sin dirección IP', cams.filter(c => /ip/i.test(c.cameraType || '') && vacio(c.ipAddress)).map(c => c.id), '#inventory-camaras');
+        hallazgo(sEq, 'falta', 'DVR sin ubicación', de('cameras').filter(c => vacio(c.location)).map(c => c.id), '#inventory-cameras');
+        hallazgo(sEq, 'falta', 'DVR sin dirección IP', de('cameras').filter(c => vacio(c.ipAddress)).map(c => c.id), '#inventory-cameras');
+        hallazgo(sEq, 'falta', 'Módems sin ubicación', de('modems').filter(c => vacio(c.location)).map(c => c.id), '#inventory-modems');
+        hallazgo(sEq, 'falta', 'Módems sin proveedor de internet', de('modems').filter(c => vacio(c.serviceProvider)).map(c => c.id), '#inventory-modems');
+        hallazgo(sEq, 'falta', 'Equipos de red sin ubicación', de('network').filter(c => vacio(c.location)).map(c => c.id), '#inventory-network');
+        hallazgo(sEq, 'falta', 'Equipos de red sin dirección IP', de('network').filter(c => vacio(c.ipAddress)).map(c => c.id), '#inventory-network');
+        hallazgo(sEq, 'falta', 'Impresoras sin ubicación', de('printers').filter(c => vacio(c.location)).map(c => c.id), '#inventory-printers');
+        hallazgo(sEq, 'falta', 'Monitores sin área', de('monitors').filter(c => vacio(c.area)).map(c => c.id), '#inventory-monitors');
+        hallazgo(sEq, 'revisar', 'Monitores sin serial', de('monitors').filter(c => vacio(c.serial)).map(c => c.id), '#inventory-monitors');
+
+        // ---- Servicios
+        const activos = cat => serv.filter(x => x.category === cat && !inactivo(x));
+        const net = activos('internet');
+        const sSrv = seccion('Servicios', '#services-internet', `${net.length} servicios de internet activos`);
+        hallazgo(sSrv, 'falta', 'Internet sin número de contrato', net.filter(x => vacio(x.contract)).map(x => x.id), '#services-internet');
+        hallazgo(sSrv, 'falta', 'Internet sin costo mensual', net.filter(x => vacio(x.monthlyCost) || Number(x.monthlyCost) === 0).map(x => x.id), '#services-internet');
+        hallazgo(sSrv, 'falta', 'Internet sin ubicación', net.filter(x => vacio(x.location)).map(x => x.id), '#services-internet');
+        hallazgo(sSrv, 'falta', 'Telefonía sin usuario asignado', activos('telefonia').filter(x => vacio(x.assignedUser)).map(x => x.id), '#services-telefonia');
+        hallazgo(sSrv, 'falta', 'Telefonía sin costo mensual', activos('telefonia').filter(x => vacio(x.monthlyCost) || Number(x.monthlyCost) === 0).map(x => x.id), '#services-telefonia');
+        hallazgo(sSrv, 'revisar', 'Otros servicios sin costo mensual', activos('otros').filter(x => vacio(x.monthlyCost) || Number(x.monthlyCost) === 0).map(x => x.id), '#services-otros');
+
+        // ---- Accesos
+        const sAcc = seccion('Accesos', '#credentials-emails');
+        const correos = acc('emails').filter(x => !inactivo(x));
+        hallazgo(sAcc, 'falta', 'Correos sin contraseña', correos.filter(x => vacio(x.password)).map(x => x.id), '#credentials-emails');
+        hallazgo(sAcc, 'falta', 'Correos sin usuario asignado', correos.filter(x => vacio(x.assignedUser)).map(x => x.id), '#credentials-emails');
+        hallazgo(sAcc, 'revisar', 'Correos sin correo de recuperación', correos.filter(x => vacio(x.recoveryEmail)).map(x => x.id), '#credentials-emails');
+        hallazgo(sAcc, 'revisar', 'Usuarios de PC de equipos retirados o que no existen', acc('computers').filter(c => !vacio(c.computerId) && (!todosPc.has(idCorto(c.computerId)) || inactivo(inv.find(x => x.id === idCorto(c.computerId)) || {}))).map(c => c.id), '#credentials-computers');
+        for (const [cat, nombre, enlace] of [['siigo', 'Siigo', '#credentials-siigo'], ['velocity', 'Velocity', '#credentials-velocity'], ['nexus', 'Nexus', '#credentials-nexus'],
+                                             ['traslados', 'Nexus', '#credentials-nexus'], ['atencion', 'Nexus', '#credentials-nexus']]) {
+            const l = acc(cat).filter(x => !inactivo(x));
+            hallazgo(sAcc, 'falta', `Usuarios de ${nombre} sin contraseña`, l.filter(x => vacio(x.password)).map(x => x.id), enlace);
+            hallazgo(sAcc, 'falta', `Usuarios de ${nombre} sin persona asignada`, l.filter(x => vacio(x.assignedUser)).map(x => x.id), enlace);
+        }
+        // une los hallazgos repetidos (Nexus junta lo de Traslados y Atención)
+        const unidos = new Map();
+        for (const h of sAcc.hallazgos) { const k = h.tipo + h.texto; if (unidos.has(k)) unidos.get(k).items.push(...h.items); else unidos.set(k, { ...h, items: [...h.items] }); }
+        sAcc.hallazgos = [...unidos.values()];
+
+        // ---- Soportes
+        const abiertos = tick.filter(t => !['cerrado', 'cancelado'].includes(String(t.status || '').toLowerCase()));
+        const viejo = new Date(Date.now() - 7 * 864e5).toISOString().slice(0, 10);
+        const sTk = seccion('Soportes', '#tickets', `${abiertos.length} soportes sin cerrar`);
+        hallazgo(sTk, 'falta', 'Abiertos hace más de 7 días', abiertos.filter(t => fechaTexto(t.createdAt) && fechaTexto(t.createdAt) < viejo).map(t => t.id), '#soportes-atrasados');
+
+        // ---- Pintar
+        const total = secciones.reduce((a, s) => a + s.hallazgos.filter(h => h.tipo === 'falta').reduce((b, h) => b + h.items.length, 0), 0);
+        document.getElementById('rev-fecha').textContent = new Date().toLocaleString('es-CO', { day: '2-digit', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+        const lista = items => items.length > 40 ? items.slice(0, 40).join(', ') + ` y ${items.length - 40} más` : items.join(', ');
+        document.getElementById('rev-cuerpo').className = '';
+        document.getElementById('rev-cuerpo').innerHTML = `
+    <div class="rev-kpis">
+        <div class="rev-kpi"><b>${total}</b><span>Pendientes</span></div>
+        ${secciones.map(s => { const n = s.hallazgos.filter(h => h.tipo === 'falta').reduce((a, h) => a + h.items.length, 0);
+            return `<a class="rev-kpi" href="#rev-${s.enlace.slice(1)}" data-ir="${escRev(s.titulo)}"><b class="${n ? 'rev-hay' : ''}">${n}</b><span>${escRev(s.titulo)}</span></a>`; }).join('')}
+    </div>
+    ${secciones.map(s => `
+    <div class="rev-seccion" data-seccion="${escRev(s.titulo)}">
+        <div class="rev-seccion-cab"><h2>${escRev(s.titulo)}</h2>${s.resumen ? `<span>${escRev(s.resumen)}</span>` : ''}</div>
+        ${s.hallazgos.length ? s.hallazgos.map(h => `
+        <div class="rev-hallazgo">
+            <span class="rev-tipo rev-${h.tipo}">${h.tipo === 'falta' ? 'Falta' : 'Revisar'}</span>
+            <div class="rev-texto"><b>${escRev(h.texto)}</b> <span class="rev-n">${h.items.length}</span><div class="rev-codigos">${escRev(lista(h.items))}</div></div>
+            <a class="rev-ir" href="${h.enlace}">Ir</a>
+        </div>`).join('') : '<div class="rev-ok">Todo completo</div>'}
+    </div>`).join('')}`;
+        document.querySelectorAll('.rev-kpi[data-ir]').forEach(a => a.onclick = ev => {
+            ev.preventDefault();
+            const el = document.querySelector(`.rev-seccion[data-seccion="${CSS.escape(a.dataset.ir)}"]`);
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+        const pdf = document.getElementById('rev-pdf');
+        pdf.disabled = false;
+        pdf.onclick = () => exportarPDFTabla({
+            titulo: 'Revisión de TI', detalle: `${total} pendientes`,
+            head: ['Sección', 'Tipo', 'Qué falta', 'Cantidad', 'Códigos'],
+            body: secciones.flatMap(s => s.hallazgos.map(h => [s.titulo, h.tipo === 'falta' ? 'Falta' : 'Revisar', h.texto, String(h.items.length), h.items.join(', ')])),
+            archivo: 'revision-ti'
+        });
+    }
+
     function exportToCSV(tableId, filename) {
         const datos = leerTablaExportable(tableId);
         if (!datos) return;
@@ -9502,7 +9665,7 @@ if (createKbBtn) {
             '#soportes-atrasados': renderBacklogSupports,
             '#tickets': renderTicketList, '#historial': renderHistoryPage,
             '#knowledge-base': renderKnowledgeBase, '#estadisticas': renderEstadisticas,
-            '#maintenance': renderMaintenanceCalendar, '#estructuras': renderEstructuras, '#configuracion': renderConfiguracion
+            '#maintenance': renderMaintenanceCalendar, '#estructuras': renderEstructuras, '#configuracion': renderConfiguracion, '#revision': renderRevisionPage
         };
 
         function router() { 

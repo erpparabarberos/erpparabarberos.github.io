@@ -16447,3 +16447,33 @@ body.ti-sobrio .inventory-modern-page .inventory-modern-actions { grid-area: acc
         grid-template-areas: "filtros" "buscar" "acciones" !important;
     }
 }
+
+/* ===== Revisión de TI: qué falta en inventario, licencias, servicios, accesos y soportes ===== */
+body.ti-sobrio .rev-page { display: grid; gap: 16px; }
+body.ti-sobrio .rev-cabecera { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+body.ti-sobrio .rev-cabecera h1 { margin: 0 !important; }
+body.ti-sobrio .rev-fecha { font-size: 13px; color: var(--ti-gris, #64748b); }
+body.ti-sobrio .rev-espacio { flex: 1; }
+body.ti-sobrio .rev-cargando, body.ti-sobrio .rev-error { padding: 24px; background: #fff; border: 1px solid var(--ti-linea, #e2e8f0); border-radius: 6px; color: var(--ti-gris, #64748b); }
+body.ti-sobrio .rev-error { color: #b91c1c; }
+body.ti-sobrio .rev-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+body.ti-sobrio .rev-kpi { display: grid; gap: 2px; padding: 14px 16px; background: #fff; border: 1px solid var(--ti-linea, #e2e8f0); border-radius: 6px; text-decoration: none; color: var(--ti-tinta-2, #334155); }
+body.ti-sobrio a.rev-kpi:hover { border-color: #94a3b8; }
+body.ti-sobrio .rev-kpi b { font-size: 26px; font-weight: 800; color: var(--ti-tinta, #0f172a); font-variant-numeric: tabular-nums; }
+body.ti-sobrio .rev-kpi b.rev-hay { color: #b91c1c; }
+body.ti-sobrio .rev-kpi span { font-size: 13px; font-weight: 600; }
+body.ti-sobrio .rev-seccion { background: #fff; border: 1px solid var(--ti-linea, #e2e8f0); border-radius: 6px; overflow: hidden; scroll-margin-top: 80px; }
+body.ti-sobrio .rev-seccion-cab { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; padding: 14px 18px; border-bottom: 1px solid var(--ti-linea, #e2e8f0); background: #f8fafc; }
+body.ti-sobrio .rev-seccion-cab h2 { margin: 0 !important; font-size: 16px !important; font-weight: 700 !important; color: var(--ti-tinta, #0f172a) !important; }
+body.ti-sobrio .rev-seccion-cab span { font-size: 13px; color: var(--ti-gris, #64748b); }
+body.ti-sobrio .rev-hallazgo { display: grid; grid-template-columns: 72px minmax(0, 1fr) auto; gap: 12px; align-items: start; padding: 12px 18px; border-bottom: 1px solid #eef2f7; }
+body.ti-sobrio .rev-hallazgo:last-child { border-bottom: 0; }
+body.ti-sobrio .rev-tipo { display: inline-flex; justify-content: center; padding: 3px 0; border-radius: 4px; font-size: 12px; font-weight: 700; }
+body.ti-sobrio .rev-falta { background: #fee2e2; color: #b91c1c; }
+body.ti-sobrio .rev-revisar { background: #fef9c3; color: #854d0e; }
+body.ti-sobrio .rev-texto b { color: var(--ti-tinta, #0f172a); font-size: 14px; }
+body.ti-sobrio .rev-n { display: inline-block; margin-left: 6px; padding: 0 7px; border-radius: 10px; background: #f1f5f9; font-size: 12px; font-weight: 700; color: var(--ti-tinta-2, #334155); }
+body.ti-sobrio .rev-codigos { margin-top: 4px; font-size: 13px; color: var(--ti-gris, #64748b); word-break: break-word; }
+body.ti-sobrio .rev-ir { font-size: 13px; font-weight: 600; color: var(--ti-tinta, #0f172a); text-decoration: underline; text-underline-offset: 3px; }
+body.ti-sobrio .rev-ok { padding: 14px 18px; font-size: 14px; color: #15803d; font-weight: 600; }
+@media (max-width: 640px) { body.ti-sobrio .rev-hallazgo { grid-template-columns: 64px minmax(0, 1fr); } body.ti-sobrio .rev-ir { grid-column: 2; } }
