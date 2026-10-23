@@ -1299,8 +1299,7 @@ const newTITicketFormHTML = `
         <a href="#credentials-software" class="credentials-modern-tab inventory-modern-tab" data-category="software">${tiIcono('factura')} Licencias</a>
         <a href="#credentials-siigo" class="credentials-modern-tab inventory-modern-tab" data-category="siigo">${tiIcono('programa')} Siigo</a>
         <a href="#credentials-velocity" class="credentials-modern-tab inventory-modern-tab" data-category="velocity">${tiIcono('rayo')} Velocity</a>
-        <a href="#credentials-traslados" class="credentials-modern-tab inventory-modern-tab" data-category="traslados">${tiIcono('camion')} Traslados</a>
-        <a href="#credentials-atencion" class="credentials-modern-tab inventory-modern-tab" data-category="atencion">${tiIcono('auricular')} Atención</a>
+        <a href="#credentials-nexus" class="credentials-modern-tab inventory-modern-tab" data-category="nexus">${tiIcono('programa')} Nexus</a>
         <a href="#credentials-others" class="credentials-modern-tab inventory-modern-tab" data-category="others">${tiIcono('accesos')} Otros</a>
     </div>
 
@@ -2107,6 +2106,8 @@ const newTITicketFormHTML = `
         software: { title: 'Licencias de Software', titleSingular: 'Licencia de Software', prefix: 'CRED-SW-', counter: 'softwareCounter', fields: { id: { label: 'Código' }, softwareName: { label: 'Nombre del software', type: 'text' }, licenseKey: { label: 'Clave de licencia', type: 'textarea' }, version: { label: 'Versión', type: 'text' }, assignedTo: { label: 'Asignar a Equipo', type: 'select', optionsSource: 'computers-inventory' } } },
         siigo: { title: 'Usuarios Siigo', titleSingular: 'Usuario Siigo', prefix: 'CRED-SIIGO-', counter: 'siigoCounter', fields: { id: { label: 'Código' }, username: { label: 'Usuario', type: 'text' }, password: { label: 'Contraseña', type: 'text' }, assignedUser: { label: 'Ususario asignado', type: 'text' }, url: { label: 'URL de Acceso', type: 'text' }, status: { label: 'Estado', type: 'select', options: ['Activo', 'Inactivo'] }, notes: { label: 'Notas', type: 'textarea' } } },
         velocity: { title: 'Usuarios Velocity', titleSingular: 'Usuario Velocity', prefix: 'CRED-VEL-', counter: 'velocityCounter', fields: { id: { label: 'Código' }, username: { label: 'Usuario', type: 'text' }, password: { label: 'Contraseña', type: 'text' }, assignedUser: { label: 'Usuario asignado', type: 'text' }, url: { label: 'URL de Acceso', type: 'text' }, status: { label: 'Estado', type: 'select', options: ['Activo', 'Inactivo'] }, notes: { label: 'Notas', type: 'textarea' } } },
+        // Nexus es una sola plataforma: reemplaza las pestañas Traslados y Atención (sus accesos viejos se muestran aquí)
+        nexus: { title: 'Usuarios de Nexus', titleSingular: 'Usuario de Nexus', prefix: 'CRED-NEX-', counter: 'nexusCounter', fields: { id: { label: 'Código' }, username: { label: 'Usuario', type: 'text' }, password: { label: 'Contraseña', type: 'text' }, assignedUser: { label: 'Usuario asignado', type: 'text' }, status: { label: 'Estado', type: 'select', options: ['Activo', 'Inactivo'] }, notes: { label: 'Notas', type: 'textarea' } } },
         traslados: { title: 'Usuarios App Traslados', titleSingular: 'Usuario App Traslados', prefix: 'CRED-APPTR-', counter: 'trasladosCounter', fields: { id: { label: 'Código' }, username: { label: 'Usuario', type: 'text' }, password: { label: 'Contraseña', type: 'text' }, assignedUser: { label: 'Usuario asignado', type: 'text' }, status: { label: 'Estado', type: 'select', options: ['Activo', 'Inactivo'] }, notes: { label: 'Notas', type: 'textarea' } } },
         atencion: { title: 'Usuarios App Atención al Cliente', titleSingular: 'Usuario App Atención al Cliente', prefix: 'CRED-APPAT-', counter: 'atencionCounter', fields: { id: { label: 'Código' }, username: { label: 'Usuario', type: 'text' }, password: { label: 'Contraseña', type: 'text' }, assignedUser: { label: 'Usuario asignado', type: 'text' }, status: { label: 'Estado', type: 'select', options: ['Activo', 'Inactivo'] }, notes: { label: 'Notas', type: 'textarea' } } },
         others: { title: 'Otras Credenciales', titleSingular: 'Credencial', prefix: 'CRED-OTH-', counter: 'otherCredentialCounter', fields: { id: { label: 'Código' }, system: { label: 'Sistema/Servicio', type: 'text' }, url: { label: 'URL (Opcional)', type: 'text' }, username: { label: 'Usuario', type: 'text' }, password: { label: 'Contraseña', type: 'text' }, notes: { label: 'Notas', type: 'textarea' } } }
@@ -5700,7 +5701,7 @@ const buildTasksForMonth = () => {
 
     addButton.dataset.type = 'credentials';
     addButton.dataset.category = category;
-    addButton.textContent = `Añadir ${config.titleSingular.toLowerCase()}`;
+    addButton.textContent = `Añadir ${config.titleSingular.toLowerCase().replace('nexus', 'Nexus')}`;
 
     const iconEdit = tiIcono('editar');
 
@@ -5724,6 +5725,7 @@ const credentialsTableColumns = {
     software: ['id', 'softwareName', 'licenseKey', 'version', 'assignedTo'],
     siigo: ['id', 'username', 'password', 'assignedUser', 'url', 'status'],
     velocity: ['id', 'username', 'password', 'assignedUser', 'url', 'status'],
+    nexus: ['id', 'username', 'password', 'assignedUser', 'url', 'status'],
     traslados: ['id', 'username', 'password', 'assignedUser', 'url', 'status'],
     atencion: ['id', 'username', 'password', 'assignedUser', 'url', 'status'],
     others: ['id', 'system', 'username', 'password', 'url', 'status']
@@ -5900,7 +5902,7 @@ if (key === 'email' || key === 'recoveryEmail') {
 
         const lastDate = sortedByDate.length ? sortedByDate[0].date : null;
 
-        if (totalLabelEl) totalLabelEl.textContent = `Total ${config.title.toLowerCase()}`;
+        if (totalLabelEl) totalLabelEl.textContent = `Total ${config.title.toLowerCase().replace('nexus', 'Nexus')}`;
 
         document.getElementById('cred-kpi-total').textContent = total;
         document.getElementById('cred-kpi-active').textContent = active;
@@ -6065,8 +6067,10 @@ if (key === 'email' || key === 'recoveryEmail') {
         updateSelectionBar();
     };
 
+    // Nexus junta los accesos nuevos y los que estaban en las antiguas pestañas Traslados y Atención
+    const categoriasConsulta = category === 'nexus' ? ['nexus', 'traslados', 'atencion'] : [category];
     db.collection('credentials')
-        .where('category', '==', category)
+        .where('category', 'in', categoriasConsulta)
         .onSnapshot(snapshot => {
             allCredentials = [];
 
@@ -8008,6 +8012,7 @@ if (seeAllTicketsBtn) {
                 software: '🪪',
                 siigo: 'S',
                 velocity: '⚡',
+                nexus: 'N',
                 traslados: '🚚',
                 atencion: '🎧',
                 others: '🔐'
