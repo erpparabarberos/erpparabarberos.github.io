@@ -183,8 +183,8 @@
       <input id="cqBuscar" class="inp w-64" placeholder="Buscar producto o SKU…">
       <select id="cqSede" class="inp"></select>
       <select id="cqSem" class="inp">
-        <option value="rojo,amarillo">Rojo y amarillo</option><option value="rojo">Rojo</option><option value="amarillo">Amarillo</option>
-        <option value="verde">Verde</option><option value="gris">Gris</option><option value="">Todos</option>
+        <option value="rojo,amarillo">Pedir ya y preparar</option><option value="rojo">Pedir ya</option><option value="amarillo">Preparar</option>
+        <option value="verde">Suficiente</option><option value="gris">Muerto</option><option value="">Todos</option>
       </select>
       <select id="cqCat" class="inp"><option value="">Todas las categorías</option></select>
       <select id="cqProv" class="inp max-w-xs"><option value="">Todos los proveedores</option></select>
@@ -870,6 +870,9 @@ document.addEventListener('DOMContentLoaded', () => {
     llenarFiltrosCq();
     document.querySelectorAll('#cqVista button').forEach(b => b.classList.toggle('on', b.dataset.v === CQ.vista));
     const sede = $('cqSede').value, enSede = !!sede, F = filasCompra();
+    // El filtro del semáforo usa los mismos nombres de la tabla ("Trasladar ya" en una tienda)
+    $('cqSem').options[0].text = `${nombreSem('rojo', enSede)} y preparar`;
+    $('cqSem').options[1].text = nombreSem('rojo', enSede);
     if (CQ.vista === 'proveedor') return renderPorProveedor(F, enSede);
     const cols = COLS_CQ.map(c => c[0] === 'dpp' && enSede ? ['dpp', 'Trasladar antes de', 1] : c[0] === 'q' && enSede ? ['q', 'Trasladar', 1] : c[0] === 'vq' && enSede ? ['vq', 'Valor del traslado', 1]
       : c[0] === 'st' && !enSede ? ['st', 'Inventario total', 1] : c);
