@@ -595,14 +595,14 @@ document.addEventListener('DOMContentLoaded', () => {
   // Un producto visto en el alcance elegido: total (sede vacía) o una sede
   function vista(f, sede) {
     if (!sede) return { st: f.st, d: f.d || 0, abc: f.abc, sem: f.sem, muerto: f.muerto, agotado: f.agotado, c12: f.c12 || 0, q: f.q, vq: f.vq || 0, perdida: f.perdida || 0,
-      tr: f.tr || 0, cob: f.cob, pr: f.pr, dsv: f.dsv, ult: f.ult, da: f.dias_agotado || 0 };
+      tr: f.tr || 0, cob: f.cob, pr: f.pr, dsv: f.dsv, ult: f.ult, da: f.dias_agotado || 0, dpp: f.dpp };
     const s = (f.s || {})[sede];
     if (!s) return null;
     const dias = (AN.meta.parametros || {}).dias_venta || 90;
     const da = s.agotado ? Math.min(s.dsv ?? dias, dias) : 0;
     return { st: s.st, d: s.d || 0, abc: s.abc, sem: s.sem, muerto: s.muerto, agotado: s.agotado, c12: s.c12 || 0, q: s.q,
       vq: f.costo ? s.q * f.costo : 0, perdida: s.agotado && f.precio ? s.d * f.precio * da : 0,
-      tr: 0, cob: s.cob, pr: s.pr, dsv: s.dsv, ult: s.ult, da };
+      tr: 0, cob: s.cob, pr: s.pr, dsv: s.dsv, ult: s.ult, da, dpp: s.d > 0 ? (s.st - s.pr) / s.d : null };
   }
 
   const filtrosAn = () => ({ cat: $('anCat').value, prov: $('anProv').value, abc: $('anAbc').value });
@@ -735,7 +735,8 @@ document.addEventListener('DOMContentLoaded', () => {
     dsv: { t: 'Días sin venta', n: 1, v: r => r.v.dsv ?? 1e6, fm: v => diasSin(v >= 1e6 ? null : v) },
     tr: { t: 'En camino', n: 1, v: r => r.v.tr, fm: v => v ? num(v) : '–' },
     d: { t: 'Venta diaria', n: 1, v: r => r.v.d, fm: v => num(v, v && v < 1 ? 2 : 1) },
-    cob: { t: 'Días de inventario', n: 1, v: r => r.v.cob, fm: v => v == null ? '–' : num(v) },
+    cob: { t: 'Días que quedan', n: 1, v: r => r.v.cob, fm: v => v == null ? '–' : num(v) },
+    dpp: { t: 'Pedir antes de', n: 1, v: r => r.v.dpp, h: r => `<span style="white-space:nowrap">${fechaLimite(r.v.dpp)}</span>` },
     pr: { t: 'Punto de reorden', n: 1, v: r => r.v.pr, fm: v => num(v) },
     q: { t: 'Cantidad sugerida', n: 1, v: r => r.v.q, fm: v => v ? num(v) : '–' },
     vq: { t: 'Costo de la compra', n: 1, v: r => r.v.vq, fm: v => v ? pesos(v) : '–' },
@@ -749,8 +750,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const DESGLOSES = {
     valor: { t: 'Valor del inventario', entra: v => v.st > 0, cols: ['sku', 'prod', 'cat', 'abc', 'unid', 'costo', 'valor', 'donde'], suma: 'valor', orden: 'valor' },
     muerto: { t: 'Plata en producto muerto', entra: v => v.muerto, cols: ['sku', 'prod', 'cat', 'abc', 'unid', 'costo', 'quieta', 'ult', 'dsv', 'donde'], suma: 'quieta', orden: 'quieta' },
-    pedir: { t: 'Para pedir ya', compra: 1, entra: v => v.sem === 'rojo', cols: ['sku', 'prod', 'cat', 'abc', 'unid', 'tr', 'd', 'cob', 'pr', 'q', 'vq', 'donde'], suma: 'vq', orden: 'vq' },
-    compra: { t: 'Compra sugerida', compra: 1, entra: v => v.q > 0, cols: ['sem', 'sku', 'prod', 'cat', 'abc', 'unid', 'tr', 'd', 'cob', 'pr', 'q', 'vq', 'donde'], suma: 'vq', orden: 'vq' },
+    pedir: { t: 'Para pedir ya', compra: 1, entra: v => v.sem === 'rojo', cols: ['sku', 'prod', 'cat', 'abc', 'unid', 'tr', 'd', 'cob', 'dpp', 'pr', 'q', 'vq', 'donde'], suma: 'vq', orden: 'vq' },
+    compra: { t: 'Compra sugerida', compra: 1, entra: v => v.q > 0, cols: ['sem', 'sku', 'prod', 'cat', 'abc', 'unid', 'tr', 'd', 'cob', 'dpp', 'pr', 'q', 'vq', 'donde'], suma: 'vq', orden: 'vq' },
     agotados: { t: 'Agotados', entra: v => v.agotado, cols: ['sku', 'prod', 'cat', 'abc', 'd', 'ult', 'da', 'perdida', 'hayEn'], suma: 'perdida', orden: 'perdida' },
     perdidas: { t: 'Ventas perdidas estimadas', entra: v => v.agotado && v.perdida > 0, cols: ['sku', 'prod', 'cat', 'abc', 'd', 'precio', 'da', 'perdida', 'hayEn'], suma: 'perdida', orden: 'perdida' }
   };
@@ -819,7 +820,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function exportarDesglose(titulo, partes) {
     if (typeof XLSX === 'undefined') return toast('No se cargó la librería de Excel');
     const D = DESGLOSES[DG.tipo];
-    const crudo = (k, r) => { const v = COL[k].v(r); return k === 'sem' ? nombreSem(r.v.sem, r.enSede) : k === 'abc' ? claseTexto(v, r.f) : k === 'dsv' && v >= 1e6 ? '' : typeof v === 'number' ? Math.round(v * 100) / 100 : v; };
+    const crudo = (k, r) => { const v = COL[k].v(r); return k === 'sem' ? nombreSem(r.v.sem, r.enSede) : k === 'dpp' ? (v == null ? '' : v <= 0 ? 'YA' : sumarDias(hoyISO(), v)) : k === 'abc' ? claseTexto(v, r.f) : k === 'dsv' && v >= 1e6 ? '' : typeof v === 'number' ? Math.round(v * 100) / 100 : v; };
     const rows = filasDesglose().map(r => Object.fromEntries(D.cols.map(k => [COL[k].t, crudo(k, r)])));
     const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), titulo.slice(0, 31));
     XLSX.writeFile(wb, `${titulo.toLowerCase().replace(/\s+/g, '_')}_${partes.join('_').toLowerCase().replace(/[^a-z0-9áéíóúñ_]+/g, '_')}_${hoyISO()}.xlsx`);
@@ -868,7 +869,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const fechaLimite = dpp => dpp == null ? '–' : dpp <= 0 ? '<b class="text-red-700">YA</b>' : esc(fmtFecha(sumarDias(hoyISO(), dpp)));
   const COLS_CQ = [
     ['sem', 'Semáforo'], ['n', 'Producto'], ['abc', 'ABC'], ['st', 'Inventario', 1], ['tr', 'En camino', 1], ['d', 'Venta diaria', 1],
-    ['cob', 'Días de inventario', 1], ['pr', 'Punto de reorden', 1], ['dpp', 'Pedir antes de', 1], ['q', 'Cantidad sugerida', 1], ['vq', 'Costo de la compra', 1], ['prov', 'Proveedor']
+    ['cob', 'Días que quedan', 1], ['pr', 'Punto de reorden', 1], ['dpp', 'Pedir antes de', 1], ['q', 'Cantidad sugerida', 1], ['vq', 'Costo de la compra', 1], ['prov', 'Proveedor']
   ];
 
   function llenarFiltrosCq() {
@@ -951,7 +952,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const rows = filasCompra().map(r => ({
       'Semáforo': nombreSem(r.sem, !!sede), 'SKU': r.f.c, 'Producto': r.f.n, 'Categoría': r.f.g, 'Sede': sede ? nombreSede(sede) : 'Bodega principal (compra)',
       'ABC': claseTexto(r.abc, r.f), [sede ? 'Inventario' : 'Inventario total']: r.st, 'En camino': r.tr, 'Venta diaria': Math.round(r.d * 100) / 100,
-      'Días de inventario': r.cob == null ? '' : Math.round(r.cob), 'Punto de reorden': Math.round(r.pr || 0),
+      'Días que quedan': r.cob == null ? '' : Math.round(r.cob), 'Punto de reorden': Math.round(r.pr || 0),
       [sede ? 'Trasladar antes de' : 'Pedir antes de']: r.dpp == null ? '' : r.dpp <= 0 ? 'YA' : sumarDias(hoyISO(), r.dpp),
       [sede ? 'Trasladar' : 'Cantidad sugerida']: r.q, 'Costo unitario': r.f.costo || '', [sede ? 'Valor del traslado' : 'Costo de la compra']: Math.round(r.vq),
       'Proveedor': r.f.prov || '', 'Origen': r.f.origen || '', 'Días de entrega': r.f.lead
