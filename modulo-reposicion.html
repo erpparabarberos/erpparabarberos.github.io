@@ -510,6 +510,43 @@ document.addEventListener('DOMContentLoaded', () => {
     AN.traslados = tras.exists ? (tras.data().items || []) : [];
   }
 
+  // "En camino" al instante: los pedidos están en Nexus (rep_pedidos), así que no hay que esperar la sincronización.
+  // Con lo que viene en camino se recalculan la cantidad sugerida y el semáforo (mismas fórmulas de analista.py).
+  const cantidadSugeridaAn = (d, entrega, cobertura, ss, st, tr, multiplo = 1) => {
+    let q = d * (entrega + cobertura) + ss - st - tr;
+    if (q <= 1e-9) return 0;
+    q = Math.ceil(q - 1e-9);
+    const m = Math.max(1, Math.floor(multiplo || 1));
+    return m <= 1 ? q : Math.ceil(q / m) * m;
+  };
+  const semaforoAn = (disponible, d, pr, amarillo, muerto) =>
+    muerto ? 'gris' : d <= 0 ? 'sin' : disponible < pr ? 'rojo' : (disponible - pr) / d <= amarillo ? 'amarillo' : 'verde';
+
+  function aplicarTransitoAn() {
+    if (!AN.meta) return;
+    const P = AN.meta.parametros || {}, tr = transitoPorCodigo();
+    for (const f of AN.filas) {
+      const t = tr[f.c] || 0;
+      if (t === (f.tr || 0)) continue;
+      const d = f.d || 0;
+      f.tr = t;
+      if (f.activo && !f.muerto) f.q = cantidadSugeridaAn(d, f.lead, P.cobertura_dias ?? 60, f.ss || 0, f.st, t, f.mult || 1);
+      if (f.activo || f.muerto) f.sem = semaforoAn(f.st + t, d, f.pr || 0, P.amarillo_dias ?? 15, f.muerto);
+      f.vq = f.costo ? Math.round(f.q * f.costo) : 0;
+      f.dpp = d > 0 ? (f.st + t - (f.pr || 0)) / d : null;
+    }
+  }
+
+  // Si alguien crea, cambia o borra un pedido, todas las pantallas abiertas se actualizan solas
+  function escucharPedidos() {
+    db.collection('rep_pedidos').onSnapshot(snap => {
+      S.pedidos = []; snap.forEach(d => S.pedidos.push({ id: d.id, ...d.data() }));
+      recalcularTodo();
+      aplicarTransitoAn();
+      render();
+    }, e => console.warn('No se pudo escuchar rep_pedidos', e));
+  }
+
   // Un producto visto en el alcance elegido: total (sede vacía) o una sede
   function vista(f, sede) {
     if (!sede) return { st: f.st, d: f.d || 0, abc: f.abc, sem: f.sem, muerto: f.muerto, agotado: f.agotado, c12: f.c12 || 0, q: f.q, vq: f.vq || 0, perdida: f.perdida || 0,
@@ -1483,7 +1520,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!S.puedeEditar) { document.body.innerHTML = '<div class="p-10 text-center muted">No tienes permiso para ver el módulo de Reposición.</div>'; return; }
       if (!S.puedeEditar) $('tabConfigBtn').style.display = 'none';
       await Promise.all([cargarTodo(), cargarAnalista()]);
+      aplicarTransitoAn();
       mostrarTab('inicio');
+      escucharPedidos();
     } catch (e) {
       console.error(e);
       $('hdrDatos').innerHTML = '<span class="text-red-700 font-bold">No se pudieron cargar los datos: ' + esc(e.message) + '</span>';
