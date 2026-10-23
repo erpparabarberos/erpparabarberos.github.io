@@ -462,7 +462,7 @@ document.addEventListener('DOMContentLoaded', () => {
     S.provDocs = {}; S.proveedores = {};
     provSnap.forEach(d => { const v = d.data(); S.provDocs[d.id] = v; if (v.nombre) S.proveedores[v.nombre] = v; });
     S.ajustes = {}; ajSnap.forEach(d => S.ajustes[d.id] = d.data());
-    S.pedidos = []; pedSnap.forEach(d => S.pedidos.push({ id: d.id, ...d.data() }));
+    S.pedidos = []; pedSnap.forEach(d => { if (!d.id.startsWith('_')) S.pedidos.push({ id: d.id, ...d.data() }); });
     S.traslados = trasSnap.exists ? trasSnap.data() : null;
     recalcularTodo();
     const m = S.meta;
@@ -585,7 +585,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Si alguien crea, cambia o borra un pedido, todas las pantallas abiertas se actualizan solas
   function escucharPedidos() {
     db.collection('rep_pedidos').onSnapshot(snap => {
-      S.pedidos = []; snap.forEach(d => S.pedidos.push({ id: d.id, ...d.data() }));
+      S.pedidos = []; snap.forEach(d => { if (!d.id.startsWith('_')) S.pedidos.push({ id: d.id, ...d.data() }); });
       recalcularTodo();
       aplicarTransitoAn();
       render();
@@ -1251,7 +1251,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderPedidos() {
     const e = $('fPedEstado').value, t = $('fPedTipo').value, q = $('fPedBuscar').value.trim().toLowerCase();
     const P = S.pedidos.filter(p => (e === 'abiertos' ? ['borrador', ...PEDIDO_ABIERTO].includes(p.estado) : (!e || p.estado === e)) && (!t || p.tipo === t) &&
-      (!q || (p.id + ' ' + (p.proveedor || '') + ' ' + (p.items || []).map(i => i.codigo + ' ' + i.nombre).join(' ')).toLowerCase().includes(q)))
+      (!q || (p.id + ' ' + (p.numero || '') + ' ' + (p.proveedor || '') + ' ' + (p.items || []).map(i => i.codigo + ' ' + i.nombre).join(' ')).toLowerCase().includes(q)))
       .sort((a, b) => String(b.creado || '').localeCompare(String(a.creado || '')));
     const hoy = hoyISO();
     $('tblPedidos').innerHTML = `<thead><tr><th>Pedido</th><th>Tipo</th><th>Proveedor</th><th>Estado</th><th>Pedido el</th><th>Llegada estimada</th>
@@ -1260,7 +1260,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const u = (p.items || []).reduce((s, i) => s + (Number(i.cantidad) || 0), 0), r = (p.items || []).reduce((s, i) => s + (Number(i.recibido) || 0), 0);
         const v = (p.items || []).reduce((s, i) => s + (Number(i.cantidad) || 0) * (Number(i.costo) || 0), 0);
         const tarde = PEDIDO_ABIERTO.includes(p.estado) && p.fecha_estimada_llegada && p.fecha_estimada_llegada < hoy;
-        return `<tr><td class="font-bold">${esc(p.id)}</td><td>${p.tipo === 'china' ? 'China' : 'Nacional'}</td><td>${esc(p.proveedor || '—')}</td>
+        return `<tr><td class="font-bold">${esc(codigoPedido(p))}</td><td>${p.tipo === 'china' ? 'China' : 'Nacional'}</td><td>${esc(p.proveedor || '—')}</td>
           <td><span class="chip ${p.estado === 'recibido' ? 'e4' : p.estado === 'cancelado' ? 'e6' : p.estado === 'borrador' ? 'e3' : 'e2'}">${esc(ESTADO_PEDIDO[p.estado] || p.estado)}</span></td>
           <td>${fmtFecha(p.fecha_pedido)}</td><td>${fmtFecha(p.fecha_estimada_llegada)}${tarde ? ' <b class="text-red-700">atrasado</b>' : ''}</td>
           <td class="num">${(p.items || []).length}</td><td class="num">${num(u)}</td><td class="num">${num(r)}</td><td class="num">${pesos(v)}</td>
@@ -1292,6 +1292,9 @@ document.addEventListener('DOMContentLoaded', () => {
     $('mdPedido').classList.add('open');
   }
 
+  // Código que se muestra: OC-0001 si ya es orden de compra; si no, el de la cotización (COT-0001) o el antiguo
+  const codigoPedido = p => p.numero || p.id || '';
+
   // Días de entrega: los del proveedor (Configuración → Proveedores) o, si no tiene, 120 China / 7 nacional
   function diasEntregaPedido(p) {
     const pr = S.proveedores[p.proveedor];
@@ -1316,7 +1319,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const dis = editable ? '' : 'disabled';
     // Proveedor por producto: si quedan varios, al guardar se crea un pedido por cada proveedor (sin mensaje en pantalla)
     $('mdPedidoBody').innerHTML = `
-      <div class="p-5 border-b flex items-start gap-3"><div class="flex-1"><div class="text-xs muted">${p.id ? esc(p.id) : 'Pedido nuevo'} · ${esc(ESTADO_PEDIDO[p.estado])}</div>
+      <div class="p-5 border-b flex items-start gap-3"><div class="flex-1"><div class="text-xs muted">${p.id ? esc(codigoPedido(p)) : 'Nueva'} · ${esc(ESTADO_PEDIDO[p.estado])}</div>
         <h2 class="text-xl font-extrabold">${p.estado === 'borrador' ? 'Cotización' : 'Pedido'} ${p.tipo === 'china' ? 'a China' : 'nacional'}</h2></div>
         <button class="btn btn-sec" data-cerrar="mdPedido">Cerrar</button></div>
       <div class="p-5 grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
@@ -1346,13 +1349,11 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="p-5 flex flex-wrap gap-2 border-t mt-4 bg-slate-50 rounded-b-2xl">
         ${S.puedeEditar ? `
           ${p.estado === 'borrador' ? `<button class="btn btn-sec" id="edGuardar">Guardar cotización</button>
-            <button class="btn btn-sec" id="edCotizar">Excel para cotizar</button>
-            <label class="btn btn-sec" for="edRespuesta">Cargar respuesta del proveedor</label><input type="file" id="edRespuesta" accept=".xlsx,.xls,.csv" hidden>
             <button class="btn btn-pri" id="edCrear">Crear pedido</button>` : ''}
           ${p.estado === 'confirmado' ? '<button class="btn btn-sec" id="edGuardar">Guardar cambios</button><button class="btn btn-pri" id="edTransito">Marcar en camino</button>' : ''}
           ${recibiendo ? '<button class="btn btn-sec" id="edGuardar">Guardar recibido</button><button class="btn btn-ok" id="edRecibido">Marcar todo recibido</button>' : ''}
           ${p.id && ['borrador', 'confirmado', ...PEDIDO_ABIERTO].includes(p.estado) ? `<button class="btn btn-red" id="edCancelar">${p.estado === 'borrador' ? 'Descartar cotización' : 'Cancelar pedido'}</button>` : ''}` : ''}
-        <span class="flex-1"></span>${p.estado !== 'borrador' ? '<button class="btn btn-sec" id="edPdf">Descargar PDF</button>' : ''}<button class="btn btn-sec" id="edExportar">Exportar a Excel</button>
+        <span class="flex-1"></span><button class="btn btn-sec" id="edPdf">Descargar PDF</button><button class="btn btn-sec" id="edExportar">Exportar a Excel</button>
       </div>
       ${(p.historial || []).length ? `<div class="px-5 pb-5 text-xs muted">${p.historial.map(h => `${esc((h.fecha || '').slice(0, 16).replace('T', ' '))} · ${esc(h.usuario)} · ${esc(h.accion)}`).join('<br>')}</div>` : ''}`;
     // eventos
@@ -1391,13 +1392,12 @@ document.addEventListener('DOMContentLoaded', () => {
       ED.fecha_estimada_llegada = sumarDias(ED.fecha_pedido, diasEntregaPedido(ED));
       await guardarPedido('en_transito', 'creado: quedó en camino');
     };
-    if ($('edCotizar')) $('edCotizar').onclick = () => { leer(); exportarCotizacion(ED); };
-    if ($('edRespuesta')) $('edRespuesta').onchange = ev => { leer(); cargarRespuesta(ev.target.files[0]); ev.target.value = ''; };
     if ($('edPdf')) $('edPdf').onclick = () => { leer(); pdfPedido(ED); };
     if ($('edTransito')) $('edTransito').onclick = accion('en_transito', 'marcado en tránsito');
     if ($('edRecibido')) $('edRecibido').onclick = async () => { leer(); ED.items.forEach(i => { if ((Number(i.recibido) || 0) < (Number(i.cantidad) || 0)) { i.recibido = i.cantidad; i.recibido_manual = true; } }); await guardarPedido('recibido', 'recibido'); };
     if ($('edCancelar')) $('edCancelar').onclick = async () => { leer(); await guardarPedido('cancelado', ED.estado === 'borrador' ? 'cotización descartada' : 'cancelado'); };
-    $('edExportar').onclick = () => { leer(); exportarPedido(ED); };
+    // Un solo Excel: en cotización sale el formato para el proveedor (disponibilidad, precio, observaciones); en pedido, la orden
+    $('edExportar').onclick = () => { leer(); ED.estado === 'borrador' ? exportarCotizacion(ED) : exportarPedido(ED); };
   }
 
   // Guarda el pedido. Si sus productos tienen proveedores distintos, queda un pedido por proveedor:
@@ -1427,7 +1427,7 @@ document.addEventListener('DOMContentLoaded', () => {
         q = p;
         q.proveedor = prov;
         q.items = sinProveedorPorLinea(items);
-        if (!q.id) { q.id = idPedido(q.tipo); q.creado = ahora; q.creado_por = S.user.email; }
+        if (!q.id) { q.creado = ahora; q.creado_por = S.user.email; }
         q.historial = [...(q.historial || []), nota(texto)];
       } else {
         const borr = estadoFinal === 'borrador' && S.pedidos.find(x => x.id !== p.id && x.estado === 'borrador' && x.tipo === p.tipo && x.proveedor === prov);
@@ -1440,7 +1440,7 @@ document.addEventListener('DOMContentLoaded', () => {
           q.historial = [...(q.historial || []), nota(`productos agregados desde ${p.id}`)];
         } else {
           q = {
-            id: idPedido(p.tipo), tipo: p.tipo, proveedor: prov, estado: estadoFinal, fecha_pedido: p.fecha_pedido,
+            id: null, tipo: p.tipo, proveedor: prov, estado: estadoFinal, fecha_pedido: p.fecha_pedido,
             fecha_estimada_llegada: p.fecha_pedido ? sumarDias(p.fecha_pedido, diasEntregaPedido({ tipo: p.tipo, proveedor: prov })) : '',
             notas: p.notas || '', items: sinProveedorPorLinea(items), creado: ahora, creado_por: S.user.email,
             historial: [nota(`creado al separar por proveedor (${texto})`)]
@@ -1453,9 +1453,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
-      const lote = db.batch();
-      aGuardar.forEach(q => lote.set(db.collection('rep_pedidos').doc(q.id), q));
-      await lote.commit();
+      // Consecutivos (como las facturas de Servicio técnico): en una sola transacción se toman los números y se guarda.
+      // COT-0001 al guardar una cotización nueva; OC-0001 cuando se crea el pedido (pasa a en camino).
+      const contadorRef = db.collection('rep_pedidos').doc('_consecutivos');
+      const faltan = aGuardar.map(q => ({ q, id: !q.id, oc: !q.numero && [...PEDIDO_ABIERTO, 'recibido'].includes(q.estado) }));
+      await db.runTransaction(async tx => {
+        const c = await tx.get(contadorRef);
+        let cot = c.exists ? Number(c.data().cotizacion || 0) : 0, oc = c.exists ? Number(c.data().orden || 0) : 0;
+        for (const f of faltan) {   // se recalcula en cada intento de la transacción
+          if (f.id) f.q.id = 'COT-' + String(++cot).padStart(4, '0');
+          if (f.oc) f.q.numero = 'OC-' + String(++oc).padStart(4, '0');
+        }
+        tx.set(contadorRef, { cotizacion: cot, orden: oc, actualizado: ahora, actualizado_por: S.user.email }, { merge: true });
+        aGuardar.forEach(q => tx.set(db.collection('rep_pedidos').doc(q.id), q));
+      });
       aGuardar.forEach(q => {
         const k = S.pedidos.findIndex(x => x.id === q.id);
         if (k >= 0) S.pedidos[k] = structuredClone(q); else S.pedidos.push(structuredClone(q));
@@ -1463,8 +1474,8 @@ document.addEventListener('DOMContentLoaded', () => {
       recalcularTodo(); aplicarTransitoAn(); S.seleccion.clear(); S.selPuente.clear(); CQ.sel.clear();
       if (nuevoEstado === 'en_transito') aGuardar.forEach(q => { pdfPedido(q); exportarPedido(q); });
       toast(aGuardar.length > 1
-        ? `Se guardaron ${aGuardar.length} pedidos, uno por proveedor: ${aGuardar.map(q => q.id).join(', ')}`
-        : `Pedido ${p.id} ${texto}`, 7000);
+        ? `Se guardaron ${aGuardar.length}, uno por proveedor: ${aGuardar.map(codigoPedido).join(', ')}`
+        : `${codigoPedido(p)} ${texto}`, 7000);
       pintarEditor(); render();
     } catch (e) { console.error(e); toast('No se pudo guardar el pedido: ' + e.message); }
   }
@@ -1473,9 +1484,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof XLSX === 'undefined') return toast('No se cargó la librería de Excel');
     const rows = p.items.map(i => ({ 'Código': i.codigo, 'Producto': i.nombre, 'Cantidad': i.cantidad, 'Costo unitario': i.costo, 'Subtotal': (i.cantidad || 0) * (i.costo || 0) }));
     const ws = XLSX.utils.json_to_sheet(rows);
-    XLSX.utils.sheet_add_aoa(ws, [[`Pedido ${p.id || '(nuevo)'} · ${p.proveedor || ''} · ${p.fecha_pedido || ''}`]], { origin: { r: rows.length + 2, c: 0 } });
+    XLSX.utils.sheet_add_aoa(ws, [[`PARABARBEROS S.A.S. · ${p.numero ? 'Orden de compra ' + p.numero : 'Cotización ' + (p.id || '')} · ${p.proveedor || ''} · ${p.fecha_pedido || ''}`]], { origin: { r: rows.length + 2, c: 0 } });
     const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Pedido');
-    XLSX.writeFile(wb, `pedido_${p.id || 'nuevo'}.xlsx`);
+    XLSX.writeFile(wb, `${codigoPedido(p) || 'pedido'}.xlsx`);
   }
 
   // ---------------------------------------------------------------- COTIZACIÓN Y PDF DEL PEDIDO
@@ -1502,49 +1513,18 @@ document.addEventListener('DOMContentLoaded', () => {
     toast(grupos.size > 1 ? `Se descargaron ${grupos.size} archivos, uno por proveedor` : 'Excel de cotización descargado');
   }
 
-  // Lee el Excel que devolvió el proveedor: por cada SKU toma la cantidad disponible y el precio unitario
-  function cargarRespuesta(archivo) {
-    if (!archivo) return;
-    if (typeof XLSX === 'undefined') return toast('No se cargó la librería de Excel');
-    const lector = new FileReader();
-    lector.onload = () => {
-      try {
-        const wb = XLSX.read(new Uint8Array(lector.result), { type: 'array' });
-        const filas = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: '' });
-        const norm = t => String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
-        const iTit = filas.findIndex(f => f.some(c => norm(c) === 'sku'));
-        if (iTit < 0) return toast('No encontré la columna SKU en el archivo');
-        const tit = filas[iTit].map(norm);
-        const col = (...nombres) => tit.findIndex(t => nombres.some(n => t.startsWith(n)));
-        const cSku = tit.indexOf('sku'), cDisp = col('cantidad disponible', 'disponible'), cPrecio = col('precio'), cObs = col('observ');
-        const numero = v => { if (typeof v === 'number') return v; const t = String(v).replace(/[^0-9,.-]/g, ''); if (!t) return null; const n = Number(t.replace(/\./g, '').replace(',', '.')); return isNaN(n) ? null : n; };
-        let actualizados = 0, sinDisp = 0;
-        for (const f of filas.slice(iTit + 1)) {
-          const it = ED.items.find(i => String(i.codigo) === String(f[cSku]).trim());
-          if (!it) continue;
-          const disp = cDisp >= 0 ? numero(f[cDisp]) : null, precio = cPrecio >= 0 ? numero(f[cPrecio]) : null;
-          if (disp !== null) { it.cantidad = disp; if (disp <= 0) sinDisp++; }
-          if (precio !== null && precio > 0) it.costo = precio;
-          if (cObs >= 0 && String(f[cObs]).trim()) it.obs = String(f[cObs]).trim().slice(0, 200);
-          if (disp !== null || precio !== null) actualizados++;
-        }
-        pintarEditor();
-        toast(`Respuesta cargada: ${actualizados} productos actualizados` + (sinDisp ? ` · ${sinDisp} sin disponibilidad (quedan en 0 y no se piden)` : ''), 7000);
-      } catch (e) { console.error(e); toast('No se pudo leer el archivo: ' + e.message); }
-    };
-    lector.readAsArrayBuffer(archivo);
-  }
-
-  // PDF del pedido para mandarle al proveedor
+  // PDF para el proveedor. En cotización: "Solicitud de cotización", uno por proveedor, con lo que necesitamos y
+  // columnas en blanco para que responda disponibilidad y precio (sin nuestros costos). En pedido: la orden de compra.
   function pdfPedido(p) {
     if (!window.jspdf || !window.jspdf.jsPDF) return toast('No se pudo cargar la librería de PDF. Recarga la página.');
+    if (p.estado === 'borrador') return pdfCotizacion(p);
     const doc = new window.jspdf.jsPDF({ unit: 'mm', format: 'a4' });
     const items = p.items.filter(i => Number(i.cantidad) > 0);
     const unid = items.reduce((a, i) => a + (Number(i.cantidad) || 0), 0);
     const total = items.reduce((a, i) => a + (Number(i.cantidad) || 0) * (Number(i.costo) || 0), 0);
     doc.setFont('helvetica', 'bold'); doc.setFontSize(15); doc.setTextColor(15, 23, 42);
     doc.text('PARABARBEROS S.A.S.', 14, 16);
-    doc.setFontSize(12); doc.text(`Orden de compra ${p.id || ''}`, 14, 24);
+    doc.setFontSize(12); doc.text(`Orden de compra ${p.numero || p.id || ''}`, 14, 24);
     doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(71, 85, 105);
     doc.text(`Proveedor: ${p.proveedor || 'Por definir'}`, 14, 31);
     doc.text(`Fecha del pedido: ${fmtFecha(p.fecha_pedido)}   ·   Llegada estimada: ${fmtFecha(p.fecha_estimada_llegada)}   ·   Entregar en: Bodega Principal`, 14, 36);
@@ -1558,7 +1538,34 @@ document.addEventListener('DOMContentLoaded', () => {
       columnStyles: { 0: { cellWidth: 32 }, 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right' } }
     });
     if (p.notas) { doc.setFontSize(9); doc.setTextColor(71, 85, 105); doc.text(doc.splitTextToSize('Notas: ' + p.notas, 180), 14, doc.lastAutoTable.finalY + 8); }
-    doc.save(`pedido_${p.id || 'nuevo'}.pdf`);
+    doc.save(`${codigoPedido(p) || 'pedido'}.pdf`);
+  }
+
+  function pdfCotizacion(p) {
+    const items = p.items.filter(i => Number(i.cantidad) > 0);
+    if (!items.length) return toast('La cotización no tiene productos');
+    const grupos = new Map();
+    for (const i of items) { const k = String(i.proveedor || p.proveedor || '').trim() || 'Proveedor por definir'; if (!grupos.has(k)) grupos.set(k, []); grupos.get(k).push(i); }
+    for (const [prov, its] of grupos) {
+      const doc = new window.jspdf.jsPDF({ unit: 'mm', format: 'a4' });
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(15); doc.setTextColor(15, 23, 42);
+      doc.text('PARABARBEROS S.A.S.', 14, 16);
+      doc.setFontSize(12); doc.text(`Solicitud de cotización${p.id ? ' ' + p.id : ''}`, 14, 24);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(71, 85, 105);
+      doc.text(`Proveedor: ${prov}`, 14, 31);
+      doc.text(`Fecha: ${fmtFecha(p.fecha_pedido || hoyISO())}   ·   Entregar en: Bodega Principal`, 14, 36);
+      doc.text('Por favor indíquenos la cantidad disponible y el precio unitario de cada producto.', 14, 41);
+      doc.autoTable({
+        startY: 46, head: [['SKU', 'Producto', 'Cantidad solicitada', 'Cantidad disponible', 'Precio unitario']],
+        body: its.map(i => [i.codigo, i.nombre, num(i.cantidad), '', '']),
+        styles: { font: 'helvetica', fontSize: 8, cellPadding: 2.6, textColor: [51, 65, 85], lineColor: [203, 213, 225], lineWidth: 0.1 },
+        headStyles: { fillColor: [15, 23, 42], textColor: 255, fontStyle: 'bold' },
+        columnStyles: { 0: { cellWidth: 30 }, 2: { halign: 'right', cellWidth: 26 }, 3: { cellWidth: 28 }, 4: { cellWidth: 28 } }
+      });
+      if (p.notas) { doc.text(doc.splitTextToSize('Notas: ' + p.notas, 180), 14, doc.lastAutoTable.finalY + 8); }
+      doc.save(`cotizacion_${prov.toLowerCase().replace(/[^a-z0-9]+/g, '_').slice(0, 40)}_${hoyISO()}.pdf`);
+    }
+    if (grupos.size > 1) toast(`Se descargaron ${grupos.size} PDF, uno por proveedor`);
   }
 
   // ---------------------------------------------------------------- CONFIGURACIÓN
