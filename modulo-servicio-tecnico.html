@@ -3650,7 +3650,7 @@ body.modal-abierto {
 
                     <div class="form-acciones">
                         <button class="secondary-btn" type="button" id="btnLimpiarVenta">Limpiar</button>
-                        <button class="submit-btn" type="submit">Guardar venta</button>
+                        <button class="submit-btn" type="submit" id="ventaSubmitBtn">Guardar venta</button>
                     </div>
                 </div>
 
@@ -6312,8 +6312,130 @@ async function cerrarTurno(form) {
 
 document.getElementById("ventaForm").addEventListener("submit", function(e) {
     e.preventDefault();
-    guardarConBoton(this, () => guardarVenta(this));
+    guardarConBoton(this, () => ventaEditando ? actualizarVenta() : guardarVenta(this));
 });
+
+// ---------- Editar una venta (solo administrador) ----------
+// Usa el mismo formulario de la venta. Lo que el técnico tenía a medio registrar se guarda aparte y vuelve al terminar.
+// El comprobante, la sede y el turno no cambian; queda quién la editó y cómo estaba antes.
+let ventaEditando = null;
+let ventaEnCurso = null;
+
+window.editarVenta = function(docId) {
+    if (!esAdmin()) return;
+    const v = ventasGlobal.find(x => x.docId === docId);
+    if (!v || v.anulada) return;
+
+    if (!ventaEditando) {
+        ventaEnCurso = {
+            carrito: carritoVenta,
+            fecha: document.getElementById("ventaFecha").value,
+            medio: document.getElementById("ventaMedio").value,
+            efectivo: document.getElementById("ventaPagoEfectivo").value,
+            obs: document.getElementById("ventaObs").value
+        };
+    }
+    ventaEditando = v;
+
+    carritoVenta = itemsDeVenta(v).map(i => ({ ...i, cantidad: Number(i.cantidad) || 1, valorUnitario: Number(i.valorUnitario) || 0, total: Number(i.total) || 0 }));
+    itemCarritoEditando = null;
+    limpiarBusquedaVenta();
+    document.getElementById("ventaFecha").value = v.fecha || todayISO();
+    document.getElementById("ventaCliente").value = v.cliente || "Consumidor final";
+    document.getElementById("ventaMedio").value = v.medioPago || "Efectivo";
+    document.getElementById("ventaPagoEfectivo").value = v.pagos ? v.pagos.efectivo : "";
+    document.getElementById("ventaObs").value = v.observaciones || "";
+    document.getElementById("ventaCantidad").value = 1;
+    document.getElementById("ventaValor").value = "";
+    document.getElementById("ventaSubmitBtn").textContent = "Guardar cambios";
+    renderCarritoVenta();
+
+    abrirPanelEnModal("panelVenta", {
+        titulo: `Editar venta ${numeroVenta(v)}`,
+        sub: `${nombreSede(sedeDe(v))} · ${fechaCorta(v.fecha)}`,
+        ancha: true
+    });
+};
+
+// Deja el formulario como estaba antes de editar.
+function terminarEdicionVenta() {
+    if (!ventaEditando) return;
+    ventaEditando = null;
+
+    const previo = ventaEnCurso || { carrito: [], fecha: todayISO(), medio: "Efectivo", efectivo: "", obs: "" };
+    ventaEnCurso = null;
+
+    carritoVenta = previo.carrito;
+    itemCarritoEditando = null;
+    limpiarBusquedaVenta();
+    document.getElementById("ventaFecha").value = previo.fecha || todayISO();
+    document.getElementById("ventaCliente").value = "Consumidor final";
+    document.getElementById("ventaMedio").value = previo.medio || "Efectivo";
+    document.getElementById("ventaPagoEfectivo").value = previo.efectivo || "";
+    document.getElementById("ventaObs").value = previo.obs || "";
+    document.getElementById("ventaCantidad").value = 1;
+    document.getElementById("ventaValor").value = "";
+    document.getElementById("ventaSubmitBtn").textContent = "Guardar venta";
+    renderCarritoVenta();
+}
+
+async function actualizarVenta() {
+    const v = ventaEditando;
+    if (!v || !esAdmin()) return;
+
+    if (!carritoVenta.length) {
+        alert("La venta debe tener al menos un producto o servicio. Para quitarla, anúlala.");
+        return;
+    }
+
+    const total = calcularTotalCarrito();
+    const medioPago = document.getElementById("ventaMedio").value;
+    const fecha = document.getElementById("ventaFecha").value;
+
+    let pagos = null;
+    if (medioPago === "Mixto") {
+        const efectivo = Number(document.getElementById("ventaPagoEfectivo").value || 0);
+        if (efectivo <= 0 || efectivo >= total) {
+            alert("En un pago mixto, lo pagado en efectivo debe ser mayor a cero y menor que el total de la venta.");
+            document.getElementById("ventaPagoEfectivo").focus();
+            return;
+        }
+        pagos = { efectivo, transferencia: total - efectivo };
+    }
+
+    const turno = turnosGlobal.find(t => t.docId === v.turnoId);
+    const cambiaCaja = total !== Number(v.total || 0) || medioPago !== v.medioPago ||
+        JSON.stringify(pagos) !== JSON.stringify(v.pagos || null);
+    if (turno && turno.estado === "cerrado" && cambiaCaja &&
+        !confirm(`El turno de esta venta ya está cerrado; su cuadre de caja no se recalcula.\n\n¿Guardar los cambios de ${numeroVenta(v)}?`)) return;
+
+    const antes = {
+        fecha: v.fecha || "",
+        items: itemsDeVenta(v),
+        total: Number(v.total || 0),
+        medioPago: v.medioPago || "",
+        pagos: v.pagos || null,
+        observaciones: v.observaciones || ""
+    };
+
+    await ventasRef.doc(v.docId).update({
+        fecha,
+        items: carritoVenta,
+        cantidadItems: carritoVenta.length,
+        subtotal: total,
+        total,
+        medioPago,
+        pagos: pagos || firebase.firestore.FieldValue.delete(),
+        observaciones: document.getElementById("ventaObs").value.trim(),
+        editadaPor: currentUserEmail,
+        editadaEn: firebase.firestore.FieldValue.serverTimestamp(),
+        ediciones: firebase.firestore.FieldValue.arrayUnion({ por: currentUserEmail, en: new Date().toISOString(), antes })
+    });
+
+    const numero = numeroVenta(v);
+    cerrarModal();
+    alert(`Venta ${numero} actualizada correctamente.`);
+}
 
 async function guardarVenta(form) {
     if (!turnoActivo) {
@@ -8598,6 +8720,7 @@ function detalleVenta(id) {
         `<button type="button" class="secondary-btn" onclick="imprimirComprobante('${v.docId}')">${icono("imprimir")} Imprimir comprobante</button>`
     ];
     if (esAdmin() && !v.anulada) {
+        acciones.push(`<button type="button" class="secondary-btn" onclick="editarVenta('${v.docId}')">Editar venta</button>`);
         acciones.push(`<button type="button" class="secondary-btn" style="color:var(--danger);" onclick="anularMovimiento('venta', '${v.docId}')">Anular venta</button>`);
     }
     acciones.push(botonCerrarModal);
@@ -8633,6 +8756,7 @@ function detalleVenta(id) {
                 v.pagos ? ["Pagó por transferencia", money(v.pagos.transferencia)] : null,
                 ["Registrada por", limpiarHTML(v.creadoPor)],
                 ["Fecha de registro", fechaHoraDe(v.creadoEn)],
+                v.editadaPor ? ["Editada por", `${limpiarHTML(v.editadaPor)} · ${fechaHoraDe(v.editadaEn)}`] : null,
                 ["Turno", enlaceTurno(v.turnoId)],
                 Number(v.descuento) ? ["Descuento", money(v.descuento)] : null
             ])}
@@ -9090,6 +9214,7 @@ function cerrarModal() {
     modalPila.length = 0;
     document.body.classList.remove("modal-abierto");
     devolverPaneles();
+    terminarEdicionVenta();
 
     if (modalFocoPrevio && document.contains(modalFocoPrevio)) {
         modalFocoPrevio.focus({ preventScroll: true });
