@@ -10,6 +10,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-storage-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-functions-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -725,13 +726,12 @@
         </div>
 
         <div id="view_inventario" class="view-section hidden p-10 min-h-full">
-            <h2 class="text-[32px] font-black text-slate-900 tracking-tight mb-8">Cargue de Inventario de Productos</h2>
+            <h2 class="text-[32px] font-black text-slate-900 tracking-tight mb-8">Productos</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div class="bg-white p-8 rounded-[24px] border border-slate-200 shadow-sm md:col-span-1 h-fit">
-                    <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest mb-4">Subir JSON</h3>
-                    <div class="dashed-box bg-slate-50 hover:bg-slate-100 transition-colors relative h-24 flex flex-col items-center justify-center cursor-pointer mb-4"><span class="text-sm text-slate-500 font-semibold pointer-events-none">Arrastra JSON aquí</span><input type="file" id="f_json_inventario" accept=".json" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"></div>
-                    <button onclick="procesarJSON()" id="btnProcesarJson" class="w-full py-3 text-sm font-bold text-white bg-slate-950 hover:bg-black rounded-xl shadow-md transition-colors hidden">Subir Inventario</button>
-                    <div id="json_status" class="mt-3 text-xs font-bold text-slate-600 text-center"></div>
+                    <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest mb-4">Siigo</h3>
+                    <button onclick="actualizarProductos()" id="btnActualizarProductos" class="w-full py-3 text-sm font-bold text-white bg-slate-950 hover:bg-black rounded-xl shadow-md transition-colors disabled:opacity-60">Actualizar productos</button>
+                    <div id="estadoProductos" class="mt-3 text-xs font-bold text-slate-600 text-center"></div>
                 </div>
                 <div class="bg-white p-8 rounded-[24px] border border-slate-200 shadow-sm md:col-span-2">
                     <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest mb-6">Registrados (<span id="countProductos">0</span>)</h3>
@@ -1117,9 +1117,10 @@
                         }
                     });
 
+                    escucharEstadoProductos();
                     productosRef.onSnapshot(snapshot => {
                         let datalistHTML = ''; let tablaHTML = ''; let total = 0; let prods = [];
-                        snapshot.forEach(doc => prods.push(doc.data()));
+                        snapshot.forEach(doc => { if (!doc.id.startsWith('_')) prods.push(doc.data()); });
                         prods.sort((a,b) => String(a.nombre).localeCompare(String(b.nombre)));
 
                         prods.forEach(data => { 
@@ -1704,36 +1705,37 @@
                 }, 500);
             };
 
-            window.procesarJSON = async () => {
-                const btn = document.getElementById('btnProcesarJson'); btn.textContent = "Procesando..."; btn.disabled = true;
-                const batches = []; let currentBatch = db.batch(); let count = 0;
-                if(typeof window.jsonCargado === 'undefined') window.jsonCargado = [];
-                for (let item of window.jsonCargado) {
-                    const idUnico = item.idUnico || item.id || item.referencia || item.codigo;
-                    const nombre = item.nombre || item.descripcion || item.producto;
-                    if(idUnico && nombre) {
-                        currentBatch.set(productosRef.doc(String(idUnico)), { idUnico: String(idUnico), nombre: String(nombre) });
-                        if (++count % 400 === 0) { batches.push(currentBatch.commit()); currentBatch = db.batch(); }
-                    }
-                }
-                if (count > 0 && count % 400 !== 0) batches.push(currentBatch.commit());
+            // "Actualizar productos": la función actualizarProductos de Firebase le pide a GitHub bajar de Siigo los productos
+            // activos (código y nombre). La sincronización de las 5:15, 12:15 y 18:15 también lo hace.
+            // El avance llega por productos/_estado: pedido -> corriendo -> ok / error.
+            window.actualizarProductos = async () => {
+                const btn = document.getElementById('btnActualizarProductos');
+                if (!firebase.functions) return alert('No se pudo cargar el servicio de actualización.');
+                btn.disabled = true;
                 try {
-                    await Promise.all(batches); 
-                    alert("Inventario subido!"); 
-                } catch(e) { alert("Error al subir inventario"); }
-                btn.textContent = "Subir Inventario"; btn.disabled = false; document.getElementById('f_json_inventario').value = "";
+                    const r = await firebase.functions().httpsCallable('actualizarProductos')();
+                    if (r.data && r.data.lanzada === false) alert('Ya hay una actualización de productos en curso.');
+                } catch (e) {
+                    console.error(e);
+                    alert(e.message || 'No se pudo iniciar la actualización.');
+                    btn.disabled = false;
+                }
             };
 
-            document.getElementById('f_json_inventario')?.addEventListener('change', function(e) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    try {
-                        window.jsonCargado = JSON.parse(e.target.result);
-                        document.getElementById('btnProcesarJson').classList.remove('hidden');
-                        document.getElementById('json_status').textContent = `JSON Válido. ${window.jsonCargado.length} productos.`;
-                    } catch(err) { alert("Error JSON"); }
-                }; reader.readAsText(e.target.files[0]);
-            });
+            function escucharEstadoProductos() {
+                productosRef.doc('_estado').onSnapshot(snap => {
+                    const x = snap.exists ? snap.data() : {};
+                    const btn = document.getElementById('btnActualizarProductos');
+                    const est = document.getElementById('estadoProductos');
+                    if (!btn || !est) return;
+                    const corriendo = ['pedido', 'corriendo'].includes(x.estado);
+                    btn.disabled = corriendo;
+                    btn.textContent = corriendo ? 'Actualizando...' : 'Actualizar productos';
+                    const fecha = x.fin && x.fin.toDate ? x.fin.toDate().toLocaleString('es-CO', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }) : '';
+                    est.style.color = x.estado === 'error' ? '#dc2626' : '';
+                    est.textContent = corriendo ? '' : x.estado === 'error' ? `No se pudo actualizar: ${x.error || ''}` : (fecha ? `Actualizado ${fecha}` : '');
+                }, e => console.error('Estado de productos:', e));
+            }
 
             function renderizarGraficos() {
                 if(!ticketsGlobal.length) return;

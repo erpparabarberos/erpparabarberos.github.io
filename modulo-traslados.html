@@ -11,6 +11,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-functions-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -320,16 +321,12 @@ body.tras-sobrio {
 
         <div id="adminView" class="space-y-5" style="display: none;">
             <div id="productManagementCard" class="tras-card" style="display: none;">
-                <h2 class="tras-card-titulo mb-1">Gestión de productos</h2>
-                <p class="tras-ayuda mb-4">Sube un archivo <b>JSON</b> para actualizar el catálogo de productos que ven los solicitantes. Reemplaza la lista completa.</p>
                 <div class="flex flex-wrap items-center gap-3">
-                    <label for="productFile" class="tras-btn tras-btn-sec cursor-pointer">Seleccionar archivo JSON</label>
-                    <input type="file" id="productFile" class="hidden" accept=".json">
-                    <span id="fileNameDisplay" class="tras-ayuda truncate">Ningún archivo seleccionado.</span>
+                    <h2 class="tras-card-titulo">Productos</h2>
+                    <span id="uploadStatus" class="tras-ayuda"></span>
                     <span class="flex-1"></span>
-                    <button id="uploadProductsBtn" class="tras-btn tras-btn-pri">Actualizar base de datos</button>
+                    <button id="uploadProductsBtn" class="tras-btn tras-btn-pri">Actualizar productos</button>
                 </div>
-                <p id="uploadStatus" class="mt-3 text-sm font-medium"></p>
             </div>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
                 <div class="tras-card">
@@ -553,10 +550,8 @@ body.tras-sobrio {
             adminHistoryDateTo: document.getElementById('adminHistoryDateTo'),
             exportExcelBtn: document.getElementById('exportExcelBtn'),
             productManagementCard: document.getElementById('productManagementCard'),
-            productFile: document.getElementById('productFile'),
             uploadProductsBtn: document.getElementById('uploadProductsBtn'),
             uploadStatus: document.getElementById('uploadStatus'),
-            fileNameDisplay: document.getElementById('fileNameDisplay'),
             userEmailDisplay: document.getElementById('userEmailDisplay'),
             logoutBtn: document.getElementById('logoutBtn'),
             userInfo: document.getElementById('userInfo'),
@@ -1554,7 +1549,7 @@ const allMyRequests = sortedRequests.filter(r =>
             try {
                 const snapshot = await productsCollection.orderBy("name").get();
                 if (snapshot.empty) { console.warn("La colección 'products' está vacía."); return []; }
-                return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                return snapshot.docs.filter(doc => !doc.id.startsWith('_')).map(doc => ({ id: doc.id, ...doc.data() }));
             } catch (error) {
                 console.error("Error al cargar productos: ", error);
                 alert("No se pudo cargar la lista de productos.");
@@ -1562,69 +1557,44 @@ const allMyRequests = sortedRequests.filter(r =>
             }
         }
         
-        async function handleProductUpload() {
-            const fileInput = dom.productFile;
-            if (fileInput.files.length === 0) { alert("Por favor, selecciona un archivo primero."); return; }
-            const file = fileInput.files[0];
-            const reader = new FileReader();
-            reader.onload = async (event) => {
-                const statusEl = dom.uploadStatus;
-                let newProducts;
-                try {
-                    const rawData = JSON.parse(event.target.result);
-                    newProducts = transformRawJsonToProducts(rawData);
-                    if (!newProducts || newProducts.length === 0) throw new Error("No se pudieron procesar productos válidos.");
-                } catch (e) {
-                    statusEl.textContent = `Error: ${e.message}`; statusEl.className = 'mt-3 text-sm font-medium text-red-600'; return;
-                }
-                statusEl.textContent = 'Actualizando...'; statusEl.className = 'mt-3 text-sm font-medium text-blue-600';
-                try {
-                    const batch = db.batch();
-                    const oldDocsSnapshot = await productsCollection.get();
-                    oldDocsSnapshot.forEach(doc => batch.delete(doc.ref));
-                    newProducts.forEach(product => {
-                        const docRef = productsCollection.doc(product.id);
-                        batch.set(docRef, { name: product.name, description: product.description || '' });
-                    });
-                    await batch.commit();
-                    statusEl.textContent = `¡Éxito! Se actualizaron ${newProducts.length} productos.`; statusEl.className = 'mt-3 text-sm font-medium text-green-600';
-                    allProducts = await loadAndTransformProducts();
-                    renderProducts(allProducts);
-                } catch (error) {
-                    console.error("Error al actualizar productos:", error); statusEl.textContent = 'Error al subir a la DB.'; statusEl.className = 'mt-3 text-sm font-medium text-red-600';
-                }
-            };
-            reader.readAsText(file);
+        // "Actualizar productos": la función actualizarProductos de Firebase le pide a GitHub bajar de Siigo los productos
+        // activos (código y nombre). La sincronización de las 5:15, 12:15 y 18:15 también lo hace.
+        // El avance llega por products/_estado: pedido -> corriendo -> ok / error.
+        let estadoProductos = null;
+
+        async function actualizarProductos() {
+            if (!firebase.functions) return alert('No se pudo cargar el servicio de actualización.');
+            dom.uploadProductsBtn.disabled = true;
+            try {
+                const r = await firebase.functions().httpsCallable('actualizarProductos')();
+                if (r.data && r.data.lanzada === false) alert('Ya hay una actualización de productos en curso.');
+            } catch (e) {
+                console.error(e);
+                alert(e.message || 'No se pudo iniciar la actualización.');
+                dom.uploadProductsBtn.disabled = false;
+            }
         }
 
-        function transformRawJsonToProducts(rawData) {
-            const uniqueProductStrings = new Set();
-            if (Array.isArray(rawData)) {
-                rawData.forEach(item => {
-                    Object.keys(item).forEach(key => key && uniqueProductStrings.add(key.trim()));
-                    Object.values(item).forEach(val => val && uniqueProductStrings.add(val.trim()));
-                });
-            }
-            if (uniqueProductStrings.size === 0) return [];
-            const productsMap = new Map();
-            let genericCounter = 1;
-            uniqueProductStrings.forEach(fullProductName => {
-                const parts = String(fullProductName).split(' - ');
-                let idPart, namePart;
-                if (parts.length > 1 && (/\d/.test(parts[0].trim()) || /^[a-zA-Z]{2,}/.test(parts[0].trim()))) {
-                    idPart = parts[0].trim().replace(/\s+/g, '-');
-                    namePart = parts.slice(1).join(' - ').trim();
-                } else {
-                    idPart = `prod-gen-${genericCounter++}`;
-                    namePart = fullProductName;
+        function escucharEstadoProductos() {
+            productsCollection.doc('_estado').onSnapshot(async snap => {
+                const x = snap.exists ? snap.data() : {};
+                const antes = estadoProductos;
+                estadoProductos = x.estado || null;
+                const corriendo = ['pedido', 'corriendo'].includes(x.estado);
+                dom.uploadProductsBtn.disabled = corriendo;
+                dom.uploadProductsBtn.textContent = corriendo ? 'Actualizando...' : 'Actualizar productos';
+                const fecha = x.fin && x.fin.toDate ? x.fin.toDate().toLocaleString('es-CO', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }) : '';
+                dom.uploadStatus.style.color = x.estado === 'error' ? 'var(--peligro)' : '';
+                dom.uploadStatus.textContent = corriendo ? '' : x.estado === 'error' ? `No se pudo actualizar: ${x.error || ''}`
+                    : `${allProducts.length.toLocaleString('es-CO')} productos${fecha ? ' · ' + fecha : ''}`;
+                if (antes && ['pedido', 'corriendo'].includes(antes) && x.estado === 'ok') {
+                    allProducts = await loadAndTransformProducts();
+                    if (currentUserData.role === 'manager') renderProducts(allProducts);
+                    dom.uploadStatus.textContent = `${allProducts.length.toLocaleString('es-CO')} productos${fecha ? ' · ' + fecha : ''}`;
                 }
-                let finalId = idPart, idCounter = 1;
-                while (productsMap.has(finalId)) finalId = `${idPart}_${idCounter++}`;
-                productsMap.set(finalId, { id: finalId, name: namePart, description: fullProductName });
-            });
-            return Array.from(productsMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+            }, e => console.error('Estado de productos:', e));
         }
-        
+
         function renderProducts(productsToRender) {
             if(!dom.productList) return;
             dom.productList.innerHTML = '';
@@ -2004,6 +1974,7 @@ const allMyRequests = sortedRequests.filter(r =>
         async function initializeApp() {
             setupUIForUser();
             allProducts = await loadAndTransformProducts();
+            if (['manager', 'admin'].includes(currentUserData.role)) escucharEstadoProductos();
             
             if(currentUserData.role === 'requester' || currentUserData.role === 'manager'){
                 renderProducts(allProducts);
@@ -2028,7 +1999,7 @@ const allMyRequests = sortedRequests.filter(r =>
                 if (!historial.length) return alert('No hay traslados en el historial con esos filtros.');
                 exportManagerReport(historial);
             });
-            if (dom.uploadProductsBtn) dom.uploadProductsBtn.addEventListener('click', handleProductUpload);
+            if (dom.uploadProductsBtn) dom.uploadProductsBtn.addEventListener('click', actualizarProductos);
             if (dom.transferForm) dom.transferForm.addEventListener('submit', handleSubmitTransferForm);
             if (dom.searchInput) dom.searchInput.addEventListener('input', () => {
                 const term = dom.searchInput.value.toLowerCase().trim();
@@ -2045,7 +2016,6 @@ const allMyRequests = sortedRequests.filter(r =>
                 const primera = dom.productList && dom.productList.querySelector('.tras-cant');
                 if (primera) { primera.focus(); primera.select(); }
             });
-            if (dom.productFile) dom.productFile.addEventListener('change', () => { dom.fileNameDisplay.textContent = dom.productFile.files.length > 0 ? dom.productFile.files[0].name : 'Ningún archivo seleccionado.'; dom.uploadStatus.textContent = ''; });
             
             ['requesterSearchId', 'requesterDateFrom', 'requesterDateTo', 'adminActiveSearchId', 'adminActiveDateFrom', 'adminActiveDateTo', 'adminHistorySearchId', 'adminHistoryDateFrom', 'adminHistoryDateTo', 'reviewerSearchId', 'reviewerDateFrom', 'reviewerDateTo'].forEach(id => {
                 const element = dom[id];
