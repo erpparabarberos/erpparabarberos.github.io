@@ -91,8 +91,7 @@ body.tras-sobrio {
 .tras-sobrio .tras-contador.con-items { background: var(--tinta); border-color: var(--tinta); color: #fff; }
 .tras-sobrio .tras-vacio { padding: 24px 12px; text-align: center; font-size: 13px; color: var(--gris); }
 /* Traslados sugeridos del punto de venta (vista Solicitante) */
-.tras-sobrio .tras-sug-sede { width: auto; min-width: 230px; height: 36px; padding-top: 0; padding-bottom: 0; }
-.tras-sobrio .tras-sug-lista { max-height: 340px; overflow: auto; border: 1px solid var(--linea); border-radius: var(--radio); background: #fff; }
+.tras-sobrio .tras-sug-lista { max-height: 60vh; overflow: auto; border: 1px solid var(--linea); border-radius: var(--radio); background: #fff; }
 .tras-sobrio .tras-sug-tabla { width: 100%; border-collapse: collapse; font-size: 13px; }
 .tras-sobrio .tras-sug-tabla th { position: sticky; top: 0; background: #f8fafc; text-align: left; font-size: 12px; font-weight: 600; color: var(--gris); padding: 8px 10px; border-bottom: 1px solid var(--linea); white-space: nowrap; }
 .tras-sobrio .tras-sug-tabla td { padding: 8px 10px; border-bottom: 1px solid var(--linea-2); vertical-align: middle; color: var(--tinta-2); }
@@ -100,9 +99,6 @@ body.tras-sobrio {
 .tras-sobrio .tras-sug-tabla .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .tras-sobrio .tras-sug-tabla .prod b { display: block; color: var(--tinta); font-weight: 600; }
 .tras-sobrio .tras-sug-tabla .prod span { font-size: 12px; color: var(--gris); }
-.tras-sobrio .tras-sug-punto { display: inline-block; width: 9px; height: 9px; border-radius: 50%; }
-.tras-sobrio .tras-sug-punto.rojo { background: var(--rojo); }
-.tras-sobrio .tras-sug-punto.amarillo { background: var(--amarillo); }
 .tras-sobrio .tras-sug-tabla .add-to-transfer-btn { height: 30px; padding: 0 12px; font-size: 12px; }
 .tras-sobrio .tras-sug-ya { font-size: 12px; font-weight: 600; color: var(--gris); white-space: nowrap; }
 
@@ -288,16 +284,6 @@ body.tras-sobrio {
                     <input type="search" id="searchInput" placeholder="Buscar producto por nombre o código..." title="Escribe y presiona Enter para ir a la cantidad del primer resultado" class="tras-campo flex-1">
                 </div>
                 <div id="productList" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 mb-5 p-3"></div>
-                <div id="sugBloque" class="mb-5" hidden>
-                    <div class="flex flex-wrap items-center gap-3 mb-2">
-                        <h3 class="tras-subtitulo">Traslados sugeridos</h3>
-                        <select id="sugSede" class="tras-campo tras-sug-sede"></select>
-                        <span id="sugInfo" class="tras-ayuda"></span>
-                        <span class="flex-1"></span>
-                        <button type="button" id="sugTodos" class="tras-btn tras-btn-sec">Añadir todos</button>
-                    </div>
-                    <div id="sugLista" class="tras-sug-lista"></div>
-                </div>
                 <div class="flex items-center justify-between gap-3 mb-2">
                     <h3 class="tras-subtitulo">Productos seleccionados</h3>
                     <span id="trasContador" class="tras-contador">Sin productos</span>
@@ -340,6 +326,16 @@ body.tras-sobrio {
                         <h5 class="tras-seccion-sub">Canceladas</h5>
                         <div id="myCancelledRequests" class="grid gap-3"></div>
                     </div>
+                </div>
+                <div id="sugBloque" class="tras-card mt-5" hidden>
+                    <h3 class="tras-card-titulo mb-3">Traslados sugeridos</h3>
+                    <select id="sugSede" class="tras-campo mb-3"></select>
+                    <div class="flex items-center gap-3 mb-3">
+                        <span id="sugInfo" class="tras-ayuda"></span>
+                        <span class="flex-1"></span>
+                        <button type="button" id="sugTodos" class="tras-btn tras-btn-sec">Añadir todos</button>
+                    </div>
+                    <div id="sugLista" class="tras-sug-lista"></div>
                 </div>
             </div>
         </div>
@@ -1392,8 +1388,9 @@ const allMyRequests = sortedRequests.filter(r =>
         }
         
         // ---------- Traslados sugeridos del punto de venta ----------
-        // Los calcula la sincronización con Siigo (lo mismo que ve Compras en Reposición) y los deja en products/_sugeridos:
-        // { fecha, sedes: { "Punto de venta Cali sur": [{ c, n, o (desde dónde), q, sem, st, d, abc }] } }.
+        // Los calcula la sincronización con Siigo y los deja en products/_sugeridos: productos activos con menos de 5 unidades
+        // en el punto, con la cantidad que sale de lo que vende ese punto (el cálculo de Reposición) y salen de la principal.
+        // { fecha, sedes: { "Punto de venta Cali sur": [{ c, n, q, st }] } } (ya vienen ordenados por urgencia).
         let sugeridos = null;
         const ESTADOS_CERRADOS = ['completed', 'completed_incomplete', 'novelty_review', 'cancelled'];
 
@@ -1452,13 +1449,10 @@ const allMyRequests = sortedRequests.filter(r =>
             document.getElementById('sugTodos').disabled = !lista.some(x => !pedidos.has(x.c) && !anadidos.has(x.c));
             document.getElementById('sugLista').innerHTML = !lista.length
                 ? '<p class="tras-vacio">Sin traslados sugeridos para este punto de venta.</p>'
-                : `<table class="tras-sug-tabla"><thead><tr><th></th><th>Producto</th><th>Desde</th><th class="num">Tiene</th><th class="num">Vende al mes</th><th class="num">Sugerido</th><th></th></tr></thead><tbody>${
+                : `<table class="tras-sug-tabla"><thead><tr><th>Producto</th><th class="num">Tiene</th><th class="num">Pedir</th><th></th></tr></thead><tbody>${
                     lista.map((x, i) => `<tr>
-                        <td><span class="tras-sug-punto ${x.sem === 'rojo' ? 'rojo' : 'amarillo'}" title="${x.sem === 'rojo' ? 'Urgente' : 'Pronto'}"></span></td>
                         <td class="prod"><b>${esc(x.n)}</b><span>${esc(x.c)}</span></td>
-                        <td>${esc(String(x.o || '').replace('Punto de venta ', ''))}</td>
                         <td class="num">${esc(x.st)}</td>
-                        <td class="num">${esc(Math.round((x.d || 0) * 30))}</td>
                         <td class="num"><b>${esc(x.q)}</b></td>
                         <td class="num">${pedidos.has(x.c) ? '<span class="tras-sug-ya">En solicitud</span>'
                             : anadidos.has(x.c) ? '<span class="tras-sug-ya">Añadido</span>'
@@ -1477,21 +1471,16 @@ const allMyRequests = sortedRequests.filter(r =>
                 else currentTransferItems.push({ productId: x.c, productName: producto ? producto.name : x.n, quantity: x.q });
             });
             dom.toWarehouse.value = sede;
-            if (!dom.fromWarehouse.value) dom.fromWarehouse.value = filas[0].o;
+            dom.fromWarehouse.value = 'Bodega Principal';
             localStorage.setItem('currentTransferDraft', JSON.stringify(currentTransferItems));
             renderCurrentTransfer();
         }
 
-        // Todos los que salen de la misma bodega de origen (la elegida en el formulario; si no hay, la principal)
         function anadirTodosSugeridos() {
             const sede = document.getElementById('sugSede').value;
-            const origen = dom.fromWarehouse.value || 'Bodega Principal';
             const pedidos = yaSolicitados(sede);
             const anadidos = new Set(currentTransferItems.map(i => String(i.productId)));
-            const filas = sugeridosDeSede().filter(x => x.o === origen && !pedidos.has(x.c) && !anadidos.has(x.c));
-            if (!filas.length) return alert(`No hay sugeridos pendientes desde ${origen} para este punto de venta.`);
-            dom.fromWarehouse.value = origen;
-            anadirSugeridos(filas);
+            anadirSugeridos(sugeridosDeSede().filter(x => !pedidos.has(x.c) && !anadidos.has(x.c)));
         }
 
         function handleAddToTransfer(event) {
