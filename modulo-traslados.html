@@ -650,6 +650,7 @@ body.tras-sobrio {
                         currentUserData = { 
                             user: user, 
                             name: doc.data().nombre || user.email.split('@')[0], 
+                            bodega: String(doc.data().bodega || '').trim(),
                             role: appRole 
                         };
                         
@@ -1394,11 +1395,34 @@ const allMyRequests = sortedRequests.filter(r =>
         let sugeridos = null;
         const ESTADOS_CERRADOS = ['completed', 'completed_incomplete', 'novelty_review', 'cancelled'];
 
-        // Los puntos de venta son los mismos de "Bodega destino" (se llenan cuando el formulario ya los tiene)
+        // El solicitante tiene su punto de venta en usuarios/<correo>.bodega ("Punto de venta Bogota"). Se compara sin
+        // mayúsculas ni tildes, y también sirve sin "Punto de venta". Devuelve el nombre tal como está en "Bodega destino".
+        const normalizarBodega = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/^punto de venta\s+/, '').trim();
+        function bodegaPropia() {
+            if (!currentUserData || currentUserData.role !== 'requester' || !currentUserData.bodega) return '';
+            const buscada = normalizarBodega(currentUserData.bodega);
+            const op = [...dom.toWarehouse.options].find(o => o.value && normalizarBodega(o.value) === buscada);
+            return op ? op.value : '';
+        }
+
+        // El solicitante con punto asignado solo pide para su punto: la bodega destino queda fija
+        function fijarBodegaDestino() {
+            const propia = bodegaPropia();
+            if (!propia) return;
+            dom.toWarehouse.value = propia;
+            dom.toWarehouse.disabled = true;
+        }
+
+        // Los puntos de venta son los mismos de "Bodega destino" (se llenan cuando el formulario ya los tiene).
+        // El solicitante solo ve los de su punto; si no tiene punto asignado, no ve sugeridos.
         function llenarSedesSugeridos() {
             const sel = document.getElementById('sugSede');
-            const sedes = [...dom.toWarehouse.options].filter(o => o.value).map(o => o.value);
+            const todas = [...dom.toWarehouse.options].filter(o => o.value).map(o => o.value);
+            if (!todas.length) return false;
+            const esSolicitante = currentUserData && currentUserData.role === 'requester';
+            const sedes = esSolicitante ? [bodegaPropia()].filter(Boolean) : todas;
             if (!sedes.length) return false;
+            sel.hidden = esSolicitante;
             sel.innerHTML = sedes.map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join('');
             let guardada = null;
             try { guardada = localStorage.getItem('trasSugSede'); } catch (e) {}
@@ -1552,6 +1576,7 @@ const allMyRequests = sortedRequests.filter(r =>
             submitButton.classList.remove('modo-edicion');
             if (currentUserData) dom.requesterName.value = currentUserData.name;
             document.getElementById('deliveryDate').valueAsDate = new Date();
+            fijarBodegaDestino();
         }
         
         async function handleFinalizeReception(event) {
@@ -2111,6 +2136,7 @@ const allMyRequests = sortedRequests.filter(r =>
                                           originWarehouseOptions.map(w => `<option value="${w}">${w}</option>`).join('');
             if(dom.toWarehouse) dom.toWarehouse.innerHTML = '<option value="" selected disabled>-- Seleccione una bodega --</option>' + 
                                         warehouseOptions.map(w => `<option value="${w}">${w}</option>`).join('');
+            fijarBodegaDestino();
             
             if (dom.exportExcelBtn) dom.exportExcelBtn.addEventListener('click', () => {
                 // Exporta exactamente lo que se ve en el Historial, con sus filtros
