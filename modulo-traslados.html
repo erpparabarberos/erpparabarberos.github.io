@@ -1417,7 +1417,7 @@ const allMyRequests = sortedRequests.filter(r =>
                 if (b) anadirSugeridos([sugeridosDeSede()[Number(b.dataset.sug)]]);
             });
             productsCollection.doc('_sugeridos').onSnapshot(snap => {
-                sugeridos = snap.exists ? snap.data() : null;
+                sugeridos = snap.exists ? snap.data() : { sedes: {} };
                 renderSugeridos();
             }, e => console.error('Traslados sugeridos:', e));
         }
