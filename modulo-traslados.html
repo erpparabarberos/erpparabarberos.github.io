@@ -988,6 +988,7 @@ const allMyRequests = sortedRequests.filter(r =>
             const hasItems = req.items && req.items.length > 0;
             const allNtItemsChecked = hasItems && req.status === 'pending_nt_active' && req.items.every(item => item.nt_checked);
             const hasNtNumber = Boolean(req.ntNumber && req.ntNumber.trim() !== '');
+            const allNotaItemsChecked = hasItems && req.items.every(item => item.nota_checked);
             const allReviewItemsChecked = hasItems && req.status === 'processing_partial_items' && req.items.every(item => item.nt_checked === true);
 
             const itemsHtml = hasItems ? (req.items || []).map((item, index) => {
@@ -1020,6 +1021,10 @@ const allMyRequests = sortedRequests.filter(r =>
                     } else if (req.status === 'pending_nt_active') {
                         adminControls += `<input type="checkbox" ${item.nt_checked ? 'checked' : ''} data-request-id="${id}" data-item-index="${index}" class="nt-checkbox sol-check" title="Marcar como separado">`;
                         revisado = item.nt_checked ? 'ok' : 'falta';
+                    } else if (req.status === 'ready_to_ship' && role === 'admin') {
+                        // Casilla propia de este paso: nt_checked ya viene marcado desde la separación
+                        adminControls += `<input type="checkbox" ${item.nota_checked ? 'checked' : ''} data-request-id="${id}" data-item-index="${index}" data-campo="nota_checked" class="nt-checkbox sol-check" title="Marcar como incluido en la nota de traslado">`;
+                        revisado = item.nota_checked ? 'ok' : 'falta';
                     }
                 }
 
@@ -1063,7 +1068,7 @@ const allMyRequests = sortedRequests.filter(r =>
                     if (req.status === 'ready_to_ship') {
                         contentHtml += `<div class="sol-bloque"><label for="ntNumber-${id}" class="sol-label">Nº de nota de traslado (obligatorio)</label><input type="text" id="ntNumber-${id}" data-request-id="${id}" value="${esc(req.ntNumber || '')}" class="nt-number-input sol-input"></div>`;
                         contentHtml += `<div class="sol-bloque"><label for="shippingNotes-${id}" class="sol-label">Observaciones de envío (opcional)</label><textarea id="shippingNotes-${id}" rows="2" class="sol-input">${esc(req.shippingNotes || '')}</textarea><div class="mt-2">${boton('save_shipping_note', 'Guardar nota', 'sec', 'data-pequeno')}</div></div>`;
-                        contentHtml += `<div class="sol-acciones">${boton('return_to_pending', 'Devolver')}${boton('proceed_to_shipping', 'Proceder a envío', 'pri', !hasNtNumber ? 'disabled title="Escribe el Nº de nota de traslado"' : '')}</div>`;
+                        contentHtml += `<div class="sol-acciones">${boton('return_to_pending', 'Devolver')}${boton('proceed_to_shipping', 'Proceder a envío', 'pri', !(hasNtNumber && allNotaItemsChecked) ? 'disabled title="Marca todos los productos y escribe el Nº de nota de traslado"' : '')}</div>`;
                     }
                     if (req.status === 'shipping_details') {
                         contentHtml += `<div class="sol-bloque sol-recuadro"><p class="sol-label">¿Tiene guía?</p><div class="flex items-center gap-x-5 text-sm"><label class="flex items-center gap-2"><input type="radio" name="hasTracking-${id}" value="yes" class="tracking-option"> Sí</label><label class="flex items-center gap-2"><input type="radio" name="hasTracking-${id}" value="no" class="tracking-option" checked> No</label></div><div id="trackingNumberDiv-${id}" class="hidden mt-3"><label for="trackingNumber-${id}" class="sol-label">Nº de guía</label><input type="text" id="trackingNumber-${id}" class="sol-input"></div></div>`;
@@ -1173,6 +1178,8 @@ const allMyRequests = sortedRequests.filter(r =>
                     const reqStatus = allTransferRequests.find(r => r.id === c.dataset.requestId)?.status;
                     if (reqStatus === 'pending_nt_active') {
                         validarSeparacion(c.dataset.requestId);
+                    } else if (reqStatus === 'ready_to_ship') {
+                        validarNotaTraslado(c.dataset.requestId);
                     } else if (reqStatus === 'processing_partial_items') {
                         const allChecked = Array.from(document.querySelectorAll(`#card-${c.dataset.requestId} .nt-checkbox`)).every(cb => cb.checked);
                         const finalizeBtn = document.querySelector(`#card-${c.dataset.requestId} button[data-action="finalize_processing"]`);
@@ -1265,6 +1272,7 @@ const allMyRequests = sortedRequests.filter(r =>
                 proceed_to_shipping: () => {
                     const ntNumber = document.getElementById(`ntNumber-${requestId}`).value.trim();
                     if (!ntNumber) return alert('Escribe el número de nota de traslado.');
+                    if (![...document.querySelectorAll(`#card-${requestId} .nt-checkbox`)].every(c => c.checked)) return alert('Marca todos los productos.');
                     updateData = { status: 'shipping_details', ntNumber };
                 },
                 finalize_shipment: () => {
@@ -1353,7 +1361,7 @@ const allMyRequests = sortedRequests.filter(r =>
                     
                     let items = doc.data().items;
                     if (items[itemIndex]) {
-                        items[itemIndex].nt_checked = isChecked;
+                        items[itemIndex][checkbox.dataset.campo || 'nt_checked'] = isChecked;
                         transaction.update(reqRef, { items: items });
                     }
                 });
@@ -1403,7 +1411,8 @@ const allMyRequests = sortedRequests.filter(r =>
         function validarNotaTraslado(requestId) {
             const ntInput = document.getElementById(`ntNumber-${requestId}`);
             const btn = document.querySelector(`#card-${requestId} button[data-action="proceed_to_shipping"]`);
-            if (ntInput && btn) btn.disabled = ntInput.value.trim() === '';
+            const checkboxes = [...document.querySelectorAll(`#card-${requestId} .nt-checkbox`)];
+            if (ntInput && btn) btn.disabled = ntInput.value.trim() === '' || !checkboxes.length || !checkboxes.every(cb => cb.checked);
         }
 
         function handleTrackingOptionChange(event) {
