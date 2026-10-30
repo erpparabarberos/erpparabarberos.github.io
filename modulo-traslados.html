@@ -136,7 +136,7 @@ body.tras-sobrio {
 .tras-sobrio .sol-chip-novedad { background: #fff; border-color: #fecaca; color: var(--peligro); }
 
 /* Línea de avance */
-.tras-sobrio .sol-pasos { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin-top: 12px; }
+.tras-sobrio .sol-pasos { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; margin-top: 12px; }
 .tras-sobrio .sol-pasos span { height: 4px; border-radius: 2px; background: var(--linea); }
 .tras-sobrio .sol-pasos span.hecho { background: var(--tinta); }
 .tras-sobrio .sol-pasos span.actual { background: var(--gris-claro); }
@@ -396,9 +396,9 @@ body.tras-sobrio {
                     <div class="max-h-[80vh] overflow-y-auto pr-1">
                         <h3 class="tras-seccion">Pendientes de revisión</h3>
                         <div id="adminPendingRequests" class="grid gap-3 mb-5"></div>
-                        <h3 class="tras-seccion">Pendientes por nota de traslado</h3>
+                        <h3 class="tras-seccion">Pendientes por separación</h3>
                         <div id="adminPendingNtRequests" class="grid gap-3 mb-5"></div>
-                        <h3 class="tras-seccion">Por enviar</h3>
+                        <h3 class="tras-seccion">Pendientes por nota de traslado</h3>
                         <div id="adminReadyToShipRequests" class="grid gap-3 mb-5"></div>
                         <h3 class="tras-seccion">Detalles de envío</h3>
                         <div id="adminShippingDetailsRequests" class="grid gap-3 mb-5"></div>
@@ -429,7 +429,7 @@ body.tras-sobrio {
 
         <div id="reviewerView" class="space-y-5" style="display: none;">
             <div class="tras-card">
-                <h2 class="tras-card-titulo mb-4">Pendientes de revisión</h2>
+                <h2 class="tras-card-titulo mb-4">Pendientes por separación</h2>
                 <div class="space-y-2 mb-4">
                     <input type="text" id="reviewerSearchId" placeholder="Buscar por ID o solicitante..." class="tras-campo">
                     <div class="grid grid-cols-2 gap-2">
@@ -653,8 +653,8 @@ body.tras-sobrio {
         const translateStatus = (s, req) => {
             const statusMap = {
                 'pending':'Pendiente', 'processing_partial_items':'En Revisión',
-                'pending_nt_start': 'Pendiente por NT', 'pending_nt_active': 'Preparando NT',
-                'ready_to_ship': 'Por Enviar', 'shipping_details': 'Pendiente de Guía',
+                'pending_nt_start': 'Pendiente por Separar', 'pending_nt_active': 'En Separación',
+                'ready_to_ship': 'Pendiente por NT', 'shipping_details': 'Pendiente de Guía',
                 'shipped': 'Enviado (Por Recibir)', 'completed':'Recibido Completo', 
                 'novelty_review': 'En Revisión de Novedad',
                 'cancelled':'Cancelado'
@@ -866,8 +866,8 @@ const allMyRequests = sortedRequests.filter(r =>
             
             // 2. Dibuja las tablas de revisión
             if (role === 'reviewer') {
-                const pendingForReview = applyFilters(sortedRequests.filter(r => ['pending', 'processing_partial_items'].includes(r.status)), dom.reviewerSearchId, dom.reviewerDateFrom, dom.reviewerDateTo);
-                renderSection('reviewerPendingRequests', dom.reviewerPendingRequests, pendingForReview, 'admin', "No hay solicitudes pendientes de revisión.");
+                const porSeparar = applyFilters(sortedRequests.filter(r => r.status.startsWith('pending_nt')), dom.reviewerSearchId, dom.reviewerDateFrom, dom.reviewerDateTo);
+                renderSection('reviewerPendingRequests', dom.reviewerPendingRequests, porSeparar, 'reviewer', "No hay solicitudes pendientes por separar.");
             } 
             
             // 3. Dibuja las tablas de Bodega (Admin y Manager)
@@ -879,8 +879,8 @@ const allMyRequests = sortedRequests.filter(r =>
                 const pendingForReception = applyFilters(sortedRequests.filter(r => r.status === 'shipped'), dom.adminActiveSearchId, dom.adminActiveDateFrom, dom.adminActiveDateTo);
                 
                 renderSection('adminPendingRequests', dom.adminPendingRequests, pendingForReview, 'admin', "No hay solicitudes pendientes de revisión.");
-                renderSection('adminPendingNtRequests', dom.adminPendingNtRequests, pendingForNt, 'admin', "No hay solicitudes pendientes de NT.");
-                renderSection('adminReadyToShipRequests', dom.adminReadyToShipRequests, readyToShip, 'admin', "No hay solicitudes listas para enviar.");
+                renderSection('adminPendingNtRequests', dom.adminPendingNtRequests, pendingForNt, 'admin', "No hay solicitudes pendientes por separar.");
+                renderSection('adminReadyToShipRequests', dom.adminReadyToShipRequests, readyToShip, 'admin', "No hay solicitudes pendientes por nota de traslado.");
                 renderSection('adminShippingDetailsRequests', dom.adminShippingDetailsRequests, shippingDetails, 'admin', "No hay envíos pendientes de detalles.");
                 renderSection('adminShippedRequests', dom.adminShippedRequests, pendingForReception, 'admin', "No hay solicitudes pendientes de recibir.");
                 
@@ -917,15 +917,16 @@ const allMyRequests = sortedRequests.filter(r =>
         }
         
         // Pasos del traslado para la línea de avance de cada tarjeta
-        const PASOS_TRASLADO = ['Solicitada', 'Revisión', 'Nota de traslado', 'Envío', 'Recibida'];
+        // pending_nt_* es la separación y ready_to_ship la nota de traslado (los estados guardados conservan su nombre)
+        const PASOS_TRASLADO = ['Solicitada', 'Revisión', 'Separación', 'Nota de traslado', 'Envío', 'Recibida'];
         const SITUACION_PASO = {
-            pending: 'Esperando revisión', processing_partial_items: 'En revisión', pending_nt_start: 'Pendiente de nota de traslado',
-            pending_nt_active: 'Preparando la nota de traslado', ready_to_ship: 'Listo para enviar', shipping_details: 'Registrando el envío',
+            pending: 'Esperando revisión', processing_partial_items: 'En revisión', pending_nt_start: 'Pendiente por separar',
+            pending_nt_active: 'En separación', ready_to_ship: 'Pendiente de nota de traslado', shipping_details: 'Registrando el envío',
             shipped: 'En camino: falta confirmar la recepción'
         };
         const pasoDeEstado = (s) => ({
             pending: 0, processing_partial_items: 1, pending_nt_start: 2, pending_nt_active: 2,
-            ready_to_ship: 3, shipping_details: 3, shipped: 4, completed: 5, completed_incomplete: 5, novelty_review: 5
+            ready_to_ship: 3, shipping_details: 4, shipped: 5, completed: 6, completed_incomplete: 6, novelty_review: 6
         })[s];
 
         // Color del estado (los del módulo original): rojo pendiente, amarillo en proceso, azul en camino,
@@ -946,13 +947,13 @@ const allMyRequests = sortedRequests.filter(r =>
         function siguientePaso(req, role) {
             const s = req.status;
             if (role === 'admin' || role === 'reviewer') {
-                if (s === 'pending') return { texto: 'Iniciar revisión', accion: 'start_processing' };
-                if (s === 'processing_partial_items') return { texto: 'Continuar revisión' };
+                if (s === 'pending_nt_start') return { texto: 'Iniciar separación', accion: 'start_nt_preparation' };
+                if (s === 'pending_nt_active') return { texto: 'Completar separación' };
             }
             if (role === 'admin') {
-                if (s === 'pending_nt_start') return { texto: 'Iniciar preparación de NT', accion: 'start_nt_preparation' };
-                if (s === 'pending_nt_active') return { texto: 'Completar NT' };
-                if (s === 'ready_to_ship') return { texto: 'Proceder a envío', accion: 'proceed_to_shipping' };
+                if (s === 'pending') return { texto: 'Iniciar revisión', accion: 'start_processing' };
+                if (s === 'processing_partial_items') return { texto: 'Continuar revisión' };
+                if (s === 'ready_to_ship') return { texto: 'Registrar nota de traslado' };
                 if (s === 'shipping_details') return { texto: 'Registrar envío' };
                 if (s === 'completed_incomplete') return { texto: 'Iniciar revisión de novedad', accion: 'start_novelty_review' };
                 if (s === 'novelty_review') return { texto: 'Gestionar novedad' };
@@ -986,13 +987,12 @@ const allMyRequests = sortedRequests.filter(r =>
 
             const hasItems = req.items && req.items.length > 0;
             const allNtItemsChecked = hasItems && req.status === 'pending_nt_active' && req.items.every(item => item.nt_checked);
-            const hasNtNumber = req.status === 'pending_nt_active' && req.ntNumber && req.ntNumber.trim() !== '';
-            const canProceedFromNt = allNtItemsChecked && hasNtNumber;
+            const hasNtNumber = Boolean(req.ntNumber && req.ntNumber.trim() !== '');
             const allReviewItemsChecked = hasItems && req.status === 'processing_partial_items' && req.items.every(item => item.nt_checked === true);
 
             const itemsHtml = hasItems ? (req.items || []).map((item, index) => {
                 let quantityDisplay;
-                if (req.status === 'pending_nt_active') {
+                if (['pending_nt_active', 'ready_to_ship'].includes(req.status)) {
                     quantityDisplay = `A enviar: <b>${esc(item.sentQuantity ?? item.quantity)}</b>`;
                 } else {
                     quantityDisplay = `Solicitado: <b>${esc(item.quantity)}</b>`;
@@ -1018,7 +1018,7 @@ const allMyRequests = sortedRequests.filter(r =>
                         adminControls += `<input type="checkbox" ${item.nt_checked ? 'checked' : ''} data-request-id="${id}" data-item-index="${index}" class="nt-checkbox sol-check" title="Marcar como revisado">`;
                         revisado = item.nt_checked ? 'ok' : 'falta';
                     } else if (req.status === 'pending_nt_active') {
-                        adminControls += `<input type="checkbox" ${item.nt_checked ? 'checked' : ''} data-request-id="${id}" data-item-index="${index}" class="nt-checkbox sol-check" title="Marcar como incluido en la NT">`;
+                        adminControls += `<input type="checkbox" ${item.nt_checked ? 'checked' : ''} data-request-id="${id}" data-item-index="${index}" class="nt-checkbox sol-check" title="Marcar como separado">`;
                         revisado = item.nt_checked ? 'ok' : 'falta';
                     }
                 }
@@ -1032,29 +1032,26 @@ const allMyRequests = sortedRequests.filter(r =>
             if (role === 'admin' || role === 'reviewer') {
                 let actionButtonsHtml = '';
 
-                if (req.status === 'pending') {
+                if (role === 'admin' && req.status === 'pending') {
                     actionButtonsHtml += boton('start_processing', 'Iniciar revisión', 'pri');
                 }
-                if (req.status.startsWith('processing')) {
+                if (role === 'admin' && req.status.startsWith('processing')) {
                     contentHtml += `<div class="sol-bloque"><label for="adminNotes-${id}" class="sol-label">Nota de revisión</label><textarea id="adminNotes-${id}" rows="2" class="sol-input">${esc(req.adminNotes || '')}</textarea><div class="mt-2">${boton('save_admin_note', 'Guardar nota', 'sec', 'data-pequeno')}</div></div>`;
                     actionButtonsHtml += boton('finalize_processing', 'Finalizar revisión', 'pri', !allReviewItemsChecked ? 'disabled title="Marca todos los productos como revisados"' : '');
                 }
-                if (role === 'admin') {
-                    if (req.status === 'pending_nt_start') {
-                        actionButtonsHtml += boton('start_nt_preparation', 'Iniciar preparación de NT', 'pri');
-                    }
-                    if (req.status === 'pending_nt_active') {
-                        contentHtml += `<div class="sol-bloque"><label for="ntNumber-${id}" class="sol-label">Nº de nota de traslado (obligatorio)</label><input type="text" id="ntNumber-${id}" data-request-id="${id}" value="${esc(req.ntNumber || '')}" class="nt-number-input sol-input"></div>`;
-                        actionButtonsHtml += boton('return_to_pending', 'Devolver');
-                        actionButtonsHtml += boton('ready_to_ship', 'Listo para enviar', 'pri', !canProceedFromNt ? 'disabled title="Marca todos los productos y escribe el Nº de NT"' : '');
-                    }
+                if (req.status === 'pending_nt_start') {
+                    actionButtonsHtml += boton('start_nt_preparation', 'Iniciar separación', 'pri');
+                }
+                if (req.status === 'pending_nt_active') {
+                    if (role === 'admin') actionButtonsHtml += boton('return_to_pending', 'Devolver');
+                    actionButtonsHtml += boton('ready_to_ship', 'Separación lista', 'pri', !allNtItemsChecked ? 'disabled title="Marca todos los productos como separados"' : '');
                 }
 
-                if (['pending', 'processing_partial_items', 'pending_nt_start', 'pending_nt_active'].includes(req.status)) {
+                if (role === 'admin' && ['pending', 'processing_partial_items', 'pending_nt_start', 'pending_nt_active'].includes(req.status)) {
                     actionButtonsHtml += boton('cancel', 'Cancelar', 'peligro');
                 }
 
-                if (req.status === 'cancelled') {
+                if (role === 'admin' && req.status === 'cancelled') {
                     actionButtonsHtml += boton('reactivate', 'Reactivar', 'pri');
                 }
 
@@ -1064,8 +1061,9 @@ const allMyRequests = sortedRequests.filter(r =>
 
                 if (role === 'admin') {
                     if (req.status === 'ready_to_ship') {
+                        contentHtml += `<div class="sol-bloque"><label for="ntNumber-${id}" class="sol-label">Nº de nota de traslado (obligatorio)</label><input type="text" id="ntNumber-${id}" data-request-id="${id}" value="${esc(req.ntNumber || '')}" class="nt-number-input sol-input"></div>`;
                         contentHtml += `<div class="sol-bloque"><label for="shippingNotes-${id}" class="sol-label">Observaciones de envío (opcional)</label><textarea id="shippingNotes-${id}" rows="2" class="sol-input">${esc(req.shippingNotes || '')}</textarea><div class="mt-2">${boton('save_shipping_note', 'Guardar nota', 'sec', 'data-pequeno')}</div></div>`;
-                        contentHtml += `<div class="sol-acciones">${boton('return_to_pending', 'Devolver')}${boton('proceed_to_shipping', 'Proceder a envío', 'pri')}</div>`;
+                        contentHtml += `<div class="sol-acciones">${boton('return_to_pending', 'Devolver')}${boton('proceed_to_shipping', 'Proceder a envío', 'pri', !hasNtNumber ? 'disabled title="Escribe el Nº de nota de traslado"' : '')}</div>`;
                     }
                     if (req.status === 'shipping_details') {
                         contentHtml += `<div class="sol-bloque sol-recuadro"><p class="sol-label">¿Tiene guía?</p><div class="flex items-center gap-x-5 text-sm"><label class="flex items-center gap-2"><input type="radio" name="hasTracking-${id}" value="yes" class="tracking-option"> Sí</label><label class="flex items-center gap-2"><input type="radio" name="hasTracking-${id}" value="no" class="tracking-option" checked> No</label></div><div id="trackingNumberDiv-${id}" class="hidden mt-3"><label for="trackingNumber-${id}" class="sol-label">Nº de guía</label><input type="text" id="trackingNumber-${id}" class="sol-input"></div></div>`;
@@ -1109,7 +1107,7 @@ const allMyRequests = sortedRequests.filter(r =>
                 <div class="sol-pasos" title="${PASOS_TRASLADO.map((p, i) => (i < paso ? '✓ ' : i === paso ? '→ ' : '') + p).join('  ')}">
                     ${PASOS_TRASLADO.map((p, i) => `<span class="${i < paso ? 'hecho' : i === paso ? 'actual' : ''}"></span>`).join('')}
                 </div>
-                <p class="sol-paso-texto">${paso >= 5 ? 'Proceso terminado' : `Paso ${paso + 1} de 5 · ${SITUACION_PASO[req.status] || PASOS_TRASLADO[paso]}`}</p>`;
+                <p class="sol-paso-texto">${paso >= 6 ? 'Proceso terminado' : `Paso ${paso + 1} de 6 · ${SITUACION_PASO[req.status] || PASOS_TRASLADO[paso]}`}</p>`;
 
             const dato = (titulo, valor, extra = '') => `<div class="sol-dato ${extra}"><p class="sol-dato-titulo">${titulo}</p><p class="sol-dato-valor">${valor}</p></div>`;
             const infoBoxesHtml = `
@@ -1174,7 +1172,7 @@ const allMyRequests = sortedRequests.filter(r =>
                 c.oninput = () => {
                     const reqStatus = allTransferRequests.find(r => r.id === c.dataset.requestId)?.status;
                     if (reqStatus === 'pending_nt_active') {
-                        validateNtForm(c.dataset.requestId);
+                        validarSeparacion(c.dataset.requestId);
                     } else if (reqStatus === 'processing_partial_items') {
                         const allChecked = Array.from(document.querySelectorAll(`#card-${c.dataset.requestId} .nt-checkbox`)).every(cb => cb.checked);
                         const finalizeBtn = document.querySelector(`#card-${c.dataset.requestId} button[data-action="finalize_processing"]`);
@@ -1186,7 +1184,7 @@ const allMyRequests = sortedRequests.filter(r =>
                 c.onchange = handleNtCheckboxChange;
             });
             card.querySelectorAll('.nt-number-input').forEach(i => {
-                i.oninput = () => validateNtForm(i.dataset.requestId);
+                i.oninput = () => validarNotaTraslado(i.dataset.requestId);
                 i.onchange = handleNtNumberInput;
             });
 
@@ -1249,7 +1247,7 @@ const allMyRequests = sortedRequests.filter(r =>
                     }
                 },
                 return_to_pending: async () => {
-                    if (confirm("¿Está seguro de que desea devolver esta solicitud a 'Pendiente de Revisión'? Se borrarán todos los datos de los pasos posteriores (revisión, NT, envío).")) {
+                    if (confirm("¿Está seguro de que desea devolver esta solicitud a 'Pendiente de Revisión'? Se borrarán todos los datos de los pasos posteriores (revisión, separación, NT, envío).")) {
                         const docToReset = await reqRef.get();
                         if (docToReset.exists) {
                             const resetItems = docToReset.data().items.map(({ productId, productName, quantity }) => ({ productId, productName, quantity }));
@@ -1258,14 +1256,16 @@ const allMyRequests = sortedRequests.filter(r =>
                     }
                 },
                 ready_to_ship: () => {
-                    if (confirm("¿Marcar como listo para enviar?")) updateData = { status: 'ready_to_ship' };
+                    if (confirm("¿Terminar la separación de esta solicitud?")) updateData = { status: 'ready_to_ship' };
                 },
                 save_shipping_note: async () => {
                     await reqRef.update({ shippingNotes: document.getElementById(`shippingNotes-${requestId}`).value });
                     alert('Nota de envío guardada');
                 },
                 proceed_to_shipping: () => {
-                    updateData = { status: 'shipping_details' };
+                    const ntNumber = document.getElementById(`ntNumber-${requestId}`).value.trim();
+                    if (!ntNumber) return alert('Escribe el número de nota de traslado.');
+                    updateData = { status: 'shipping_details', ntNumber };
                 },
                 finalize_shipment: () => {
                     const hasTracking = document.querySelector(`input[name="hasTracking-${requestId}"]:checked`).value === 'yes';
@@ -1314,7 +1314,7 @@ const allMyRequests = sortedRequests.filter(r =>
             const fondo = document.getElementById('solVentana');
             if (!detalleAbierto) { fondo.classList.remove('abierta'); document.getElementById('solVentanaCuerpo').innerHTML = ''; document.body.style.overflow = ''; return; }
             const req = allTransferRequests.find(r => r.id === detalleAbierto.id);
-            if (!req) return cerrarDetalle();
+            if (!req || (detalleAbierto.role === 'reviewer' && !req.status.startsWith('pending_nt'))) return cerrarDetalle();
             document.getElementById('solVentanaTitulo').textContent = `Solicitud ${req.id}`;
             const cuerpo = document.getElementById('solVentanaCuerpo');
             const scroll = cuerpo.scrollTop;
@@ -1394,17 +1394,16 @@ const allMyRequests = sortedRequests.filter(r =>
             await transfersCollection.doc(requestId).update({ ntNumber });
         }
 
-        function validateNtForm(requestId) {
-            const ntInput = document.getElementById(`ntNumber-${requestId}`);
+        function validarSeparacion(requestId) {
             const checkboxes = document.querySelectorAll(`#card-${requestId} .nt-checkbox`);
-            const readyBtn = document.querySelector(`button[data-action="ready_to_ship"][data-request-id="${requestId}"]`);
+            const readyBtn = document.querySelector(`#card-${requestId} button[data-action="ready_to_ship"]`);
+            if (readyBtn) readyBtn.disabled = !(checkboxes.length > 0 && Array.from(checkboxes).every(cb => cb.checked));
+        }
 
-            if (!ntInput || !readyBtn) return;
-
-            const allChecked = checkboxes.length > 0 && Array.from(checkboxes).every(cb => cb.checked);
-            const hasText = ntInput.value.trim() !== '';
-
-            readyBtn.disabled = !(allChecked && hasText);
+        function validarNotaTraslado(requestId) {
+            const ntInput = document.getElementById(`ntNumber-${requestId}`);
+            const btn = document.querySelector(`#card-${requestId} button[data-action="proceed_to_shipping"]`);
+            if (ntInput && btn) btn.disabled = ntInput.value.trim() === '';
         }
 
         function handleTrackingOptionChange(event) {
