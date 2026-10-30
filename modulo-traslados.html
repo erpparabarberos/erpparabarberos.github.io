@@ -1601,7 +1601,7 @@ const allMyRequests = sortedRequests.filter(r =>
                 alert('Borrador guardado.');
             } catch (e) {
                 console.error('Borrador:', e);
-                alert('No se pudo guardar el borrador.');
+                alert(`No se pudo guardar el borrador: ${e.code || ''} ${e.message || ''}`);
             }
             boton.disabled = false;
         }
