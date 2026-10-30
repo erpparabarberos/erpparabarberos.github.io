@@ -1318,7 +1318,17 @@ const allMyRequests = sortedRequests.filter(r =>
         
         // ---- Ventana de detalle de una solicitud ----
         let detalleAbierto = null;   // { id, role }
+        // Guardar un campo al salir de él repinta la ventana: si eso pasa entre oprimir y soltar el clic, el botón se
+        // reemplaza y el clic se pierde. Mientras el clic esté oprimido, el repintado espera a que termine.
+        let punteroOprimido = false, repintarDespues = false;
+        document.addEventListener('pointerdown', () => { punteroOprimido = true; }, true);
+        ['pointerup', 'pointercancel'].forEach(tipo => document.addEventListener(tipo, () => {
+            punteroOprimido = false;
+            setTimeout(() => { if (repintarDespues) { repintarDespues = false; pintarDetalle(); } }, 50);
+        }, true));
+
         function pintarDetalle() {
+            if (detalleAbierto && punteroOprimido) { repintarDespues = true; return; }
             const fondo = document.getElementById('solVentana');
             if (!detalleAbierto) { fondo.classList.remove('abierta'); document.getElementById('solVentanaCuerpo').innerHTML = ''; document.body.style.overflow = ''; return; }
             const req = allTransferRequests.find(r => r.id === detalleAbierto.id);
