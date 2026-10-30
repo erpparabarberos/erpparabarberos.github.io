@@ -91,6 +91,20 @@ body.tras-sobrio {
 .tras-sobrio .tras-contador.con-items { background: var(--tinta); border-color: var(--tinta); color: #fff; }
 .tras-sobrio .tras-vacio { padding: 24px 12px; text-align: center; font-size: 13px; color: var(--gris); }
 /* Traslados sugeridos del punto de venta (vista Solicitante) */
+.tras-sobrio .tras-acciones { display: flex; flex-wrap: wrap; gap: 8px; }
+.tras-sobrio .tras-accion { display: inline-flex; align-items: center; gap: 8px; height: 42px; padding: 0 14px; background: #fff; border: 1px solid var(--linea); border-radius: var(--radio); font-size: 14px; font-weight: 600; color: var(--tinta-2); cursor: pointer; white-space: nowrap; }
+.tras-sobrio .tras-accion:hover { background: #f8fafc; border-color: #cbd5e1; color: var(--tinta); }
+.tras-sobrio .tras-accion[hidden], .tras-sobrio .tras-btn[hidden] { display: none; }
+.tras-sobrio .tras-accion svg { width: 16px; height: 16px; flex: none; }
+.tras-sobrio .tras-accion-n { min-width: 22px; height: 22px; padding: 0 6px; display: inline-flex; align-items: center; justify-content: center; border-radius: 4px; background: var(--tinta); color: #fff; font-size: 12px; font-weight: 700; }
+.tras-sobrio .tras-accion-n:empty { display: none; }
+.tras-sobrio .tras-ventana-cuerpo { padding: 16px 20px 20px; }
+.tras-sobrio .tras-borrador { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid var(--linea); border-radius: var(--radio); }
+.tras-sobrio .tras-borrador + .tras-borrador { margin-top: 8px; }
+.tras-sobrio .tras-borrador-dato { flex: 1; min-width: 0; }
+.tras-sobrio .tras-borrador-dato b { display: block; font-size: 14px; font-weight: 600; color: var(--tinta); }
+.tras-sobrio .tras-borrador-dato span { font-size: 12px; color: var(--gris); }
+@media (max-width: 560px) { .tras-sobrio .tras-borrador { flex-wrap: wrap; } .tras-sobrio .tras-borrador-dato { flex-basis: 100%; } }
 .tras-sobrio .tras-sug-lista { max-height: 60vh; overflow: auto; border: 1px solid var(--linea); border-radius: var(--radio); background: #fff; }
 .tras-sobrio .tras-sug-tabla { width: 100%; border-collapse: collapse; font-size: 13px; }
 .tras-sobrio .tras-sug-tabla th { position: sticky; top: 0; background: #f8fafc; text-align: left; font-size: 12px; font-weight: 600; color: var(--gris); padding: 8px 10px; border-bottom: 1px solid var(--linea); white-space: nowrap; }
@@ -278,6 +292,16 @@ body.tras-sobrio {
         </nav>
 
         <div id="requesterView" class="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start" style="display: none;">
+            <div class="lg:col-span-3 tras-acciones">
+                <button type="button" id="abrirSugeridos" class="tras-accion" hidden>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z"/></svg>
+                    Traslados sugeridos <span id="sugCuenta" class="tras-accion-n"></span>
+                </button>
+                <button type="button" id="abrirBorradores" class="tras-accion">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><path d="M8 14h8M8 18h5"/></svg>
+                    Borradores <span id="borCuenta" class="tras-accion-n"></span>
+                </button>
+            </div>
             <div class="lg:col-span-2 tras-card">
                 <h2 class="tras-card-titulo mb-4">Nueva solicitud de traslado</h2>
                 <div class="mb-3 flex items-center gap-3">
@@ -300,7 +324,10 @@ body.tras-sobrio {
                     </div>
                     <input type="hidden" id="fromWarehouseHidden" value="Bodega Principal">
                     <div><label for="requesterNotes" class="tras-etiqueta">Observaciones</label><textarea id="requesterNotes" rows="2" class="tras-campo" placeholder="Ej: Necesito este pedido con urgencia..."></textarea></div>
-                    <button type="submit" class="tras-btn tras-btn-pri w-full">Enviar solicitud de traslado</button>
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <button type="button" id="guardarBorrador" class="tras-btn tras-btn-sec sm:w-56">Guardar borrador</button>
+                        <button type="submit" class="tras-btn tras-btn-pri flex-1">Enviar solicitud de traslado</button>
+                    </div>
                 </form>
             </div>
             <div class="lg:col-span-1">
@@ -327,15 +354,25 @@ body.tras-sobrio {
                         <div id="myCancelledRequests" class="grid gap-3"></div>
                     </div>
                 </div>
-                <div id="sugBloque" class="tras-card mt-5" hidden>
-                    <h3 class="tras-card-titulo mb-3">Traslados sugeridos</h3>
-                    <select id="sugSede" class="tras-campo mb-3"></select>
-                    <div class="flex items-center gap-3 mb-3">
-                        <span id="sugInfo" class="tras-ayuda"></span>
-                        <span class="flex-1"></span>
-                        <button type="button" id="sugTodos" class="tras-btn tras-btn-sec">Añadir todos</button>
+            </div>
+            <div id="sugVentana" class="sol-ventana-fondo" role="dialog" aria-modal="true" aria-labelledby="sugVentanaTitulo">
+                <div class="sol-ventana">
+                    <div class="sol-ventana-cabecera"><h2 id="sugVentanaTitulo" class="tras-card-titulo">Traslados sugeridos</h2><button type="button" data-cerrar-ventana class="tras-btn tras-btn-sec">Cerrar</button></div>
+                    <div class="tras-ventana-cuerpo">
+                        <select id="sugSede" class="tras-campo mb-3"></select>
+                        <div class="flex items-center gap-3 mb-3">
+                            <span id="sugInfo" class="tras-ayuda"></span>
+                            <span class="flex-1"></span>
+                            <button type="button" id="sugTodos" class="tras-btn tras-btn-sec">Añadir todos</button>
+                        </div>
+                        <div id="sugLista" class="tras-sug-lista"></div>
                     </div>
-                    <div id="sugLista" class="tras-sug-lista"></div>
+                </div>
+            </div>
+            <div id="borVentana" class="sol-ventana-fondo" role="dialog" aria-modal="true" aria-labelledby="borVentanaTitulo">
+                <div class="sol-ventana">
+                    <div class="sol-ventana-cabecera"><h2 id="borVentanaTitulo" class="tras-card-titulo">Borradores</h2><button type="button" data-cerrar-ventana class="tras-btn tras-btn-sec">Cerrar</button></div>
+                    <div id="borLista" class="tras-ventana-cuerpo"></div>
                 </div>
             </div>
         </div>
@@ -522,6 +559,7 @@ body.tras-sobrio {
         // Mantenemos las colecciones originales como las tenías
         const transfersCollection = db.collection("transferencias");
         const productsCollection = db.collection("products");
+        const borradoresCollection = db.collection("traslados_borradores");
 
         // --- ESTADO GLOBAL DE LA APLICACIÓN ---
         let allProducts = [], currentTransferItems = [], allTransferRequests = [], currentUserData = null;
@@ -1460,16 +1498,17 @@ const allMyRequests = sortedRequests.filter(r =>
         }
 
         function renderSugeridos() {
-            const bloque = document.getElementById('sugBloque');
-            if (!bloque || !sugeridos) return;
+            const boton = document.getElementById('abrirSugeridos');
+            if (!boton || !sugeridos) return;
             if (!document.getElementById('sugSede').options.length && !llenarSedesSugeridos()) return;
-            bloque.hidden = false;
+            boton.hidden = false;
             const sede = document.getElementById('sugSede').value;
             const lista = sugeridosDeSede();
             const pedidos = yaSolicitados(sede);
             const anadidos = new Set(currentTransferItems.map(i => String(i.productId)));
             const fecha = sugeridos.fecha ? new Date(sugeridos.fecha + 'T12:00:00').toLocaleDateString('es-CO', { day: 'numeric', month: 'short' }) : '';
             document.getElementById('sugInfo').textContent = `${lista.length} ${lista.length === 1 ? 'producto' : 'productos'}${fecha ? ' · ' + fecha : ''}`;
+            document.getElementById('sugCuenta').textContent = lista.length || '';
             document.getElementById('sugTodos').disabled = !lista.some(x => !pedidos.has(x.c) && !anadidos.has(x.c));
             document.getElementById('sugLista').innerHTML = !lista.length
                 ? '<p class="tras-vacio">Sin traslados sugeridos para este punto de venta.</p>'
@@ -1506,6 +1545,101 @@ const allMyRequests = sortedRequests.filter(r =>
             const anadidos = new Set(currentTransferItems.map(i => String(i.productId)));
             anadirSugeridos(sugeridosDeSede().filter(x => !pedidos.has(x.c) && !anadidos.has(x.c)));
         }
+
+        // ---------- Ventanas de Traslados sugeridos y Borradores ----------
+        function abrirVentana(id) { document.getElementById(id).classList.add('abierta'); document.body.style.overflow = 'hidden'; }
+        function cerrarVentanas() { document.querySelectorAll('#sugVentana, #borVentana').forEach(v => v.classList.remove('abierta')); document.body.style.overflow = ''; }
+        document.getElementById('abrirSugeridos').addEventListener('click', () => abrirVentana('sugVentana'));
+        document.getElementById('abrirBorradores').addEventListener('click', () => abrirVentana('borVentana'));
+        document.querySelectorAll('#sugVentana, #borVentana').forEach(v => v.addEventListener('click', e => {
+            if (e.target === v || e.target.closest('[data-cerrar-ventana]')) cerrarVentanas();
+        }));
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarVentanas(); });
+
+        // ---------- Borradores de solicitud ----------
+        // Cada persona guarda los suyos en traslados_borradores (no van en "transferencias" para no contar en listas ni informes).
+        let borradores = [];
+        let borradorAbierto = null;   // id del borrador cargado en el formulario
+
+        function escucharBorradores() {
+            borradoresCollection.where('email', '==', correoUsuario()).onSnapshot(snap => {
+                borradores = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+                    .sort((a, b) => String(b.actualizado || '').localeCompare(String(a.actualizado || '')));
+                renderBorradores();
+            }, e => console.error('Borradores:', e));
+        }
+        const correoUsuario = () => String(currentUserData.user.email || '').toLowerCase();
+
+        function renderBorradores() {
+            document.getElementById('borCuenta').textContent = borradores.length || '';
+            document.getElementById('borLista').innerHTML = !borradores.length
+                ? '<p class="tras-vacio">Sin borradores.</p>'
+                : borradores.map(b => {
+                    const unidades = (b.items || []).reduce((n, i) => n + (Number(i.quantity) || 0), 0);
+                    const fecha = b.actualizado ? new Date(b.actualizado).toLocaleString('es-CO', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }) : '';
+                    return `<div class="tras-borrador"><div class="tras-borrador-dato">
+                        <b>${esc(b.toWarehouse || 'Sin bodega destino')}</b>
+                        <span>${esc((b.items || []).length)} ${(b.items || []).length === 1 ? 'producto' : 'productos'} · ${esc(unidades)} ${unidades === 1 ? 'unidad' : 'unidades'}${fecha ? ' · ' + esc(fecha) : ''}</span>
+                    </div>
+                    <button type="button" class="tras-btn tras-btn-pri" data-abrir-borrador="${esc(b.id)}">Abrir</button>
+                    <button type="button" class="tras-btn tras-btn-sec" data-quitar-borrador="${esc(b.id)}">Eliminar</button></div>`;
+                }).join('');
+        }
+
+        async function guardarBorrador() {
+            if (!currentTransferItems.length) return alert('Añade al menos un producto para guardar el borrador.');
+            const boton = document.getElementById('guardarBorrador');
+            const datos = {
+                email: correoUsuario(), items: currentTransferItems, fromWarehouse: dom.fromWarehouse.value || '', toWarehouse: dom.toWarehouse.value || '',
+                requesterNotes: document.getElementById('requesterNotes').value, actualizado: new Date().toISOString()
+            };
+            boton.disabled = true;
+            try {
+                if (borradorAbierto) await borradoresCollection.doc(borradorAbierto).set(datos);
+                else await borradoresCollection.add(datos);
+                resetFormToCreateMode();
+                alert('Borrador guardado.');
+            } catch (e) {
+                console.error('Borrador:', e);
+                alert('No se pudo guardar el borrador.');
+            }
+            boton.disabled = false;
+        }
+
+        function abrirBorrador(id) {
+            const b = borradores.find(x => x.id === id);
+            if (!b) return;
+            if (currentTransferItems.length && borradorAbierto !== id && !confirm('¿Reemplazar los productos seleccionados por los del borrador?')) return;
+            resetFormToCreateMode();
+            currentTransferItems = JSON.parse(JSON.stringify(b.items || []));
+            localStorage.setItem('currentTransferDraft', JSON.stringify(currentTransferItems));
+            dom.fromWarehouse.value = b.fromWarehouse || '';
+            if (!dom.toWarehouse.disabled) dom.toWarehouse.value = b.toWarehouse || '';
+            document.getElementById('requesterNotes').value = b.requesterNotes || '';
+            borradorAbierto = id;
+            renderCurrentTransfer();
+            cerrarVentanas();
+            dom.transferForm.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        async function eliminarBorrador(id) {
+            if (!confirm('¿Eliminar este borrador?')) return;
+            try {
+                await borradoresCollection.doc(id).delete();
+                if (borradorAbierto === id) borradorAbierto = null;
+            } catch (e) {
+                console.error('Borrador:', e);
+                alert('No se pudo eliminar el borrador.');
+            }
+        }
+
+        document.getElementById('guardarBorrador').addEventListener('click', guardarBorrador);
+        document.getElementById('borLista').addEventListener('click', e => {
+            const abrir = e.target.closest('[data-abrir-borrador]');
+            const quitar = e.target.closest('[data-quitar-borrador]');
+            if (abrir) abrirBorrador(abrir.dataset.abrirBorrador);
+            if (quitar) eliminarBorrador(quitar.dataset.quitarBorrador);
+        });
 
         function handleAddToTransfer(event) {
             const product = allProducts.find(p => p.id === event.currentTarget.dataset.productId);
@@ -1544,6 +1678,7 @@ const allMyRequests = sortedRequests.filter(r =>
             } else {
                 const customId = generateCustomId();
                 await transfersCollection.doc(customId).set({ ...transferData, id: customId, status: 'pending', timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+                if (borradorAbierto) await borradoresCollection.doc(borradorAbierto).delete().catch(e => console.error('Borrador:', e));
                 alert(`Solicitud enviada! ID: ${customId}`);
             }
             resetFormToCreateMode();
@@ -1562,6 +1697,8 @@ const allMyRequests = sortedRequests.filter(r =>
             const submitButton = dom.transferForm.querySelector('button[type="submit"]');
             submitButton.textContent = `Guardar cambios de la solicitud ${requestToEdit.id}`;
             submitButton.classList.add('modo-edicion');
+            document.getElementById('guardarBorrador').hidden = true;
+            borradorAbierto = null;
             dom.transferForm.scrollIntoView({ behavior: 'smooth' });
         }
 
@@ -1574,6 +1711,8 @@ const allMyRequests = sortedRequests.filter(r =>
             const submitButton = dom.transferForm.querySelector('button[type="submit"]');
             submitButton.textContent = 'Enviar solicitud de traslado';
             submitButton.classList.remove('modo-edicion');
+            document.getElementById('guardarBorrador').hidden = false;
+            borradorAbierto = null;
             if (currentUserData) dom.requesterName.value = currentUserData.name;
             document.getElementById('deliveryDate').valueAsDate = new Date();
             fijarBodegaDestino();
@@ -2124,6 +2263,7 @@ const allMyRequests = sortedRequests.filter(r =>
                 renderCurrentTransfer();
                 escucharSugeridos();
             }
+            if (currentUserData.role === 'requester' || currentUserData.role === 'manager') escucharBorradores();
             
             if(document.getElementById('deliveryDate')) {
                 document.getElementById('deliveryDate').valueAsDate = new Date();
