@@ -5770,7 +5770,7 @@ const buildTasksForMonth = () => {
         setupTableSearch('table-search-input', 'data-table'); 
         const category = params.category; 
         const config = configObject[category]; 
-        if (!config) { container.innerHTML = `<h1>Error: Categoría no encontrada.</h1>`; return; } 
+        if (!config) { container.innerHTML = `<h2>Error: Categoría no encontrada.</h2>`; return; } 
 
         const iconEdit = `<svg style="pointer-events:none; width:20px; height:20px; fill:#2563eb;" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>`; 
         const iconView = `<svg style="pointer-events:none; width:20px; height:20px; fill:#475569;" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>`;
@@ -5829,7 +5829,7 @@ const buildTasksForMonth = () => {
     const config = credentialsCategoryConfig[category];
 
     if (!config) {
-        container.innerHTML = `<h1>Error: categoría de accesos no encontrada.</h1>`;
+        container.innerHTML = `<h2>Error: categoría de accesos no encontrada.</h2>`;
         return;
     }
 
@@ -6405,7 +6405,7 @@ tableBody.addEventListener('click', (e) => {
     const config = inventoryCategoryConfig[category];
 
     if (!config) {
-        container.innerHTML = `<h1>Error: categoría de inventario no encontrada.</h1>`;
+        container.innerHTML = `<h2>Error: categoría de inventario no encontrada.</h2>`;
         return;
     }
 
@@ -9685,7 +9685,7 @@ if (createKbBtn) {
             else if (path === '#planning' || path === '#mantenimiento' || path === '#maintenance') {
                 renderMaintenancePlanningPage(appContent);}
             else if (routes[path]) routes[path](appContent, Object.fromEntries(params)); 
-            else appContent.innerHTML = '<div class="card"><h1>404 - Página no encontrada</h1></div>';
+            else appContent.innerHTML = '<div class="card"><h2>404 - Página no encontrada</h2></div>';
             
             document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
             const activeLinks = document.querySelectorAll(`a[href="${hash}"]`);
