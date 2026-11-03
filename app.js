@@ -25,13 +25,11 @@
         </div>
 
         <div class="ti-filtros">
-            <label>
-                <span>Fecha</span>
-                <input type="date" id="dashboard-date-filter">
+            <label title="Fecha">
+                <input type="date" id="dashboard-date-filter" aria-label="Fecha">
             </label>
-            <label>
-                <span>Solicitante</span>
-                <select id="dashboard-requester-filter">
+            <label title="Solicitante">
+                <select id="dashboard-requester-filter" aria-label="Solicitante">
                     <option value="">Todos los solicitantes</option>
                 </select>
             </label>

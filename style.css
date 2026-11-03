@@ -16480,3 +16480,6 @@ body.ti-sobrio .rev-ok { padding: 14px 18px; font-size: 14px; color: #15803d; fo
 
 /* TI: páginas sin título (el texto sigue en el HTML para nombrar los PDF) */
 #app-content h1, #app-content .support-header p, #dashboard-month-label { display: none !important; }
+/* Panel: filtros compactos a la izquierda, sin la columna del título */
+body.ti-sobrio .ti-cabecera { justify-content: flex-start; }
+body.ti-sobrio .ti-cabecera > div:first-child { display: none; }
