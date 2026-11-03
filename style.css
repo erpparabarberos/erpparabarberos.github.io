@@ -16483,3 +16483,7 @@ body.ti-sobrio .rev-ok { padding: 14px 18px; font-size: 14px; color: #15803d; fo
 /* Panel: filtros compactos a la izquierda, sin la columna del título */
 body.ti-sobrio .ti-cabecera { justify-content: flex-start; }
 body.ti-sobrio .ti-cabecera > div:first-child { display: none; }
+/* TI: los botones de la cabecera van a la izquierda (las páginas ya no tienen título) */
+body.ti-sobrio .history-modern-header, body.ti-sobrio .kb-modern-header, body.ti-sobrio .reports-modern-header, body.ti-sobrio .rev-cabecera, .add-new-button-container { justify-content: flex-start !important; }
+body.ti-sobrio .history-modern-title, body.ti-sobrio .kb-header-left, body.ti-sobrio .reports-title-wrap, body.ti-sobrio .rev-espacio { display: none !important; }
+body.ti-sobrio .history-export-actions, body.ti-sobrio .kb-header-actions, body.ti-sobrio .reports-export-pdf, body.ti-sobrio #rev-pdf { margin-left: 0 !important; }
