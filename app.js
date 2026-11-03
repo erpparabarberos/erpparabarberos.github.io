@@ -2083,7 +2083,7 @@ const newTITicketFormHTML = `
     async function revisarTI(container) {
         container.innerHTML = `
 <section class="rev-page">
-    <div class="rev-cabecera"><h1>Revisión</h1><span class="rev-fecha" id="rev-fecha"></span>
+    <div class="rev-cabecera"><h1>Revisión</h1>
         <span class="rev-espacio"></span><button type="button" class="export-btn" id="rev-pdf" disabled>Exportar PDF</button></div>
     <div id="rev-cuerpo" class="rev-cargando">Revisando la información…</div>
 </section>`;
@@ -2197,7 +2197,6 @@ const newTITicketFormHTML = `
 
         // ---- Pintar
         const total = secciones.reduce((a, s) => a + s.hallazgos.filter(h => h.tipo === 'falta').reduce((b, h) => b + h.items.length, 0), 0);
-        document.getElementById('rev-fecha').textContent = new Date().toLocaleString('es-CO', { day: '2-digit', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit' });
         const lista = items => items.length > 40 ? items.slice(0, 40).join(', ') + ` y ${items.length - 40} más` : items.join(', ');
         document.getElementById('rev-cuerpo').className = '';
         document.getElementById('rev-cuerpo').innerHTML = `
@@ -9890,13 +9889,6 @@ if (exportBtn) {
             <button type="button" class="topo-btn" id="topo-zoom-mas" title="Acercar">+</button>
             <button type="button" class="topo-btn" id="topo-pdf">Exportar PDF</button>
         </div>
-    </div>
-
-    <div class="topo-leyenda">
-        <span><i class="linea cable"></i> Cable</span>
-        <span><i class="linea wifi"></i> WiFi</span>
-        <span><i class="linea respaldo"></i> Respaldo TIGO (cuando se cae Emcali)</span>
-        <span class="topo-ayuda">Toca un equipo para ver o editar sus datos</span>
     </div>
 
     <div class="topo-lienzo-wrap" id="topo-wrap">
