@@ -8840,7 +8840,7 @@ modalForm.addEventListener('submit', async (e) => {
     
     async function showEditClosedAtModal(ticketId, currentClosedAt) { const actionModal = document.getElementById('action-modal'); const modalBody = actionModal.querySelector('#action-modal-body'); const closedAtValue = currentClosedAt ? currentClosedAt.toDate().toISOString().split('T')[0] : ''; modalBody.innerHTML = `<h2>Editar Fecha de Cierre del Ticket ${ticketId}</h2><form id="edit-closed-at-form"><div class="form-group"><label for="closedAtDate">Fecha de Cierre</label><input type="date" id="closedAtDate" name="closedAtDate" value="${closedAtValue}"></div><div style="text-align: right; margin-top: 20px;"><button type="submit" class="primary">Guardar Fecha</button><button type="button" class="btn-secondary modal-close-btn" style="margin-left: 10px;">Cancelar</button></div></form>`; actionModal.classList.remove('hidden'); document.getElementById('edit-closed-at-form').addEventListener('submit', async (e) => { e.preventDefault(); const form = e.target; const newClosedAtDate = form.closedAtDate.value; try { if (newClosedAtDate) { const newClosedAtTimestamp = firebase.firestore.Timestamp.fromDate(new Date(newClosedAtDate + 'T00:00:00')); await db.collection('tickets').doc(ticketId).update({ closedAt: newClosedAtTimestamp }); } else { await db.collection('tickets').doc(ticketId).update({ closedAt: null }); } actionModal.classList.add('hidden'); showTicketModal(ticketId); } catch (error) { console.error("Error al actualizar la fecha de cierre:", error); alert("No se pudo actualizar la fecha de cierre. Revisa la consola."); } }); }
     
-    async function showTicketModal(ticketId) { const ticketModal = document.getElementById('ticket-modal'); const modalBody = ticketModal.querySelector('#modal-body'); ticketModal.classList.remove('hidden'); modalBody.innerHTML = '<p>Cargando detalles del ticket...</p>'; const ticketDoc = await db.collection('tickets').doc(ticketId).get(); if (!ticketDoc.exists) { alert('Error: No se encontró el ticket.'); ticketModal.classList.add('hidden'); return; } const ticket = { id: ticketDoc.id, ...ticketDoc.data() }; const requesterName = ticket.requesterId ? (await db.collection('requesters').doc(ticket.requesterId).get()).data()?.name || ticket.requesterId : 'N/A';
+    async function showTicketModal(ticketId) { const ticketModal = document.getElementById('ticket-modal'); const modalBody = ticketModal.querySelector('#modal-body'); ticketModal.classList.remove('hidden'); modalBody.innerHTML = '<div class="ti-modal-cargando">Cargando...</div>'; const ticketDoc = await db.collection('tickets').doc(ticketId).get(); if (!ticketDoc.exists) { alert('Error: No se encontró el ticket.'); ticketModal.classList.add('hidden'); return; } const ticket = { id: ticketDoc.id, ...ticketDoc.data() }; const requesterName = ticket.requesterId ? (await db.collection('requesters').doc(ticket.requesterId).get()).data()?.name || ticket.requesterId : 'N/A';
                                               const isQuickNote = ticket.ticketType === 'nota' || ticket.recordType === 'nota_rapida';
 
 if (isQuickNote) {
@@ -8873,7 +8873,7 @@ if (isQuickNote) {
 
             <div class="provider-ticket-top">
                 <div class="provider-ticket-head-left">
-                    <div class="provider-ticket-icon note">📝</div>
+                    <div class="provider-ticket-icon note">${tiIcono('nota')}</div>
                     <div>
                         <span class="provider-case-badge note">NOTA RÁPIDA</span>
                         <h2>${ticket.id}</h2>
@@ -8912,7 +8912,7 @@ if (isQuickNote) {
 
                     <div class="provider-action-card">
                         <div class="provider-action-card-header">
-                            <div class="provider-action-icon blue">💬</div>
+                            <div class="provider-action-icon blue">${tiIcono('soportes')}</div>
                             <div>
                                 <h4>Añadir comentario</h4>
                                 <p>Agrega más información si recordaste algo nuevo.</p>
@@ -8929,7 +8929,7 @@ if (isQuickNote) {
 
                     <div class="provider-action-card">
     <div class="provider-action-card-header">
-        <div class="provider-action-icon green">✓</div>
+        <div class="provider-action-icon green">${tiIcono('cerrado')}</div>
         <div>
             <h4>Convertir en soporte</h4>
             <p>Elige a qué tipo de soporte quieres llevar esta nota.</p>
@@ -9037,7 +9037,7 @@ if (isProviderCase) {
         ? `
             <div class="provider-action-card provider-close-card">
                 <div class="provider-action-card-header">
-                    <div class="provider-action-icon green">✓</div>
+                    <div class="provider-action-icon green">${tiIcono('cerrado')}</div>
                     <div>
                         <h4>Cerrar caso con solución final</h4>
                         <p>Registra la solución final aplicada y cierra el caso.</p>
@@ -9054,7 +9054,7 @@ if (isProviderCase) {
         : `
             <div class="provider-action-card provider-close-card">
                 <div class="provider-action-card-header">
-                    <div class="provider-action-icon green">✓</div>
+                    <div class="provider-action-icon green">${tiIcono('cerrado')}</div>
                     <div>
                         <h4>Solución final</h4>
                         <p>Este caso ya fue cerrado.</p>
@@ -9070,7 +9070,7 @@ if (isProviderCase) {
         <div class="provider-ticket-modal">
             <div class="provider-ticket-top">
                 <div class="provider-ticket-head-left">
-                    <div class="provider-ticket-icon">🏷</div>
+                    <div class="provider-ticket-icon">${tiIcono(ticket.ticketType === 'velocity' ? 'rayo' : 'factura')}</div>
                     <div>
                         <span class="provider-case-badge">${caseBadge}</span>
                         <h2>${ticket.id}</h2>
@@ -9130,7 +9130,7 @@ if (isProviderCase) {
                     ${ticket.status !== 'cerrado' ? `
                         <div class="provider-action-card">
                             <div class="provider-action-card-header">
-                                <div class="provider-action-icon blue">💬</div>
+                                <div class="provider-action-icon blue">${tiIcono('soportes')}</div>
                                 <div>
                                     <h4>Añadir avance</h4>
                                     <p>Registra una actualización del estado del caso.</p>
