@@ -16487,3 +16487,8 @@ body.ti-sobrio .ti-cabecera > div:first-child { display: none; }
 body.ti-sobrio .history-modern-header, body.ti-sobrio .kb-modern-header, body.ti-sobrio .reports-modern-header, body.ti-sobrio .rev-cabecera, .add-new-button-container { justify-content: flex-start !important; }
 body.ti-sobrio .history-modern-title, body.ti-sobrio .kb-header-left, body.ti-sobrio .reports-title-wrap, body.ti-sobrio .rev-espacio { display: none !important; }
 body.ti-sobrio .history-export-actions, body.ti-sobrio .kb-header-actions, body.ti-sobrio .reports-export-pdf, body.ti-sobrio #rev-pdf { margin-left: 0 !important; }
+/* Cambiar el código de un equipo, en la cabecera de la ventana de edición */
+.cambiar-codigo { display: flex; gap: 8px; align-items: center; }
+.cambiar-codigo input { width: 110px; height: 40px; padding: 0 12px; border: 1px solid #dbe4f0; border-radius: 10px; font: inherit; font-weight: 600; text-transform: uppercase; }
+.cambiar-codigo button { white-space: nowrap; }
+@media (max-width: 640px) { .computer-edit-header { flex-wrap: wrap; } }

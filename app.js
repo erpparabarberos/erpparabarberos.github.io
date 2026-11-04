@@ -7234,6 +7234,80 @@ tableBody.addEventListener('click', (e) => {
         exportarPDFTabla({ titulo, detalle: filtrosAplicados(), head: filasActuales.head, body: filasActuales.body });
     });
 }
+
+    // Cambiar el código de un equipo. En Firestore el código es el nombre del documento y no se puede renombrar:
+    // se crea el documento nuevo, se borra el viejo y se cambian los soportes y accesos que lo nombran, todo en una transacción.
+    async function cambiarCodigoEquipo(viejo, category, escrito) {
+        const config = inventoryCategoryConfig[category];
+        const numeros = String(escrito || '').trim().toUpperCase().replace(config.prefix, '');
+        if (!/^\d+$/.test(numeros) || Number(numeros) < 1) return alert(`El código debe ser ${config.prefix} seguido de un número.`);
+        const numero = Number(numeros);
+        const nuevo = `${config.prefix}${numero}`;
+        if (nuevo === viejo) return;
+        if (!confirm(`¿Cambiar ${viejo} por ${nuevo}?`)) return;
+
+        const idCorto = v => String(v || '').split(':')[0].trim();
+        const [categoria, credenciales, ...consultas] = await Promise.all([
+            db.collection('inventory').where('category', '==', category).get(),
+            db.collection('credentials').get(),
+            db.collection('tickets').where('deviceIds', 'array-contains', viejo).get(),
+            db.collection('tickets').where('devices', 'array-contains', viejo).get(),
+            db.collection('tickets').where('associatedDevices', 'array-contains', viejo).get(),
+            db.collection('tickets').where('deviceId', '==', viejo).get()
+        ]);
+        const numeroDe = d => Number(d.data().numericId) || Number(d.id.replace(config.prefix, '')) || 0;
+        const ocupado = categoria.docs.find(d => d.id !== viejo && numeroDe(d) === numero);
+        if (ocupado) return alert(`El número ${numero} ya lo tiene ${ocupado.id}.`);
+        const tickets = new Map();
+        consultas.forEach(q => q.forEach(d => tickets.set(d.id, d.ref)));
+        const accesos = credenciales.docs.filter(d => idCorto(d.data().computerId) === viejo || idCorto(d.data().assignedTo) === viejo).map(d => d.ref);
+        // El contador queda en el número más alto de la categoría, para que el próximo equipo siga en orden
+        const maximo = Math.max(numero, ...categoria.docs.filter(d => d.id !== viejo).map(numeroDe));
+
+        try {
+            await db.runTransaction(async t => {
+                const refViejo = db.collection('inventory').doc(viejo);
+                const refNuevo = db.collection('inventory').doc(nuevo);
+                const [docViejo, docNuevo] = [await t.get(refViejo), await t.get(refNuevo)];
+                if (docNuevo.exists) throw new Error(`${nuevo} ya existe.`);
+                if (!docViejo.exists) throw new Error(`${viejo} ya no existe.`);
+                const docsTickets = await Promise.all([...tickets.values()].map(r => t.get(r)));
+                const docsAccesos = await Promise.all(accesos.map(r => t.get(r)));
+
+                const datos = { ...docViejo.data(), numericId: numero };
+                if ('id' in datos) datos.id = nuevo;
+                t.set(refNuevo, datos);
+                t.delete(refViejo);
+                const cambiar = lista => Array.isArray(lista) ? lista.map(x => x === viejo ? nuevo : x) : lista;
+                docsTickets.forEach(d => {
+                    const x = d.data(), cambios = {};
+                    ['deviceIds', 'devices', 'associatedDevices'].forEach(c => { if (Array.isArray(x[c]) && x[c].includes(viejo)) cambios[c] = cambiar(x[c]); });
+                    if (x.deviceId === viejo) cambios.deviceId = nuevo;
+                    if (Object.keys(cambios).length) t.update(d.ref, cambios);
+                });
+                docsAccesos.forEach(d => {
+                    const x = d.data(), cambios = {};
+                    if (idCorto(x.computerId) === viejo) cambios.computerId = nuevo;
+                    if (idCorto(x.assignedTo) === viejo) cambios.assignedTo = nuevo;
+                    if (Object.keys(cambios).length) t.update(d.ref, cambios);
+                });
+                t.set(db.collection('counters').doc(config.counter), { currentNumber: maximo }, { merge: true });
+            });
+        } catch (error) {
+            console.error('Error al cambiar el código:', error);
+            return alert(`No se pudo cambiar el código. ${error.message || ''}`);
+        }
+        document.getElementById('form-modal').classList.add('hidden');
+        alert(`Listo: ${viejo} ahora es ${nuevo}.`);
+    }
+
+    document.addEventListener('click', e => {
+        const boton = e.target.closest('#cambiar-codigo-btn');
+        if (!boton) return;
+        boton.disabled = true;
+        cambiarCodigoEquipo(boton.dataset.id, boton.dataset.category, document.getElementById('nuevo-codigo').value)
+            .finally(() => { boton.disabled = false; });
+    });
     
     async function showComputerEditModernModal(docId) {
     const formModal = document.getElementById('form-modal');
@@ -7305,6 +7379,10 @@ tableBody.addEventListener('click', (e) => {
                             <h2>Editar Computador</h2>
                             <p>Actualiza la información del equipo</p>
                         </div>
+                    </div>
+                    <div class="cambiar-codigo">
+                        <input type="text" id="nuevo-codigo" value="${item.id}" aria-label="Código" autocomplete="off">
+                        <button type="button" class="computer-cancel-btn" id="cambiar-codigo-btn" data-id="${item.id}" data-category="computers">Cambiar código</button>
                     </div>
                 </div>
 
@@ -7696,6 +7774,10 @@ if (seeAllTicketsBtn) {
                             <h2>${title}</h2>
                             <p>Actualiza la información del activo</p>
                         </div>
+                    </div>
+                    <div class="cambiar-codigo">
+                        <input type="text" id="nuevo-codigo" value="${item.id}" aria-label="Código" autocomplete="off">
+                        <button type="button" class="computer-cancel-btn" id="cambiar-codigo-btn" data-id="${item.id}" data-category="${category}">Cambiar código</button>
                     </div>
                 </div>
 
