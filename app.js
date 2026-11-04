@@ -7306,6 +7306,7 @@ tableBody.addEventListener('click', (e) => {
         if (!boton) return;
         boton.disabled = true;
         cambiarCodigoEquipo(boton.dataset.id, boton.dataset.category, document.getElementById('nuevo-codigo').value)
+            .catch(error => { console.error('Error al cambiar el código:', error); alert(`No se pudo cambiar el código. ${error.message || ''}`); })
             .finally(() => { boton.disabled = false; });
     });
     
