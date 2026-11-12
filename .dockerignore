@@ -1,0 +1,6 @@
+.git
+.gitignore
+.vscode
+firestore.rules
+firebase-debug.log
+*.md
