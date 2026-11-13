@@ -3689,12 +3689,29 @@ body.modal-abierto {
                 </div>
 
                 <div class="form-group">
-                    <label>Medio de pago</label>
+                    <label>¿De dónde sale la plata?</label>
                     <select id="gastoMedio" required>
-                        <option value="Efectivo">Efectivo</option>
-                        <option value="Transferencia">Transferencia</option>
+                        <option value="Efectivo">Efectivo de la caja del turno</option>
+                        <option value="Efectivo caja menor">Efectivo de la caja menor</option>
+                        <option value="Mixto">Mixto: caja del turno + caja menor</option>
+                        <option value="Transferencia">Transferencia (banco)</option>
                     </select>
                 </div>
+
+                <div class="pago-mixto span-2" id="gastoMixtoBox" hidden>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Sale de la caja del turno</label>
+                            <input type="number" id="gastoPagoTurno" min="0" placeholder="Ej: 200000">
+                        </div>
+                        <div class="form-group">
+                            <label>Sale de la caja menor</label>
+                            <input type="text" id="gastoPagoCajaMenor" readonly class="input-bloqueado" value="$ 0">
+                        </div>
+                    </div>
+                </div>
+
+                <p class="ayuda span-2" id="gastoDisponible" style="margin:-4px 0 6px;"></p>
 
                 <div class="form-acciones span-2">
                     <button class="secondary-btn" type="button" data-cerrar-modal>Cancelar</button>
@@ -4529,6 +4546,8 @@ window.showView = function(viewName) {
             renderDashboard();
             renderMovimientos();
             renderHistorial();
+            // Un gasto pagado con la caja menor también cambia su saldo.
+            renderCajaMenor();
             renderReportesSiVisible();
         }, errorLectura("los gastos"));
 
@@ -4632,6 +4651,24 @@ function transferenciaDeVenta(venta) {
     return Number(venta.total || 0) - efectivoDeVenta(venta);
 }
 
+// De dónde salió la plata de un gasto: del efectivo de la caja del turno, del efectivo de la caja menor
+// o del banco (transferencia). Los gastos mixtos guardan el desglose en `pagos` ({ efectivo, cajaMenor }).
+const medioGasto = (g) => String(g.medioPago || "").toLowerCase();
+
+function gastoEfectivoTurno(g) {
+    if (g.pagos) return Number(g.pagos.efectivo || 0);
+    return medioGasto(g) === "efectivo" ? Number(g.valor || 0) : 0;
+}
+
+function gastoCajaMenor(g) {
+    if (g.pagos) return Number(g.pagos.cajaMenor || 0);
+    return medioGasto(g) === "efectivo caja menor" ? Number(g.valor || 0) : 0;
+}
+
+function gastoTransferencia(g) {
+    return medioGasto(g) === "transferencia" ? Number(g.valor || 0) : 0;
+}
+
 // Entradas y retiros de efectivo válidos de un turno.
 function movimientosCajaDe(turnoId) {
     return movCajaGlobal.filter(mc => mc.turnoId === turnoId && noAnulado(mc));
@@ -4644,6 +4681,7 @@ function obtenerResumenTurno(turno) {
             totalGastos: 0,
             ventasEfectivo: 0,
             gastosEfectivo: 0,
+            gastosCajaMenor: 0,
             entradas: 0,
             retiros: 0,
             efectivoEsperado: 0,
@@ -4661,9 +4699,10 @@ function obtenerResumenTurno(turno) {
 
     const ventasEfectivo = ventasTurno.reduce((acc, v) => acc + efectivoDeVenta(v), 0);
 
-    const gastosEfectivo = gastosTurno
-        .filter(g => String(g.medioPago || "").toLowerCase() === "efectivo")
-        .reduce((acc, g) => acc + Number(g.valor || 0), 0);
+    // Solo lo pagado con el efectivo del cajón baja el efectivo esperado; lo de la caja menor sale de ella.
+    const gastosEfectivo = gastosTurno.reduce((acc, g) => acc + gastoEfectivoTurno(g), 0);
+    const gastosCajaMenor = gastosTurno.reduce((acc, g) => acc + gastoCajaMenor(g), 0);
+    const gastosTransferencia = gastosTurno.reduce((acc, g) => acc + gastoTransferencia(g), 0);
 
     // Entradas y retiros mueven el efectivo de la caja, pero no son ventas ni gastos.
     const movimientos = movimientosCajaDe(turno.docId);
@@ -4680,13 +4719,14 @@ function obtenerResumenTurno(turno) {
         totalGastos,
         ventasEfectivo,
         gastosEfectivo,
+        gastosCajaMenor,
         entradas,
         retiros,
         efectivoEsperado,
         utilidad,
-        // Lo que no fue en efectivo entró o salió por transferencia (incluye la parte transferida de las ventas mixtas).
+        // Lo que no fue en efectivo entró por transferencia (incluye la parte transferida de las ventas mixtas).
         ventasTransferencia: totalVentas - ventasEfectivo,
-        gastosTransferencia: totalGastos - gastosEfectivo
+        gastosTransferencia
     };
 }
 
@@ -4896,14 +4936,15 @@ function renderListasDia() {
 
     const gastosValidos = gastosHoy.filter(noAnulado);
     const totalGastos = sumar(gastosValidos, "valor");
-    const gastosEfectivo = sumar(gastosValidos.filter(g => g.medioPago === "Efectivo"), "valor");
+    const gastosEfectivo = gastosValidos.reduce((acc, g) => acc + gastoEfectivoTurno(g), 0);
+    const gastosCM = gastosValidos.reduce((acc, g) => acc + gastoCajaMenor(g), 0);
 
     document.getElementById("gastosDiaFecha").textContent = subtitulo(fg.r, fg.buscando);
     document.getElementById("gastosDiaKpis").innerHTML =
-        kpi("Gastos", gastosValidos.length) +
         kpi("Total gastado", money(totalGastos)) +
-        kpi("En efectivo", money(gastosEfectivo)) +
-        kpi("En transferencia", money(totalGastos - gastosEfectivo));
+        kpi("Caja del turno", money(gastosEfectivo)) +
+        kpi("Caja menor", money(gastosCM)) +
+        kpi("Transferencia", money(totalGastos - gastosEfectivo - gastosCM));
 
     const sinGastos = fg.buscando ? "No hay gastos que coincidan con la búsqueda." : `No hay gastos ${fg.r.nombre}.`;
 
@@ -4953,6 +4994,7 @@ window.abrirRegistroGasto = function() {
         document.getElementById("gastoFecha").value = todayISO();
     }
 
+    actualizarGastoMixto();
     abrirPanelEnModal("panelGasto", {
         titulo: "Registrar gasto",
         sub: "Compra o salida de dinero del turno"
@@ -4998,6 +5040,7 @@ window.abrirModalCerrarTurno = function() {
             ["Gastos en efectivo", money(r.gastosEfectivo)],
             ["Neto en efectivo", money(r.ventasEfectivo - r.gastosEfectivo)]
         ])}
+        ${r.gastosCajaMenor ? `<p class="ayuda" style="margin:6px 0 0;">Además se pagaron <b>${money(r.gastosCajaMenor)}</b> en gastos con efectivo de la caja menor. No salen de esta caja.</p>` : ""}
         <div class="modal-seccion">Transferencias del turno</div>
         ${transferenciasTurnoHTML(r)}
         <div class="modal-seccion">Total del turno</div>
@@ -5219,9 +5262,10 @@ const MOTIVOS_CAJA_MENOR = {
 const NOMBRE_MEDIO_CM = { efectivo: "Efectivo", banco: "Banco" };
 
 // Ventas por transferencia menos gastos por transferencia del turno: lo que llega al banco.
+// Los gastos pagados con el efectivo de la caja menor no tocan el banco (se descuentan aparte, en su efectivo).
 function transferenciasNetas(resumen) {
     return (Number(resumen.totalVentas || 0) - Number(resumen.ventasEfectivo || 0)) -
-        (Number(resumen.totalGastos || 0) - Number(resumen.gastosEfectivo || 0));
+        (Number(resumen.totalGastos || 0) - Number(resumen.gastosEfectivo || 0) - Number(resumen.gastosCajaMenor || 0));
 }
 
 const isoDeTimestamp = (ts) => (ts && typeof ts.toMillis === "function" ? isoDesdeFecha(new Date(ts.toMillis())) : null);
@@ -5269,6 +5313,17 @@ function movimientosCajaMenor(sede = sedeVista) {
         }
     });
 
+    // Gastos del turno pagados (todo o en parte) con el efectivo de la caja menor.
+    gastosTodos.filter(g => gastoCajaMenor(g) > 0 && deSede(g)).forEach(g => {
+        lista.push({
+            origen: "gasto", docId: g.docId, sede: sedeDe(g), anulada: !!g.anulada, usuario: g.creadoPor || "",
+            detalle: "gasto:" + g.docId, tipo: "gasto", titulo: "Gasto: " + (g.descripcion || g.categoria || "sin descripción"),
+            nota: `${g.categoria || ""}${g.pagos ? ` · mixto (${money(gastoEfectivoTurno(g))} de la caja del turno)` : ""}`,
+            fecha: g.fecha, ms: milisDe(g),
+            efectivo: -gastoCajaMenor(g), banco: 0
+        });
+    });
+
     movCajaTodos.filter(mc => mc.cajaMenor && deSede(mc)).forEach(mc => {
         const valor = Number(mc.valor || 0);
         // Lo que sale del turno entra a la caja menor, y lo que entra al turno sale de ella.
@@ -5298,7 +5353,7 @@ function saldosCajaMenor(sede = sedeVista) {
     return { efectivo, banco, total: efectivo + banco };
 }
 
-const ICONO_MOV_CM = { ingreso: "plus", retiro: "minus", traslado: "traslado", apertura: "unlock", cierre: "lock", alturno: "minus", delturno: "plus" };
+const ICONO_MOV_CM = { ingreso: "plus", retiro: "minus", traslado: "traslado", apertura: "unlock", cierre: "lock", alturno: "minus", delturno: "plus", gasto: "gastos" };
 
 // Una fila de la lista: título, fecha y nota; a la derecha lo que cambió en efectivo y en banco.
 function filaCajaMenorHTML(m, conSede) {
@@ -5324,6 +5379,10 @@ function renderCajaMenor() {
     if (!document.getElementById("view-cajamenor")) return;
 
     pintarFiltroLista("cajamenor");
+
+    // Para el técnico la caja menor es solo informativa: lo que paga lo registra como gasto del turno.
+    // Ingresos, retiros y traslados los registra el administrador.
+    document.querySelector("#view-cajamenor .cm-botones").style.display = esAdmin() ? "" : "none";
 
     const s = saldosCajaMenor();
     document.getElementById("cmSaldoTotal").textContent = money(s.total);
@@ -6291,6 +6350,7 @@ async function cerrarTurno(form) {
         totalGastos: resumen.totalGastos,
         ventasEfectivo: resumen.ventasEfectivo,
         gastosEfectivo: resumen.gastosEfectivo,
+        gastosCajaMenor: resumen.gastosCajaMenor,
         ventasTransferencia: resumen.ventasTransferencia,
         gastosTransferencia: resumen.gastosTransferencia,
         utilidad: resumen.utilidad,
@@ -6542,10 +6602,98 @@ document.getElementById("ventaPagoEfectivo").addEventListener("input", actualiza
         guardarConBoton(this, () => guardarGasto(this));
     });
 
+    // Lo que hay disponible en cada lado, para que el técnico vea de dónde puede salir la plata.
+    function disponibleParaGasto() {
+        const cm = turnoActivo ? saldosCajaMenor(sedeDe(turnoActivo)) : { efectivo: 0, banco: 0 };
+        return {
+            turno: turnoActivo ? Math.max(obtenerResumenTurno(turnoActivo).efectivoEsperado, 0) : 0,
+            cajaMenor: cm.efectivo,
+            banco: cm.banco
+        };
+    }
+
+    // Muestra el desglose del pago mixto y lo disponible en la caja del turno y en la caja menor.
+    function actualizarGastoMixto() {
+        const medio = document.getElementById("gastoMedio").value;
+        const esMixto = medio === "Mixto";
+        const valor = Number(document.getElementById("gastoValor").value || 0);
+        const d = disponibleParaGasto();
+
+        document.getElementById("gastoMixtoBox").hidden = !esMixto;
+        if (esMixto) {
+            const campoTurno = document.getElementById("gastoPagoTurno");
+            const deTurno = Number(campoTurno.value || 0);
+            const campoCM = document.getElementById("gastoPagoCajaMenor");
+            campoCM.value = money(Math.max(valor - deTurno, 0));
+            campoTurno.style.color = deTurno > valor ? "var(--danger)" : "";
+        }
+
+        const ayuda = {
+            "Efectivo": `En la caja del turno hay ${money(d.turno)}.`,
+            "Efectivo caja menor": `En la caja menor hay ${money(d.cajaMenor)} en efectivo.`,
+            "Mixto": `En la caja del turno hay ${money(d.turno)} · en la caja menor ${money(d.cajaMenor)} en efectivo.`,
+            "Transferencia": "Sale del banco. Al cerrar el turno se descuenta del banco de la caja menor."
+        };
+        document.getElementById("gastoDisponible").textContent = ayuda[medio] || "";
+    }
+
+    ["gastoMedio", "gastoValor", "gastoPagoTurno"].forEach(id => {
+        document.getElementById(id).addEventListener("input", actualizarGastoMixto);
+        document.getElementById(id).addEventListener("change", actualizarGastoMixto);
+    });
+
     async function guardarGasto(form) {
         if (!turnoActivo) {
             alert("Primero debes abrir turno en Caja.");
             abrirModalAbrirTurno();
+            return;
+        }
+
+        const valor = Number(document.getElementById("gastoValor").value || 0);
+        let medioPago = document.getElementById("gastoMedio").value;
+        let pagos = null;
+
+        if (valor <= 0) {
+            alert("El valor debe ser mayor a cero.");
+            return;
+        }
+
+        const d = disponibleParaGasto();
+
+        if (medioPago === "Efectivo" && valor > d.turno) {
+            // Lo de siempre: el cajón no alcanza y el resto se saca de la caja menor. Se le ofrece hacerlo mixto.
+            if (d.turno > 0 && confirm(
+                `En la caja del turno solo hay ${money(d.turno)}.\n\n` +
+                `¿Sacar ${money(d.turno)} de la caja del turno y los otros ${money(valor - d.turno)} de la caja menor?`
+            )) {
+                medioPago = "Mixto";
+                pagos = { efectivo: d.turno, cajaMenor: valor - d.turno };
+            } else if (d.turno <= 0 && confirm(
+                `La caja del turno no tiene efectivo.\n\n¿Sacar los ${money(valor)} de la caja menor?`
+            )) {
+                medioPago = "Efectivo caja menor";
+            } else if (!confirm(`¿Registrar los ${money(valor)} como sacados de la caja del turno de todas formas? La caja quedaría en negativo.`)) {
+                return;
+            }
+        }
+
+        if (medioPago === "Mixto" && !pagos) {
+            const deTurno = Number(document.getElementById("gastoPagoTurno").value || 0);
+            if (deTurno <= 0 || deTurno >= valor) {
+                alert("En un gasto mixto, lo que sale de la caja del turno debe ser mayor a cero y menor que el valor del gasto.");
+                document.getElementById("gastoPagoTurno").focus();
+                return;
+            }
+            if (deTurno > d.turno && !confirm(`En la caja del turno solo hay ${money(d.turno)} y vas a sacar ${money(deTurno)}. ¿Registrarlo de todas formas?`)) {
+                return;
+            }
+            pagos = { efectivo: deTurno, cajaMenor: valor - deTurno };
+        }
+
+        const deCajaMenor = pagos ? pagos.cajaMenor : (medioPago === "Efectivo caja menor" ? valor : 0);
+        if (deCajaMenor > d.cajaMenor && !confirm(
+            `En la caja menor solo hay ${money(d.cajaMenor)} en efectivo y vas a sacar ${money(deCajaMenor)}. ¿Registrarlo de todas formas?`
+        )) {
             return;
         }
 
@@ -6556,8 +6704,9 @@ document.getElementById("ventaPagoEfectivo").addEventListener("input", actualiza
             fecha: document.getElementById("gastoFecha").value,
             categoria: document.getElementById("gastoCategoria").value,
             descripcion: document.getElementById("gastoDescripcion").value.trim(),
-            valor: Number(document.getElementById("gastoValor").value || 0),
-            medioPago: document.getElementById("gastoMedio").value,
+            valor,
+            medioPago,
+            ...(pagos ? { pagos } : {}),
             creadoPor: currentUserEmail,
             creadoEn: firebase.firestore.FieldValue.serverTimestamp()
         };
@@ -6566,9 +6715,12 @@ document.getElementById("ventaPagoEfectivo").addEventListener("input", actualiza
 
         form.reset();
         document.getElementById("gastoFecha").value = todayISO();
+        actualizarGastoMixto();
 
         cerrarModal();
-        alert("Gasto guardado correctamente.");
+        alert(pagos
+            ? `Gasto guardado: ${money(pagos.efectivo)} de la caja del turno y ${money(pagos.cajaMenor)} de la caja menor.`
+            : "Gasto guardado correctamente.");
     }
 
     document.getElementById("btnImportCatalog").addEventListener("click", async function() {
@@ -7204,6 +7356,7 @@ function resumenDeTurno(turno) {
             efectivoInicial: Number(turno.efectivoInicial || 0),
             ventasEfectivo: Number(turno.ventasEfectivo || 0),
             gastosEfectivo: Number(turno.gastosEfectivo || 0),
+            gastosCajaMenor: Number(turno.gastosCajaMenor || 0),
             entradas: Number(turno.entradasEfectivo || 0),
             retiros: Number(turno.retirosEfectivo || 0),
             efectivoEsperado: Number(turno.efectivoEsperado || 0),
@@ -7211,7 +7364,7 @@ function resumenDeTurno(turno) {
             diferencia: Number(turno.diferencia || 0),
             totalVentas: Number(turno.totalVentas || 0),
             ventasTransferencia: Number(turno.totalVentas || 0) - Number(turno.ventasEfectivo || 0),
-            gastosTransferencia: Number(turno.totalGastos || 0) - Number(turno.gastosEfectivo || 0)
+            gastosTransferencia: Number(turno.totalGastos || 0) - Number(turno.gastosEfectivo || 0) - Number(turno.gastosCajaMenor || 0)
         };
     }
 
@@ -7240,10 +7393,21 @@ function flujoPorMedio(ventas, gastos) {
         }
     });
 
-    gastos.forEach(g => {
-        const f = fila(g.medioPago || "Sin dato");
-        f.salidas += Number(g.valor || 0);
+    const sumarSalida = (medio, valor) => {
+        if (!valor) return;
+        const f = fila(medio);
+        f.salidas += valor;
         mapa.set(f.medio, f);
+    };
+
+    // Los gastos mixtos se reparten entre el efectivo del turno y el de la caja menor.
+    gastos.forEach(g => {
+        if (g.pagos) {
+            sumarSalida("Efectivo", gastoEfectivoTurno(g));
+            sumarSalida("Efectivo caja menor", gastoCajaMenor(g));
+        } else {
+            sumarSalida(g.medioPago || "Sin dato", Number(g.valor || 0));
+        }
     });
 
     return [...mapa.values()].sort((a, b) => b.entradas - a.entradas);
@@ -8789,7 +8953,9 @@ function detalleGasto(id) {
             ${datosHTML([
                 ["Descripción", limpiarHTML(g.descripcion || "—")],
                 ["Categoría", limpiarHTML(g.categoria || "Sin categoría")],
-                ["Medio de pago", limpiarHTML(g.medioPago)],
+                ["Medio de pago", limpiarHTML(g.pagos
+                    ? `Mixto: ${money(gastoEfectivoTurno(g))} caja del turno + ${money(gastoCajaMenor(g))} caja menor`
+                    : g.medioPago)],
                 ["Sede", nombreSede(sedeDe(g))],
                 ["Registrado por", limpiarHTML(g.creadoPor)],
                 ["Fecha de registro", fechaHoraDe(g.creadoEn)],
@@ -8850,6 +9016,7 @@ function detalleTurno(id) {
                 ["Efectivo inicial", money(s.efectivoInicial)],
                 ["Ventas en efectivo", money(s.ventasEfectivo)],
                 ["Gastos en efectivo", money(s.gastosEfectivo)],
+                ...(s.gastosCajaMenor ? [["Gastos con caja menor", money(s.gastosCajaMenor)]] : []),
                 ["Entradas de efectivo", money(s.entradas || 0)],
                 ["Retiros de efectivo", money(s.retiros || 0)],
                 ["Efectivo esperado", money(s.efectivoEsperado)],
@@ -9025,7 +9192,8 @@ function detalleRepGastos() {
     const r = rangoDelPeriodo();
     const { gastos } = datosDelRango(r.desde, r.hasta);
     const total = suma(gastos, g => g.valor);
-    const efectivo = suma(gastos.filter(g => String(g.medioPago || "").toLowerCase() === "efectivo"), g => g.valor);
+    // Efectivo: el del cajón del turno más el de la caja menor.
+    const efectivo = suma(gastos, g => gastoEfectivoTurno(g) + gastoCajaMenor(g));
 
     return {
         ancha: true,
